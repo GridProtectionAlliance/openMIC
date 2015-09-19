@@ -1,2 +1,3 @@
-# MIDAS
-Meter Information Data Acquisition  System
+# openMIC
+Meter Information Collector
+
