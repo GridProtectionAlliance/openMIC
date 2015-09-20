@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="openMIC" Language="1033" Version="!(bind.FileVersion.openMIC.exe)" Manufacturer="Grid Protection Alliance" UpgradeCode="7E475E71-0956-4FB9-81A7-543C3D8A4C21">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <PropertyRef Id="NETFRAMEWORK45"/>
+
+    <Condition Message='This setup requires Microsoft .NET Framework 4.5 or greater - this will need to be installed before installation can continue.'>
+      <![CDATA[Installed OR NETFRAMEWORK45]]>
+    </Condition>
+
+    <MajorUpgrade Schedule="afterInstallInitialize" DowngradeErrorMessage="A newer version of [ProductName] is already installed. Setup will now exit." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="AllProducts" Title="All Products" Level="1" Display="expand" ConfigurableDirectory="INSTALLFOLDER" Description="All openMIC Components">
+      <Feature Id="openMICFeature" Title="openMIC Service" Description="openMIC Service Application">
+        <ComponentRef Id="openMIC" />
+        <ComponentRef Id="openMICConfig" />
+      </Feature>
+
+      <Feature Id="openMICToolsFeature" Title="openMIC Tools" Description="openMIC Tools">
+        <Feature Id="openMICManagerFeature" Title="Manager" Description="openMIC Management Tool">
+          <ComponentRef Id="openMICManager" />
+          <ComponentRef Id="openMICManagerConfig" />
+        </Feature>
+        <Feature Id="openMICConsoleFeature" Title="Console" Description="openMIC Remote Console Tool">
+          <ComponentRef Id="openMICConsole" />
+          <ComponentRef Id="openMICConsoleConfig" />
+        </Feature>
+      </Feature>
+
+      <ComponentGroupRef Id="Dependencies" />
+      <ComponentRef Id="Cleanup" />
+    </Feature>
+
+    <!-- User Interface -->
+    <UIRef Id="WixUI_FeatureTree" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\openMICSetupBanner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\openMICSetupDialog.bmp" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)\INSTALL_LICENSE.rtf" />
+
+    <Icon Id="openMIC.ico.exe" SourceFile="$(var.openMIC.TargetPath)" />
+    <Icon Id="openMICConsole.ico.exe" SourceFile="$(var.openMICConsole.TargetPath)" />
+    <Icon Id="openMICManager.ico.exe" SourceFile="$(var.openMICManager.TargetPath)" />
+
+    <!-- Add/Remove Programs Icon -->
+    <Property Id="ARPPRODUCTICON" Value="openMIC.ico.exe" />
+
+    <!-- Define Variables Related to .s3config File Association -->
+    <?define ApplicationName = "openMIC" ?>
+    <?define ApplicationDescription = "openMIC Management Tool" ?>
+    <?define S3ConfigDescription = "openMIC Configuration File" ?>
+    <?define S3ConfigExplorerMenu = "Edit with openMIC Manager" ?>
+
+    <!-- Custom Actions -->
+    <Property Id="SERVICENAME" Value="$(var.openMIC.TargetName)" />
+    <Binary Id="InstallerActions" SourceFile="$(var.SolutionDir)\Dependencies\GSF\GSF.InstallerActions.CA.dll" />
+    <CustomAction Id="ConfigureServiceAction.SetProperty" Property="ConfigureServiceAction" Value="SERVICENAME=[SERVICENAME]" />
+    <CustomAction Id="ConfigureServiceAction" BinaryKey="InstallerActions" DllEntry="ConfigureServiceAction" Execute="deferred" Impersonate="no" />
+
+    <InstallExecuteSequence>
+      <Custom Action="ConfigureServiceAction.SetProperty" After="InstallServices">NOT REMOVE</Custom>
+      <Custom Action="ConfigureServiceAction" After="ConfigureServiceAction.SetProperty">NOT REMOVE</Custom>
+    </InstallExecuteSequence>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <?if $(var.Platform) = x64 ?>
+        <Directory Id="ProgramFiles64Folder">
+          <!-- C:\Program Files\openMIC -->
+          <Directory Id="INSTALLFOLDER" Name="SynchrophasoropenMIC" />
+        </Directory>
+      <?else ?>
+        <Directory Id="ProgramFilesFolder">
+          <!-- C:\Program Files (x86)\openMIC -->
+          <Directory Id="INSTALLFOLDER" Name="SynchrophasoropenMIC" />
+        </Directory>
+      <?endif ?>
+
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="openMIC" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Applications -->
+      <Component Id="openMIC">
+        <File Id="openMIC.exe" Name="$(var.openMIC.TargetFileName)" Source="$(var.openMIC.TargetPath)" />
+        <ServiceInstall Id="openMICService" Name="[SERVICENAME]" Type="ownProcess" Start="auto" ErrorControl="normal" Description="Service for redistributing synchrophasor data streams." />
+        <ServiceControl Id="openMICServiceControl" Name="[SERVICENAME]" Start="install" Stop="both" Remove="uninstall" />
+      </Component>
+      <Component Id="openMICConsole">
+        <File Id="openMICConsole.exe" Name="$(var.openMICConsole.TargetFileName)" Source="$(var.openMICConsole.TargetPath)" />
+        <Shortcut Id="openMICConsoleStartMenuShortcut" Name="openMIC Console" Icon="openMICConsole.ico.exe" Description="Console client for the openMIC service." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+      <Component Id="openMICManager">
+        <File Id="openMICManager.exe" Name="$(var.openMICManager.TargetFileName)" Source="$(var.openMICManager.TargetPath)" />
+        <Shortcut Id="openMICManagerStartMenuShortcut" Name="openMIC Manager" Icon="openMICManager.ico.exe" Description="Manager application for the openMIC service." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+
+        <!-- Capabilities keys for Vista/7/8 "Set Program Access and Defaults" -->
+        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities" Name="ApplicationDescription" Value="$(var.ApplicationDescription)" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities" Name="ApplicationIcon" Value="[APPLICATIONFOLDER]openMICManager.exe,0" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities" Name="ApplicationName" Value="$(var.ApplicationName)" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities\DefaultIcon" Value="[APPLICATIONFOLDER]openMICManager.exe,0" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities\FileAssociations" Name=".s3config" Value="openMIC.Document" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities\MIMEAssociations" Name="application/s3config" Value="openMIC.Document" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities\shell\Open\command" Value="&quot;[APPLICATIONFOLDER]openMICManager.exe&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\RegisteredApplications" Name="openMIC" Value="SOFTWARE\openMIC\Capabilities" Type="string" />
+
+        <!-- App Paths to support Start,Run -> "openMICManager" -->
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\openMICManager.exe" Value="[!openMICManager.exe]" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\openMICManager.exe" Name="Path" Value="[APPLICATIONFOLDER]" Type="string" />
+
+        <!-- Extend to the "open with" list + Win7 jump menu pinning  -->
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\openMICManager.exe\SupportedTypes" Name=".s3config" Value="" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\openMICManager.exe\shell\open" Name="FriendlyAppName" Value="$(var.ApplicationName)" Type="string" />
+
+        <!-- openMIC.Document ProgID -->
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\openMIC.Document" Name="FriendlyTypeName" Value="$(var.S3ConfigDescription)" Type="string" />
+        <ProgId Id="openMIC.Document" Description="$(var.S3ConfigDescription)" Icon="openMICManager.ico.exe" Advertise="yes">
+          <Extension Id="s3config">
+            <Verb Id="open" Command="$(var.S3ConfigExplorerMenu)" Argument="&quot;%1&quot;" />
+            <MIME Advertise="yes" ContentType="application/s3config" Default="yes" />
+          </Extension>
+        </ProgId>
+
+        <!-- Optional: add an 'Edit with S3Config' to 'right click' even when not associated -->
+        <!-- RegistryValue Root="HKLM" Key="SOFTWARE\Classes\SystemFileAssociations\.s3config\shell\edit.openMICManager.exe" Value="$(var.S3ConfigExplorerMenu)" Type="string" / -->
+        <!-- RegistryValue Root="HKLM" Key="SOFTWARE\Classes\SystemFileAssociations\.s3config\shell\edit.openMICManager.exe\command" Value="&quot;[APPLICATIONFOLDER]openMICManager.exe&quot; &quot;%1&quot;" Type="string" / -->
+      </Component>
+      <Component Id="openMICConfig">
+        <File Id="openMIC.exe.config" Name="$(var.openMIC.TargetFileName).config" Source="$(var.openMIC.TargetPath).config" />
+      </Component>
+      <Component Id="openMICConsoleConfig">
+        <File Id="openMICConsole.exe.config" Name="$(var.openMICConsole.TargetFileName).config" Source="$(var.openMICConsole.TargetPath).config" />
+      </Component>
+      <Component Id="openMICManagerConfig">
+        <File Id="openMICManager.exe.config" Name="$(var.openMICManager.TargetFileName).config" Source="$(var.openMICManager.TargetPath).config" />
+      </Component>
+
+      <!-- Cleanup -->
+      <Component Id="Cleanup" Guid="{E4A3FC2E-4D4C-4A9B-A1D5-1B95BBC33E90}">
+        <CreateFolder />
+        <RemoveFolder Id="RemoveApplicationProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="Dependencies" Directory="INSTALLFOLDER">
+      <!-- Libraries -->
+      <Component Id="openMICLibrary">
+        <File Id="openMICLibrary.dll" Name="$(var.openMICLibrary.TargetFileName)" Source="$(var.openMICLibrary.TargetPath)" />
+      </Component>
+
+      <!-- DotNetZip Dependencies -->
+      <Component Id="Ionic.Zlib">
+        <File Id="Ionic.Zlib.dll" Name="Ionic.Zlib.dll" Source="$(var.SolutionDir)\Dependencies\DotNetZip\Ionic.Zlib.dll" />
+      </Component>
+
+      <!-- GSF Dependencies -->
+      <Component Id="GSF.Communication">
+        <File Id="GSF.Communication.dll" Name="GSF.Communication.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Communication.dll" />
+      </Component>
+      <Component Id="GSF.Core">
+        <File Id="GSF.Core.dll" Name="GSF.Core.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Core.dll" />
+      </Component>
+      <Component Id="GSF.PhasorProtocols">
+        <File Id="GSF.PhasorProtocols.dll" Name="GSF.PhasorProtocols.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.PhasorProtocols.dll" />
+      </Component>
+      <Component Id="GSF.Security">
+        <File Id="GSF.Security.dll" Name="GSF.Security.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Security.dll" />
+      </Component>
+      <Component Id="GSF.ServiceBus">
+        <File Id="GSF.ServiceBus.dll" Name="GSF.ServiceBus.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.ServiceBus.dll" />
+      </Component>
+      <Component Id="GSF.ServiceModel">
+        <File Id="GSF.ServiceModel.dll" Name="GSF.ServiceModel.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.ServiceModel.dll" />
+      </Component>
+      <Component Id="GSF.ServiceProcess">
+        <File Id="GSF.ServiceProcess.dll" Name="GSF.ServiceProcess.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.ServiceProcess.dll" />
+      </Component>
+      <Component Id="GSF.TimeSeries">
+        <File Id="GSF.TimeSeries.dll" Name="GSF.TimeSeries.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.TimeSeries.dll" />
+      </Component>
+      <Component Id="GSF.Windows">
+        <File Id="GSF.Windows.dll" Name="GSF.Windows.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Windows.dll" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>openMIC - Web Administration</title>
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/openmic.css" rel="stylesheet">
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+          <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="js/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/openmic.js"></script>
+    </head>
+    <body>
+        <div id="openmic">
+            <div class="header">
+                <div class="logo">
+                    <a href="index.html">
+                        <span class="app-name">openMIC <small>v0.1</small></span>
+                    </a>
+                </div>
+                <div class="top-nav">
+                    <div class="host-info">
+                        <div class="name">
+                             <span class="hostname">openMIC Node</span>
+                        </div>
+                        <div class="info">
+                            Windows 2012, uptime: 2 days, 14 hours
+                        </div>
+                    </div>
+					<div class="profile-box">
+						<div class="imagemark"></div>
+						<a href="https://www.gridprotectionalliance.org/products.asp#openMIC" target="_blank"><div class="openmic-logo"></div></a>
+						<span class="profile">
+							<a href="#" class="section">
+								<img class="image" src="images/user.png" alt="image description" width="26" height="26" />
+								<span class="text-box">
+									Welcome
+									<strong class="name">openMIC User</strong>
+								</span>
+							</a>
+							<a href="#" class="opener">opener</a>
+						</span>
+						<a href="javascript:confirm('Initiate openMIC reboot?')" class="btn-on">On</a>
+					</div>
+                </div>
+            </div>
+            <div class="table-container">
+                <div class="content">
+                    <div class="left-nav">
+                        <ul class="menu">
+                            <li class="active">
+                                <a href="index.html">
+                                    <span class="glyphicon glyphicon-th"></span>
+                                    <span class="option-text">Dashboard</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="settings.html">
+                                    <span class="glyphicon glyphicon-cog"></span>
+                                    <span class="option-text">Settings</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="security.html">
+                                    <span class="glyphicon glyphicon-lock"></span>
+                                    <span class="option-text">Security</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="statistics.html">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                    <span class="option-text">Statistics</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="logs.html">
+                                    <span class="glyphicon glyphicon-book"></span>
+                                    <span class="option-text">Logs <span class="num" id="log_count"></span></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="main-content">
+						<h1>Dashboard</h1>
+						<p>openMIC Status</p>
+						<ul class="states">
+							<!--
+							<li class="error">Error: Example error message syntax.</li>
+							<li class="warning">Warning: Example warning message syntax.</li>
+							<li class="success">Success: success message syntax.</li>
+							-->
+							<li class="success">openMIC Service Task scheduler is running - cpu @ 1.2%.</li>
+							<li class="success">openMIC Web Server is running - cpu @ 1.1%.</li>
+						</ul>
+						<img src="images/bro-statsd-example.png" style="width: 100%"></img>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,130 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Applications", "Applications", "{9D60B828-E0D2-49C2-BFCA-A22D33495898}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{03C274B8-D21E-4B76-8A23-B9E8741AD366}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{DD87CC4D-1310-4E04-A8BB-FFFDC701F0A9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{7E4E34BA-FB7F-497C-BB89-C45FF2C8CED9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E7281BCE-EBD9-49A4-8838-D29C62925EC9}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		NOTICE = NOTICE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WiX", "WiX", "{59B1811E-D12D-417C-AA12-22CFC2297FA9}"
+	ProjectSection(SolutionItems) = preProject
+		src\Dependencies\WiX\WixNetFxExtension.dll = src\Dependencies\WiX\WixNetFxExtension.dll
+		src\Dependencies\WiX\WixUIExtension.dll = src\Dependencies\WiX\WixUIExtension.dll
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openMIC", "src\Applications\openMIC\openMIC.csproj", "{7E475E71-0956-4FB9-81A7-543C3D8A4C21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openMICConsole", "src\Applications\openMICConsole\openMICConsole.csproj", "{514C1869-C4FE-4E5C-9578-02FE97B82AD1}"
+EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "openMICSetup", "src\Applications\openMICSetup\openMICSetup.wixproj", "{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openMICLibrary", "src\Libraries\openMICLibrary\openMICLibrary.csproj", "{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{1662673A-89E8-4130-AB77-B335980A4886}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{79338F67-901E-43E1-9348-7E9D41D7B3A6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLite", "SQLite", "{5D3972EE-5796-4C9C-9483-4C56E59E5A93}"
+	ProjectSection(SolutionItems) = preProject
+		src\Data\SQLite\GSFSchema.sql = src\Data\SQLite\GSFSchema.sql
+		src\Data\SQLite\InitialDataSet.sql = src\Data\SQLite\InitialDataSet.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL Server", "SQL Server", "{AE2A0CB7-1636-4965-8845-A43C87B85792}"
+	ProjectSection(SolutionItems) = preProject
+		src\Data\SQL Server\AuditLog.sql = src\Data\SQL Server\AuditLog.sql
+		src\Data\SQL Server\InitialDataSet.sql = src\Data\SQL Server\InitialDataSet.sql
+		src\Data\SQL Server\openMIC.sql = src\Data\SQL Server\openMIC.sql
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WixFolderGen", "src\Applications\WixFolderGen\WixFolderGen.csproj", "{AED5BC82-A443-4D14-A039-16BA15320AC7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Debug|x86.Build.0 = Debug|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Release|x86.ActiveCfg = Release|Any CPU
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21}.Release|x86.Build.0 = Release|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Debug|x86.Build.0 = Debug|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Release|x86.ActiveCfg = Release|Any CPU
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1}.Release|x86.Build.0 = Release|Any CPU
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Debug|x86.ActiveCfg = Debug|x86
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Release|Any CPU.ActiveCfg = Release|x64
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Release|Any CPU.Build.0 = Release|x64
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Release|Mixed Platforms.Build.0 = Release|x86
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Release|x86.ActiveCfg = Release|x86
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A}.Release|x86.Build.0 = Release|x86
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B}.Release|x86.ActiveCfg = Release|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{AED5BC82-A443-4D14-A039-16BA15320AC7}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7E475E71-0956-4FB9-81A7-543C3D8A4C21} = {9D60B828-E0D2-49C2-BFCA-A22D33495898}
+		{514C1869-C4FE-4E5C-9578-02FE97B82AD1} = {9D60B828-E0D2-49C2-BFCA-A22D33495898}
+		{C66EDAB2-8091-4312-A73B-1D2C3D016B9A} = {9D60B828-E0D2-49C2-BFCA-A22D33495898}
+		{AED5BC82-A443-4D14-A039-16BA15320AC7} = {9D60B828-E0D2-49C2-BFCA-A22D33495898}
+		{59B1811E-D12D-417C-AA12-22CFC2297FA9} = {03C274B8-D21E-4B76-8A23-B9E8741AD366}
+		{98BCA2F9-CC4F-4DF2-AC60-040DD106AA6B} = {7E4E34BA-FB7F-497C-BB89-C45FF2C8CED9}
+		{5D3972EE-5796-4C9C-9483-4C56E59E5A93} = {79338F67-901E-43E1-9348-7E9D41D7B3A6}
+		{AE2A0CB7-1636-4965-8845-A43C87B85792} = {79338F67-901E-43E1-9348-7E9D41D7B3A6}
+	EndGlobalSection
+EndGlobal
