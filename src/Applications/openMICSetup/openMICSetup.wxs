@@ -19,10 +19,6 @@
       </Feature>
 
       <Feature Id="openMICToolsFeature" Title="openMIC Tools" Description="openMIC Tools">
-        <Feature Id="openMICManagerFeature" Title="Manager" Description="openMIC Management Tool">
-          <ComponentRef Id="openMICManager" />
-          <ComponentRef Id="openMICManagerConfig" />
-        </Feature>
         <Feature Id="openMICConsoleFeature" Title="Console" Description="openMIC Remote Console Tool">
           <ComponentRef Id="openMICConsole" />
           <ComponentRef Id="openMICConsoleConfig" />
@@ -42,7 +38,6 @@
 
     <Icon Id="openMIC.ico.exe" SourceFile="$(var.openMIC.TargetPath)" />
     <Icon Id="openMICConsole.ico.exe" SourceFile="$(var.openMICConsole.TargetPath)" />
-    <Icon Id="openMICManager.ico.exe" SourceFile="$(var.openMICManager.TargetPath)" />
 
     <!-- Add/Remove Programs Icon -->
     <Property Id="ARPPRODUCTICON" Value="openMIC.ico.exe" />
@@ -97,49 +92,11 @@
         <File Id="openMICConsole.exe" Name="$(var.openMICConsole.TargetFileName)" Source="$(var.openMICConsole.TargetPath)" />
         <Shortcut Id="openMICConsoleStartMenuShortcut" Name="openMIC Console" Icon="openMICConsole.ico.exe" Description="Console client for the openMIC service." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
       </Component>
-      <Component Id="openMICManager">
-        <File Id="openMICManager.exe" Name="$(var.openMICManager.TargetFileName)" Source="$(var.openMICManager.TargetPath)" />
-        <Shortcut Id="openMICManagerStartMenuShortcut" Name="openMIC Manager" Icon="openMICManager.ico.exe" Description="Manager application for the openMIC service." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
-
-        <!-- Capabilities keys for Vista/7/8 "Set Program Access and Defaults" -->
-        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities" Name="ApplicationDescription" Value="$(var.ApplicationDescription)" Type="string" />
-        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities" Name="ApplicationIcon" Value="[APPLICATIONFOLDER]openMICManager.exe,0" Type="string" />
-        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities" Name="ApplicationName" Value="$(var.ApplicationName)" Type="string" />
-        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities\DefaultIcon" Value="[APPLICATIONFOLDER]openMICManager.exe,0" Type="string" />
-        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities\FileAssociations" Name=".s3config" Value="openMIC.Document" Type="string" />
-        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities\MIMEAssociations" Name="application/s3config" Value="openMIC.Document" Type="string" />
-        <RegistryValue Root="HKLM" Key="SOFTWARE\openMIC\Capabilities\shell\Open\command" Value="&quot;[APPLICATIONFOLDER]openMICManager.exe&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="SOFTWARE\RegisteredApplications" Name="openMIC" Value="SOFTWARE\openMIC\Capabilities" Type="string" />
-
-        <!-- App Paths to support Start,Run -> "openMICManager" -->
-        <RegistryValue Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\openMICManager.exe" Value="[!openMICManager.exe]" Type="string" />
-        <RegistryValue Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\openMICManager.exe" Name="Path" Value="[APPLICATIONFOLDER]" Type="string" />
-
-        <!-- Extend to the "open with" list + Win7 jump menu pinning  -->
-        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\openMICManager.exe\SupportedTypes" Name=".s3config" Value="" Type="string" />
-        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\openMICManager.exe\shell\open" Name="FriendlyAppName" Value="$(var.ApplicationName)" Type="string" />
-
-        <!-- openMIC.Document ProgID -->
-        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\openMIC.Document" Name="FriendlyTypeName" Value="$(var.S3ConfigDescription)" Type="string" />
-        <ProgId Id="openMIC.Document" Description="$(var.S3ConfigDescription)" Icon="openMICManager.ico.exe" Advertise="yes">
-          <Extension Id="s3config">
-            <Verb Id="open" Command="$(var.S3ConfigExplorerMenu)" Argument="&quot;%1&quot;" />
-            <MIME Advertise="yes" ContentType="application/s3config" Default="yes" />
-          </Extension>
-        </ProgId>
-
-        <!-- Optional: add an 'Edit with S3Config' to 'right click' even when not associated -->
-        <!-- RegistryValue Root="HKLM" Key="SOFTWARE\Classes\SystemFileAssociations\.s3config\shell\edit.openMICManager.exe" Value="$(var.S3ConfigExplorerMenu)" Type="string" / -->
-        <!-- RegistryValue Root="HKLM" Key="SOFTWARE\Classes\SystemFileAssociations\.s3config\shell\edit.openMICManager.exe\command" Value="&quot;[APPLICATIONFOLDER]openMICManager.exe&quot; &quot;%1&quot;" Type="string" / -->
-      </Component>
       <Component Id="openMICConfig">
         <File Id="openMIC.exe.config" Name="$(var.openMIC.TargetFileName).config" Source="$(var.openMIC.TargetPath).config" />
       </Component>
       <Component Id="openMICConsoleConfig">
         <File Id="openMICConsole.exe.config" Name="$(var.openMICConsole.TargetFileName).config" Source="$(var.openMICConsole.TargetPath).config" />
-      </Component>
-      <Component Id="openMICManagerConfig">
-        <File Id="openMICManager.exe.config" Name="$(var.openMICManager.TargetFileName).config" Source="$(var.openMICManager.TargetPath).config" />
       </Component>
 
       <!-- Cleanup -->
