@@ -1,0 +1,432 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ServiceApplication
+  Name="LightSwitchServiceApplication" xmlns="http://schemas.microsoft.com/LightSwitch/2010/xaml/model">
+  <ServiceApplication.Attributes>
+    <Partial />
+  </ServiceApplication.Attributes>
+  <EntityType
+    Name="Company">
+    <EntityType.Methods>
+      <EntityMethod
+        Name="Delete">
+        <EntityMethod.Attributes>
+          <Generated />
+        </EntityMethod.Attributes>
+      </EntityMethod>
+    </EntityType.Methods>
+    <EntityType.Properties>
+      <KeyProperty
+        Name="ID"
+        IsReadOnly="True"
+        PropertyType=":Int32">
+        <KeyProperty.Attributes>
+          <Hidden />
+          <Required />
+          <NotSearchable />
+        </KeyProperty.Attributes>
+      </KeyProperty>
+      <EntityProperty
+        Name="Acronym"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="MapAcronym"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            IsFixedLength="True"
+            Value="3" />
+          <AllowEmptyString />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="Name"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+          <AllowEmptyString />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="URL"
+        PropertyType=":String?">
+        <EntityProperty.Attributes>
+          <MaxLength />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="LoadOrder"
+        PropertyType=":Int32">
+        <EntityProperty.Attributes>
+          <Required />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="CreatedOn"
+        PropertyType=":DateTime">
+        <EntityProperty.Attributes>
+          <Required />
+          <DateTimeConstraint
+            Precision="3"
+            PreserveSeconds="True" />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="CreatedBy"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="UpdatedOn"
+        PropertyType=":DateTime">
+        <EntityProperty.Attributes>
+          <Required />
+          <DateTimeConstraint
+            Precision="3"
+            PreserveSeconds="True" />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="UpdatedBy"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <NavigationProperty
+        Name="Devices"
+        Association="FK_Device_Company"
+        FromEnd="Company"
+        ToEnd="Device" />
+      <NavigationProperty
+        Name="Nodes"
+        Association="FK_Node_Company"
+        FromEnd="Company"
+        ToEnd="Node" />
+      <NavigationProperty
+        Name="DefaultValues"
+        Association="FK_DefaultValue_Company"
+        FromEnd="Company"
+        ToEnd="DefaultValue" />
+    </EntityType.Properties>
+  </EntityType>
+  <Association
+    Name="FK_Device_Company">
+    <AssociationEnd
+      Name="Company"
+      EntityType="Company">
+      <AssociationEnd.Attributes>
+        <DeleteRule />
+      </AssociationEnd.Attributes>
+    </AssociationEnd>
+    <AssociationEnd
+      Name="Device"
+      Multiplicity="Many"
+      EntityType="Device" />
+  </Association>
+  <Association
+    Name="FK_Node_Company">
+    <AssociationEnd
+      Name="Company"
+      EntityType="Company">
+      <AssociationEnd.Attributes>
+        <DeleteRule />
+      </AssociationEnd.Attributes>
+    </AssociationEnd>
+    <AssociationEnd
+      Name="Node"
+      Multiplicity="Many"
+      EntityType="Node" />
+  </Association>
+  <EntityContainer
+    Name="openMICData">
+    <EntityContainer.Attributes>
+      <Partial />
+    </EntityContainer.Attributes>
+    <EntitySet
+      Name="Companies"
+      CanDelete="True"
+      CanInsert="True"
+      CanUpdate="True"
+      EntityType="Company" />
+    <AssociationSet
+      Name="FK_Device_Company"
+      Association="FK_Device_Company">
+      <AssociationSetEnd
+        Name="Company"
+        EntitySet="Companies" />
+      <AssociationSetEnd
+        Name="Device"
+        EntitySet="Devices" />
+    </AssociationSet>
+    <AssociationSet
+      Name="FK_Node_Company"
+      Association="FK_Node_Company">
+      <AssociationSetEnd
+        Name="Company"
+        EntitySet="Companies" />
+      <AssociationSetEnd
+        Name="Node"
+        EntitySet="Nodes" />
+    </AssociationSet>
+    <QueryOperation
+      Name="Companies_Single"
+      ReturnType="Company">
+      <QueryOperation.Attributes>
+        <Generated />
+        <Description
+          Value="Returns the entity whose identity is specified by the parameter(s)." />
+      </QueryOperation.Attributes>
+      <QueryOperation.FilterExpression>
+        <QueryFilterExpressionTree>
+          <BinaryExpression
+            NodeType="Equal">
+            <BinaryExpression.Left>
+              <ChainExpression>
+                <MemberExpression
+                  Member="ID" />
+              </ChainExpression>
+            </BinaryExpression.Left>
+            <BinaryExpression.Right>
+              <ParameterExpression
+                Parameter="ID" />
+            </BinaryExpression.Right>
+          </BinaryExpression>
+        </QueryFilterExpressionTree>
+      </QueryOperation.FilterExpression>
+      <QueryOperation.Source>
+        <QuerySourceExpressionTree>
+          <MemberExpression
+            Member="Companies" />
+        </QuerySourceExpressionTree>
+      </QueryOperation.Source>
+      <QueryOperationParameter
+        Name="ID"
+        ParameterType="Microsoft.LightSwitch:Int32?">
+        <QueryOperationParameter.Attributes>
+          <Description
+            Value="The value of the 'ID' key property of the entity to retrieve." />
+        </QueryOperationParameter.Attributes>
+      </QueryOperationParameter>
+    </QueryOperation>
+    <QueryOperation
+      Name="Companies_SingleOrDefault"
+      ReturnType="Company">
+      <QueryOperation.Attributes>
+        <Generated />
+        <Description
+          Value="Returns the entity whose identity is specified by the parameter(s) or null if no such entity exists." />
+      </QueryOperation.Attributes>
+      <QueryOperation.FilterExpression>
+        <QueryFilterExpressionTree>
+          <BinaryExpression
+            NodeType="Equal">
+            <BinaryExpression.Left>
+              <ChainExpression>
+                <MemberExpression
+                  Member="ID" />
+              </ChainExpression>
+            </BinaryExpression.Left>
+            <BinaryExpression.Right>
+              <ParameterExpression
+                Parameter="ID" />
+            </BinaryExpression.Right>
+          </BinaryExpression>
+        </QueryFilterExpressionTree>
+      </QueryOperation.FilterExpression>
+      <QueryOperation.Source>
+        <QuerySourceExpressionTree>
+          <MemberExpression
+            Member="Companies" />
+        </QuerySourceExpressionTree>
+      </QueryOperation.Source>
+      <QueryOperationParameter
+        Name="ID"
+        ParameterType="Microsoft.LightSwitch:Int32?">
+        <QueryOperationParameter.Attributes>
+          <Description
+            Value="The value of the 'ID' key property of the entity to retrieve." />
+        </QueryOperationParameter.Attributes>
+      </QueryOperationParameter>
+    </QueryOperation>
+    <AssociationSet
+      Name="FK_DefaultValue_Company"
+      Association="FK_DefaultValue_Company">
+      <AssociationSetEnd
+        Name="Company"
+        EntitySet="Companies" />
+      <AssociationSetEnd
+        Name="DefaultValue"
+        EntitySet="DefaultValues" />
+    </AssociationSet>
+  </EntityContainer>
+  <Association
+    Name="FK_DefaultValue_Company">
+    <AssociationEnd
+      Name="Company"
+      EntityType="Company">
+      <AssociationEnd.Attributes>
+        <DeleteRule />
+      </AssociationEnd.Attributes>
+    </AssociationEnd>
+    <AssociationEnd
+      Name="DefaultValue"
+      Multiplicity="Many"
+      EntityType="DefaultValue" />
+  </Association>
+  <DataService
+    Name="openMICDataDataService">
+    <DataService.Attributes>
+      <Partial />
+    </DataService.Attributes>
+    <EntitySetMapping
+      EntitySet="Companies">
+      <EntitySetMapping.Attributes>
+        <SsdlEntitySet
+          Schema="dbo"
+          Table="Company" />
+        <SsdlProperty
+          Name="ID"
+          Nullable="False"
+          StoreGeneratedPattern="Identity"
+          Type="int"
+          Property="Company/Properties[ID]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="Acronym"
+          Nullable="False"
+          Type="varchar"
+          Property="Company/Properties[Acronym]" />
+        <SsdlProperty
+          MaxLength="3"
+          Name="MapAcronym"
+          Nullable="False"
+          Type="nchar"
+          Property="Company/Properties[MapAcronym]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="Name"
+          Nullable="False"
+          Type="varchar"
+          Property="Company/Properties[Name]" />
+        <SsdlProperty
+          Name="URL"
+          Nullable="True"
+          Type="varchar(max)"
+          Property="Company/Properties[URL]" />
+        <SsdlProperty
+          Name="LoadOrder"
+          Nullable="False"
+          Type="int"
+          Property="Company/Properties[LoadOrder]" />
+        <SsdlProperty
+          Name="CreatedOn"
+          Nullable="False"
+          Type="datetime"
+          Property="Company/Properties[CreatedOn]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="CreatedBy"
+          Nullable="False"
+          Type="varchar"
+          Property="Company/Properties[CreatedBy]" />
+        <SsdlProperty
+          Name="UpdatedOn"
+          Nullable="False"
+          Type="datetime"
+          Property="Company/Properties[UpdatedOn]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="UpdatedBy"
+          Nullable="False"
+          Type="varchar"
+          Property="Company/Properties[UpdatedBy]" />
+      </EntitySetMapping.Attributes>
+    </EntitySetMapping>
+    <AssociationSetMapping
+      AssociationSet="FK_DefaultValue_Company">
+      <AssociationSetMapping.Attributes>
+        <SsdlAssociationSet
+          Name="FK_DefaultValue_Company" />
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_DefaultValue_Company]/Members[Company]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="ID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_DefaultValue_Company]/Members[DefaultValue]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="CompanyID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+      </AssociationSetMapping.Attributes>
+    </AssociationSetMapping>
+    <AssociationSetMapping
+      AssociationSet="FK_Device_Company">
+      <AssociationSetMapping.Attributes>
+        <SsdlAssociationSet
+          Name="FK_Device_Company" />
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Device_Company]/Members[Company]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="ID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Device_Company]/Members[Device]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="CompanyID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+      </AssociationSetMapping.Attributes>
+    </AssociationSetMapping>
+    <AssociationSetMapping
+      AssociationSet="FK_Node_Company">
+      <AssociationSetMapping.Attributes>
+        <SsdlAssociationSet
+          Name="FK_Node_Company" />
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Node_Company]/Members[Company]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="ID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Node_Company]/Members[Node]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="CompanyID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+      </AssociationSetMapping.Attributes>
+    </AssociationSetMapping>
+  </DataService>
+</ServiceApplication>

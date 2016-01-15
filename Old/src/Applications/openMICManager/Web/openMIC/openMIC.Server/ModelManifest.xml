@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<ModelDocumentManifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Documents>
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\AccessLogs.lsml" Checksum="C1C4968585D9F083405266CF3BAD12579A53A7FEDA46809DBFC03A5230995DFC" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\AlarmLogs.lsml" Checksum="C5586A37B946BF964D316BB761A8965923570A15E8319A8818F210B2764973B1" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Alarms.lsml" Checksum="293B094921A9A0706EB22B49A8313762A20B5B9D9424216F337BEA61827A518E" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\AuditLogs.lsml" Checksum="0F1B2884C83C85EA88DE35CE41887F5E4E07C21CBA7307898587EF84CF3C407A" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Companies.lsml" Checksum="F4FC4195EA8B6B035BD41A23F9F95CBDEBEB05C2FDCFB34B434B39C5974814AC" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Devices.lsml" Checksum="DD2CE93AA87B6315D86B01C633A80AFD34F0431880186E2EEA2A3BF4BD95C41C" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\ErrorLogs.lsml" Checksum="B355B645533FACC7B37981D5C81E2788EDF0BB0AD935FABC316284C4DB9A08C3" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Historians.lsml" Checksum="82DC755F8DC6B75C5EBE7989EAA626219766915A352D7C36B55D9A840EAAF781" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Interconnections.lsml" Checksum="9B9708A7980854EA8550E21DC5D0B2A0C60F13C3E0B4FAABC43DBADD5CF7FA57" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Measurements.lsml" Checksum="EBBD3D153C82B631F3EE4D0FE7754DC46C42671F00D9FD8CA3E4E9292ACB09EF" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Nodes.lsml" Checksum="9C5CAD47CE3045A66594C7B673239642207594FFA3F9C3ACBC1166FEE6F89A10" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Protocols.lsml" Checksum="ED3C2541D417071E5EBC7B451988832CA6D65746CC3BA258469D0851C9864365" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\SignalTypes.lsml" Checksum="C009EF60C1A629B58163DAE0986649117A32D31E57489DE45E6DC5B9AC7DB2D8" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Statistics.lsml" Checksum="EB1846986768A44DF167E723C46934FD151D4C529F658E81FD5B927914B414E2" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\VendorDevices.lsml" Checksum="D04C93359C69649272AEE063F579A0722CF03FDDB466BD5E0222CEDC0A7F4694" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\Vendors.lsml" Checksum="9AA97E0A12002F19C6992F81E7783E2BCC1943FB17ECD847122BC4FD46E614E9" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\Properties\DataSources\openMICData.lsml" Checksum="E2C2CD2501D488258C55365FB501ED526D5D2C9042BA6C457D4D5A42F7267007" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\Properties\Service.lsml" Checksum="912CFB9CE2F7143FC6F40FD365DFB554274CFD1C0BDBB4EC1C9AFD0589882EB4" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\DefaultValues.lsml" Checksum="0DF361AFFD6A282F36BE1EB3BE8C43FAA747DC4B9DF5FD18BCF060C22B892B39" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.Server\DataSources\openMICData\DefaultValueCount.lsml" Checksum="C11A16ED20D6FC9B557EB17FB9B091337A4F2805EB69EF0F10661F6956FF7F98" />
+  </Documents>
+</ModelDocumentManifest>

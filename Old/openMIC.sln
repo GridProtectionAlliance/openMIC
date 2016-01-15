@@ -1,0 +1,417 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Applications", "Applications", "{BD933E0E-B3FD-470B-B53B-56DA8BC27467}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{A19659A8-EA00-4D5E-90C5-E8ABE7F4FB1C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{E0BCE54D-F114-4ECD-B688-3C79BD0BE97A}"
+	ProjectSection(SolutionItems) = preProject
+		src\Documentation\Near GPS Quality NTP Settings.reg = src\Documentation\Near GPS Quality NTP Settings.reg
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{9EEDE95F-8333-4957-B270-02D3CD4629B5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft", "Microsoft", "{89F8C302-E1C2-4C61-9CFB-CB4879B04B38}"
+	ProjectSection(SolutionItems) = preProject
+		src\Dependencies\Microsoft\System.ServiceModel.PollingDuplex.dll = src\Dependencies\Microsoft\System.ServiceModel.PollingDuplex.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{E7006E3E-A430-4AB2-A6CA-7653D7F62D4B}"
+	ProjectSection(SolutionItems) = preProject
+		src\Data\DatabaseUpdateReadme.txt = src\Data\DatabaseUpdateReadme.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL Server", "SQL Server", "{9A59B9E0-A36F-4C52-8568-CB004B20885B}"
+	ProjectSection(SolutionItems) = preProject
+		src\Data\SQL Server\AuditLog.sql = src\Data\SQL Server\AuditLog.sql
+		src\Data\SQL Server\InitialDataSet.sql = src\Data\SQL Server\InitialDataSet.sql
+		src\Data\SQL Server\openMIC.sql = src\Data\SQL Server\openMIC.sql
+		src\Data\SQL Server\SampleDataSet.sql = src\Data\SQL Server\SampleDataSet.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MySql", "MySql", "{B1AC9848-2909-4A7B-9541-8EA4E89E72F1}"
+	ProjectSection(SolutionItems) = preProject
+		src\Data\MySQL\AuditLog.sql = src\Data\MySQL\AuditLog.sql
+		src\Data\MySQL\InitialDataSet.sql = src\Data\MySQL\InitialDataSet.sql
+		src\Data\MySQL\openMIC.sql = src\Data\MySQL\openMIC.sql
+		src\Data\MySQL\SampleDataSet.sql = src\Data\MySQL\SampleDataSet.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "openMIC", "openMIC", "{CE260396-797B-45DF-AC53-E4FC553B57C0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6B697ECD-E3BE-485B-BE90-BAAA12F3A68D}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		NOTICE = NOTICE
+		src\openMIC.snk = src\openMIC.snk
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConfigurationSetupUtility", "ConfigurationSetupUtility", "{F7821DF0-BD48-481E-9DF9-D64AEFD24F57}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WPF", "WPF", "{29821B31-3A0D-469E-B8BA-AD006159BC3D}"
+	ProjectSection(SolutionItems) = preProject
+		src\Dependencies\Microsoft\WPF\System.Windows.Controls.DataVisualization.Toolkit.dll = src\Dependencies\Microsoft\WPF\System.Windows.Controls.DataVisualization.Toolkit.dll
+		src\Dependencies\Microsoft\WPF\System.Windows.Controls.Input.Toolkit.dll = src\Dependencies\Microsoft\WPF\System.Windows.Controls.Input.Toolkit.dll
+		src\Dependencies\Microsoft\WPF\System.Windows.Controls.Layout.Toolkit.dll = src\Dependencies\Microsoft\WPF\System.Windows.Controls.Layout.Toolkit.dll
+		src\Dependencies\Microsoft\WPF\WPFToolkit.dll = src\Dependencies\Microsoft\WPF\WPFToolkit.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Setup", "Setup", "{D71CBFB5-291F-484E-9DAE-7442F4CA746A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "D3", "D3", "{83A90AB9-3DC7-4FB6-9AF3-79AB2F6EB0C6}"
+	ProjectSection(SolutionItems) = preProject
+		src\Dependencies\Microsoft\D3\DynamicDataDisplay.dll = src\Dependencies\Microsoft\D3\DynamicDataDisplay.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Silverlight", "Silverlight", "{9597F7EC-CCCD-4CC5-A5B4-440C4204752B}"
+	ProjectSection(SolutionItems) = preProject
+		src\Dependencies\Microsoft\Silverlight\Microsoft.Maps.MapControl.Common.dll = src\Dependencies\Microsoft\Silverlight\Microsoft.Maps.MapControl.Common.dll
+		src\Dependencies\Microsoft\Silverlight\Microsoft.Maps.MapControl.dll = src\Dependencies\Microsoft\Silverlight\Microsoft.Maps.MapControl.dll
+		src\Dependencies\Microsoft\Silverlight\Microsoft.VirtualEarth.MapControl.dll = src\Dependencies\Microsoft\Silverlight\Microsoft.VirtualEarth.MapControl.dll
+		src\Dependencies\Microsoft\Silverlight\System.Windows.Controls.DataVisualization.Toolkit.dll = src\Dependencies\Microsoft\Silverlight\System.Windows.Controls.DataVisualization.Toolkit.dll
+		src\Dependencies\Microsoft\Silverlight\System.Windows.Controls.Layout.Toolkit.dll = src\Dependencies\Microsoft\Silverlight\System.Windows.Controls.Layout.Toolkit.dll
+		src\Dependencies\Microsoft\Silverlight\System.Windows.Controls.Toolkit.dll = src\Dependencies\Microsoft\Silverlight\System.Windows.Controls.Toolkit.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{B1E85C83-F93D-4C3C-BB90-905B93D7C8AD}"
+	ProjectSection(SolutionItems) = preProject
+		src\Documentation\Images\Data Structure Relationship Diagram.png = src\Documentation\Images\Data Structure Relationship Diagram.png
+		src\Documentation\Images\HMC - Allow Preemptive Publishing.png = src\Documentation\Images\HMC - Allow Preemptive Publishing.png
+		src\Documentation\Images\HMC - Allow Sorts By Arrival.png = src\Documentation\Images\HMC - Allow Sorts By Arrival.png
+		src\Documentation\Images\HMC - Auto Publish Config Frame.png = src\Documentation\Images\HMC - Auto Publish Config Frame.png
+		src\Documentation\Images\HMC - Auto Start Data Channel.png = src\Documentation\Images\HMC - Auto Start Data Channel.png
+		src\Documentation\Images\HMC - Downsampling Method.png = src\Documentation\Images\HMC - Downsampling Method.png
+		src\Documentation\Images\HMC - Ignore Bad Timestamps.png = src\Documentation\Images\HMC - Ignore Bad Timestamps.png
+		src\Documentation\Images\HMC - Lag Time.png = src\Documentation\Images\HMC - Lag Time.png
+		src\Documentation\Images\HMC - Lead Time.png = src\Documentation\Images\HMC - Lead Time.png
+		src\Documentation\Images\HMC - Time Resolution.png = src\Documentation\Images\HMC - Time Resolution.png
+		src\Documentation\Images\HMC - Use Local Clock as RealTime.png = src\Documentation\Images\HMC - Use Local Clock as RealTime.png
+		src\Documentation\Images\IaonAdapters.png = src\Documentation\Images\IaonAdapters.png
+		src\Documentation\Images\openMIC Icon Baseline.pdn = src\Documentation\Images\openMIC Icon Baseline.pdn
+		src\Documentation\Images\openMICLogo_basefigure.png = src\Documentation\Images\openMICLogo_basefigure.png
+		src\Documentation\Images\TVA Phasor Data Concentrator.png = src\Documentation\Images\TVA Phasor Data Concentrator.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Help Me Choose Diagrams", "Help Me Choose Diagrams", "{060A349D-E92D-4F13-A857-01609631D3BE}"
+	ProjectSection(SolutionItems) = preProject
+		src\Documentation\Help Me Choose Diagrams\HMC - Allow Preemptive Publishing.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Allow Preemptive Publishing.vsd
+		src\Documentation\Help Me Choose Diagrams\HMC - Allow Sorts By Arrival.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Allow Sorts By Arrival.vsd
+		src\Documentation\Help Me Choose Diagrams\HMC - Auto Publish Config Frame.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Auto Publish Config Frame.vsd
+		src\Documentation\Help Me Choose Diagrams\HMC - Auto Start Data Channel.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Auto Start Data Channel.vsd
+		src\Documentation\Help Me Choose Diagrams\HMC - Downsampling Method.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Downsampling Method.vsd
+		src\Documentation\Help Me Choose Diagrams\HMC - Ignore Bad Timestamps.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Ignore Bad Timestamps.vsd
+		src\Documentation\Help Me Choose Diagrams\HMC - Lag Time.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Lag Time.vsd
+		src\Documentation\Help Me Choose Diagrams\HMC - Lead Time.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Lead Time.vsd
+		src\Documentation\Help Me Choose Diagrams\HMC - Time Resolution.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Time Resolution.vsd
+		src\Documentation\Help Me Choose Diagrams\HMC - Use Local Clock as RealTime.vsd = src\Documentation\Help Me Choose Diagrams\HMC - Use Local Clock as RealTime.vsd
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLite", "SQLite", "{53255BB7-2046-4606-BF76-7B5C13F49819}"
+	ProjectSection(SolutionItems) = preProject
+		src\Data\SQLite\InitialDataSet.sql = src\Data\SQLite\InitialDataSet.sql
+		src\Data\SQLite\openMIC-InitialDataSet.db = src\Data\SQLite\openMIC-InitialDataSet.db
+		src\Data\SQLite\openMIC-SampleDataSet.db = src\Data\SQLite\openMIC-SampleDataSet.db
+		src\Data\SQLite\openMIC.db = src\Data\SQLite\openMIC.db
+		src\Data\SQLite\openMIC.sql = src\Data\SQLite\openMIC.sql
+		src\Data\SQLite\SampleDataSet.sql = src\Data\SQLite\SampleDataSet.sql
+		src\Data\SQLite\sqlite3.exe = src\Data\SQLite\sqlite3.exe
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLite", "SQLite", "{44A76C31-308D-4D46-B263-734DD9FA3570}"
+	ProjectSection(SolutionItems) = preProject
+		src\Dependencies\SQLite\System.Data.SQLite.dll = src\Dependencies\SQLite\System.Data.SQLite.dll
+		src\Dependencies\SQLite\System.Data.SQLite.Linq.dll = src\Dependencies\SQLite\System.Data.SQLite.Linq.dll
+		src\Dependencies\SQLite\System.Data.SQLite.Linq.xml = src\Dependencies\SQLite\System.Data.SQLite.Linq.xml
+		src\Dependencies\SQLite\System.Data.SQLite.xml = src\Dependencies\SQLite\System.Data.SQLite.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x86", "x86", "{AD1920D4-64C4-43C9-903D-3C78981C8850}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Oracle", "Oracle", "{051BD028-6567-442A-B7C5-A5DD9F70B357}"
+	ProjectSection(SolutionItems) = preProject
+		src\Data\Oracle\AuditLog.sql = src\Data\Oracle\AuditLog.sql
+		src\Data\Oracle\InitialDataSet.sql = src\Data\Oracle\InitialDataSet.sql
+		src\Data\Oracle\openMIC.sql = src\Data\Oracle\openMIC.sql
+		src\Data\Oracle\SampleDataSet.sql = src\Data\Oracle\SampleDataSet.sql
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GSF", "GSF", "{A72A7B6D-E22F-4900-984D-8751836859B5}"
+	ProjectSection(SolutionItems) = preProject
+		src\Dependencies\GSF\AdoAdapters.dll = src\Dependencies\GSF\AdoAdapters.dll
+		src\Dependencies\GSF\AdoAdapters.XML = src\Dependencies\GSF\AdoAdapters.XML
+		src\Dependencies\GSF\ArchivistAdapters.dll = src\Dependencies\GSF\ArchivistAdapters.dll
+		src\Dependencies\GSF\ArchivistAdapters.xml = src\Dependencies\GSF\ArchivistAdapters.xml
+		src\Dependencies\GSF\ArchivistClient.dll = src\Dependencies\GSF\ArchivistClient.dll
+		src\Dependencies\GSF\AudioAdapters.dll = src\Dependencies\GSF\AudioAdapters.dll
+		src\Dependencies\GSF\AudioAdapters.XML = src\Dependencies\GSF\AudioAdapters.XML
+		src\Dependencies\GSF\Ciloci.Flee.dll = src\Dependencies\GSF\Ciloci.Flee.dll
+		src\Dependencies\GSF\Ciloci.Flee.xml = src\Dependencies\GSF\Ciloci.Flee.xml
+		src\Dependencies\GSF\COMTRADEAdapters.dll = src\Dependencies\GSF\COMTRADEAdapters.dll
+		src\Dependencies\GSF\COMTRADEAdapters.xml = src\Dependencies\GSF\COMTRADEAdapters.xml
+		src\Dependencies\GSF\CsvAdapters.dll = src\Dependencies\GSF\CsvAdapters.dll
+		src\Dependencies\GSF\CsvAdapters.XML = src\Dependencies\GSF\CsvAdapters.XML
+		src\Dependencies\GSF\DataQualityMonitoring.dll = src\Dependencies\GSF\DataQualityMonitoring.dll
+		src\Dependencies\GSF\DataQualityMonitoring.XML = src\Dependencies\GSF\DataQualityMonitoring.XML
+		src\Dependencies\GSF\Dnp3Adapters.dll = src\Dependencies\GSF\Dnp3Adapters.dll
+		src\Dependencies\GSF\Dnp3Adapters.XML = src\Dependencies\GSF\Dnp3Adapters.XML
+		src\Dependencies\GSF\DNP3CLRAdapter.dll = src\Dependencies\GSF\DNP3CLRAdapter.dll
+		src\Dependencies\GSF\DNP3CLRInterface.dll = src\Dependencies\GSF\DNP3CLRInterface.dll
+		src\Dependencies\GSF\DynamicCalculator.dll = src\Dependencies\GSF\DynamicCalculator.dll
+		src\Dependencies\GSF\DynamicCalculator.XML = src\Dependencies\GSF\DynamicCalculator.XML
+		src\Dependencies\GSF\DynamicDataDisplay.dll = src\Dependencies\GSF\DynamicDataDisplay.dll
+		src\Dependencies\GSF\EpriExport.dll = src\Dependencies\GSF\EpriExport.dll
+		src\Dependencies\GSF\EpriExport.XML = src\Dependencies\GSF\EpriExport.XML
+		src\Dependencies\GSF\FileAdapters.dll = src\Dependencies\GSF\FileAdapters.dll
+		src\Dependencies\GSF\FileAdapters.XML = src\Dependencies\GSF\FileAdapters.XML
+		src\Dependencies\GSF\FtpAdapters.dll = src\Dependencies\GSF\FtpAdapters.dll
+		src\Dependencies\GSF\FtpAdapters.xml = src\Dependencies\GSF\FtpAdapters.xml
+		src\Dependencies\GSF\Google.ProtocolBuffers.dll = src\Dependencies\GSF\Google.ProtocolBuffers.dll
+		src\Dependencies\GSF\GSF.ASN1.dll = src\Dependencies\GSF\GSF.ASN1.dll
+		src\Dependencies\GSF\GSF.ASN1.xml = src\Dependencies\GSF\GSF.ASN1.xml
+		src\Dependencies\GSF\GSF.Communication.dll = src\Dependencies\GSF\GSF.Communication.dll
+		src\Dependencies\GSF\GSF.Communication.xml = src\Dependencies\GSF\GSF.Communication.xml
+		src\Dependencies\GSF\GSF.COMTRADE.dll = src\Dependencies\GSF\GSF.COMTRADE.dll
+		src\Dependencies\GSF\GSF.COMTRADE.xml = src\Dependencies\GSF\GSF.COMTRADE.xml
+		src\Dependencies\GSF\GSF.Core.dll = src\Dependencies\GSF\GSF.Core.dll
+		src\Dependencies\GSF\GSF.Core.xml = src\Dependencies\GSF\GSF.Core.xml
+		src\Dependencies\GSF\GSF.Historian.dll = src\Dependencies\GSF\GSF.Historian.dll
+		src\Dependencies\GSF\GSF.Historian.XML = src\Dependencies\GSF\GSF.Historian.XML
+		src\Dependencies\GSF\GSF.InstallerActions.CA.dll = src\Dependencies\GSF\GSF.InstallerActions.CA.dll
+		src\Dependencies\GSF\GSF.Media.dll = src\Dependencies\GSF\GSF.Media.dll
+		src\Dependencies\GSF\GSF.Media.XML = src\Dependencies\GSF\GSF.Media.XML
+		src\Dependencies\GSF\GSF.MMS.dll = src\Dependencies\GSF\GSF.MMS.dll
+		src\Dependencies\GSF\GSF.MMS.xml = src\Dependencies\GSF\GSF.MMS.xml
+		src\Dependencies\GSF\GSF.Net.dll = src\Dependencies\GSF\GSF.Net.dll
+		src\Dependencies\GSF\GSF.Net.XML = src\Dependencies\GSF\GSF.Net.XML
+		src\Dependencies\GSF\GSF.PhasorProtocols.dll = src\Dependencies\GSF\GSF.PhasorProtocols.dll
+		src\Dependencies\GSF\GSF.PhasorProtocols.UI.dll = src\Dependencies\GSF\GSF.PhasorProtocols.UI.dll
+		src\Dependencies\GSF\GSF.PhasorProtocols.UI.WPF.dll = src\Dependencies\GSF\GSF.PhasorProtocols.UI.WPF.dll
+		src\Dependencies\GSF\GSF.PhasorProtocols.UI.WPF.xml = src\Dependencies\GSF\GSF.PhasorProtocols.UI.WPF.xml
+		src\Dependencies\GSF\GSF.PhasorProtocols.UI.xml = src\Dependencies\GSF\GSF.PhasorProtocols.UI.xml
+		src\Dependencies\GSF\GSF.PhasorProtocols.xml = src\Dependencies\GSF\GSF.PhasorProtocols.xml
+		src\Dependencies\GSF\GSF.PQDIF.dll = src\Dependencies\GSF\GSF.PQDIF.dll
+		src\Dependencies\GSF\GSF.PQDIF.xml = src\Dependencies\GSF\GSF.PQDIF.xml
+		src\Dependencies\GSF\GSF.Security.dll = src\Dependencies\GSF\GSF.Security.dll
+		src\Dependencies\GSF\GSF.Security.xml = src\Dependencies\GSF\GSF.Security.xml
+		src\Dependencies\GSF\GSF.SELEventParser.dll = src\Dependencies\GSF\GSF.SELEventParser.dll
+		src\Dependencies\GSF\GSF.ServiceBus.dll = src\Dependencies\GSF\GSF.ServiceBus.dll
+		src\Dependencies\GSF\GSF.ServiceBus.xml = src\Dependencies\GSF\GSF.ServiceBus.xml
+		src\Dependencies\GSF\GSF.ServiceModel.dll = src\Dependencies\GSF\GSF.ServiceModel.dll
+		src\Dependencies\GSF\GSF.ServiceModel.xml = src\Dependencies\GSF\GSF.ServiceModel.xml
+		src\Dependencies\GSF\GSF.ServiceProcess.dll = src\Dependencies\GSF\GSF.ServiceProcess.dll
+		src\Dependencies\GSF\GSF.ServiceProcess.xml = src\Dependencies\GSF\GSF.ServiceProcess.xml
+		src\Dependencies\GSF\GSF.TimeSeries.dll = src\Dependencies\GSF\GSF.TimeSeries.dll
+		src\Dependencies\GSF\GSF.TimeSeries.Transport.UI.dll = src\Dependencies\GSF\GSF.TimeSeries.Transport.UI.dll
+		src\Dependencies\GSF\GSF.TimeSeries.Transport.UI.WPF.dll = src\Dependencies\GSF\GSF.TimeSeries.Transport.UI.WPF.dll
+		src\Dependencies\GSF\GSF.TimeSeries.Transport.UI.WPF.XML = src\Dependencies\GSF\GSF.TimeSeries.Transport.UI.WPF.XML
+		src\Dependencies\GSF\GSF.TimeSeries.Transport.UI.XML = src\Dependencies\GSF\GSF.TimeSeries.Transport.UI.XML
+		src\Dependencies\GSF\GSF.TimeSeries.UI.dll = src\Dependencies\GSF\GSF.TimeSeries.UI.dll
+		src\Dependencies\GSF\GSF.TimeSeries.UI.WPF.dll = src\Dependencies\GSF\GSF.TimeSeries.UI.WPF.dll
+		src\Dependencies\GSF\GSF.TimeSeries.UI.WPF.xml = src\Dependencies\GSF\GSF.TimeSeries.UI.WPF.xml
+		src\Dependencies\GSF\GSF.TimeSeries.UI.xml = src\Dependencies\GSF\GSF.TimeSeries.UI.xml
+		src\Dependencies\GSF\GSF.TimeSeries.xml = src\Dependencies\GSF\GSF.TimeSeries.xml
+		src\Dependencies\GSF\GSF.Web.dll = src\Dependencies\GSF\GSF.Web.dll
+		src\Dependencies\GSF\GSF.Web.xml = src\Dependencies\GSF\GSF.Web.xml
+		src\Dependencies\GSF\GSF.Windows.dll = src\Dependencies\GSF\GSF.Windows.dll
+		src\Dependencies\GSF\GSF.Windows.xml = src\Dependencies\GSF\GSF.Windows.xml
+		src\Dependencies\GSF\Hadoop.Replication.dll = src\Dependencies\GSF\Hadoop.Replication.dll
+		src\Dependencies\GSF\Hadoop.Replication.XML = src\Dependencies\GSF\Hadoop.Replication.XML
+		src\Dependencies\GSF\HistorianAdapters.dll = src\Dependencies\GSF\HistorianAdapters.dll
+		src\Dependencies\GSF\HistorianAdapters.XML = src\Dependencies\GSF\HistorianAdapters.XML
+		src\Dependencies\GSF\ICCPExport.dll = src\Dependencies\GSF\ICCPExport.dll
+		src\Dependencies\GSF\ICCPExport.XML = src\Dependencies\GSF\ICCPExport.XML
+		src\Dependencies\GSF\InfluxDBAdapters.dll = src\Dependencies\GSF\InfluxDBAdapters.dll
+		src\Dependencies\GSF\InfluxDBAdapters.XML = src\Dependencies\GSF\InfluxDBAdapters.XML
+		src\Dependencies\GSF\Ionic.Zlib.dll = src\Dependencies\GSF\Ionic.Zlib.dll
+		src\Dependencies\GSF\Ionic.Zlib.xml = src\Dependencies\GSF\Ionic.Zlib.xml
+		src\Dependencies\GSF\MongoAdapters.dll = src\Dependencies\GSF\MongoAdapters.dll
+		src\Dependencies\GSF\MongoAdapters.XML = src\Dependencies\GSF\MongoAdapters.XML
+		src\Dependencies\GSF\MongoDB.dll = src\Dependencies\GSF\MongoDB.dll
+		src\Dependencies\GSF\MongoDB.GridFS.dll = src\Dependencies\GSF\MongoDB.GridFS.dll
+		src\Dependencies\GSF\MongoDB.GridFS.xml = src\Dependencies\GSF\MongoDB.GridFS.xml
+		src\Dependencies\GSF\MongoDB.xml = src\Dependencies\GSF\MongoDB.xml
+		src\Dependencies\GSF\MySqlAdapters.dll = src\Dependencies\GSF\MySqlAdapters.dll
+		src\Dependencies\GSF\MySqlAdapters.XML = src\Dependencies\GSF\MySqlAdapters.XML
+		src\Dependencies\GSF\NAudio.dll = src\Dependencies\GSF\NAudio.dll
+		src\Dependencies\GSF\OneSecondFrequencyAverager.dll = src\Dependencies\GSF\OneSecondFrequencyAverager.dll
+		src\Dependencies\GSF\OneSecondFrequencyAverager.xml = src\Dependencies\GSF\OneSecondFrequencyAverager.xml
+		src\Dependencies\GSF\PhasorProtocolAdapters.dll = src\Dependencies\GSF\PhasorProtocolAdapters.dll
+		src\Dependencies\GSF\PhasorProtocolAdapters.XML = src\Dependencies\GSF\PhasorProtocolAdapters.XML
+		src\Dependencies\GSF\PIAdapters.dll = src\Dependencies\GSF\PIAdapters.dll
+		src\Dependencies\GSF\PIAdapters.XML = src\Dependencies\GSF\PIAdapters.XML
+		src\Dependencies\GSF\PowerCalculations.dll = src\Dependencies\GSF\PowerCalculations.dll
+		src\Dependencies\GSF\PowerCalculations.XML = src\Dependencies\GSF\PowerCalculations.XML
+		src\Dependencies\GSF\Reports.dll = src\Dependencies\GSF\Reports.dll
+		src\Dependencies\GSF\TestingAdapters.dll = src\Dependencies\GSF\TestingAdapters.dll
+		src\Dependencies\GSF\TestingAdapters.XML = src\Dependencies\GSF\TestingAdapters.XML
+		src\Dependencies\GSF\WavInputAdapter.dll = src\Dependencies\GSF\WavInputAdapter.dll
+		src\Dependencies\GSF\WavInputAdapter.XML = src\Dependencies\GSF\WavInputAdapter.XML
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WiX", "WiX", "{6CFC0EB9-8610-4200-806B-E2B62B63F8B3}"
+	ProjectSection(SolutionItems) = preProject
+		src\Dependencies\WiX\WixNetFxExtension.dll = src\Dependencies\WiX\WixNetFxExtension.dll
+		src\Dependencies\WiX\WixUIExtension.dll = src\Dependencies\WiX\WixUIExtension.dll
+		src\Dependencies\WiX\WixUtilExtension.dll = src\Dependencies\WiX\WixUtilExtension.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "openMICManager", "openMICManager", "{3E990BD1-03E8-4CBA-A314-BA300FF581B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openMIC", "src\Applications\openMIC\openMIC\openMIC.csproj", "{0BF2447E-252D-4712-B154-E350AF463081}"
+	ProjectSection(ProjectDependencies) = postProject
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087} = {449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openMICConsole", "src\Applications\openMIC\openMICConsole\openMICConsole.csproj", "{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationSetupUtility", "src\Tools\ConfigurationSetupUtility\ConfigurationSetupUtility.csproj", "{2A74EACF-8291-47C7-A2ED-0D58771F24E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Setup", "src\Tools\Setup\Setup.csproj", "{A4C500AC-70AC-4869-8A08-E10CCD45F64F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2} = {6858B393-77B4-4F28-A4B1-14B484C10FB2}
+	EndProjectSection
+EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "openMICSetup", "src\Applications\openMIC\openMICSetup\openMICSetup.wixproj", "{6858B393-77B4-4F28-A4B1-14B484C10FB2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6903507C-C289-4F8F-887C-C2D94C72BA99} = {6903507C-C289-4F8F-887C-C2D94C72BA99}
+		{0BF2447E-252D-4712-B154-E350AF463081} = {0BF2447E-252D-4712-B154-E350AF463081}
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087} = {449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2} = {2A74EACF-8291-47C7-A2ED-0D58771F24E2}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openMICShell", "src\Applications\openMIC\openMICShell\openMICShell.csproj", "{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WPF", "WPF", "{B31A55AB-9CAC-499E-98CC-051CDB047C42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openMICLocalManager", "src\Applications\openMICManager\WPF\openMICLocalManager.csproj", "{6903507C-C289-4F8F-887C-C2D94C72BA99}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{52C87CD6-4FC1-41CB-B502-09F9566ABD03}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Mono|Any CPU = Mono|Any CPU
+		Mono|x86 = Mono|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0BF2447E-252D-4712-B154-E350AF463081}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BF2447E-252D-4712-B154-E350AF463081}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BF2447E-252D-4712-B154-E350AF463081}.Debug|x86.ActiveCfg = Debug|x86
+		{0BF2447E-252D-4712-B154-E350AF463081}.Debug|x86.Build.0 = Debug|x86
+		{0BF2447E-252D-4712-B154-E350AF463081}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
+		{0BF2447E-252D-4712-B154-E350AF463081}.Mono|Any CPU.Build.0 = Mono|Any CPU
+		{0BF2447E-252D-4712-B154-E350AF463081}.Mono|x86.ActiveCfg = Mono|x86
+		{0BF2447E-252D-4712-B154-E350AF463081}.Mono|x86.Build.0 = Mono|x86
+		{0BF2447E-252D-4712-B154-E350AF463081}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BF2447E-252D-4712-B154-E350AF463081}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BF2447E-252D-4712-B154-E350AF463081}.Release|x86.ActiveCfg = Release|x86
+		{0BF2447E-252D-4712-B154-E350AF463081}.Release|x86.Build.0 = Release|x86
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Debug|x86.ActiveCfg = Debug|x86
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Debug|x86.Build.0 = Debug|x86
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Mono|Any CPU.Build.0 = Mono|Any CPU
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Mono|x86.ActiveCfg = Mono|x86
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Mono|x86.Build.0 = Mono|x86
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Release|Any CPU.Build.0 = Release|Any CPU
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Release|x86.ActiveCfg = Release|x86
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087}.Release|x86.Build.0 = Release|x86
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Debug|x86.ActiveCfg = Debug|x86
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Debug|x86.Build.0 = Debug|x86
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Mono|Any CPU.Build.0 = Mono|Any CPU
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Mono|x86.ActiveCfg = Mono|x86
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Mono|x86.Build.0 = Mono|x86
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Release|x86.ActiveCfg = Release|x86
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2}.Release|x86.Build.0 = Release|x86
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Debug|x86.ActiveCfg = Debug|x86
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Debug|x86.Build.0 = Debug|x86
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Mono|Any CPU.Build.0 = Mono|Any CPU
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Mono|x86.ActiveCfg = Mono|x86
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Mono|x86.Build.0 = Mono|x86
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Release|x86.ActiveCfg = Release|x86
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F}.Release|x86.Build.0 = Release|x86
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2}.Debug|x86.ActiveCfg = Debug|x64
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2}.Mono|Any CPU.ActiveCfg = Release|x64
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2}.Mono|Any CPU.Build.0 = Release|x64
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2}.Mono|x86.ActiveCfg = Release|x64
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2}.Mono|x86.Build.0 = Release|x64
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2}.Release|Any CPU.ActiveCfg = Release|x64
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2}.Release|x86.ActiveCfg = Release|x64
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Debug|x86.Build.0 = Debug|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Mono|Any CPU.Build.0 = Mono|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Mono|x86.ActiveCfg = Mono|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Mono|x86.Build.0 = Mono|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Release|x86.ActiveCfg = Release|Any CPU
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}.Release|x86.Build.0 = Release|Any CPU
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Debug|x86.ActiveCfg = Debug|x86
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Debug|x86.Build.0 = Debug|x86
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Mono|Any CPU.Build.0 = Mono|Any CPU
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Mono|x86.ActiveCfg = Mono|x86
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Mono|x86.Build.0 = Mono|x86
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Release|x86.ActiveCfg = Release|x86
+		{6903507C-C289-4F8F-887C-C2D94C72BA99}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{89F8C302-E1C2-4C61-9CFB-CB4879B04B38} = {A19659A8-EA00-4D5E-90C5-E8ABE7F4FB1C}
+		{9A59B9E0-A36F-4C52-8568-CB004B20885B} = {E7006E3E-A430-4AB2-A6CA-7653D7F62D4B}
+		{B1AC9848-2909-4A7B-9541-8EA4E89E72F1} = {E7006E3E-A430-4AB2-A6CA-7653D7F62D4B}
+		{CE260396-797B-45DF-AC53-E4FC553B57C0} = {BD933E0E-B3FD-470B-B53B-56DA8BC27467}
+		{F7821DF0-BD48-481E-9DF9-D64AEFD24F57} = {9EEDE95F-8333-4957-B270-02D3CD4629B5}
+		{29821B31-3A0D-469E-B8BA-AD006159BC3D} = {89F8C302-E1C2-4C61-9CFB-CB4879B04B38}
+		{D71CBFB5-291F-484E-9DAE-7442F4CA746A} = {9EEDE95F-8333-4957-B270-02D3CD4629B5}
+		{83A90AB9-3DC7-4FB6-9AF3-79AB2F6EB0C6} = {89F8C302-E1C2-4C61-9CFB-CB4879B04B38}
+		{9597F7EC-CCCD-4CC5-A5B4-440C4204752B} = {89F8C302-E1C2-4C61-9CFB-CB4879B04B38}
+		{B1E85C83-F93D-4C3C-BB90-905B93D7C8AD} = {E0BCE54D-F114-4ECD-B688-3C79BD0BE97A}
+		{060A349D-E92D-4F13-A857-01609631D3BE} = {E0BCE54D-F114-4ECD-B688-3C79BD0BE97A}
+		{53255BB7-2046-4606-BF76-7B5C13F49819} = {E7006E3E-A430-4AB2-A6CA-7653D7F62D4B}
+		{44A76C31-308D-4D46-B263-734DD9FA3570} = {A19659A8-EA00-4D5E-90C5-E8ABE7F4FB1C}
+		{AD1920D4-64C4-43C9-903D-3C78981C8850} = {44A76C31-308D-4D46-B263-734DD9FA3570}
+		{051BD028-6567-442A-B7C5-A5DD9F70B357} = {E7006E3E-A430-4AB2-A6CA-7653D7F62D4B}
+		{A72A7B6D-E22F-4900-984D-8751836859B5} = {A19659A8-EA00-4D5E-90C5-E8ABE7F4FB1C}
+		{6CFC0EB9-8610-4200-806B-E2B62B63F8B3} = {A19659A8-EA00-4D5E-90C5-E8ABE7F4FB1C}
+		{3E990BD1-03E8-4CBA-A314-BA300FF581B7} = {BD933E0E-B3FD-470B-B53B-56DA8BC27467}
+		{0BF2447E-252D-4712-B154-E350AF463081} = {CE260396-797B-45DF-AC53-E4FC553B57C0}
+		{449F2CB1-89BF-4E75-8E6C-C42FEB1AB087} = {CE260396-797B-45DF-AC53-E4FC553B57C0}
+		{2A74EACF-8291-47C7-A2ED-0D58771F24E2} = {F7821DF0-BD48-481E-9DF9-D64AEFD24F57}
+		{A4C500AC-70AC-4869-8A08-E10CCD45F64F} = {D71CBFB5-291F-484E-9DAE-7442F4CA746A}
+		{6858B393-77B4-4F28-A4B1-14B484C10FB2} = {CE260396-797B-45DF-AC53-E4FC553B57C0}
+		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083} = {CE260396-797B-45DF-AC53-E4FC553B57C0}
+		{B31A55AB-9CAC-499E-98CC-051CDB047C42} = {3E990BD1-03E8-4CBA-A314-BA300FF581B7}
+		{6903507C-C289-4F8F-887C-C2D94C72BA99} = {B31A55AB-9CAC-499E-98CC-051CDB047C42}
+		{52C87CD6-4FC1-41CB-B502-09F9566ABD03} = {3E990BD1-03E8-4CBA-A314-BA300FF581B7}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application
+  Name="LightSwitchApplication.openMIC.HTMLClient" xmlns="http://schemas.microsoft.com/LightSwitch/2010/xaml/model">
+  <Application.Attributes>
+    <Partial />
+  </Application.Attributes>
+  <EntityType>
+    <EntityType.Attributes>
+      <Proxy
+        Target="ServiceInterface:Company" />
+      <DefaultScreen
+        Value="ViewCompany">
+        <DefaultScreen.Attributes>
+          <ScreenParameterMapping
+            ScreenParameter="ViewCompany/Properties[Company]" />
+        </DefaultScreen.Attributes>
+      </DefaultScreen>
+      <SummaryProperty
+        Property="Company/Properties[Name]" />
+    </EntityType.Attributes>
+  </EntityType>
+</Application>

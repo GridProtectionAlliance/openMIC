@@ -1,0 +1,716 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Product Id="{88E29EE4-2904-47A5-91C6-41087519F0BE}" Name="openMIC" Language="1033" Version="!(bind.FileVersion.openMIC.exe)" Manufacturer="Grid Protection Alliance" UpgradeCode="{1A68E1ED-EE7E-477F-93CC-59E5E89C7645}">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <MediaTemplate EmbedCab="yes" />    
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    
+    <PropertyRef Id="NETFRAMEWORK45"/>    
+    <Condition Message='This setup requires Microsoft .NET Framework 4.5 or greater - this will need to be installed before installation can continue.'>
+      <![CDATA[Installed OR NETFRAMEWORK45]]>
+    </Condition>
+
+    <Feature Id="AllProducts" Title="All Products" Level="1" Display="expand" ConfigurableDirectory="INSTALLFOLDER">
+      <!-- openMIC -->
+      <Feature Id="openMICFeature" Title="openMIC">
+        <ComponentGroupRef Id="openMICComponents" />
+        <ComponentGroupRef Id="AdapterComponents" />
+        <ComponentGroupRef Id="ConfigurationSetupUtilityComponents" />
+        <ComponentGroupRef Id="GSFDependencyComponents" />
+        <ComponentGroupRef Id="SQLiteDependencyComponents" />
+        <ComponentGroupRef Id="MySQLScriptComponents" />
+        <ComponentGroupRef Id="OracleScriptComponents" />
+        <ComponentGroupRef Id="SQLServerScriptComponents" />
+        <ComponentGroupRef Id="SQLiteScriptComponents" />
+        <ComponentRef Id="makecert"/>
+        <ComponentRef Id="Sample1344"/>
+      </Feature>
+
+      <!-- openMIC Manager -->
+      <Feature Id="openMICManagerFeature" Title="openMIC Manager">
+        <ComponentGroupRef Id="openMICManagerComponents" />
+        <ComponentGroupRef Id="AdapterComponents" />
+        <ComponentGroupRef Id="ConfigurationSetupUtilityComponents" />
+        <ComponentGroupRef Id="GSFDependencyComponents" />
+        <ComponentGroupRef Id="MicrosoftDependencyComponents" />
+        <ComponentGroupRef Id="SQLiteDependencyComponents" />
+        <ComponentRef Id="makecert"/>
+      </Feature>
+
+      <!-- openMIC Console -->
+      <Feature Id="openMICConsoleFeature" Title="openMIC Console">
+        <ComponentGroupRef Id="openMICConsoleComponents" />
+        <ComponentGroupRef Id="GSFDependencyComponents" />
+      </Feature>
+
+      <!-- openMIC Tools -->
+      <Feature Id="openMICToolsFeature" Title="Tools">
+        <Feature Id="ConfigCrypterFeature" Title="Config Crypter">
+          <ComponentGroupRef Id="ConfigCrypterComponents" />
+        </Feature>
+        <Feature Id="ConfigurationEditorFeature" Title="Configuration Editor">
+          <ComponentGroupRef Id="ConfigurationEditorComponents" />
+        </Feature>
+        <Feature Id="HistorianPlaybackUtilityFeature" Title="Historian Playback Utility">
+          <ComponentGroupRef Id="HistorianPlaybackUtilityComponents" />
+        </Feature>
+        <Feature Id="HistorianViewFeature" Title="Historian Trending Tool">
+          <ComponentGroupRef Id="HistorianViewComponents" />
+        </Feature>
+        <Feature Id="NoInetFixUtilFeature" Title="No-Internet Fix Utility">
+          <ComponentRef Id="NoInetFixUtil" />
+        </Feature>
+        <Feature Id="DNP3ConfigGeneratorFeature" Title="DNP3 Configuration Generator">
+          <ComponentRef Id="DNP3ConfigGenerator" />
+        </Feature>
+
+        
+        <ComponentGroupRef Id="GSFDependencyComponents" />
+      </Feature>
+
+      <ComponentRef Id="InstallFolderPermissions"/>
+      <ComponentRef Id="Registry" />
+      <ComponentRef Id="Cleanup" />
+    </Feature>
+
+    <!-- User Interface -->
+    <UI>
+      <UIRef Id="WixUI_FeatureTree" />
+      <UIRef Id="WixUI_ErrorProgressText" />
+      <DialogRef Id="CompanyInfoDialog" />
+      <DialogRef Id="ServiceAccountDialog" />
+      <Publish Dialog="CustomizeDlg" Control="Next" Event="NewDialog" Value="ServiceAccountDialog"><![CDATA[&openMICFeature=3]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg"><![CDATA[NOT(&openMICFeature=3)]]></Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="CompanyInfoDialog">(NOT Installed OR WixUI_InstallMode = "Change") AND <![CDATA[&openMICFeature=3]]></Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="CustomizeDlg">(NOT Installed OR WixUI_InstallMode = "Change") AND <![CDATA[NOT(&openMICFeature=3)]]></Publish>
+    </UI>
+
+    <Icon Id="openMIC.ico.exe" SourceFile="$(var.openMIC.TargetPath)" />
+    <Icon Id="openMICManager.ico.exe" SourceFile="$(var.openMICManager.TargetPath)" />
+    <Icon Id="openMICConsole.ico.exe" SourceFile="$(var.openMICConsole.TargetPath)" />
+    <Icon Id="ConfigurationSetupUtility.ico.exe" SourceFile="$(var.ConfigurationSetupUtility.TargetPath)" />
+    <Icon Id="DataMigrationUtility.ico.exe" SourceFile="$(var.ProjectDir)\DataMigrationUtility.exe" />
+    <Icon Id="ConfigCrypter.ico.exe" SourceFile="$(var.ProjectDir)\ConfigCrypter.exe" />
+    <Icon Id="ConfigurationEditor.ico.exe" SourceFile="$(var.ProjectDir)\ConfigurationEditor.exe" />
+    <Icon Id="HistorianPlaybackUtility.ico.exe" SourceFile="$(var.ProjectDir)\HistorianPlaybackUtility.exe" />
+    <Icon Id="HistorianView.ico.exe" SourceFile="$(var.ProjectDir)\HistorianView.exe" />
+    <Icon Id="NoInetFixUtil.ico.exe" SourceFile="$(var.ProjectDir)\NoInetFixUtil.exe" />
+
+    <Property Id="SERVICENAME" Value="$(var.openMIC.TargetName)" />
+    <Property Id="SERVICEPASSWORD" Hidden="yes" />
+    <Property Id="HTTPSERVICEPORTS" Value="6057,6058,6157,6158,5021" />
+    <Property Id="COMPANYNAME" Value="Grid Protection Alliance" />
+    <Property Id="COMPANYACRONYM" Value="GPA" />
+    <SetProperty Id="SERVICEACCOUNT" Value="NT SERVICE\[SERVICENAME]" After="LaunchConditions" Sequence="first" />
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\openMICSetupBanner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\openMICSetupDialog.bmp" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)\INSTALL_LICENSE.rtf" />
+    
+    <!-- Add/Remove Programs Icon -->
+    <Property Id="ARPPRODUCTICON" Value="openMIC.ico.exe" />
+
+    <!-- Custom Actions -->
+    <Binary Id="InstallerActions" SourceFile="$(var.SolutionDir)\Dependencies\GSF\GSF.InstallerActions.CA.dll" />
+    <CustomAction Id="AuthenticateServiceAccountAction" BinaryKey="InstallerActions" DllEntry="AuthenticateServiceAccountAction" Execute="immediate" />
+    <CustomAction Id="CompanyInfoAction.SetProperty" Property="CompanyInfoAction" Value="SERVICENAME=[SERVICENAME];INSTALLDIR=[INSTALLFOLDER];COMPANYNAME=[COMPANYNAME];COMPANYACRONYM=[COMPANYACRONYM]" />
+    <CustomAction Id="CompanyInfoAction" BinaryKey="InstallerActions" DllEntry="CompanyInfoAction" Execute="deferred" Impersonate="no" />
+    <CustomAction Id="ConfigureServiceAction.SetProperty" Property="ConfigureServiceAction" Value="SERVICENAME=[SERVICENAME]" />
+    <CustomAction Id="ConfigureServiceAction" BinaryKey="InstallerActions" DllEntry="ConfigureServiceAction" Execute="deferred" Impersonate="no" />
+    <CustomAction Id="ServiceAccountAction.SetProperty" Property="ServiceAccountAction" Value="SERVICENAME=[SERVICENAME];SERVICEACCOUNT=[SERVICEACCOUNT];HTTPSERVICEPORTS=[HTTPSERVICEPORTS]" />
+    <CustomAction Id="ServiceAccountAction" BinaryKey="InstallerActions" DllEntry="ServiceAccountAction" Execute="deferred" Impersonate="no" />
+
+    <InstallExecuteSequence>
+      <Custom Action="CompanyInfoAction.SetProperty" After="InstallFiles">NOT REMOVE AND <![CDATA[&openMICFeature=3]]></Custom>
+      <Custom Action="CompanyInfoAction" After="CompanyInfoAction.SetProperty">NOT REMOVE AND <![CDATA[&openMICFeature=3]]></Custom>
+      <Custom Action="ConfigureServiceAction.SetProperty" After="InstallServices">NOT REMOVE AND <![CDATA[&openMICFeature=3]]></Custom>
+      <Custom Action="ConfigureServiceAction" After="ConfigureServiceAction.SetProperty">NOT REMOVE AND <![CDATA[&openMICFeature=3]]></Custom>
+      <Custom Action="ServiceAccountAction.SetProperty" After="ConfigureServiceAction">NOT REMOVE</Custom>
+      <Custom Action="ServiceAccountAction" After="ServiceAccountAction.SetProperty">NOT REMOVE</Custom>
+    </InstallExecuteSequence>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <?if $(var.Platform) = x64 ?>
+      <Directory Id="ProgramFiles64Folder">
+        <!-- C:\Program Files\openMIC -->
+        <Directory Id="INSTALLFOLDER" Name="openMIC">
+          <Component Id="InstallFolderPermissions" Guid="{F54F753D-C6A6-45D4-B9AA-E9B20CD68FA1}">
+            <CreateFolder>
+              <util:PermissionEx User="[SERVICENAME] Admins" CreateFile="yes" CreateChild="yes" GenericRead="yes" GenericWrite="yes" GenericExecute="yes" Delete="yes" DeleteChild="yes" />
+            </CreateFolder>
+          </Component>
+          
+          <Directory Id="DATABASESCRIPTSFOLDER" Name="Database Scripts">
+            <Directory Id="MYSQLSCRIPTSFOLDER" Name="MySQL" />
+            <Directory Id="ORACLESCRIPTSFOLDER" Name="Oracle" />
+            <Directory Id="SQLSERVERSCRIPTSFOLDER" Name="SQL Server" />
+            <Directory Id="SQLITESCRIPTSFOLDER" Name="SQLite" />
+          </Directory>
+        </Directory>
+      </Directory>
+      <?else ?>
+      <Directory Id="ProgramFilesFolder">
+        <Component Id="InstallFolderPermissions" Guid="{F54F753D-C6A6-45D4-B9AA-E9B20CD68FA1}">
+          <CreateFolder>
+            <util:PermissionEx User="[SERVICENAME] Admins" CreateFile="yes" CreateChild="yes" GenericRead="yes" GenericWrite="yes" GenericExecute="yes" Delete="yes" DeleteChild="yes" />
+          </CreateFolder>
+        </Component>
+        
+        <!-- C:\Program Files (x86)\openMIC -->
+        <Directory Id="INSTALLFOLDER" Name="openMIC">
+          <Directory Id="DATABASESCRIPTSFOLDER" Name="Database Scripts">
+            <Directory Id="MYSQLSCRIPTSFOLDER" Name="MySQL" />
+            <Directory Id="ORACLESCRIPTSFOLDER" Name="Oracle" />
+            <Directory Id="SQLSERVERSCRIPTSFOLDER" Name="SQL Server" />
+            <Directory Id="SQLITESCRIPTSFOLDER" Name="SQLite" />
+          </Directory>
+        </Directory>
+      </Directory>
+      <?endif ?>
+
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="openMIC" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Applications -->
+      <ComponentGroupRef Id="openMICComponents" />
+      <ComponentGroupRef Id="openMICManagerComponents" />
+      <ComponentGroupRef Id="openMICConsoleComponents" />
+      <ComponentGroupRef Id="openMICToolsComponents" />
+
+      <!-- Libraries -->
+      <ComponentGroupRef Id="AdapterComponents" />
+      <ComponentGroupRef Id="GSFDependencyComponents" />
+      <ComponentGroupRef Id="MicrosoftDependencyComponents" />
+      <ComponentGroupRef Id="SQLiteDependencyComponents" />
+
+      <!-- Database Scripts -->
+      <ComponentGroupRef Id="MySQLScriptComponents" />
+      <ComponentGroupRef Id="OracleScriptComponents" />
+      <ComponentGroupRef Id="SQLServerScriptComponents" />
+      <ComponentGroupRef Id="SQLiteScriptComponents" />
+      
+      <!-- Makecert -->
+      <Component Id="makecert">
+        <File Id="makecert.exe" Name="makecert.exe" Source="$(var.ProjectDir)\makecert.exe" />
+      </Component>
+      
+      <!-- Sample Data -->
+      <Component Id="Sample1344">
+        <File Id="Sample1344.PmuCapture" Name="Sample1344.PmuCapture" Source="$(var.openMIC.ProjectDir)\Sample1344.PmuCapture" />
+      </Component>
+      
+      <!-- Registry Settings -->
+      <Component Id="Registry" Guid="{F74C123C-C923-4B04-813B-05E81397C764}">
+        <RegistryKey Id="REG_GridProtectionAlliance" Root="HKLM" Key="SOFTWARE\Grid Protection Alliance" ForceCreateOnInstall="yes">
+          <RegistryKey Id="REG_GridProtectionAlliance.openMIC" Key="openMIC" ForceCreateOnInstall="yes">
+            <RegistryValue Id="REG_GridProtectionAlliance.openMIC.InstallPath" Name="InstallPath" Value="[INSTALLFOLDER]" Type="string" />
+            <RegistryValue Id="REG_GridProtectionAlliance.openMIC.Revision" Name="Revision" Value="[ProductVersion]" Type="string" />
+            <RegistryValue Id="REG_GridProtectionAlliance.openMIC.TargetBitSize" Name="TargetBitSize" Value="64bit" Type="string" />
+          </RegistryKey>
+        </RegistryKey>
+      </Component>
+
+      <!-- Cleanup -->
+      <Component Id="Cleanup" Guid="{C8EBB158-C708-4C94-87C1-F5DBC77D7BDE}">
+        <CreateFolder />
+        <RemoveFolder Id="RemoveMySQLScriptsFolder" Directory="MYSQLSCRIPTSFOLDER" On="uninstall" />
+        <RemoveFolder Id="RemoveOracleScriptsFolder" Directory="ORACLESCRIPTSFOLDER" On="uninstall" />
+        <RemoveFolder Id="RemoveSQLServerScriptsFolder" Directory="SQLSERVERSCRIPTSFOLDER" On="uninstall" />
+        <RemoveFolder Id="RemoveSQLiteScriptsFolder" Directory="SQLITESCRIPTSFOLDER" On="uninstall" />
+        <RemoveFolder Id="RemoveDatabaseScriptsFolder" Directory="DATABASESCRIPTSFOLDER" On="uninstall" />
+        <RemoveFolder Id="RemoveApplicationProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- openMIC -->    
+    <ComponentGroup Id="openMICComponents" Directory="INSTALLFOLDER">
+      <Component Id="openMIC">
+        <File Id="openMIC.exe" Name="$(var.openMIC.TargetFileName)" Source="$(var.openMIC.TargetPath)" />
+        <ServiceInstall Id="openMICService" Name="openMIC" Account="[SERVICEACCOUNT]" Password="[SERVICEPASSWORD]" Type="ownProcess" Start="auto" ErrorControl="normal" Description="Provides processing for streaming time-series data in real-time including phasor data concentration services for synchrophasor applications." />
+        <ServiceControl Id="openMICServiceControl" Name="openMIC" Stop="both" Remove="uninstall" />
+      </Component>
+      <Component Id="openMICConfig" Permanent="yes">
+        <File Id="openMIC.exe.config" Name="$(var.openMIC.TargetFileName).config" Source="$(var.openMIC.TargetPath).config" />
+      </Component>
+      <Component Id="DataMigrationUtility">
+        <File Id="DataMigrationUtility.exe" Name="DataMigrationUtility.exe" Source="$(var.ProjectDir)\DataMigrationUtility.exe" />
+        <Shortcut Id="DataMigrationUtilityStartMenuShortcut" Name="Data Migration Utility" Icon="DataMigrationUtility.ico.exe" Description="Tool used to migrate data from an old configuration database to the latest version." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+      <Component Id="DataMigrationUtilityConfig">
+        <File Id="DataMigrationUtility.exe.config" Name="DataMigrationUtility.exe.config" Source="$(var.ProjectDir)\DataMigrationUtility.exe.config" />
+      </Component>
+      <Component Id="StatHistorianReportGenerator">
+        <File Id="StatHistorianReportGenerator.exe" Name="StatHistorianReportGenerator.exe" Source="$(var.ProjectDir)\StatHistorianReportGenerator.exe" />
+      </Component>
+      <Component Id="StatHistorianReportGeneratorConfig">
+        <File Id="StatHistorianReportGenerator.exe.config" Name="StatHistorianReportGenerator.exe.config" Source="$(var.ProjectDir)\StatHistorianReportGenerator.exe.config" />
+      </Component>
+      <Component Id="Reports">
+        <File Id="Reports.dll" Name="Reports.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Reports.dll" />
+      </Component>
+      <Component Id="SerializedSchema">
+        <File Id="SerializedSchema.bin" Name="SerializedSchema.bin" Source="$(var.SolutionDir)\Data\SerializedSchema.bin" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- openMIC Manager -->
+    <ComponentGroup Id="openMICManagerComponents" Directory="INSTALLFOLDER">
+      <Component Id="openMICManager">
+        <File Id="openMICManager.exe" Name="$(var.openMICManager.TargetFileName)" Source="$(var.openMICManager.TargetPath)" />
+        <Shortcut Id="openMICManagerStartMenuShortcut" Name="openMIC Manager" Icon="openMICManager.ico.exe" Description="Manager application for the openMIC service." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+      <Component Id="openMICManagerConfig">
+        <File Id="openMICManager.exe.config" Name="$(var.openMICManager.TargetFileName).config" Source="$(var.openMICManager.TargetPath).config" />
+      </Component>
+      <Component Id="openMICManagerMenu">
+        <File Id="Menu.xml" Name="Menu.xml" Source="$(var.openMICManager.ProjectDir)\Menu.xml" />
+      </Component>
+      <Component Id="openMICManagerHelpFile">
+        <File Id="openMICManagerHelp.mht" Name="openMICManagerHelp.mht" Source="$(var.openMICManager.ProjectDir)\openMICManagerHelp.mht" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- openMIC Console -->
+    <ComponentGroup Id="openMICConsoleComponents" Directory="INSTALLFOLDER">
+      <Component Id="openMICConsole">
+        <File Id="openMICConsole.exe" Name="$(var.openMICConsole.TargetFileName)" Source="$(var.openMICConsole.TargetPath)" />
+        <Shortcut Id="openMICConsoleStartMenuShortcut" Name="openMIC Console" Icon="openMICConsole.ico.exe" Description="Console application to monitor the openMIC service." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+      <Component Id="openMICConsoleConfig">
+        <File Id="openMICConsole.exe.config" Name="$(var.openMICConsole.TargetFileName).config" Source="$(var.openMICConsole.TargetPath).config" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- openMIC Tools -->
+    <ComponentGroup Id="openMICToolsComponents" Directory="INSTALLFOLDER">
+      <ComponentGroupRef Id="ConfigCrypterComponents" />
+      <ComponentGroupRef Id="ConfigurationEditorComponents" />
+      <ComponentGroupRef Id="HistorianPlaybackUtilityComponents" />
+      <ComponentGroupRef Id="HistorianViewComponents" />
+
+      <Component Id="NoInetFixUtil">
+        <File Id="NoInetFixUtil.exe" Name="NoInetFixUtil.exe" Source="$(var.ProjectDir)\NoInetFixUtil.exe" />
+        <Shortcut Id="NoInetFixUtilStartMenuShortcut" Name="No-Internet Fix Utility" Icon="NoInetFixUtil.ico.exe" Description="Tool used to fix long timeouts on systems with no internet access available." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+
+      <Component Id="DNP3ConfigGenerator">
+        <File Id="DNP3ConfigGenerator.exe" Name="DNP3ConfigGenerator.exe" Source="$(var.ProjectDir)\DNP3ConfigGenerator.exe" />
+      </Component>
+
+    </ComponentGroup>
+    
+    <ComponentGroup Id="ConfigCrypterComponents" Directory="INSTALLFOLDER">
+      <Component Id="ConfigCrypter">
+        <File Id="ConfigCrypter.exe" Name="ConfigCrypter.exe" Source="$(var.ProjectDir)\ConfigCrypter.exe" />
+        <Shortcut Id="ConfigurationCrypterStartMenuShortcut" Name="Cipher Key Manager" Icon="ConfigCrypter.ico.exe" Description="Tool used to manage cryptographic cipher keys." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+      <Component Id="ConfigCrypterConfig">
+        <File Id="ConfigCrypter.exe.config" Name="ConfigCrypter.exe.config" Source="$(var.ProjectDir)\ConfigCrypter.exe.config" />
+      </Component>
+    </ComponentGroup>
+    
+    <ComponentGroup Id="ConfigurationEditorComponents" Directory="INSTALLFOLDER">
+      <Component Id="ConfigurationEditor">
+        <File Id="ConfigurationEditor.exe" Name="ConfigurationEditor.exe" Source="$(var.ProjectDir)\ConfigurationEditor.exe" />
+        <Shortcut Id="ConfigurationEditorStartMenuShortcut" Name="XML Configuration Editor" Icon="ConfigurationEditor.ico.exe" Description="Tool used edit the XML configuration file for the openMIC service and its components." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+      <Component Id="ConfigurationEditorConfig">
+        <File Id="ConfigurationEditor.exe.config" Name="ConfigurationEditor.exe.config" Source="$(var.ProjectDir)\ConfigurationEditor.exe.config" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="ConfigurationSetupUtilityComponents" Directory="INSTALLFOLDER">
+      <Component Id="ConfigurationSetupUtility">
+        <File Id="ConfigurationSetupUtility.exe" Name="$(var.ConfigurationSetupUtility.TargetFileName)" Source="$(var.ConfigurationSetupUtility.TargetPath)" />
+        <Shortcut Id="ConfigurationSetupUtilityStartMenuShortcut" Name="Configuration Setup Utility" Icon="ConfigurationSetupUtility.ico.exe" Description="Utility used to set up openMIC service configuration database." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+      <Component Id="ConfigurationSetupUtilityConfig">
+        <File Id="ConfigurationSetupUtility.exe.config" Name="$(var.ConfigurationSetupUtility.TargetFileName).config" Source="$(var.ConfigurationSetupUtility.TargetPath).config" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="HistorianPlaybackUtilityComponents" Directory="INSTALLFOLDER">
+      <Component Id="HistorianPlaybackUtility">
+        <File Id="HistorianPlaybackUtility.exe" Name="HistorianPlaybackUtility.exe" Source="$(var.ProjectDir)\HistorianPlaybackUtility.exe" />
+        <Shortcut Id="HistorianPlaybackUtilityStartMenuShortcut" Name="Historian Playback Utility" Icon="HistorianPlaybackUtility.ico.exe" Description="Utility that can be used to replay historic data as a real-time feed." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+      <Component Id="HistorianPlaybackUtilityConfig">
+        <File Id="HistorianPlaybackUtility.exe.config" Name="HistorianPlaybackUtility.exe.config" Source="$(var.ProjectDir)\HistorianPlaybackUtility.exe.config" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="HistorianViewComponents" Directory="INSTALLFOLDER">
+      <Component Id="HistorianView">
+        <File Id="HistorianView.exe" Name="HistorianView.exe" Source="$(var.ProjectDir)\HistorianView.exe" />
+        <Shortcut Id="HistorianViewStartMenuShortcut" Name="Historian Trending Tool" Icon="HistorianView.ico.exe" Description="Tool used to analyze historic files to create charts and export data to CSV format." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+      </Component>
+      <Component Id="HistorianViewConfig">
+        <File Id="HistorianView.exe.config" Name="HistorianView.exe.config" Source="$(var.ProjectDir)\HistorianView.exe.config" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Adapters -->
+    <ComponentGroup Id="AdapterComponents" Directory="INSTALLFOLDER">
+      <Component Id="AdoAdapters">
+        <File Id="AdoAdapters.dll" Name="AdoAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\AdoAdapters.dll" />
+      </Component>
+      <Component Id="ArchivistAdapters">
+        <File Id="ArchivistAdapters.dll" Name="ArchivistAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\ArchivistAdapters.dll" />
+      </Component>
+      <Component Id="ArchivistClient">
+        <File Id="ArchivistClient.dll" Name="ArchivistClient.dll" Source="$(var.SolutionDir)\Dependencies\GSF\ArchivistClient.dll" />
+      </Component>
+      <Component Id="AudioAdapters">
+        <File Id="AudioAdapters.dll" Name="AudioAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\AudioAdapters.dll" />
+      </Component>
+      <Component Id="Ciloci.Flee">
+        <File Id="Ciloci.Flee.dll" Name="Ciloci.Flee.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Ciloci.Flee.dll" />
+      </Component>
+      <Component Id="COMTRADEAdapters">
+        <File Id="COMTRADEAdapters.dll" Name="COMTRADEAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\COMTRADEAdapters.dll" />
+      </Component>
+      <Component Id="CsvAdapters">
+        <File Id="CsvAdapters.dll" Name="CsvAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\CsvAdapters.dll" />
+      </Component>
+      <Component Id="DataQualityMonitoring">
+        <File Id="DataQualityMonitoring.dll" Name="DataQualityMonitoring.dll" Source="$(var.SolutionDir)\Dependencies\GSF\DataQualityMonitoring.dll" />
+      </Component>
+      <Component Id="Dnp3Adapters">
+        <File Id="Dnp3Adapters.dll" Name="Dnp3Adapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Dnp3Adapters.dll" />
+      </Component>
+      <Component Id="DNP3CLRAdapter">
+        <File Id="DNP3CLRAdapter.dll" Name="DNP3CLRAdapter.dll" Source="$(var.SolutionDir)\Dependencies\GSF\DNP3CLRAdapter.dll" />
+      </Component>
+      <Component Id="DNP3CLRInterface">
+        <File Id="DNP3CLRInterface.dll" Name="DNP3CLRInterface.dll" Source="$(var.SolutionDir)\Dependencies\GSF\DNP3CLRInterface.dll" />
+      </Component>
+      <Component Id="DynamicCalculator">
+        <File Id="DynamicCalculator.dll" Name="DynamicCalculator.dll" Source="$(var.SolutionDir)\Dependencies\GSF\DynamicCalculator.dll" />
+      </Component>
+      <Component Id="EpriExport">
+        <File Id="EpriExport.dll" Name="EpriExport.dll" Source="$(var.SolutionDir)\Dependencies\GSF\EpriExport.dll" />
+      </Component>
+      <Component Id="FileAdapters">
+        <File Id="FileAdapters.dll" Name="FileAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\FileAdapters.dll" />
+      </Component>
+      <Component Id="FtpAdapters">
+        <File Id="FtpAdapters.dll" Name="FtpAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\FtpAdapters.dll" />
+      </Component>
+      <Component Id="Google.ProtocolBuffers">
+        <File Id="Google.ProtocolBuffers.dll" Name="Google.ProtocolBuffers.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Google.ProtocolBuffers.dll" />
+      </Component>
+      <Component Id="Hadoop.Replication">
+        <File Id="Hadoop.Replication.dll" Name="Hadoop.Replication.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Hadoop.Replication.dll" />
+      </Component>
+      <Component Id="HistorianAdapters">
+        <File Id="HistorianAdapters.dll" Name="HistorianAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\HistorianAdapters.dll" />
+      </Component>
+      <Component Id="ICCPExport">
+        <File Id="ICCPExport.dll" Name="ICCPExport.dll" Source="$(var.SolutionDir)\Dependencies\GSF\ICCPExport.dll" />
+      </Component>
+      <Component Id="InfluxDBAdapters">
+        <File Id="InfluxDBAdapters.dll" Name="InfluxDBAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\InfluxDBAdapters.dll" />
+      </Component>
+      <Component Id="NAudio"> <!-- Dependency for AudioAdapters -->
+        <File Id="NAudio.dll" Name="NAudio.dll" Source="$(var.SolutionDir)\Dependencies\GSF\NAudio.dll" />
+      </Component>
+      <Component Id="MongoAdapters">
+        <File Id="MongoAdapters.dll" Name="MongoAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\MongoAdapters.dll" />
+      </Component>
+      <Component Id="MongoDB">
+        <File Id="MongoDB.dll" Name="MongoDB.dll" Source="$(var.SolutionDir)\Dependencies\GSF\MongoDB.dll" />
+      </Component>
+      <Component Id="MongoDB.GridFS">
+        <File Id="MongoDB.GridFS.dll" Name="MongoDB.GridFS.dll" Source="$(var.SolutionDir)\Dependencies\GSF\MongoDB.GridFS.dll" />
+      </Component>
+      <Component Id="MySqlAdapters">
+        <File Id="MySqlAdapters.dll" Name="MySqlAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\MySqlAdapters.dll" />
+      </Component>
+      <Component Id="OneSecondFrequencyAverager">
+        <File Id="OneSecondFrequencyAverager.dll" Name="OneSecondFrequencyAverager.dll" Source="$(var.SolutionDir)\Dependencies\GSF\OneSecondFrequencyAverager.dll" />
+      </Component>
+      <Component Id="PhasorProtocolAdapters">
+        <File Id="PhasorProtocolAdapters.dll" Name="PhasorProtocolAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\PhasorProtocolAdapters.dll" />
+      </Component>
+      <Component Id="PIAdapters"> <!-- OSI-PI Historian Adapters -->
+        <File Id="PIAdapters.dll" Name="PIAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\PIAdapters.dll" />
+      </Component>
+      <Component Id="PowerCalculations">
+        <File Id="PowerCalculations.dll" Name="PowerCalculations.dll" Source="$(var.SolutionDir)\Dependencies\GSF\PowerCalculations.dll" />
+      </Component>
+      <Component Id="TestingAdapters">
+        <File Id="TestingAdapters.dll" Name="TestingAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\TestingAdapters.dll" />
+      </Component>
+      <Component Id="WavInputAdapter">
+        <File Id="WavInputAdapter.dll" Name="WavInputAdapter.dll" Source="$(var.SolutionDir)\Dependencies\GSF\WavInputAdapter.dll" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- GSF Dependencies -->
+    <ComponentGroup Id="GSFDependencyComponents" Directory="INSTALLFOLDER">
+      <Component Id="GSF.ASN1">
+        <File Id="GSF.ASN1.dll" Name="GSF.ASN1.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.ASN1.dll" />
+      </Component>
+      <Component Id="GSF.Communication">
+        <File Id="GSF.Communication.dll" Name="GSF.Communication.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Communication.dll" />
+      </Component>
+      <Component Id="GSF.COMTRADE">
+        <File Id="GSF.COMTRADE.dll" Name="GSF.COMTRADE.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.COMTRADE.dll" />
+      </Component>
+      <Component Id="GSF.Core">
+        <File Id="GSF.Core.dll" Name="GSF.Core.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Core.dll" />
+      </Component>
+      <Component Id="GSF.Historian">
+        <File Id="GSF.Historian.dll" Name="GSF.Historian.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Historian.dll" />
+      </Component>
+      <Component Id="GSF.Media">
+        <File Id="GSF.Media.dll" Name="GSF.Media.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Media.dll" />
+      </Component>
+      <Component Id="GSF.MMS">
+        <File Id="GSF.MMS.dll" Name="GSF.MMS.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.MMS.dll" />
+      </Component>
+      <Component Id="GSF.Net">
+        <File Id="GSF.Net.dll" Name="GSF.Net.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Net.dll" />
+      </Component>
+      <Component Id="GSF.PhasorProtocols">
+        <File Id="GSF.PhasorProtocols.dll" Name="GSF.PhasorProtocols.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.PhasorProtocols.dll" />
+      </Component>
+      <Component Id="GSF.PhasorProtocols.UI">
+        <File Id="GSF.PhasorProtocols.UI.dll" Name="GSF.PhasorProtocols.UI.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.PhasorProtocols.UI.dll" />
+      </Component>
+      <Component Id="GSF.PhasorProtocols.UI.WPF">
+        <File Id="GSF.PhasorProtocols.UI.WPF.dll" Name="GSF.PhasorProtocols.UI.WPF.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.PhasorProtocols.UI.WPF.dll" />
+      </Component>
+      <Component Id="GSF.Security">
+        <File Id="GSF.Security.dll" Name="GSF.Security.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Security.dll" />
+      </Component>
+      <Component Id="GSF.ServiceBus">
+        <File Id="GSF.ServiceBus.dll" Name="GSF.ServiceBus.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.ServiceBus.dll" />
+      </Component>
+      <Component Id="GSF.ServiceModel">
+        <File Id="GSF.ServiceModel.dll" Name="GSF.ServiceModel.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.ServiceModel.dll" />
+      </Component>
+      <Component Id="GSF.ServiceProcess">
+        <File Id="GSF.ServiceProcess.dll" Name="GSF.ServiceProcess.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.ServiceProcess.dll" />
+      </Component>
+      <Component Id="GSF.TimeSeries">
+        <File Id="GSF.TimeSeries.dll" Name="GSF.TimeSeries.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.TimeSeries.dll" />
+      </Component>
+      <Component Id="GSF.TimeSeries.Transport.UI">
+        <File Id="GSF.TimeSeries.Transport.UI.dll" Name="GSF.TimeSeries.Transport.UI.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.TimeSeries.Transport.UI.dll" />
+      </Component>
+      <Component Id="GSF.TimeSeries.Transport.UI.WPF">
+        <File Id="GSF.TimeSeries.Transport.UI.WPF.dll" Name="GSF.TimeSeries.Transport.UI.WPF.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.TimeSeries.Transport.UI.WPF.dll" />
+      </Component>
+      <Component Id="GSF.TimeSeries.UI">
+        <File Id="GSF.TimeSeries.UI.dll" Name="GSF.TimeSeries.UI.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.TimeSeries.UI.dll" />
+      </Component>
+      <Component Id="GSF.TimeSeries.UI.WPF">
+        <File Id="GSF.TimeSeries.UI.WPF.dll" Name="GSF.TimeSeries.UI.WPF.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.TimeSeries.UI.WPF.dll" />
+      </Component>
+      <Component Id="GSF.Web">
+        <File Id="GSF.Web.dll" Name="GSF.Web.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Web.dll" />
+      </Component>
+      <Component Id="GSF.Windows">
+        <File Id="GSF.Windows.dll" Name="GSF.Windows.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Windows.dll" />
+      </Component>
+    </ComponentGroup>
+    
+    <!-- Microsoft Dependencies -->
+    <ComponentGroup Id="MicrosoftDependencyComponents" Directory="INSTALLFOLDER">
+      <Component Id="DynamicDataDisplay">
+        <File Id="DynamicDataDisplay.dll" Name="DynamicDataDisplay.dll" Source="$(var.SolutionDir)\Dependencies\Microsoft\D3\DynamicDataDisplay.dll" />
+      </Component>
+      <Component Id="System.Windows.Controls.DataVisualization.Toolkit">
+        <File Id="System.Windows.Controls.DataVisualization.Toolkit.dll" Name="System.Windows.Controls.DataVisualization.Toolkit.dll" Source="$(var.SolutionDir)\Dependencies\Microsoft\WPF\System.Windows.Controls.DataVisualization.Toolkit.dll" />
+      </Component>
+      <Component Id="System.Windows.Controls.Input.Toolkit">
+        <File Id="System.Windows.Controls.Input.Toolkit.dll" Name="System.Windows.Controls.Input.Toolkit.dll" Source="$(var.SolutionDir)\Dependencies\Microsoft\WPF\System.Windows.Controls.Input.Toolkit.dll" />
+      </Component>
+      <Component Id="System.Windows.Controls.Layout.Toolkit">
+        <File Id="System.Windows.Controls.Layout.Toolkit.dll" Name="System.Windows.Controls.Layout.Toolkit.dll" Source="$(var.SolutionDir)\Dependencies\Microsoft\WPF\System.Windows.Controls.Layout.Toolkit.dll" />
+      </Component>
+      <Component Id="WPFToolkit">
+        <File Id="WPFToolkit.dll" Name="WPFToolkit.dll" Source="$(var.SolutionDir)\Dependencies\Microsoft\WPF\WPFToolkit.dll" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- SQLite Dependencies -->
+    <ComponentGroup Id="SQLiteDependencyComponents" Directory="INSTALLFOLDER">
+      <Component Id="System.Data.SQLite">
+        <File Id="System.Data.SQLite.dll" Name="System.Data.SQLite.dll" Source="$(var.SolutionDir)\Dependencies\SQLite\System.Data.SQLite.dll" />
+      </Component>
+      <Component Id="System.Data.SQLite.Linq">
+        <File Id="System.Data.SQLite.Linq.dll" Name="System.Data.SQLite.Linq.dll" Source="$(var.SolutionDir)\Dependencies\SQLite\System.Data.SQLite.Linq.dll" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- MySQL Scripts -->
+    <ComponentGroup Id="MySQLScriptComponents" Directory="MYSQLSCRIPTSFOLDER">
+      <Component Id="MySQLAuditLog">
+        <File Id="MySQLAuditLog.sql" Name="AuditLog.sql" Source="$(var.SolutionDir)\Data\MySQL\AuditLog.sql" />
+      </Component>
+      <Component Id="MySQLInitialDataSet">
+        <File Id="MySQLInitialDataSet.sql" Name="InitialDataSet.sql" Source="$(var.SolutionDir)\Data\MySQL\InitialDataSet.sql" />
+      </Component>
+      <Component Id="MySQLopenMIC">
+        <File Id="MySQLopenMIC.sql" Name="openMIC.sql" Source="$(var.SolutionDir)\Data\MySQL\openMIC.sql" />
+      </Component>
+      <Component Id="MySQLSampleDataSet">
+        <File Id="MySQLSampleDataSet.sql" Name="SampleDataSet.sql" Source="$(var.SolutionDir)\Data\MySQL\SampleDataSet.sql" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Oracle Scripts -->
+    <ComponentGroup Id="OracleScriptComponents" Directory="ORACLESCRIPTSFOLDER">
+      <Component Id="OracleAuditLog">
+        <File Id="OracleAuditLog.sql" Name="AuditLog.sql" Source="$(var.SolutionDir)\Data\Oracle\AuditLog.sql" />
+      </Component>
+      <Component Id="OracleInitialDataSet">
+        <File Id="OracleInitialDataSet.sql" Name="InitialDataSet.sql" Source="$(var.SolutionDir)\Data\Oracle\InitialDataSet.sql" />
+      </Component>
+      <Component Id="OracleopenMIC">
+        <File Id="OracleopenMIC.sql" Name="openMIC.sql" Source="$(var.SolutionDir)\Data\Oracle\openMIC.sql" />
+      </Component>
+      <Component Id="OracleSampleDataSet">
+        <File Id="OracleSampleDataSet.sql" Name="SampleDataSet.sql" Source="$(var.SolutionDir)\Data\Oracle\SampleDataSet.sql" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- SQL Server Scripts -->
+    <ComponentGroup Id="SQLServerScriptComponents" Directory="SQLSERVERSCRIPTSFOLDER">
+      <Component Id="SQLServerAuditLog">
+        <File Id="SQLServerAuditLog.sql" Name="AuditLog.sql" Source="$(var.SolutionDir)\Data\SQL Server\AuditLog.sql" />
+      </Component>
+      <Component Id="SQLServerInitialDataSet">
+        <File Id="SQLServerInitialDataSet.sql" Name="InitialDataSet.sql" Source="$(var.SolutionDir)\Data\SQL Server\InitialDataSet.sql" />
+      </Component>
+      <Component Id="SQLServeropenMIC">
+        <File Id="SQLServeropenMIC.sql" Name="openMIC.sql" Source="$(var.SolutionDir)\Data\SQL Server\openMIC.sql" />
+      </Component>
+      <Component Id="SQLServerSampleDataSet">
+        <File Id="SQLServerSampleDataSet.sql" Name="SampleDataSet.sql" Source="$(var.SolutionDir)\Data\SQL Server\SampleDataSet.sql" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- SQLite Scripts -->
+    <ComponentGroup Id="SQLiteScriptComponents" Directory="SQLITESCRIPTSFOLDER">
+      <Component Id="sqlite3">
+        <File Id="sqlite3.exe" Name="sqlite3.exe" Source="$(var.SolutionDir)\Data\SQLite\sqlite3.exe" />
+      </Component>
+      <Component Id="SQLiteInitialDataSetDB">
+        <File Id="SQLiteInitialDataSet.db" Name="openMIC-InitialDataSet.db" Source="$(var.SolutionDir)\Data\SQLite\openMIC-InitialDataSet.db" />
+      </Component>
+      <Component Id="SQLiteopenMICDB">
+        <File Id="SQLiteopenMIC.db" Name="openMIC.db" Source="$(var.SolutionDir)\Data\SQLite\openMIC.db" />
+      </Component>
+      <Component Id="SQLiteSampleDataSetDB">
+        <File Id="SQLiteSampleDataSet.db" Name="openMIC-SampleDataSet.db" Source="$(var.SolutionDir)\Data\SQLite\openMIC-SampleDataSet.db" />
+      </Component>
+      <Component Id="SQLiteInitialDataSet">
+        <File Id="SQLiteInitialDataSet.sql" Name="InitialDataSet.sql" Source="$(var.SolutionDir)\Data\SQLite\InitialDataSet.sql" />
+      </Component>
+      <Component Id="SQLiteopenMIC">
+        <File Id="SQLiteopenMIC.sql" Name="openMIC.sql" Source="$(var.SolutionDir)\Data\SQLite\openMIC.sql" />
+      </Component>
+      <Component Id="SQLiteSampleDataSet">
+        <File Id="SQLiteSampleDataSet.sql" Name="SampleDataSet.sql" Source="$(var.SolutionDir)\Data\SQLite\SampleDataSet.sql" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Custom Dialogs -->
+  <Fragment>
+    <UI>
+      <!-- ServiceAccount Dialog -->
+      <Dialog Id="ServiceAccountDialog" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="WixUI_Bmp_Banner" />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes">
+          <Text>{\WixUI_Font_Title}Service Account</Text>
+        </Control>
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes">
+          <Text>Enter the [ProductName] service account.</Text>
+        </Control>
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="ServiceAccountLabel" Type="Text" X="45" Y="73" Width="100" Height="15" TabSkip="no" Text="&amp;Service Account:" />
+        <Control Id="ServiceAccountEdit" Type="Edit" X="45" Y="85" Width="220" Height="18" Property="SERVICEACCOUNT" Text="{80}" />
+        <Control Id="ServicePasswordLabel" Type="Text" X="45" Y="113" Width="100" Height="15" TabSkip="no" Text="&amp;Service Password:" />
+        <Control Id="ServicePasswordEdit" Type="Edit" X="45" Y="125" Width="220" Height="18" Property="SERVICEPASSWORD" Text="{80}" Password="yes" />
+        <Control Id="ServicePasswordInfo" Type="Text" X="45" Y="153" Width="280" Height="30" Transparent="yes" NoPrefix="yes">
+          <Text>NOTE: If the service account is LocalSystem or begins with NT AUTHORITY or NT SERVICE you may leave the password field blank.</Text>
+        </Control>
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&amp;Back">
+          <Publish Event="NewDialog" Value="CustomizeDlg">1</Publish>
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next">
+          <Publish Event="DoAction" Value="AuthenticateServiceAccountAction">1</Publish>
+          <Publish Event="NewDialog" Value="ServiceAccountErrorDialog">NOT SERVICEAUTHENTICATED</Publish>
+          <Publish Event="NewDialog" Value="CompanyInfoDialog">SERVICEAUTHENTICATED</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+      </Dialog>
+
+      <!-- ServiceAccountError Dialog -->
+      <Dialog Id="ServiceAccountErrorDialog" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="WixUI_Bmp_Banner" />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes">
+          <Text>{\WixUI_Font_Title}Service Account</Text>
+        </Control>
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes">
+          <Text>Setup encountered an error authenticating the service account.</Text>
+        </Control>
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="InfoLabel" Type="Text" X="45" Y="73" Width="280" Height="60" TabSkip="no">
+          <Text>The service account entered could not be authorized. The username or password may have been entered incorrectly. To correct this, please click the "Back" button to go back to the previous step. To ignore this error and proceed with the installation, click the "Next" button.</Text>
+        </Control>
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Back">
+          <Publish Event="NewDialog" Value="ServiceAccountDialog">1</Publish>
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next">
+          <Publish Event="NewDialog" Value="CompanyInfoDialog">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+      </Dialog>
+      
+      <!-- CompanyInfo Dialog -->
+      <Dialog Id="CompanyInfoDialog" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="WixUI_Bmp_Banner" />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes">
+          <Text>{\WixUI_Font_Title}Company Information</Text>
+        </Control>
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes">
+          <Text>Enter information for the company using [ProductName].</Text>
+        </Control>
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="CompanyNameLabel" Type="Text" X="45" Y="73" Width="100" Height="15" TabSkip="no" Text="&amp;Company Name:" />
+        <Control Id="CompanyNameEdit" Type="Edit" X="45" Y="85" Width="220" Height="18" Property="COMPANYNAME" Text="{80}" />
+        <Control Id="CompanyAcronymLabel" Type="Text" X="45" Y="113" Width="100" Height="15" TabSkip="no" Text="&amp;Company Acronym:" />
+        <Control Id="CompanyAcronymEdit" Type="Edit" X="45" Y="125" Width="220" Height="18" Property="COMPANYACRONYM" Text="{80}" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&amp;Back">
+          <Publish Event="NewDialog" Value="ServiceAccountDialog">1</Publish>
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next">
+          <Publish Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+      </Dialog>
+    </UI>
+  </Fragment>
+</Wix>

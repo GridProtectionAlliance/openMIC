@@ -1,0 +1,190 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7E475E71-0956-4FB9-81A7-543C3D8A4C21}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>openMIC</RootNamespace>
+    <AssemblyName>openMIC</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ApplicationIcon>openMIC.ico</ApplicationIcon>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\..\Build\Output\Debug\Applications\openMIC\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\..\Build\Output\Release\Applications\openMIC\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DotRas, Version=1.3.5166.33435, Culture=neutral, PublicKeyToken=b378f04384b7892a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\DotRas.for.Win8.1.3.0\lib\net40\DotRas.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.Communication, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.Communication.2.1.90\lib\net45\GSF.Communication.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.COMTRADE, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.COMTRADE.2.1.90\lib\net45\GSF.COMTRADE.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.Core, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.Core.2.1.90\lib\net45\GSF.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.EMAX, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.EMAX.2.1.90\lib\net45\GSF.EMAX.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.Historian">
+      <HintPath>..\..\..\packages\GSF.Historian.2.1.90\lib\net45\GSF.Historian.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.Net, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.Net.2.1.90\lib\net45\GSF.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.PhasorProtocols, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.PhasorProtocols.2.1.90\lib\net45\GSF.PhasorProtocols.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.PQDIF, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.PQDIF.2.1.90\lib\net45\GSF.PQDIF.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.Security, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.Security.2.1.90\lib\net45\GSF.Security.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.ServiceModel, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.ServiceModel.2.1.90\lib\net45\GSF.ServiceModel.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.ServiceProcess, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.ServiceProcess.2.1.90\lib\net45\GSF.ServiceProcess.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GSF.TimeSeries, Version=2.1.90.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GSF.TimeSeries.2.1.90\lib\net45\GSF.TimeSeries.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.ServiceProcess" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DebugHost.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DebugHost.Designer.cs">
+      <DependentUpon>DebugHost.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ServiceHost.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ServiceHost.Designer.cs">
+      <DependentUpon>ServiceHost.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DebugHost.resx">
+      <DependentUpon>DebugHost.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ServiceHost.resx">
+      <DependentUpon>ServiceHost.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="openMIC.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\CassiniDevLibrary\CassiniDevLibrary.csproj">
+      <Project>{47695c1b-936d-4cac-84b0-82e33fc704dc}</Project>
+      <Name>CassiniDevLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

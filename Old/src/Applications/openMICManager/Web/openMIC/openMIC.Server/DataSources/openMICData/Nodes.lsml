@@ -1,0 +1,576 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ServiceApplication
+  Name="LightSwitchServiceApplication" xmlns="http://schemas.microsoft.com/LightSwitch/2010/xaml/model">
+  <ServiceApplication.Attributes>
+    <Partial />
+  </ServiceApplication.Attributes>
+  <EntityType
+    Name="Node">
+    <EntityType.Methods>
+      <EntityMethod
+        Name="Delete">
+        <EntityMethod.Attributes>
+          <Generated />
+        </EntityMethod.Attributes>
+      </EntityMethod>
+    </EntityType.Methods>
+    <EntityType.Properties>
+      <KeyProperty
+        Name="ID"
+        PropertyType=":Guid">
+        <KeyProperty.Attributes>
+          <Required />
+          <NotSearchable />
+        </KeyProperty.Attributes>
+      </KeyProperty>
+      <EntityProperty
+        Name="Name"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="Longitude"
+        PropertyType=":Decimal?">
+        <EntityProperty.Attributes>
+          <DecimalConstraint
+            Precision="9"
+            Scale="6" />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="Latitude"
+        PropertyType=":Decimal?">
+        <EntityProperty.Attributes>
+          <DecimalConstraint
+            Precision="9"
+            Scale="6" />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="Description"
+        PropertyType=":String?">
+        <EntityProperty.Attributes>
+          <MaxLength />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="ImagePath"
+        PropertyType=":String?">
+        <EntityProperty.Attributes>
+          <MaxLength />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="Settings"
+        PropertyType=":String?">
+        <EntityProperty.Attributes>
+          <MaxLength />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="MenuType"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="MenuData"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="Master"
+        PropertyType=":Boolean">
+        <EntityProperty.Attributes>
+          <Required />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="LoadOrder"
+        PropertyType=":Int32">
+        <EntityProperty.Attributes>
+          <Required />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="Enabled"
+        PropertyType=":Boolean">
+        <EntityProperty.Attributes>
+          <Required />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="CreatedOn"
+        PropertyType=":DateTime">
+        <EntityProperty.Attributes>
+          <Required />
+          <DateTimeConstraint
+            Precision="3"
+            PreserveSeconds="True" />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="CreatedBy"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="UpdatedOn"
+        PropertyType=":DateTime">
+        <EntityProperty.Attributes>
+          <Required />
+          <DateTimeConstraint
+            Precision="3"
+            PreserveSeconds="True" />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="UpdatedBy"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <NavigationProperty
+        Name="Alarms"
+        Association="FK_Alarm_Node"
+        FromEnd="Node"
+        ToEnd="Alarm" />
+      <NavigationProperty
+        Name="Devices"
+        Association="FK_Device_Node"
+        FromEnd="Node"
+        ToEnd="Device" />
+      <NavigationProperty
+        Name="Historians"
+        Association="FK_Historian_Node"
+        FromEnd="Node"
+        ToEnd="Historian" />
+      <NavigationProperty
+        Name="Company"
+        Association="FK_Node_Company"
+        FromEnd="Node"
+        ToEnd="Company" />
+      <NavigationProperty
+        Name="DefaultValues"
+        Association="FK_DefaultValue_Node"
+        FromEnd="Node"
+        ToEnd="DefaultValue" />
+    </EntityType.Properties>
+  </EntityType>
+  <Association
+    Name="FK_Alarm_Node">
+    <AssociationEnd
+      Name="Node"
+      Multiplicity="One"
+      EntityType="Node">
+      <AssociationEnd.Attributes>
+        <DeleteRule />
+      </AssociationEnd.Attributes>
+    </AssociationEnd>
+    <AssociationEnd
+      Name="Alarm"
+      Multiplicity="Many"
+      EntityType="Alarm" />
+  </Association>
+  <Association
+    Name="FK_Device_Node">
+    <AssociationEnd
+      Name="Node"
+      Multiplicity="One"
+      EntityType="Node">
+      <AssociationEnd.Attributes>
+        <DeleteRule />
+      </AssociationEnd.Attributes>
+    </AssociationEnd>
+    <AssociationEnd
+      Name="Device"
+      Multiplicity="Many"
+      EntityType="Device" />
+  </Association>
+  <Association
+    Name="FK_Historian_Node">
+    <AssociationEnd
+      Name="Node"
+      Multiplicity="One"
+      EntityType="Node">
+      <AssociationEnd.Attributes>
+        <DeleteRule
+          Action="Cascade" />
+      </AssociationEnd.Attributes>
+    </AssociationEnd>
+    <AssociationEnd
+      Name="Historian"
+      Multiplicity="Many"
+      EntityType="Historian" />
+  </Association>
+  <EntityContainer
+    Name="openMICData">
+    <EntityContainer.Attributes>
+      <Partial />
+    </EntityContainer.Attributes>
+    <EntitySet
+      Name="Nodes"
+      CanDelete="True"
+      CanInsert="True"
+      CanUpdate="True"
+      EntityType="Node" />
+    <AssociationSet
+      Name="FK_Alarm_Node"
+      Association="FK_Alarm_Node">
+      <AssociationSetEnd
+        Name="Node"
+        EntitySet="Nodes" />
+      <AssociationSetEnd
+        Name="Alarm"
+        EntitySet="Alarms" />
+    </AssociationSet>
+    <AssociationSet
+      Name="FK_Device_Node"
+      Association="FK_Device_Node">
+      <AssociationSetEnd
+        Name="Node"
+        EntitySet="Nodes" />
+      <AssociationSetEnd
+        Name="Device"
+        EntitySet="Devices" />
+    </AssociationSet>
+    <AssociationSet
+      Name="FK_Historian_Node"
+      Association="FK_Historian_Node">
+      <AssociationSetEnd
+        Name="Node"
+        EntitySet="Nodes" />
+      <AssociationSetEnd
+        Name="Historian"
+        EntitySet="Historians" />
+    </AssociationSet>
+    <QueryOperation
+      Name="Nodes_Single"
+      ReturnType="Node">
+      <QueryOperation.Attributes>
+        <Generated />
+        <Description
+          Value="Returns the entity whose identity is specified by the parameter(s)." />
+      </QueryOperation.Attributes>
+      <QueryOperation.FilterExpression>
+        <QueryFilterExpressionTree>
+          <BinaryExpression
+            NodeType="Equal">
+            <BinaryExpression.Left>
+              <ChainExpression>
+                <MemberExpression
+                  Member="ID" />
+              </ChainExpression>
+            </BinaryExpression.Left>
+            <BinaryExpression.Right>
+              <ParameterExpression
+                Parameter="ID" />
+            </BinaryExpression.Right>
+          </BinaryExpression>
+        </QueryFilterExpressionTree>
+      </QueryOperation.FilterExpression>
+      <QueryOperation.Source>
+        <QuerySourceExpressionTree>
+          <MemberExpression
+            Member="Nodes" />
+        </QuerySourceExpressionTree>
+      </QueryOperation.Source>
+      <QueryOperationParameter
+        Name="ID"
+        ParameterType="Microsoft.LightSwitch:Guid?">
+        <QueryOperationParameter.Attributes>
+          <Description
+            Value="The value of the 'ID' key property of the entity to retrieve." />
+        </QueryOperationParameter.Attributes>
+      </QueryOperationParameter>
+    </QueryOperation>
+    <QueryOperation
+      Name="Nodes_SingleOrDefault"
+      ReturnType="Node">
+      <QueryOperation.Attributes>
+        <Generated />
+        <Description
+          Value="Returns the entity whose identity is specified by the parameter(s) or null if no such entity exists." />
+      </QueryOperation.Attributes>
+      <QueryOperation.FilterExpression>
+        <QueryFilterExpressionTree>
+          <BinaryExpression
+            NodeType="Equal">
+            <BinaryExpression.Left>
+              <ChainExpression>
+                <MemberExpression
+                  Member="ID" />
+              </ChainExpression>
+            </BinaryExpression.Left>
+            <BinaryExpression.Right>
+              <ParameterExpression
+                Parameter="ID" />
+            </BinaryExpression.Right>
+          </BinaryExpression>
+        </QueryFilterExpressionTree>
+      </QueryOperation.FilterExpression>
+      <QueryOperation.Source>
+        <QuerySourceExpressionTree>
+          <MemberExpression
+            Member="Nodes" />
+        </QuerySourceExpressionTree>
+      </QueryOperation.Source>
+      <QueryOperationParameter
+        Name="ID"
+        ParameterType="Microsoft.LightSwitch:Guid?">
+        <QueryOperationParameter.Attributes>
+          <Description
+            Value="The value of the 'ID' key property of the entity to retrieve." />
+        </QueryOperationParameter.Attributes>
+      </QueryOperationParameter>
+    </QueryOperation>
+    <AssociationSet
+      Name="FK_DefaultValue_Node"
+      Association="FK_DefaultValue_Node">
+      <AssociationSetEnd
+        Name="Node"
+        EntitySet="Nodes" />
+      <AssociationSetEnd
+        Name="DefaultValue"
+        EntitySet="DefaultValues" />
+    </AssociationSet>
+  </EntityContainer>
+  <Association
+    Name="FK_DefaultValue_Node">
+    <AssociationEnd
+      Name="Node"
+      Multiplicity="One"
+      EntityType="Node">
+      <AssociationEnd.Attributes>
+        <DeleteRule />
+      </AssociationEnd.Attributes>
+    </AssociationEnd>
+    <AssociationEnd
+      Name="DefaultValue"
+      Multiplicity="Many"
+      EntityType="DefaultValue" />
+  </Association>
+  <DataService
+    Name="openMICDataDataService">
+    <DataService.Attributes>
+      <Partial />
+    </DataService.Attributes>
+    <EntitySetMapping
+      EntitySet="Nodes">
+      <EntitySetMapping.Attributes>
+        <SsdlEntitySet
+          Schema="dbo"
+          Table="Node" />
+        <SsdlProperty
+          Name="ID"
+          Nullable="False"
+          Type="uniqueidentifier"
+          Property="Node/Properties[ID]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="Name"
+          Nullable="False"
+          Type="varchar"
+          Property="Node/Properties[Name]" />
+        <SsdlProperty
+          Name="Longitude"
+          Nullable="True"
+          Precision="9"
+          Scale="6"
+          Type="decimal"
+          Property="Node/Properties[Longitude]" />
+        <SsdlProperty
+          Name="Latitude"
+          Nullable="True"
+          Precision="9"
+          Scale="6"
+          Type="decimal"
+          Property="Node/Properties[Latitude]" />
+        <SsdlProperty
+          Name="Description"
+          Nullable="True"
+          Type="varchar(max)"
+          Property="Node/Properties[Description]" />
+        <SsdlProperty
+          Name="ImagePath"
+          Nullable="True"
+          Type="varchar(max)"
+          Property="Node/Properties[ImagePath]" />
+        <SsdlProperty
+          Name="Settings"
+          Nullable="True"
+          Type="varchar(max)"
+          Property="Node/Properties[Settings]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="MenuType"
+          Nullable="False"
+          Type="varchar"
+          Property="Node/Properties[MenuType]" />
+        <SsdlProperty
+          Name="MenuData"
+          Nullable="False"
+          Type="varchar(max)"
+          Property="Node/Properties[MenuData]" />
+        <SsdlProperty
+          Name="Master"
+          Nullable="False"
+          Type="bit"
+          Property="Node/Properties[Master]" />
+        <SsdlProperty
+          Name="LoadOrder"
+          Nullable="False"
+          Type="int"
+          Property="Node/Properties[LoadOrder]" />
+        <SsdlProperty
+          Name="Enabled"
+          Nullable="False"
+          Type="bit"
+          Property="Node/Properties[Enabled]" />
+        <SsdlProperty
+          Name="CreatedOn"
+          Nullable="False"
+          Type="datetime"
+          Property="Node/Properties[CreatedOn]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="CreatedBy"
+          Nullable="False"
+          Type="varchar"
+          Property="Node/Properties[CreatedBy]" />
+        <SsdlProperty
+          Name="UpdatedOn"
+          Nullable="False"
+          Type="datetime"
+          Property="Node/Properties[UpdatedOn]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="UpdatedBy"
+          Nullable="False"
+          Type="varchar"
+          Property="Node/Properties[UpdatedBy]" />
+        <SsdlForeignKeyProperty
+          Name="CompanyID"
+          Nullable="True"
+          Type="int"
+          PropertyName="CompanyID" />
+      </EntitySetMapping.Attributes>
+    </EntitySetMapping>
+    <AssociationSetMapping
+      AssociationSet="FK_Alarm_Node">
+      <AssociationSetMapping.Attributes>
+        <SsdlAssociationSet
+          Name="FK_Alarm_Node" />
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Alarm_Node]/Members[Node]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="ID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Alarm_Node]/Members[Alarm]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="NodeID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+      </AssociationSetMapping.Attributes>
+    </AssociationSetMapping>
+    <AssociationSetMapping
+      AssociationSet="FK_DefaultValue_Node">
+      <AssociationSetMapping.Attributes>
+        <SsdlAssociationSet
+          Name="FK_DefaultValue_Node" />
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_DefaultValue_Node]/Members[Node]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="ID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_DefaultValue_Node]/Members[DefaultValue]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="NodeID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+      </AssociationSetMapping.Attributes>
+    </AssociationSetMapping>
+    <AssociationSetMapping
+      AssociationSet="FK_Device_Node">
+      <AssociationSetMapping.Attributes>
+        <SsdlAssociationSet
+          Name="FK_Device_Node" />
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Device_Node]/Members[Node]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="ID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Device_Node]/Members[Device]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="NodeID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+      </AssociationSetMapping.Attributes>
+    </AssociationSetMapping>
+    <AssociationSetMapping
+      AssociationSet="FK_Historian_Node">
+      <AssociationSetMapping.Attributes>
+        <SsdlAssociationSet
+          Name="FK_Historian_Node" />
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Historian_Node]/Members[Node]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="ID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Historian_Node]/Members[Historian]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="NodeID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+      </AssociationSetMapping.Attributes>
+    </AssociationSetMapping>
+  </DataService>
+</ServiceApplication>

@@ -1,0 +1,299 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Mapping xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Space="C-S" xmlns="http://schemas.microsoft.com/ado/2008/09/mapping/cs">
+  <EntityContainerMapping CdmEntityContainer="openMICData" StorageEntityContainer="openMICDataStore">
+    <EntitySetMapping Name="AccessLogs">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.AccessLog)">
+        <MappingFragment StoreEntitySet="AccessLogs">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="UserName" ColumnName="UserName" />
+          <ScalarProperty Name="AccessGranted" ColumnName="AccessGranted" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="AlarmLogs">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.AlarmLog)">
+        <MappingFragment StoreEntitySet="AlarmLogs">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Ticks" ColumnName="Ticks" />
+          <ScalarProperty Name="Timestamp" ColumnName="Timestamp" />
+          <ScalarProperty Name="Value" ColumnName="Value" />
+          <ScalarProperty Name="NewState" ColumnName="NewState" />
+          <ScalarProperty Name="PreviousState" ColumnName="PreviousState" />
+          <ScalarProperty Name="SignalID" ColumnName="SignalID" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Alarms">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Alarm)">
+        <MappingFragment StoreEntitySet="Alarms">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="TagName" ColumnName="TagName" />
+          <ScalarProperty Name="AssociatedMeasurementID" ColumnName="AssociatedMeasurementID" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="Severity" ColumnName="Severity" />
+          <ScalarProperty Name="Operation" ColumnName="Operation" />
+          <ScalarProperty Name="SetPoint" ColumnName="SetPoint" />
+          <ScalarProperty Name="Tolerance" ColumnName="Tolerance" />
+          <ScalarProperty Name="Delay" ColumnName="Delay" />
+          <ScalarProperty Name="Hysteresis" ColumnName="Hysteresis" />
+          <ScalarProperty Name="LoadOrder" ColumnName="LoadOrder" />
+          <ScalarProperty Name="Enabled" ColumnName="Enabled" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+          <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+          <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+          <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+          <ScalarProperty Name="SignalID" ColumnName="SignalID" />
+          <ScalarProperty Name="NodeID" ColumnName="NodeID" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="AuditLogs">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.AuditLog)">
+        <MappingFragment StoreEntitySet="AuditLogs">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="TableName" ColumnName="TableName" />
+          <ScalarProperty Name="PrimaryKeyColumn" ColumnName="PrimaryKeyColumn" />
+          <ScalarProperty Name="PrimaryKeyValue" ColumnName="PrimaryKeyValue" />
+          <ScalarProperty Name="ColumnName" ColumnName="ColumnName" />
+          <ScalarProperty Name="OriginalValue" ColumnName="OriginalValue" />
+          <ScalarProperty Name="NewValue" ColumnName="NewValue" />
+          <ScalarProperty Name="Deleted" ColumnName="Deleted" />
+          <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+          <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Companies">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Company)">
+        <MappingFragment StoreEntitySet="Companies">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Acronym" ColumnName="Acronym" />
+          <ScalarProperty Name="MapAcronym" ColumnName="MapAcronym" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="URL" ColumnName="URL" />
+          <ScalarProperty Name="LoadOrder" ColumnName="LoadOrder" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+          <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+          <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+          <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="DefaultValues">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.DefaultValue)">
+        <MappingFragment StoreEntitySet="DefaultValues">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="ContactList" ColumnName="ContactList" />
+          <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+          <ScalarProperty Name="HistorianID" ColumnName="HistorianID" />
+          <ScalarProperty Name="InterconnectionID" ColumnName="InterconnectionID" />
+          <ScalarProperty Name="NodeID" ColumnName="NodeID" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Devices">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Device)">
+        <MappingFragment StoreEntitySet="Devices">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="UniqueID" ColumnName="UniqueID" />
+          <ScalarProperty Name="Acronym" ColumnName="Acronym" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="HistorianID" ColumnName="HistorianID" />
+          <ScalarProperty Name="AccessID" ColumnName="AccessID" />
+          <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+          <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+          <ScalarProperty Name="ConnectionString" ColumnName="ConnectionString" />
+          <ScalarProperty Name="TimeZone" ColumnName="TimeZone" />
+          <ScalarProperty Name="TimeAdjustmentTicks" ColumnName="TimeAdjustmentTicks" />
+          <ScalarProperty Name="TypicalDataFrequency" ColumnName="TypicalDataFrequency" />
+          <ScalarProperty Name="DataFrequencyUnits" ColumnName="DataFrequencyUnits" />
+          <ScalarProperty Name="MeasurementReportingInterval" ColumnName="MeasurementReportingInterval" />
+          <ScalarProperty Name="ContactList" ColumnName="ContactList" />
+          <ScalarProperty Name="MeasuredLines" ColumnName="MeasuredLines" />
+          <ScalarProperty Name="LoadOrder" ColumnName="LoadOrder" />
+          <ScalarProperty Name="Enabled" ColumnName="Enabled" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+          <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+          <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+          <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+          <ScalarProperty Name="InterconnectionID" ColumnName="InterconnectionID" />
+          <ScalarProperty Name="NodeID" ColumnName="NodeID" />
+          <ScalarProperty Name="ProtocolID" ColumnName="ProtocolID" />
+          <ScalarProperty Name="VendorDeviceID" ColumnName="VendorDeviceID" />
+          <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="ErrorLogs">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.ErrorLog)">
+        <MappingFragment StoreEntitySet="ErrorLogs">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Source" ColumnName="Source" />
+          <ScalarProperty Name="Type" ColumnName="Type" />
+          <ScalarProperty Name="Message" ColumnName="Message" />
+          <ScalarProperty Name="Detail" ColumnName="Detail" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Historians">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Historian)">
+        <MappingFragment StoreEntitySet="Historians">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Acronym" ColumnName="Acronym" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="AssemblyName" ColumnName="AssemblyName" />
+          <ScalarProperty Name="TypeName" ColumnName="TypeName" />
+          <ScalarProperty Name="ConnectionString" ColumnName="ConnectionString" />
+          <ScalarProperty Name="IsLocal" ColumnName="IsLocal" />
+          <ScalarProperty Name="MeasurementReportingInterval" ColumnName="MeasurementReportingInterval" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="LoadOrder" ColumnName="LoadOrder" />
+          <ScalarProperty Name="Enabled" ColumnName="Enabled" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+          <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+          <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+          <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+          <ScalarProperty Name="NodeID" ColumnName="NodeID" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Interconnections">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Interconnection)">
+        <MappingFragment StoreEntitySet="Interconnections">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Acronym" ColumnName="Acronym" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="LoadOrder" ColumnName="LoadOrder" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Measurements">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Measurement)">
+        <MappingFragment StoreEntitySet="Measurements">
+          <ScalarProperty Name="SignalID" ColumnName="SignalID" />
+          <ScalarProperty Name="HistorianID" ColumnName="HistorianID" />
+          <ScalarProperty Name="PointTag" ColumnName="PointTag" />
+          <ScalarProperty Name="AlternateTag" ColumnName="AlternateTag" />
+          <ScalarProperty Name="SignalReference" ColumnName="SignalReference" />
+          <ScalarProperty Name="Adder" ColumnName="Adder" />
+          <ScalarProperty Name="Multiplier" ColumnName="Multiplier" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="Internal" ColumnName="Internal" />
+          <ScalarProperty Name="Subscribed" ColumnName="Subscribed" />
+          <ScalarProperty Name="Enabled" ColumnName="Enabled" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+          <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+          <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+          <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+          <ScalarProperty Name="PointID" ColumnName="PointID" />
+          <ScalarProperty Name="DeviceID" ColumnName="DeviceID" />
+          <ScalarProperty Name="SignalTypeID" ColumnName="SignalTypeID" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Nodes">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Node)">
+        <MappingFragment StoreEntitySet="Nodes">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+          <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="ImagePath" ColumnName="ImagePath" />
+          <ScalarProperty Name="Settings" ColumnName="Settings" />
+          <ScalarProperty Name="MenuType" ColumnName="MenuType" />
+          <ScalarProperty Name="MenuData" ColumnName="MenuData" />
+          <ScalarProperty Name="Master" ColumnName="Master" />
+          <ScalarProperty Name="LoadOrder" ColumnName="LoadOrder" />
+          <ScalarProperty Name="Enabled" ColumnName="Enabled" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+          <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+          <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+          <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+          <ScalarProperty Name="CompanyID" ColumnName="CompanyID" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Protocols">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Protocol)">
+        <MappingFragment StoreEntitySet="Protocols">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Acronym" ColumnName="Acronym" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="Type" ColumnName="Type" />
+          <ScalarProperty Name="Category" ColumnName="Category" />
+          <ScalarProperty Name="AssemblyName" ColumnName="AssemblyName" />
+          <ScalarProperty Name="TypeName" ColumnName="TypeName" />
+          <ScalarProperty Name="LoadOrder" ColumnName="LoadOrder" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="SignalTypes">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.SignalType)">
+        <MappingFragment StoreEntitySet="SignalTypes">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="Acronym" ColumnName="Acronym" />
+          <ScalarProperty Name="Suffix" ColumnName="Suffix" />
+          <ScalarProperty Name="Abbreviation" ColumnName="Abbreviation" />
+          <ScalarProperty Name="LongAcronym" ColumnName="LongAcronym" />
+          <ScalarProperty Name="Source" ColumnName="Source" />
+          <ScalarProperty Name="EngineeringUnits" ColumnName="EngineeringUnits" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Statistics">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Statistic)">
+        <MappingFragment StoreEntitySet="Statistics">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Source" ColumnName="Source" />
+          <ScalarProperty Name="SignalIndex" ColumnName="SignalIndex" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="AssemblyName" ColumnName="AssemblyName" />
+          <ScalarProperty Name="TypeName" ColumnName="TypeName" />
+          <ScalarProperty Name="MethodName" ColumnName="MethodName" />
+          <ScalarProperty Name="Arguments" ColumnName="Arguments" />
+          <ScalarProperty Name="Enabled" ColumnName="Enabled" />
+          <ScalarProperty Name="DataType" ColumnName="DataType" />
+          <ScalarProperty Name="DisplayFormat" ColumnName="DisplayFormat" />
+          <ScalarProperty Name="IsConnectedState" ColumnName="IsConnectedState" />
+          <ScalarProperty Name="LoadOrder" ColumnName="LoadOrder" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="VendorDevices">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.VendorDevice)">
+        <MappingFragment StoreEntitySet="VendorDevices">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="URL" ColumnName="URL" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+          <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+          <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+          <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+          <ScalarProperty Name="VendorID" ColumnName="VendorID" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="Vendors">
+      <EntityTypeMapping TypeName="IsTypeOf(LightSwitchApplication.Vendor)">
+        <MappingFragment StoreEntitySet="Vendors">
+          <ScalarProperty Name="ID" ColumnName="ID" />
+          <ScalarProperty Name="Acronym" ColumnName="Acronym" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+          <ScalarProperty Name="ContactEmail" ColumnName="ContactEmail" />
+          <ScalarProperty Name="URL" ColumnName="URL" />
+          <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+          <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+          <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+          <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+  </EntityContainerMapping>
+</Mapping>

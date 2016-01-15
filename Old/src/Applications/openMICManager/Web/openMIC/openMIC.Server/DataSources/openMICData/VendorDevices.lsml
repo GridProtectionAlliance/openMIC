@@ -1,0 +1,308 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ServiceApplication
+  Name="LightSwitchServiceApplication" xmlns="http://schemas.microsoft.com/LightSwitch/2010/xaml/model">
+  <ServiceApplication.Attributes>
+    <Partial />
+  </ServiceApplication.Attributes>
+  <EntityType
+    Name="VendorDevice">
+    <EntityType.Methods>
+      <EntityMethod
+        Name="Delete">
+        <EntityMethod.Attributes>
+          <Generated />
+        </EntityMethod.Attributes>
+      </EntityMethod>
+    </EntityType.Methods>
+    <EntityType.Properties>
+      <KeyProperty
+        Name="ID"
+        IsReadOnly="True"
+        PropertyType=":Int32">
+        <KeyProperty.Attributes>
+          <Hidden />
+          <Required />
+          <NotSearchable />
+        </KeyProperty.Attributes>
+      </KeyProperty>
+      <EntityProperty
+        Name="Name"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="Description"
+        PropertyType=":String?">
+        <EntityProperty.Attributes>
+          <MaxLength />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="URL"
+        PropertyType=":String?">
+        <EntityProperty.Attributes>
+          <MaxLength />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="CreatedOn"
+        PropertyType=":DateTime">
+        <EntityProperty.Attributes>
+          <Required />
+          <DateTimeConstraint
+            Precision="3"
+            PreserveSeconds="True" />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="CreatedBy"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="UpdatedOn"
+        PropertyType=":DateTime">
+        <EntityProperty.Attributes>
+          <Required />
+          <DateTimeConstraint
+            Precision="3"
+            PreserveSeconds="True" />
+          <NotSearchable />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <EntityProperty
+        Name="UpdatedBy"
+        PropertyType=":String">
+        <EntityProperty.Attributes>
+          <Required />
+          <MaxLength
+            Value="200" />
+          <AnsiConstraint />
+        </EntityProperty.Attributes>
+      </EntityProperty>
+      <NavigationProperty
+        Name="Devices"
+        Association="FK_Device_VendorDevice"
+        FromEnd="VendorDevice"
+        ToEnd="Device" />
+      <NavigationProperty
+        Name="Vendor"
+        Association="FK_VendorDevice_Vendor"
+        FromEnd="VendorDevice"
+        ToEnd="Vendor" />
+    </EntityType.Properties>
+  </EntityType>
+  <Association
+    Name="FK_Device_VendorDevice">
+    <AssociationEnd
+      Name="VendorDevice"
+      EntityType="VendorDevice">
+      <AssociationEnd.Attributes>
+        <DeleteRule />
+      </AssociationEnd.Attributes>
+    </AssociationEnd>
+    <AssociationEnd
+      Name="Device"
+      Multiplicity="Many"
+      EntityType="Device" />
+  </Association>
+  <EntityContainer
+    Name="openMICData">
+    <EntityContainer.Attributes>
+      <Partial />
+    </EntityContainer.Attributes>
+    <EntitySet
+      Name="VendorDevices"
+      CanDelete="True"
+      CanInsert="True"
+      CanUpdate="True"
+      EntityType="VendorDevice" />
+    <AssociationSet
+      Name="FK_Device_VendorDevice"
+      Association="FK_Device_VendorDevice">
+      <AssociationSetEnd
+        Name="VendorDevice"
+        EntitySet="VendorDevices" />
+      <AssociationSetEnd
+        Name="Device"
+        EntitySet="Devices" />
+    </AssociationSet>
+    <QueryOperation
+      Name="VendorDevices_Single"
+      ReturnType="VendorDevice">
+      <QueryOperation.Attributes>
+        <Generated />
+        <Description
+          Value="Returns the entity whose identity is specified by the parameter(s)." />
+      </QueryOperation.Attributes>
+      <QueryOperation.FilterExpression>
+        <QueryFilterExpressionTree>
+          <BinaryExpression
+            NodeType="Equal">
+            <BinaryExpression.Left>
+              <ChainExpression>
+                <MemberExpression
+                  Member="ID" />
+              </ChainExpression>
+            </BinaryExpression.Left>
+            <BinaryExpression.Right>
+              <ParameterExpression
+                Parameter="ID" />
+            </BinaryExpression.Right>
+          </BinaryExpression>
+        </QueryFilterExpressionTree>
+      </QueryOperation.FilterExpression>
+      <QueryOperation.Source>
+        <QuerySourceExpressionTree>
+          <MemberExpression
+            Member="VendorDevices" />
+        </QuerySourceExpressionTree>
+      </QueryOperation.Source>
+      <QueryOperationParameter
+        Name="ID"
+        ParameterType="Microsoft.LightSwitch:Int32?">
+        <QueryOperationParameter.Attributes>
+          <Description
+            Value="The value of the 'ID' key property of the entity to retrieve." />
+        </QueryOperationParameter.Attributes>
+      </QueryOperationParameter>
+    </QueryOperation>
+    <QueryOperation
+      Name="VendorDevices_SingleOrDefault"
+      ReturnType="VendorDevice">
+      <QueryOperation.Attributes>
+        <Generated />
+        <Description
+          Value="Returns the entity whose identity is specified by the parameter(s) or null if no such entity exists." />
+      </QueryOperation.Attributes>
+      <QueryOperation.FilterExpression>
+        <QueryFilterExpressionTree>
+          <BinaryExpression
+            NodeType="Equal">
+            <BinaryExpression.Left>
+              <ChainExpression>
+                <MemberExpression
+                  Member="ID" />
+              </ChainExpression>
+            </BinaryExpression.Left>
+            <BinaryExpression.Right>
+              <ParameterExpression
+                Parameter="ID" />
+            </BinaryExpression.Right>
+          </BinaryExpression>
+        </QueryFilterExpressionTree>
+      </QueryOperation.FilterExpression>
+      <QueryOperation.Source>
+        <QuerySourceExpressionTree>
+          <MemberExpression
+            Member="VendorDevices" />
+        </QuerySourceExpressionTree>
+      </QueryOperation.Source>
+      <QueryOperationParameter
+        Name="ID"
+        ParameterType="Microsoft.LightSwitch:Int32?">
+        <QueryOperationParameter.Attributes>
+          <Description
+            Value="The value of the 'ID' key property of the entity to retrieve." />
+        </QueryOperationParameter.Attributes>
+      </QueryOperationParameter>
+    </QueryOperation>
+  </EntityContainer>
+  <DataService
+    Name="openMICDataDataService">
+    <DataService.Attributes>
+      <Partial />
+    </DataService.Attributes>
+    <EntitySetMapping
+      EntitySet="VendorDevices">
+      <EntitySetMapping.Attributes>
+        <SsdlEntitySet
+          Schema="dbo"
+          Table="VendorDevice" />
+        <SsdlProperty
+          Name="ID"
+          Nullable="False"
+          StoreGeneratedPattern="Identity"
+          Type="int"
+          Property="VendorDevice/Properties[ID]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="Name"
+          Nullable="False"
+          Type="varchar"
+          Property="VendorDevice/Properties[Name]" />
+        <SsdlProperty
+          Name="Description"
+          Nullable="True"
+          Type="varchar(max)"
+          Property="VendorDevice/Properties[Description]" />
+        <SsdlProperty
+          Name="URL"
+          Nullable="True"
+          Type="varchar(max)"
+          Property="VendorDevice/Properties[URL]" />
+        <SsdlProperty
+          Name="CreatedOn"
+          Nullable="False"
+          Type="datetime"
+          Property="VendorDevice/Properties[CreatedOn]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="CreatedBy"
+          Nullable="False"
+          Type="varchar"
+          Property="VendorDevice/Properties[CreatedBy]" />
+        <SsdlProperty
+          Name="UpdatedOn"
+          Nullable="False"
+          Type="datetime"
+          Property="VendorDevice/Properties[UpdatedOn]" />
+        <SsdlProperty
+          MaxLength="200"
+          Name="UpdatedBy"
+          Nullable="False"
+          Type="varchar"
+          Property="VendorDevice/Properties[UpdatedBy]" />
+        <SsdlForeignKeyProperty
+          Name="VendorID"
+          Nullable="False"
+          Type="int"
+          PropertyName="VendorID" />
+      </EntitySetMapping.Attributes>
+    </EntitySetMapping>
+    <AssociationSetMapping
+      AssociationSet="FK_Device_VendorDevice">
+      <AssociationSetMapping.Attributes>
+        <SsdlAssociationSet
+          Name="FK_Device_VendorDevice" />
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Device_VendorDevice]/Members[VendorDevice]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="ID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+        <SsdlAssociationSetEnd
+          End="openMICData/Members[FK_Device_VendorDevice]/Members[Device]">
+          <SsdlAssociationSetEnd.Attributes>
+            <SsdlPropertyRef
+              Name="VendorDeviceID" />
+          </SsdlAssociationSetEnd.Attributes>
+        </SsdlAssociationSetEnd>
+      </AssociationSetMapping.Attributes>
+    </AssociationSetMapping>
+  </DataService>
+</ServiceApplication>

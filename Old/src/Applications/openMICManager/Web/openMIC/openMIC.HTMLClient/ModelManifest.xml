@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ModelDocumentManifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Documents>
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Properties\openMICData\Companies.lsml" Checksum="9106B1BDFECF91F0B06648B4BE580C30FCA90A0455A719535D2572AB755AA2B0" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Properties\openMICData\Devices.lsml" Checksum="E4DB8234D7776099CDEB3325458E97190EBEDC55E587DA4309D0A11E161A337A" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Properties\openMICData\Nodes.lsml" Checksum="F2DBCD3F6571FB1D1731FD721A83862840CC55EF8C87202A096B3D6FAC8B5E11" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Properties\Client.lsml" Checksum="683D288BD74F3ED3A0618EFEA05735AEBB12FEBD6F7112C0A8DB2379D2B1F8F9" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Properties\Proxies.lsml" Checksum="A3E6CB5E4934E7E53B49CF7BEAB2CDEC368FDBD9255E3F4A0D169E5682B6FF56" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Screens\Companies\AddEditCompany.lsml" Checksum="E7B649C4698CFE81708FE7D8DD8345BA68BC3C7847F14B7EDC59BB783F63A7DB" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Screens\Companies\BrowseCompanies.lsml" Checksum="C3E0A746EDF4B07360F6FC6E49724D7F6F0ECA8C5AC61F47CF6FA7607C949491" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Screens\Companies\ViewCompany.lsml" Checksum="4E622893C9500EB1D0B61CD6B128789A3F08EA6AE9A7FF9C50542814DFFD8301" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Screens\Devices\AddEditDevice.lsml" Checksum="BCAD5A8AA4FEC5C039B99B7D317EE36126D20B35D07DD88D767194E0AB971338" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Screens\Devices\BrowseDevices.lsml" Checksum="972A41C13966DB2EE81BA920EBDA3C4FCC6BAB5E59DE60048D9B35576BC11AC0" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Screens\Devices\ViewDevice.lsml" Checksum="87CABCCE066B6AE7E14C5EACA28E5F5F17F0A2B03128E1D9B9493208EA277175" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Screens\NodesSet\AddEditNodes.lsml" Checksum="9CC1A2F892DDCC16829C4AB569541384E3FA76C0FE546BD309975BAFBDDC9A1E" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Screens\NodesSet\BrowseNodesSet.lsml" Checksum="FA23CD64331ACF031991C5246ED6E74B66FC789E0FFEAF1BFF51EB7D33392132" />
+    <Document FullPath="D:\Projects\openMIC\src\Applications\openMICManager\Web\openMIC\openMIC.HTMLClient\Screens\NodesSet\ViewNodes.lsml" Checksum="D8964FC7F1DF515BA8748B466F2C9606D6B70E028F9C9068A548EEADD8C50695" />
+  </Documents>
+</ModelDocumentManifest>
