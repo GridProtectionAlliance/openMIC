@@ -52,9 +52,6 @@ namespace openMIC
 
             string fileExtension = FilePath.GetExtension(pageName).ToLowerInvariant();
 
-            if (string.IsNullOrEmpty(fileExtension))
-                pageName += ".cshtml";
-
             var model = new
             {
                 Name = "Hello World"

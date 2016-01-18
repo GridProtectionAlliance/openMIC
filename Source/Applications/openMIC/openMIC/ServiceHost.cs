@@ -123,7 +123,7 @@ namespace openMIC
 
             systemSettings.Add("CompanyName", "Grid Protection Alliance", "The name of the company who owns this instance of the openMIC.");
             systemSettings.Add("CompanyAcronym", "GPA", "The acronym representing the company who owns this instance of the openMIC.");
-            systemSettings.Add("WebHostURL", "http://localhost:8080", "The web hosting URL for remote system management.");
+            systemSettings.Add("WebHostURL", "http://localhost:8989", "The web hosting URL for remote system management.");
             systemSettings.Add("WebRootFolder", "wwwroot", "The default root for the hosted web server files. Location will be relative to install folder if full path is not specified.");
             systemSettings.Add("DefaultWebPage", "Index.cshtml", "The default web page for the hosted web server.");
 

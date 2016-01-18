@@ -1,42 +1,60 @@
 ﻿@using System
+@using GSF.Identity
 @{
     const string DateTimeFormat = "yyyy-MM-dd HH:mm.ss.fff";
+    const int DefaultRemoteConsoleEntries = 100;
+    const int MinimumRemoteConsoleEntries = 10;
 
     Layout = "Layout.cshtml";
     ViewBag.Title = "Home";
 }
 <div class="row">
-    <div class="col-sm-4">
+    <div class="col-lg-4 col-md-4 col-sm-5">
         <div class="panel panel-default">
             <div class="panel-heading">Quick Links</div>
             <div class="panel-body">
-                <div class="btn-group-vertical">
-                    <button type="button" class="btn btn-default" style="padding-left: 50px; padding-right: 50px">Overview</button>
-                    <button type="button" class="btn btn-default" style="padding-left: 50px; padding-right: 50px">Status</button>
-                    <button type="button" class="btn btn-default" style="padding-left: 50px; padding-right: 50px">Devices</button>
-                    <button type="button" class="btn btn-default" style="padding-left: 50px; padding-right: 50px">Restart Service</button>
+                <div class="btn-group-vertical btn-block">
+                    <button type="button" class="btn btn-primary">Devices</button>
+                    <button type="button" class="btn btn-default">Status</button>
+                    <button type="button" class="btn btn-default">Schedules</button>
+                    <button type="button" class="btn btn-default">Restart Service</button>
                 </div>
             </div>
         </div>
+        <ul class="list-group">
+            <li class="list-group-item"><span class="badge" id="serverTime">@DateTime.UtcNow.ToString(DateTimeFormat)</span>Server&nbsp;Time</li>
+            <li class="list-group-item"><span class="badge" id="localTime">@DateTime.UtcNow.ToString(DateTimeFormat)</span>Local&nbsp;Time</li>
+            <li class="list-group-item"><span class="badge">@UserInfo.CurrentUserID</span> Current User</li>
+        </ul>
     </div>
-    <div class="col-sm-8">
+    <div class="col-lg-8 col-md-8 col-sm-7">
         <div class="well">
-            <pre id="serviceMessages" class="pre-scrollable" style="color: white; background-color: black; height: 150px">Log Window</pre>
-            <br/>
-            <input type="text" id="commandText" />
-            <input type="button" id="sendCommand" value="Send" />
+            <button class="btn btn-link btn-xs" id="remoteConsoleSettingsButton">Settings</button>
+            <div class="well well-sm floating-form" id="remoteConsoleSettingsForm">
+                <form class="form-inline" role="form">
+                    <div class="form-group form-group-sm">
+                        <label for="remoteConsoleTotalEntriesTextInput">Total console entries:</label>
+                        <div class="input-group col-xs-4">
+                            <input type="number" min="@MinimumRemoteConsoleEntries" data-bind="value:totalRemoteConsoleEntries" class="form-control input-sm" id="remoteConsoleTotalEntriesTextInput">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default btn-xs input-sm" id="setTotalRemoteConsoleEntriesButton">Set</button>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <pre id="remoteConsoleWindow" class="small pre-scrollable remote-console" style="color: white; background-color: black; height: 350px"></pre>
+            <div class="input-group">
+                <input type="text" id="commandTextInput" class="form-control" placeholder="Server command..."/>
+                <span class="input-group-btn">
+                    <button type="button" id="sendCommandButton" class="btn btn-default">Send</button>
+                </span>
+            </div>
         </div>
     </div>
 </div>
 <div class="row">
-    <div class="col-sm-4">
-        <ul class="list-group">
-            <li class="list-group-item"><span class="badge" id="serverTime">@DateTime.UtcNow.ToString(DateTimeFormat)</span> Server Time</li>
-            <li class="list-group-item"><span class="badge" id="localTime">@DateTime.UtcNow.ToString(DateTimeFormat)</span> Local Time</li>
-            <li class="list-group-item"><span class="badge">n/a</span> Current User</li>
-        </ul>
-    </div>
-    <div class="col-sm-8">
+    <div class="col-lg-12 col-md-12 col-sm-12">
         <div class="panel panel-default">
             <div class="panel-heading">System Health</div>
             <div class="panel-body">
@@ -46,42 +64,109 @@
     </div>
 </div>
 <script type="text/javascript">
-    function onHubConnected() {
-        // Create a function that the hub can call to broadcast messages.
-        serviceHubClient.broadcastMessage = function (message, color) {
-            // Html encode message
-            var encodedMessage = $('<div />').text(message).html();
-            $('#serviceMessages').append('<span style="color: ' + color + '">' + encodedMessage + '</span>');
-        };
+    var totalRemoteConsoleEntries = Cookies.get('totalRemoteConsoleEntries');
 
-        $('#sendCommand').click(function () {
-            // Call the send command method on the hub
-            serviceHub.sendCommand($('#commandText').val());
-            // Clear text box and reset focus for next command
-            $('#commandText').val('').focus();
-        });
+    if (!totalRemoteConsoleEntries)
+    {
+        // Initialize default setting for total remote console entries
+        totalRemoteConsoleEntries = @DefaultRemoteConsoleEntries;
+        Cookies.set('totalRemoteConsoleEntries', totalRemoteConsoleEntries, { expires: 365 });
     }
 
     function updateLocalTime() {
         $('#localTime').html(new Date().formatDate("@DateTimeFormat", true));
 
         if (hubIsConnected) {
-            serviceHub.getServerTime().done(function (serverTime) {
+            serviceHub.getServerTime().done(function(serverTime) {
                 $('#serverTime').html(serverTime.formatDate("@DateTimeFormat", true));
             });
         }
     }
 
-    $(document).ready(function() {
+    function updateTotalRemoteConsoleEntries() {
+    }
+
+    $(function() {
+        var overRemoteConsole = false;
+
         updateLocalTime();
         setInterval(updateLocalTime, 1000);
 
-        $('#commandText').keyup(function (event) {
-            if (event.keyCode == 13) {
-                $('#sendCommand').click();
-            }
+        $('#remoteConsoleTotalEntriesTextInput').val(totalRemoteConsoleEntries.toString());
+
+        $('#remoteConsoleSettingsButton').click(function() {
+            $('#remoteConsoleSettingsForm').toggle();
+
+            if ($('#remoteConsoleSettingsForm').is(':visible'))
+                $('#remoteConsoleTotalEntriesTextInput').focus();
         });
 
-        $('#commandText').focus();
+        $('#setTotalRemoteConsoleEntriesButton').click(function() {
+            totalRemoteConsoleEntries = parseInt($('#remoteConsoleTotalEntriesTextInput').val());
+
+            if (totalRemoteConsoleEntries < @MinimumRemoteConsoleEntries)
+                totalRemoteConsoleEntries = @MinimumRemoteConsoleEntries;
+
+            Cookies.set('totalRemoteConsoleEntries', totalRemoteConsoleEntries, { expires: 365 });
+            $('#remoteConsoleTotalEntriesTextInput').val(totalRemoteConsoleEntries.toString());
+            $('#remoteConsoleSettingsForm').hide();
+        });
+
+        // Prevent default form submission when user presses enter
+        $('#remoteConsoleSettingsForm').submit(function() {
+            return false;
+        });
+
+        $('#remoteConsoleTotalEntriesTextInput').keyup(function(event) {
+            if (event.keyCode === 13)
+                $('#setTotalRemoteConsoleEntriesButton').click();
+        });
+
+        function scrollRemoteConsoleToBottom() {
+            var remoteConsole = $('#remoteConsoleWindow');
+            remoteConsole.scrollTop(remoteConsole[0].scrollHeight);
+        }
+
+        // Create a function that the hub can call to broadcast messages.
+        serviceHubClient.broadcastMessage = function(message, color) {
+            // Html encode message
+            var encodedMessage = $('<div />').text(message).html();
+            var remoteConsole = $('#remoteConsoleWindow');
+
+            remoteConsole.append('<span style="color: ' + color + '">' + encodedMessage + '</span>');
+
+            if (remoteConsole[0].childElementCount > totalRemoteConsoleEntries)
+                remoteConsole.find(':first-child').remove();
+
+            if (!overRemoteConsole)
+                scrollRemoteConsoleToBottom();
+        }
+
+        $('#remoteConsoleWindow').mouseenter(function() {
+            overRemoteConsole = true;
+        });
+
+        $('#remoteConsoleWindow').mouseleave(function() {
+            overRemoteConsole = false;
+            scrollRemoteConsoleToBottom();
+        });
+
+        $(window).resize(scrollRemoteConsoleToBottom);
+
+        $('#sendCommandButton').click(function() {
+            // Call the send command method on the hub
+            if (hubIsConnected)
+                serviceHub.sendCommand($('#commandTextInput').val());
+
+            // Clear text box and reset focus for next command
+            $('#commandTextInput').val('').focus();
+        });
+
+        $('#commandTextInput').on('keyup keypress', function(event) {
+            if (event.keyCode === 13)
+                $('#sendCommandButton').click();
+        });
+
+        $('#commandTextInput').focus();
     });
 </script>

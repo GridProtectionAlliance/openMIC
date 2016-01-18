@@ -40,6 +40,7 @@
     <meta name="msapplication-wide310x150logo" content="Images/Icons/mstile-310x150.png" />
     <meta name="msapplication-square310x310logo" content="Images/Icons/mstile-310x310.png" />
     <script src="Scripts/jquery-2.1.4.min.js"></script>
+    <script src="Scripts/js.cookie.js"></script>
     <script src="Scripts/bootstrap.min.js"></script>
     <script src="Scripts/ie10-viewport-bug-workaround.js"></script>
     <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
@@ -65,24 +66,25 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">Home</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li @Raw(ViewBag.Title == "Home" ? "class=\"active\"" : "")><a href="Index.cshtml">Home</a></li>
+                    <li @Raw(ViewBag.Title == "Devices" ? "class=\"active\"" : "")><a href="Devices.cshtml">Devices</a></li>
+                    <li @Raw(ViewBag.Title == "Status" ? "class=\"active\"" : "")><a href="Status.cshtml">Status</a></li>
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Meta-data <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#">Action</a></li>
-                            <li><a href="#">Another action</a></li>
-                            <li><a href="#">Something else here</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li class="dropdown-header">Nav header</li>
-                            <li><a href="#">Separated link</a></li>
-                            <li><a href="#">One more separated link</a></li>
+                            <li><a href="Vendors.cshtml">Vendors</a></li>
+                            <li><a href="VendorDevices.cshtml">Vendor Devices</a></li>
+                            @*
+                                <li role="separator" class="divider"></li>
+                                <li class="dropdown-header">Nav header</li>
+                                <li><a href="#">Separated link</a></li>
+                                <li><a href="#">One more separated link</a></li>
+                            *@
                         </ul>
                     </li>
                 </ul>
                 <p class="nav navbar-text navbar-right" style="padding-right: 20px">
-                    <button type="button" class="btn btn-sm btn-info">Log In</button>
+                    <button type="button" class="btn btn-sm btn-info disabled">Log Out</button>
                 </p>
             </div><!--/.nav-collapse -->
         </div>
@@ -115,23 +117,20 @@
         }
     </script>
     <div class="container theme-showcase" role="main">
-        <br />
-        <div class="alert alert-info fade in" role="alert" id="info-msg-block" style="display:none">
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-            <span class="sr-only">Info</span>
-            <strong>Info:</strong>&nbsp;<span id="info-msg-text"></span>
-        </div>
-
-        <div class="alert alert-danger fade in" role="alert" id="error-msg-block" style="display:none">
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-            <span class="sr-only">Error</span>
-            <strong>Error:</strong>&nbsp;<span id="error-msg-text"></span>
-        </div>
-
         <div class="page-header">
-            <h2>@ViewBag.Title</h2>
+            <div class="alert alert-info fade in" role="alert" id="info-msg-block" style="display:none">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                <span class="sr-only">Info</span>
+                <strong>Info:</strong>&nbsp;<span id="info-msg-text"></span>
+            </div>
+            <div class="alert alert-danger fade in" role="alert" id="error-msg-block" style="display:none">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error</span>
+                <strong>Error:</strong>&nbsp;<span id="error-msg-text"></span>
+            </div>
+            <h3>@ViewBag.Title</h3>
         </div>
         @RenderBody()
     </div>
@@ -147,6 +146,8 @@
         }
 
         $(function () {
+            $(".page-header").css('margin-bottom', '-5px');
+
             $.connection.hub.reconnecting(function () {
                 hubIsConnecting = true;
             });
@@ -161,7 +162,7 @@
                 if (hubIsConnecting)
                     showErrorMessage("Disconnected from server");
 
-                setTimeout(function() {
+                setTimeout(function () {
                     $.connection.hub.start().done(function () {
                         hubConnected();
                     });

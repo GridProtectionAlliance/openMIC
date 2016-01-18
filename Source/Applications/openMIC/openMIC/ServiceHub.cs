@@ -33,9 +33,26 @@ namespace openMIC
 {
     public class ServiceHub : Hub
     {
+        #region [ Members ]
+
+        // Fields
+        private readonly ServiceConnection m_serviceConnection;
+
+        #endregion
+
+        #region [ Constructors ]
+
+        public ServiceHub()
+        {
+            m_serviceConnection = ServiceConnection.Default;
+        }
+
+        #endregion
+
+        #region [ Methods ]
+
         public override Task OnConnected()
         {
-            Program.Host.UpdatedStatus += m_serviceHost_UpdatedStatus;
             s_connectCount++;
             Program.Host.LogStatusMessage($"ServiceHub connect - count = {s_connectCount}");
             return base.OnConnected();
@@ -45,7 +62,6 @@ namespace openMIC
         {
             if (stopCalled)
             {
-                Program.Host.UpdatedStatus -= m_serviceHost_UpdatedStatus;
                 s_connectCount--;
                 Program.Host.LogStatusMessage($"ServiceHub disconnect - count = {s_connectCount}");
             }
@@ -65,36 +81,16 @@ namespace openMIC
         /// <param name="command">Command string.</param>
         public void SendCommand(string command)
         {
-            Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity(UserInfo.CurrentUserID), new[] { "Administrator" });
-            Program.Host.SendRequest(command);
+            m_serviceConnection.SendCommand(command);
         }
 
-        private void m_serviceHost_UpdatedStatus(object sender, EventArgs<string, UpdateType> e)
-        {
-            string color = null;
+        #endregion
 
-            switch (e.Argument2)
-            {
-                case UpdateType.Alarm:
-                    color = "red";
-                    break;
-                case UpdateType.Warning:
-                    color = "yellow";
-                    break;
-            }
-
-            BroadcastMessage(e.Argument1, color);
-        }
-
-        private void BroadcastMessage(string message, string color)
-        {
-            if (string.IsNullOrEmpty(color))
-                color = "white";
-
-            Clients.All.broadcastMessage(message, color);
-        }
+        #region [ Static ]
 
         // Static Fields
         private static volatile int s_connectCount;
+
+        #endregion
     }
 }

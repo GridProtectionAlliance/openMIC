@@ -229,6 +229,7 @@
     <Compile Include="Model\Vendor.cs" />
     <Compile Include="Model\VendorDevice.cs" />
     <Compile Include="RazorView.cs" />
+    <Compile Include="ServiceConnection.cs" />
     <Compile Include="ServiceHub.cs" />
     <Compile Include="DebugHost.cs">
       <SubType>Form</SubType>
@@ -306,6 +307,7 @@
     <Content Include="wwwroot\Scripts\jquery-2.1.4.min.js" />
     <Content Include="wwwroot\Scripts\jquery.signalR-2.2.0.js" />
     <Content Include="wwwroot\Scripts\jquery.signalR-2.2.0.min.js" />
+    <Content Include="wwwroot\Scripts\js.cookie.js" />
     <Content Include="wwwroot\Scripts\knockout-3.4.0.js" />
     <Content Include="wwwroot\Scripts\knockout.mapping.js" />
     <None Include="App.config">

@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 using System.Web.Http;
+using Microsoft.AspNet.SignalR;
 using Owin;
 
 namespace openMIC
