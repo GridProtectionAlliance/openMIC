@@ -118,7 +118,7 @@
         <br />
         <div class="alert alert-info fade in" role="alert" id="info-msg-block" style="display:none">
             <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-            <span class="glyphicon glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
             <span class="sr-only">Info</span>
             <strong>Info:</strong>&nbsp;<span id="info-msg-text"></span>
         </div>
@@ -136,31 +136,23 @@
         @RenderBody()
     </div>
     <script type="text/javascript">
-        $(function () {
-            // Create a function that the hub can call to broadcast messages.
-            dataHubClient.broadcastMessage = function (name, message) {
-                // Html encode display name and message.
-                var encodedName = $('<div />').text(name).html();
-                var encodedMsg = $('<div />').text(message).html();
-                // Add the message to the page.
-                $('#discussion').append('<li><strong>' + encodedName
-                    + '</strong>:&nbsp;&nbsp;' + encodedMsg + '</li>');
-            };
-            // Get the user name and store it to prepend to messages.
-            //$('#displayname').val(prompt('Enter your name:', ''));
-            // Set initial focus to message input box.
-            //$('#message').focus();
+        function hubConnected() {
+            hubIsConnecting = false;
+            hubIsConnected = true;
 
+            hideErrorMessage();
+
+            if (typeof onHubConnected == 'function')
+                onHubConnected();
+        }
+
+        $(function () {
             $.connection.hub.reconnecting(function () {
                 hubIsConnecting = true;
             });
 
             $.connection.hub.reconnected(function () {
-                hubIsConnecting = false;
-                hubIsConnected = true;
-                hideErrorMessage();
-                if (typeof onHubsConnected == 'function')
-                    onHubsConnected();
+                hubConnected();
             });
 
             $.connection.hub.disconnected(function () {
@@ -170,15 +162,15 @@
                     showErrorMessage("Disconnected from server");
 
                 setTimeout(function() {
-                    $.connection.hub.start();
+                    $.connection.hub.start().done(function () {
+                        hubConnected();
+                    });
                 }, 5000); // Restart connection after 5 seconds.
             });
 
             // Start the connection
             $.connection.hub.start().done(function () {
-                if (typeof onHubsConnected == 'function')
-                    onHubsConnected();
-                hubIsConnected = true;
+                hubConnected();
             });
         });
     </script>

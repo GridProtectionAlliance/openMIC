@@ -32,8 +32,6 @@ namespace openMIC
 {
     public class DataHub : Hub
     {
-        public DateTime GetServerTime() => DateTime.UtcNow;
-
         #region [ Members ]
 
         // Fields
@@ -92,11 +90,6 @@ namespace openMIC
             }
 
             return base.OnDisconnected(stopCalled);
-        }
-
-        public void Send(string name, string message)
-        {
-            Clients.All.broadcastMessage(name, message);
         }
 
         public Vendor FindVendor(int id)

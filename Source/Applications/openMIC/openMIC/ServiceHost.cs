@@ -27,12 +27,25 @@ using GSF;
 using GSF.Configuration;
 using GSF.IO;
 using Microsoft.Owin.Hosting;
+using GSF.ServiceProcess;
 
 namespace openMIC
 {
     public class ServiceHost : ServiceHostBase
     {
         #region [ Members ]
+
+        // Events
+
+        /// <summary>
+        /// Raised when there is a new status message reported to service.
+        /// </summary>
+        public event EventHandler<EventArgs<string, UpdateType>> UpdatedStatus;
+
+        /// <summary>
+        /// Raised when there is a new exception logged to service.
+        /// </summary>
+        public event EventHandler<EventArgs<Exception>> LoggedException;
 
         // Fields
         private IDisposable m_webAppHost;
@@ -120,6 +133,17 @@ namespace openMIC
 
             // Create new web application hosting environment
             m_webAppHost = WebApp.Start<Startup>(systemSettings["WebHostURL"].Value);
+
+            ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
+            ServiceHelper.LoggedException += LoggedExceptionHandler;
+        }
+
+        protected override void ServiceStoppingHandler(object sender, EventArgs e)
+        {
+            base.ServiceStoppingHandler(sender, e);
+
+            ServiceHelper.UpdatedStatus -= UpdatedStatusHandler;
+            ServiceHelper.LoggedException -= LoggedExceptionHandler;
         }
 
         /// <summary>
@@ -130,6 +154,37 @@ namespace openMIC
         public void LogStatusMessage(string message, UpdateType type = UpdateType.Information)
         {
             DisplayStatusMessage(message, type);
+        }
+
+        /// <summary>
+        /// Sends a command request to the service.
+        /// </summary>
+        /// <param name="userInput">Request string.</param>
+        public void SendRequest(string userInput)
+        {
+            ClientRequest request = ClientRequest.Parse(userInput);
+
+            if ((object)request != null)
+            {
+                ClientRequestHandler requestHandler = ServiceHelper.FindClientRequestHandler(request.Command);
+
+                if ((object)requestHandler != null)
+                    requestHandler.HandlerMethod(new ClientRequestInfo(new ClientInfo(), request));
+                else
+                    DisplayStatusMessage(string.Format("Command \"{0}\" is not supported\r\n\r\n", request.Command), UpdateType.Alarm);
+            }
+        }
+
+        private void UpdatedStatusHandler(object sender, EventArgs<string, UpdateType> e)
+        {
+            if ((object)UpdatedStatus != null)
+                UpdatedStatus(sender, new EventArgs<string, UpdateType>(e.Argument1, e.Argument2));
+        }
+
+        private void LoggedExceptionHandler(object sender, EventArgs<Exception> e)
+        {
+            if ((object)LoggedException != null)
+                LoggedException(sender, new EventArgs<Exception>(e.Argument));
         }
 
         #endregion

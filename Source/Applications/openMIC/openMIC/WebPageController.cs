@@ -57,7 +57,7 @@ namespace openMIC
 
             var model = new
             {
-                Name = "World"
+                Name = "Hello World"
             };
 
             switch (fileExtension)

@@ -264,6 +264,7 @@
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.ttf" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff2" />
+    <None Include="wwwroot\Options.cshtml" />
     <None Include="wwwroot\Scripts\jquery-2.1.4.min.map" />
   </ItemGroup>
   <ItemGroup>

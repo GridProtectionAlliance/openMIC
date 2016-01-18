@@ -22,15 +22,79 @@
 //******************************************************************************************************
 
 using System;
-using GSF.TimeSeries;
+using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
+using GSF;
+using GSF.Identity;
 using Microsoft.AspNet.SignalR;
 
 namespace openMIC
 {
     public class ServiceHub : Hub
     {
-        private ServiceHostBase m_serviceHost;
+        public override Task OnConnected()
+        {
+            Program.Host.UpdatedStatus += m_serviceHost_UpdatedStatus;
+            s_connectCount++;
+            Program.Host.LogStatusMessage($"ServiceHub connect - count = {s_connectCount}");
+            return base.OnConnected();
+        }
 
+        public override Task OnDisconnected(bool stopCalled)
+        {
+            if (stopCalled)
+            {
+                Program.Host.UpdatedStatus -= m_serviceHost_UpdatedStatus;
+                s_connectCount--;
+                Program.Host.LogStatusMessage($"ServiceHub disconnect - count = {s_connectCount}");
+            }
+
+            return base.OnDisconnected(stopCalled);
+        }
+
+        /// <summary>
+        /// Gets the current server time.
+        /// </summary>
+        /// <returns>Current server time.</returns>
         public DateTime GetServerTime() => DateTime.UtcNow;
+
+        /// <summary>
+        /// Sends a service command.
+        /// </summary>
+        /// <param name="command">Command string.</param>
+        public void SendCommand(string command)
+        {
+            Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity(UserInfo.CurrentUserID), new[] { "Administrator" });
+            Program.Host.SendRequest(command);
+        }
+
+        private void m_serviceHost_UpdatedStatus(object sender, EventArgs<string, UpdateType> e)
+        {
+            string color = null;
+
+            switch (e.Argument2)
+            {
+                case UpdateType.Alarm:
+                    color = "red";
+                    break;
+                case UpdateType.Warning:
+                    color = "yellow";
+                    break;
+            }
+
+            BroadcastMessage(e.Argument1, color);
+        }
+
+        private void BroadcastMessage(string message, string color)
+        {
+            if (string.IsNullOrEmpty(color))
+                color = "white";
+
+            Clients.All.broadcastMessage(message, color);
+        }
+
+        // Static Fields
+        private static volatile int s_connectCount;
     }
 }

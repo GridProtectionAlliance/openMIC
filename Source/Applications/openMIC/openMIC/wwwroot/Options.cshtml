@@ -6,7 +6,9 @@
     ViewBag.Title = "Home";
 }
 <div class="row">
+
     <div class="col-sm-4">
+
         <div class="panel panel-default">
             <div class="panel-heading">Quick Links</div>
             <div class="panel-body">
@@ -19,12 +21,17 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-8">
+    <div class="col-sm-4">
         <div class="well">
-            <pre id="serviceMessages" class="pre-scrollable" style="color: white; background-color: black; height: 150px">Log Window</pre>
+            <div id="serviceMessages" style="height:225px; overflow:auto; background-color: black"></div>
             <br/>
-            <input type="text" id="commandText" />
+            <input type="text" id="command" />
             <input type="button" id="sendCommand" value="Send" />
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="well">
+            <ul id="vendors"></ul>
         </div>
     </div>
 </div>
@@ -35,6 +42,18 @@
             <li class="list-group-item"><span class="badge" id="localTime">@DateTime.UtcNow.ToString(DateTimeFormat)</span> Local Time</li>
             <li class="list-group-item"><span class="badge">n/a</span> Current User</li>
         </ul>
+
+        <div class="well">
+            <h1>Vendor Devices - <span data-bind="text: vendors.length"></span></h1>
+            <ul data-bind="foreach: vendors">
+                <li>
+                    <span data-bind="text: $index"></span> -
+                    <span data-bind="text: ID"></span> -
+                    <span data-bind="text: Name"></span> -
+                    <span data-bind="text: URL"></span>
+                </li>
+            </ul>
+        </div>
     </div>
     <div class="col-sm-8">
         <div class="panel panel-default">
@@ -51,15 +70,30 @@
         serviceHubClient.broadcastMessage = function (message, color) {
             // Html encode message
             var encodedMessage = $('<div />').text(message).html();
-            $('#serviceMessages').append('<span style="color: ' + color + '">' + encodedMessage + '</span>');
+            $('#serviceMessages').append('<pre style="color: ' + color + '; background-color: black">' + encodedMessage + '</pre>');
         };
 
-        $('#sendCommand').click(function () {
-            // Call the send command method on the hub
-            serviceHub.sendCommand($('#commandText').val());
-            // Clear text box and reset focus for next command
-            $('#commandText').val('').focus();
+        $('#command').focus();
+
+        dataHub.queryVendors().done(function (vendors) {
+            $.each(vendors, function () {
+                var encodedName = $('<div />').text(this.Acronym).html();
+                var encodedMsg = $('<div />').text(this.Name).html();
+                $('#vendors').append('<li><strong>' + encodedName
+                    + '</strong>:&nbsp;&nbsp;' + encodedMsg + '</li>');
+            });
+
+            ko.applyBindings({ vendors: ko.mapping.fromJS(vendors) });
         });
+
+        $('#sendmessage').click(function() {
+            // Call the Send method on the hub.
+            dataHub.send($('#displayname').val(), $('#message').val());
+            // Clear text box and reset focus for next comment.
+            $('#message').val('').focus();
+        });
+
+        // $('#serverTime').html(formatDate(serverTime.toDate(), "@DateTimeFormat", true));
     }
 
     function updateLocalTime() {
@@ -75,13 +109,5 @@
     $(document).ready(function() {
         updateLocalTime();
         setInterval(updateLocalTime, 1000);
-
-        $('#commandText').keyup(function (event) {
-            if (event.keyCode == 13) {
-                $('#sendCommand').click();
-            }
-        });
-
-        $('#commandText').focus();
     });
 </script>
