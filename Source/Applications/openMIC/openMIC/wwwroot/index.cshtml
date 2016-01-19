@@ -29,13 +29,14 @@
     </div>
     <div class="col-lg-8 col-md-8 col-sm-7">
         <div class="well">
-            <button class="btn btn-link btn-xs" id="remoteConsoleSettingsButton">Settings</button>
+            <button class="btn btn-link btn-xs" id="remoteConsoleSettingsShowButton">Settings</button>
             <div class="well well-sm floating-form" id="remoteConsoleSettingsForm">
                 <form class="form-inline" role="form">
                     <div class="form-group form-group-sm">
+                        <a href="#" class="close" aria-label="close" id="remoteConsoleSettingsCloseButton">&times;</a>
                         <label for="remoteConsoleTotalEntriesTextInput">Total console entries:</label>
                         <div class="input-group col-xs-4">
-                            <input type="number" min="@MinimumRemoteConsoleEntries" data-bind="value:totalRemoteConsoleEntries" class="form-control input-sm" id="remoteConsoleTotalEntriesTextInput">
+                            <input type="number" min="@MinimumRemoteConsoleEntries" class="form-control input-sm" id="remoteConsoleTotalEntriesTextInput">
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-default btn-xs input-sm" id="setTotalRemoteConsoleEntriesButton">Set</button>
                             </span>
@@ -66,12 +67,9 @@
 <script type="text/javascript">
     var totalRemoteConsoleEntries = Cookies.get('totalRemoteConsoleEntries');
 
+    // Initialize default setting for total remote console entries
     if (!totalRemoteConsoleEntries)
-    {
-        // Initialize default setting for total remote console entries
         totalRemoteConsoleEntries = @DefaultRemoteConsoleEntries;
-        Cookies.set('totalRemoteConsoleEntries', totalRemoteConsoleEntries, { expires: 365 });
-    }
 
     function updateLocalTime() {
         $('#localTime').html(new Date().formatDate("@DateTimeFormat", true));
@@ -90,11 +88,11 @@
         var overRemoteConsole = false;
 
         updateLocalTime();
-        setInterval(updateLocalTime, 1000);
+        setInterval(updateLocalTime, 2000);
 
         $('#remoteConsoleTotalEntriesTextInput').val(totalRemoteConsoleEntries.toString());
 
-        $('#remoteConsoleSettingsButton').click(function() {
+        $('#remoteConsoleSettingsShowButton').click(function() {
             $('#remoteConsoleSettingsForm').toggle();
 
             if ($('#remoteConsoleSettingsForm').is(':visible'))
@@ -120,6 +118,15 @@
         $('#remoteConsoleTotalEntriesTextInput').keyup(function(event) {
             if (event.keyCode === 13)
                 $('#setTotalRemoteConsoleEntriesButton').click();
+        });
+
+        $('#remoteConsoleSettingsForm').focusout(function() {
+            if (!$('#remoteConsoleSettingsForm').is(':hover') && !$('#remoteConsoleSettingsShowButton').is(':hover'))
+                $('#remoteConsoleSettingsForm').hide();
+        });
+
+        $('#remoteConsoleSettingsCloseButton').click(function() {
+            $('#remoteConsoleSettingsForm').hide();
         });
 
         function scrollRemoteConsoleToBottom() {

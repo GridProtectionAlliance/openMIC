@@ -77,7 +77,7 @@ namespace openMIC
         public override Task OnConnected()
         {
             s_connectCount++;
-            Program.Host.LogStatusMessage($"DataHub connect - count = {s_connectCount}");
+            Program.Host.LogStatusMessage($"DataHub connect by {Context.User?.Identity?.Name} [{Context.ConnectionId}] - count = {s_connectCount}");
             return base.OnConnected();
         }
 
@@ -86,7 +86,7 @@ namespace openMIC
             if (stopCalled)
             {
                 s_connectCount--;
-                Program.Host.LogStatusMessage($"DataHub disconnect - count = {s_connectCount}");
+                Program.Host.LogStatusMessage($"DataHub disconnect by {Context.User?.Identity?.Name} [{Context.ConnectionId}] - count = {s_connectCount}");
             }
 
             return base.OnDisconnected(stopCalled);

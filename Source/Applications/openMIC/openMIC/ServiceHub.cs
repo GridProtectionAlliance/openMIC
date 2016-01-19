@@ -22,11 +22,7 @@
 //******************************************************************************************************
 
 using System;
-using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
-using GSF;
-using GSF.Identity;
 using Microsoft.AspNet.SignalR;
 
 namespace openMIC
@@ -52,9 +48,9 @@ namespace openMIC
         #region [ Methods ]
 
         public override Task OnConnected()
-        {
+        {            
             s_connectCount++;
-            Program.Host.LogStatusMessage($"ServiceHub connect - count = {s_connectCount}");
+            Program.Host.LogStatusMessage($"ServiceHub connect by {Context.User?.Identity?.Name} [{Context.ConnectionId}] - count = {s_connectCount}");
             return base.OnConnected();
         }
 
@@ -63,7 +59,7 @@ namespace openMIC
             if (stopCalled)
             {
                 s_connectCount--;
-                Program.Host.LogStatusMessage($"ServiceHub disconnect - count = {s_connectCount}");
+                Program.Host.LogStatusMessage($"ServiceHub disconnect by {Context.User?.Identity?.Name} [{Context.ConnectionId}] - count = {s_connectCount}");
             }
 
             return base.OnDisconnected(stopCalled);
