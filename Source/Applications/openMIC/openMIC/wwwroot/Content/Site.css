@@ -1,27 +1,14 @@
-﻿/* Move down content because we have a fixed navbar that is 30px tall */
+﻿/* Move down content because we have a fixed navbar that is around 30px tall */
 body {
     padding-top: 30px;
 }
 
-/* Small devices (tablets, 768px and up) */
-@media screen {
-    .remote-console {
-        font-size: 7.25px;
-    }
-}
-
-/* Medium devices (desktops, 992px and up) */
-@media screen and (min-width: 992px) {
-    .remote-console {
-        font-size: 11px;
-    }
-}
-
-/* Large devices (large desktops, 1200px and up) */
-@media screen and (min-width: 1200px) {
-    .remote-console {
-        font-size: 12px;
-    }
+.fill-height {
+    min-height: calc(100% - 55px);
+    height: calc(100% - 55px);
+    height: -o-calc(100% - 55px);       /* opera */
+    height: -webkit-calc(100% - 55px);  /* google, safari */
+    height: -moz-calc(100% - 55px);     /* firefox */
 }
 
 .floating-form {

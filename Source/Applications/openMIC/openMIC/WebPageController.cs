@@ -52,18 +52,13 @@ namespace openMIC
 
             string fileExtension = FilePath.GetExtension(pageName).ToLowerInvariant();
 
-            var model = new
-            {
-                Name = "Hello World"
-            };
-
             switch (fileExtension)
             {
                 case ".cshtml":
-                    response.Content = new StringContent(new RazorView<CSharp>(pageName, model).Run(), Encoding.UTF8, "text/html");
+                    response.Content = new StringContent(new RazorView<CSharp>(pageName, Program.Host.Model).Run(), Encoding.UTF8, "text/html");
                     break;
                 case ".vbhtml":
-                    response.Content = new StringContent(new RazorView<VisualBasic>(pageName, model).Run(), Encoding.UTF8, "text/html");
+                    response.Content = new StringContent(new RazorView<VisualBasic>(pageName, Program.Host.Model).Run(), Encoding.UTF8, "text/html");
                     break;
                 default:
                     string fileName = FilePath.GetAbsolutePath($"{Program.Host.WebRootFolder}\\{pageName}");

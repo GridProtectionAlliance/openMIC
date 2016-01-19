@@ -265,7 +265,8 @@
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.ttf" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff2" />
-    <None Include="wwwroot\Options.cshtml" />
+    <None Include="wwwroot\Test.cshtml" />
+    <None Include="wwwroot\RemoteConsole.cshtml" />
     <None Include="wwwroot\Scripts\jquery-2.1.4.min.map" />
   </ItemGroup>
   <ItemGroup>
@@ -273,6 +274,9 @@
     <Content Include="wwwroot\Content\bootstrap-theme.min.css" />
     <Content Include="wwwroot\Content\bootstrap.css" />
     <Content Include="wwwroot\Content\bootstrap.min.css" />
+    <Content Include="wwwroot\Content\RemoteConsole.css" />
+    <Content Include="wwwroot\RemoteConsole.html" />
+    <Content Include="wwwroot\Scripts\RemoteConsole.js" />
     <Content Include="wwwroot\Content\Site.css" />
     <Content Include="wwwroot\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="wwwroot\Images\gpa-lock.png" />
@@ -296,6 +300,7 @@
     <Content Include="wwwroot\Images\Icons\mstile-310x150.png" />
     <Content Include="wwwroot\Images\Icons\mstile-310x310.png" />
     <Content Include="wwwroot\Images\Icons\mstile-70x70.png" />
+    <Content Include="wwwroot\Scripts\Site.js" />
     <None Include="wwwroot\Index.cshtml" />
     <None Include="wwwroot\Layout.cshtml" />
     <Content Include="wwwroot\Scripts\bootstrap.js" />

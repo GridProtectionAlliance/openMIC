@@ -85,6 +85,15 @@ namespace openMIC
             private set;
         }
 
+        /// <summary>
+        /// Gets the model used for the application.
+        /// </summary>
+        public object Model
+        {
+            get;
+            private set;
+        }
+
         #endregion
 
         #region [ Methods ]
@@ -130,6 +139,14 @@ namespace openMIC
             // Get configured web settings
             WebRootFolder = FilePath.GetAbsolutePath(systemSettings["WebRootFolder"].Value);
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
+
+            // TODO: Define needed application model properties
+            Model = new
+            {
+                CompanyName = systemSettings["CompanyName"].Value,
+                CompanyAcronym = systemSettings["CompanyAcronym"].Value,
+                ApplicationName = "openMIC"
+            };
 
             // Create new web application hosting environment
             m_webAppHost = WebApp.Start<Startup>(systemSettings["WebHostURL"].Value);

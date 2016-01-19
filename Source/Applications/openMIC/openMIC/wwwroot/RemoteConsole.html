@@ -1,0 +1,26 @@
+﻿<!-- Remote Console Window -->
+<div class="well" id="remoteConsoleWell">
+    <button class="btn btn-link btn-xs" id="remoteConsoleSettingsShowButton">Settings</button>
+    <label class="small" id="remoteConsoleFontSizeLabel">Font Size</label>
+    <div class="well well-sm floating-form" id="remoteConsoleSettingsForm">
+        <form class="form-inline" role="form">
+            <div class="form-group form-group-sm">
+                <a href="#" class="close" aria-label="close" id="remoteConsoleSettingsCloseButton">&times;</a>
+                <label for="remoteConsoleTotalEntriesTextInput">Total console entries:</label>
+                <div class="input-group col-xs-4" style="min-width: 100px">
+                    <input type="number" class="form-control input-sm" id="remoteConsoleTotalEntriesTextInput">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default btn-xs input-sm" id="setTotalRemoteConsoleEntriesButton">Set</button>
+                    </span>
+                </div>
+            </div>
+        </form>
+    </div>
+    <pre id="remoteConsoleWindow" class="small pre-scrollable remote-console"></pre>
+    <div class="input-group">
+        <input type="text" id="commandTextInput" class="form-control" placeholder="Server command..." />
+        <span class="input-group-btn">
+            <button type="button" id="sendCommandButton" class="btn btn-default">Send</button>
+        </span>
+    </div>
+</div>

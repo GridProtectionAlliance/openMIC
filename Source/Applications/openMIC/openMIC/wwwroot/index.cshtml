@@ -1,12 +1,51 @@
-﻿@using System
+﻿@*******************************************************************************************************
+//  Index.cshtml - Gbtc
+//
+//  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  01/15/2016 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System
 @using GSF.Identity
 @{
     const string DateTimeFormat = "yyyy-MM-dd HH:mm.ss.fff";
-    const int DefaultRemoteConsoleEntries = 100;
-    const int MinimumRemoteConsoleEntries = 10;
-
     Layout = "Layout.cshtml";
     ViewBag.Title = "Home";
+}
+@section StyleSheets {<link href="Content/RemoteConsole.css" rel="stylesheet">}
+@section Scripts {
+    <script src="Scripts/RemoteConsole.js"></script>
+    <script>
+        function updateLocalTime() {
+            $('#localTime').html(new Date().formatDate("@DateTimeFormat", true));
+
+            if (hubIsConnected) {
+                serviceHub.getServerTime().done(function(serverTime) {
+                    $('#serverTime').html(serverTime.formatDate("@DateTimeFormat", true));
+                });
+            }
+        }
+
+        $(function() {
+            updateLocalTime();
+            setInterval(updateLocalTime, 1000);
+        });
+    </script>
 }
 <div class="row">
     <div class="col-lg-4 col-md-4 col-sm-5">
@@ -28,30 +67,7 @@
         </ul>
     </div>
     <div class="col-lg-8 col-md-8 col-sm-7">
-        <div class="well">
-            <button class="btn btn-link btn-xs" id="remoteConsoleSettingsShowButton">Settings</button>
-            <div class="well well-sm floating-form" id="remoteConsoleSettingsForm">
-                <form class="form-inline" role="form">
-                    <div class="form-group form-group-sm">
-                        <a href="#" class="close" aria-label="close" id="remoteConsoleSettingsCloseButton">&times;</a>
-                        <label for="remoteConsoleTotalEntriesTextInput">Total console entries:</label>
-                        <div class="input-group col-xs-4">
-                            <input type="number" min="@MinimumRemoteConsoleEntries" class="form-control input-sm" id="remoteConsoleTotalEntriesTextInput">
-                            <span class="input-group-btn">
-                                <button type="button" class="btn btn-default btn-xs input-sm" id="setTotalRemoteConsoleEntriesButton">Set</button>
-                            </span>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <pre id="remoteConsoleWindow" class="small pre-scrollable remote-console" style="color: white; background-color: black; height: 350px"></pre>
-            <div class="input-group">
-                <input type="text" id="commandTextInput" class="form-control" placeholder="Server command..."/>
-                <span class="input-group-btn">
-                    <button type="button" id="sendCommandButton" class="btn btn-default">Send</button>
-                </span>
-            </div>
-        </div>
+        @Include("RemoteConsole.html")
     </div>
 </div>
 <div class="row">
@@ -64,116 +80,3 @@
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    var totalRemoteConsoleEntries = Cookies.get('totalRemoteConsoleEntries');
-
-    // Initialize default setting for total remote console entries
-    if (!totalRemoteConsoleEntries)
-        totalRemoteConsoleEntries = @DefaultRemoteConsoleEntries;
-
-    function updateLocalTime() {
-        $('#localTime').html(new Date().formatDate("@DateTimeFormat", true));
-
-        if (hubIsConnected) {
-            serviceHub.getServerTime().done(function(serverTime) {
-                $('#serverTime').html(serverTime.formatDate("@DateTimeFormat", true));
-            });
-        }
-    }
-
-    function updateTotalRemoteConsoleEntries() {
-    }
-
-    $(function() {
-        var overRemoteConsole = false;
-
-        updateLocalTime();
-        setInterval(updateLocalTime, 2000);
-
-        $('#remoteConsoleTotalEntriesTextInput').val(totalRemoteConsoleEntries.toString());
-
-        $('#remoteConsoleSettingsShowButton').click(function() {
-            $('#remoteConsoleSettingsForm').toggle();
-
-            if ($('#remoteConsoleSettingsForm').is(':visible'))
-                $('#remoteConsoleTotalEntriesTextInput').focus();
-        });
-
-        $('#setTotalRemoteConsoleEntriesButton').click(function() {
-            totalRemoteConsoleEntries = parseInt($('#remoteConsoleTotalEntriesTextInput').val());
-
-            if (totalRemoteConsoleEntries < @MinimumRemoteConsoleEntries)
-                totalRemoteConsoleEntries = @MinimumRemoteConsoleEntries;
-
-            Cookies.set('totalRemoteConsoleEntries', totalRemoteConsoleEntries, { expires: 365 });
-            $('#remoteConsoleTotalEntriesTextInput').val(totalRemoteConsoleEntries.toString());
-            $('#remoteConsoleSettingsForm').hide();
-        });
-
-        // Prevent default form submission when user presses enter
-        $('#remoteConsoleSettingsForm').submit(function() {
-            return false;
-        });
-
-        $('#remoteConsoleTotalEntriesTextInput').keyup(function(event) {
-            if (event.keyCode === 13)
-                $('#setTotalRemoteConsoleEntriesButton').click();
-        });
-
-        $('#remoteConsoleSettingsForm').focusout(function() {
-            if (!$('#remoteConsoleSettingsForm').is(':hover') && !$('#remoteConsoleSettingsShowButton').is(':hover'))
-                $('#remoteConsoleSettingsForm').hide();
-        });
-
-        $('#remoteConsoleSettingsCloseButton').click(function() {
-            $('#remoteConsoleSettingsForm').hide();
-        });
-
-        function scrollRemoteConsoleToBottom() {
-            var remoteConsole = $('#remoteConsoleWindow');
-            remoteConsole.scrollTop(remoteConsole[0].scrollHeight);
-        }
-
-        // Create a function that the hub can call to broadcast messages.
-        serviceHubClient.broadcastMessage = function(message, color) {
-            // Html encode message
-            var encodedMessage = $('<div />').text(message).html();
-            var remoteConsole = $('#remoteConsoleWindow');
-
-            remoteConsole.append('<span style="color: ' + color + '">' + encodedMessage + '</span>');
-
-            if (remoteConsole[0].childElementCount > totalRemoteConsoleEntries)
-                remoteConsole.find(':first-child').remove();
-
-            if (!overRemoteConsole)
-                scrollRemoteConsoleToBottom();
-        }
-
-        $('#remoteConsoleWindow').mouseenter(function() {
-            overRemoteConsole = true;
-        });
-
-        $('#remoteConsoleWindow').mouseleave(function() {
-            overRemoteConsole = false;
-            scrollRemoteConsoleToBottom();
-        });
-
-        $(window).resize(scrollRemoteConsoleToBottom);
-
-        $('#sendCommandButton').click(function() {
-            // Call the send command method on the hub
-            if (hubIsConnected)
-                serviceHub.sendCommand($('#commandTextInput').val());
-
-            // Clear text box and reset focus for next command
-            $('#commandTextInput').val('').focus();
-        });
-
-        $('#commandTextInput').on('keyup keypress', function(event) {
-            if (event.keyCode === 13)
-                $('#sendCommandButton').click();
-        });
-
-        $('#commandTextInput').focus();
-    });
-</script>

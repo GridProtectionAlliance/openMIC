@@ -1,11 +1,33 @@
-﻿<!DOCTYPE html>
+﻿@*******************************************************************************************************
+//  Layout.cshtml - Gbtc
+//
+//  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  01/15/2016 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>openMIC - @ViewBag.Title</title>
+    @* The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags *@
+    <title>@Model.ApplicationName - @ViewBag.Title</title>
     <meta name="application-name" content="openMIC" />
     <meta name="description" content="open Meter Information Collection System" />
     <meta name="keywords" content="open source, utility, software, meter, interrogation" />
@@ -13,6 +35,7 @@
     <link href="Content/bootstrap.min.css" rel="stylesheet">
     <link href="Content/bootstrap-theme.min.css" rel="stylesheet">
     <link href="Content/Site.css" rel="stylesheet">
+    @RenderSection("StyleSheets", false)
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -39,15 +62,6 @@
     <meta name="msapplication-square150x150logo" content="Images/Icons/mstile-150x150.png" />
     <meta name="msapplication-wide310x150logo" content="Images/Icons/mstile-310x150.png" />
     <meta name="msapplication-square310x310logo" content="Images/Icons/mstile-310x310.png" />
-    <script src="Scripts/jquery-2.1.4.min.js"></script>
-    <script src="Scripts/js.cookie.js"></script>
-    <script src="Scripts/bootstrap.min.js"></script>
-    <script src="Scripts/ie10-viewport-bug-workaround.js"></script>
-    <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
-    <script src="Scripts/knockout-3.4.0.js"></script>
-    <script src="Scripts/knockout.mapping.js"></script>
-    <script src="Scripts/formatDate.js"></script>
-    <script src="signalr/hubs"></script>
 </head>
 <body role="document">
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -70,6 +84,12 @@
                     <li @Raw(ViewBag.Title == "Devices" ? "class=\"active\"" : "")><a href="Devices.cshtml">Devices</a></li>
                     <li @Raw(ViewBag.Title == "Status" ? "class=\"active\"" : "")><a href="Status.cshtml">Status</a></li>
                     <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Monitoring <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="RemoteConsole.cshtml">Remote Service Console</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Meta-data <span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li><a href="Vendors.cshtml">Vendors</a></li>
@@ -89,34 +109,7 @@
             </div><!--/.nav-collapse -->
         </div>
     </div>
-    <script type="text/javascript">
-        // Declare proxy references to the SignalR hubs
-        var dataHub = $.connection.dataHub.server;
-        var dataHubClient = $.connection.dataHub.client;
-        var serviceHub = $.connection.serviceHub.server;
-        var serviceHubClient = $.connection.serviceHub.client;
-        var hubIsConnecting = false;
-        var hubIsConnected = false;
-
-        function hideErrorMessage() {
-            $('#error-msg-block').hide();
-        }
-
-        function hideInfoMessage() {
-            $('#info-msg-block').hide();
-        }
-
-        function showErrorMessage(message) {
-            $('#error-msg-text').html(message);
-            $('#error-msg-block').show();
-        }
-
-        function showInfoMessage(message) {
-            $('#info-msg-text').html(message);
-            $('#info-msg-block').show();
-        }
-    </script>
-    <div class="container theme-showcase" role="main">
+    <div class="container-fluid theme-showcase" role="main" id="bodyContainer">
         <div class="page-header">
             <div class="alert alert-info fade in" role="alert" id="info-msg-block" style="display:none">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -134,46 +127,16 @@
         </div>
         @RenderBody()
     </div>
-    <script type="text/javascript">
-        function hubConnected() {
-            hubIsConnecting = false;
-            hubIsConnected = true;
-
-            hideErrorMessage();
-
-            if (typeof onHubConnected == 'function')
-                onHubConnected();
-        }
-
-        $(function () {
-            $(".page-header").css('margin-bottom', '-5px');
-
-            $.connection.hub.reconnecting(function () {
-                hubIsConnecting = true;
-            });
-
-            $.connection.hub.reconnected(function () {
-                hubConnected();
-            });
-
-            $.connection.hub.disconnected(function () {
-                hubIsConnected = false;
-
-                if (hubIsConnecting)
-                    showErrorMessage("Disconnected from server");
-
-                setTimeout(function () {
-                    $.connection.hub.start().done(function () {
-                        hubConnected();
-                    });
-                }, 5000); // Restart connection after 5 seconds.
-            });
-
-            // Start the connection
-            $.connection.hub.start().done(function () {
-                hubConnected();
-            });
-        });
-    </script>
+    <script src="Scripts/jquery-2.1.4.min.js"></script>
+    <script src="Scripts/js.cookie.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script src="Scripts/ie10-viewport-bug-workaround.js"></script>
+    <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
+    <script src="Scripts/knockout-3.4.0.js"></script>
+    <script src="Scripts/knockout.mapping.js"></script>
+    <script src="Scripts/formatDate.js"></script>
+    <script src="signalr/hubs"></script>
+    <script src="Scripts/Site.js"></script>
+    @RenderSection("Scripts", false)
 </body>
 </html>
