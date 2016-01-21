@@ -27,6 +27,63 @@
     Layout = "Layout.cshtml";
     ViewBag.Title = "Home";
 }
+@section StyleSheets {<link href="Content/PerformanceStatistics.css" rel="stylesheet">}
+@section Scripts {
+    <script src="Scripts/formatDate.js"></script>
+    <script src="Scripts/knockout-3.4.0.js"></script>
+    <script src="Scripts/knockout.mapping.js"></script>
+    <script type="text/javascript">
+        function onHubConnected() {
+            // Create a function that the hub can call to broadcast messages.
+            serviceHubClient.broadcastMessage = function (message, color) {
+                // Html encode message
+                var encodedMessage = $('<div />').text(message).html();
+                $('#serviceMessages').append('<pre style="color: ' + color + '; background-color: black">' + encodedMessage + '</pre>');
+            };
+
+            $('#command').focus();
+
+            dataHub.queryVendors().done(function (vendors) {
+                $.each(vendors, function () {
+                    var encodedName = $('<div />').text(this.Acronym).html();
+                    var encodedMsg = $('<div />').text(this.Name).html();
+                    $('#vendors').append('<li><strong>' + encodedName
+                        + '</strong>:&nbsp;&nbsp;' + encodedMsg + '</li>');
+                });
+
+                ko.applyBindings({ vendors: ko.mapping.fromJS(vendors) });
+            });
+
+            $('#sendmessage').click(function() {
+                // Call the Send method on the hub.
+                dataHub.send($('#displayname').val(), $('#message').val());
+                // Clear text box and reset focus for next comment.
+                $('#message').val('').focus();
+            });
+
+            // $('#serverTime').html(formatDate(serverTime.toDate(), "@DateTimeFormat", true));
+        }
+
+        function updateLocalTime() {
+            $('#localTime').html(new Date().formatDate("@DateTimeFormat", true));
+
+            if (hubIsConnected) {
+                serviceHub.getServerTime().done(function (serverTime) {
+                    $('#serverTime').html(serverTime.formatDate("@DateTimeFormat", true));
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            updateLocalTime();
+            setInterval(updateLocalTime, 1000);
+        });
+
+        $(window).resize(function () {
+            $("#fontSizeLabel").html("Font Size: " + $("#performanceStatistics").css("font-size") + ", Window Size: " + $(window).width().toString());
+        });
+    </script>
+}
 <div class="row">
 
     <div class="col-sm-4">
@@ -44,12 +101,7 @@
         </div>
     </div>
     <div class="col-sm-4">
-        <div class="well">
-            <div id="serviceMessages" style="height:225px; overflow:auto; background-color: black"></div>
-            <br/>
-            <input type="text" id="command" />
-            <input type="button" id="sendCommand" value="Send" />
-        </div>
+        @Include("RemoteConsole.html")
     </div>
     <div class="col-sm-4">
         <div class="well">
@@ -79,57 +131,10 @@
     </div>
     <div class="col-sm-8">
         <div class="panel panel-default">
-            <div class="panel-heading">System Health</div>
+            <div class="panel-heading">System Health <label class="small" id="fontSizeLabel">Font Size</label></div>
             <div class="panel-body">
-                <pre>Status</pre>
+                <pre id="performanceStatistics">Status</pre>
             </div>
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    function onHubConnected() {
-        // Create a function that the hub can call to broadcast messages.
-        serviceHubClient.broadcastMessage = function (message, color) {
-            // Html encode message
-            var encodedMessage = $('<div />').text(message).html();
-            $('#serviceMessages').append('<pre style="color: ' + color + '; background-color: black">' + encodedMessage + '</pre>');
-        };
-
-        $('#command').focus();
-
-        dataHub.queryVendors().done(function (vendors) {
-            $.each(vendors, function () {
-                var encodedName = $('<div />').text(this.Acronym).html();
-                var encodedMsg = $('<div />').text(this.Name).html();
-                $('#vendors').append('<li><strong>' + encodedName
-                    + '</strong>:&nbsp;&nbsp;' + encodedMsg + '</li>');
-            });
-
-            ko.applyBindings({ vendors: ko.mapping.fromJS(vendors) });
-        });
-
-        $('#sendmessage').click(function() {
-            // Call the Send method on the hub.
-            dataHub.send($('#displayname').val(), $('#message').val());
-            // Clear text box and reset focus for next comment.
-            $('#message').val('').focus();
-        });
-
-        // $('#serverTime').html(formatDate(serverTime.toDate(), "@DateTimeFormat", true));
-    }
-
-    function updateLocalTime() {
-        $('#localTime').html(new Date().formatDate("@DateTimeFormat", true));
-
-        if (hubIsConnected) {
-            serviceHub.getServerTime().done(function (serverTime) {
-                $('#serverTime').html(serverTime.formatDate("@DateTimeFormat", true));
-            });
-        }
-    }
-
-    $(document).ready(function() {
-        updateLocalTime();
-        setInterval(updateLocalTime, 1000);
-    });
-</script>

@@ -50,7 +50,7 @@ namespace openMIC
         public override Task OnConnected()
         {            
             s_connectCount++;
-            Program.Host.LogStatusMessage($"ServiceHub connect by {Context.User?.Identity?.Name} [{Context.ConnectionId}] - count = {s_connectCount}");
+            Program.Host.LogStatusMessage($"ServiceHub connect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
             return base.OnConnected();
         }
 
@@ -59,7 +59,7 @@ namespace openMIC
             if (stopCalled)
             {
                 s_connectCount--;
-                Program.Host.LogStatusMessage($"ServiceHub disconnect by {Context.User?.Identity?.Name} [{Context.ConnectionId}] - count = {s_connectCount}");
+                Program.Host.LogStatusMessage($"ServiceHub disconnect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
             }
 
             return base.OnDisconnected(stopCalled);
@@ -70,6 +70,12 @@ namespace openMIC
         /// </summary>
         /// <returns>Current server time.</returns>
         public DateTime GetServerTime() => DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets current performance statistics for service.
+        /// </summary>
+        /// <returns>Current performance statistics for service.</returns>
+        public string GetPerformanceStatistics() => Program.Host.PerformanceStatistics;
 
         /// <summary>
         /// Sends a service command.

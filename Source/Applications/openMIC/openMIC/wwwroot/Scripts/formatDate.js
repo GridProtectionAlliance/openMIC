@@ -14,6 +14,12 @@ function formatDate(date, format, utc) {
     if (typeof date === 'string')
         return formatDate(date.toDate(), format, utc);
 
+    if (format === undefined && DateTimeFormat != undefined)
+        format = DateTimeFormat;
+
+    if (utc === undefined)
+        utc = true;
+
     var MMMM = ["\x00", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     var MMM = ["\x01", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     var dddd = ["\x02", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

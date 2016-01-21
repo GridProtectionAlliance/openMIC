@@ -23,27 +23,138 @@
 @using System
 @using GSF.Identity
 @{
-    const string DateTimeFormat = "yyyy-MM-dd HH:mm.ss.fff";
     Layout = "Layout.cshtml";
     ViewBag.Title = "Home";
 }
-@section StyleSheets {<link href="Content/RemoteConsole.css" rel="stylesheet">}
+@section StyleSheets {
+    <style>
+        /* Auto font resize CSS for system health window - targeting fixed 80 char width without wrap and
+           allowing for responive screen rearrangement when window is col-**-8 and on the right */
+        @@media screen {
+            .performance-statistics {
+                font-size: 7px;
+            }
+        }
+
+        @@media screen and (min-width: 425px) {
+            .performance-statistics {
+                font-size: 7.25px;
+            }
+        }
+
+        @@media screen and (min-width: 465px) {
+            .performance-statistics {
+                font-size: 8px;
+            }
+        }
+
+        @@media screen and (min-width: 505px) {
+            .performance-statistics {
+                font-size: 9px;
+            }
+        }
+
+        @@media screen and (min-width: 550px) {
+            .performance-statistics {
+                font-size: 10px;
+            }
+        }
+
+        @@media screen and (min-width: 595px) {
+            .performance-statistics {
+                font-size: 11px;
+            }
+        }
+
+        @@media screen and (min-width: 635px) {
+            .performance-statistics {
+                font-size: 12px;
+            }
+        }
+
+        @@media screen and (min-width: 685px) {
+            .performance-statistics {
+                font-size: 13px;
+            }
+        }
+
+        @@media screen and (min-width: 725px) {
+            .performance-statistics {
+                font-size: 14px;
+            }
+        }
+
+        @@media screen and (min-width: 768px) {
+            .performance-statistics {
+                font-size: 8px;
+            }
+        }
+
+        @@media screen and (min-width: 825px) {
+            .performance-statistics {
+                font-size: 9px;
+            }
+        }
+
+        @@media screen and (min-width: 900px) {
+            .performance-statistics {
+                font-size: 10px;
+            }
+        }
+
+        @@media screen and (min-width: 965px) {
+            .performance-statistics {
+                font-size: 11px;
+            }
+        }
+
+        @@media screen and (min-width: 992px) {
+            .performance-statistics {
+                font-size: 12px;
+            }
+        }
+
+        @@media screen and (min-width: 1015px) {
+            .performance-statistics {
+                font-size: 13px;
+            }
+        }
+
+        @@media screen and (min-width: 1050px) {
+            .performance-statistics {
+                font-size: 14px;
+            }
+        }
+    </style>
+}
 @section Scripts {
-    <script src="Scripts/RemoteConsole.js"></script>
+    <script src="Scripts/formatDate.js"></script>
     <script>
-        function updateLocalTime() {
-            $('#localTime').html(new Date().formatDate("@DateTimeFormat", true));
+        function updateTimestamps() {
+            $('#localTime').html(new Date().formatDate());
 
             if (hubIsConnected) {
-                serviceHub.getServerTime().done(function(serverTime) {
-                    $('#serverTime').html(serverTime.formatDate("@DateTimeFormat", true));
+                serviceHub.getServerTime().done(function (serverTime) {
+                    $('#serverTime').html(serverTime.formatDate());
                 });
             }
         }
 
-        $(function() {
-            updateLocalTime();
-            setInterval(updateLocalTime, 1000);
+        function updatePerformanceStatistics() {
+            if (hubIsConnected)
+                serviceHub.getPerformanceStatistics().done(function (statistics) {
+                    $("#performanceStatistics").html(statistics);
+                });
+        }
+
+        function onHubConnected() {
+            updatePerformanceStatistics();
+            setInterval(updatePerformanceStatistics, 5000);
+        }
+
+        $(function () {
+            updateTimestamps();
+            setInterval(updateTimestamps, 1000);
         });
     </script>
 }
@@ -61,21 +172,16 @@
             </div>
         </div>
         <ul class="list-group">
-            <li class="list-group-item"><span class="badge" id="serverTime">@DateTime.UtcNow.ToString(DateTimeFormat)</span>Server&nbsp;Time</li>
-            <li class="list-group-item"><span class="badge" id="localTime">@DateTime.UtcNow.ToString(DateTimeFormat)</span>Local&nbsp;Time</li>
+            <li class="list-group-item"><span class="badge" id="serverTime">@DateTime.UtcNow.ToString(Model.DateTimeFormat)</span>Server&nbsp;Time</li>
+            <li class="list-group-item"><span class="badge" id="localTime">@DateTime.UtcNow.ToString(Model.DateTimeFormat)</span>Local&nbsp;Time</li>
             <li class="list-group-item"><span class="badge">@UserInfo.CurrentUserID</span> Current User</li>
         </ul>
     </div>
     <div class="col-lg-8 col-md-8 col-sm-7">
-        @Include("RemoteConsole.html")
-    </div>
-</div>
-<div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12">
         <div class="panel panel-default">
             <div class="panel-heading">System Health</div>
             <div class="panel-body">
-                <pre>Status</pre>
+                <pre class="performance-statistics" id="performanceStatistics"><em class="small">Loading...</em></pre>
             </div>
         </div>
     </div>

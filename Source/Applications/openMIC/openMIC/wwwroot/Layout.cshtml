@@ -28,9 +28,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @* The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags *@
     <title>@Model.ApplicationName - @ViewBag.Title</title>
-    <meta name="application-name" content="openMIC" />
-    <meta name="description" content="open Meter Information Collection System" />
-    <meta name="keywords" content="open source, utility, software, meter, interrogation" />
+    <meta name="application-name" content="@Model.ApplicationName" />
+    <meta name="description" content="@Model.ApplicationDescription" />
+    <meta name="keywords" content="@Model.ApplicationKeywords" />
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <link href="Content/bootstrap.min.css" rel="stylesheet">
     <link href="Content/bootstrap-theme.min.css" rel="stylesheet">
@@ -62,15 +62,16 @@
     <meta name="msapplication-square150x150logo" content="Images/Icons/mstile-150x150.png" />
     <meta name="msapplication-wide310x150logo" content="Images/Icons/mstile-310x150.png" />
     <meta name="msapplication-square310x310logo" content="Images/Icons/mstile-310x310.png" />
+    <script>
+        const DateTimeFormat = "@Model.DateTimeFormat";
+    </script>
 </head>
 <body role="document">
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
-                <a class="navbar-brand" href="https://www.gridprotectionalliance.org/" target="_blank">
-                    <img alt="Grid Protection Alliance" src="Images/gpa-smalllock.png" style="float: left">&nbsp;&nbsp;
-                    <span style="font-size: larger">openMIC</span>
-                </a>
+                <img class="pull-left" style="margin-left: -20px; padding-top: 10px; padding-right: 10px" alt="@Model.ApplicationName" src="Images/@(Model.ApplicationName).png">
+                <a href="Index.cshtml" class="navbar-brand" style="font-size: larger; color: white" data-toggle="tooltip" data-placement="bottom" title="@Model.ApplicationDescription">@Model.ApplicationName</a>                
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
@@ -103,12 +104,16 @@
                         </ul>
                     </li>
                 </ul>
-                <p class="nav navbar-text navbar-right" style="padding-right: 20px">
+                <p class="nav navbar-text navbar-right">
                     <button type="button" class="btn btn-sm btn-info disabled">Log Out</button>
+                    <a href="https://www.gridprotectionalliance.org/" target="_blank" style="padding-left: 10px">
+                        <img alt="Grid Protection Alliance" src="Images/gpa-smalllock.png">
+                    </a>
                 </p>
-            </div><!--/.nav-collapse -->
+            </div>
         </div>
-    </div>
+    </div><!--/.navbar -->
+
     <div class="container-fluid theme-showcase" role="main" id="bodyContainer">
         <div class="page-header">
             <div class="alert alert-info fade in" role="alert" id="info-msg-block" style="display:none">
@@ -126,15 +131,13 @@
             <h3>@ViewBag.Title</h3>
         </div>
         @RenderBody()
-    </div>
+
+    </div><!--/.container-fluid -->
+
     <script src="Scripts/jquery-2.1.4.min.js"></script>
-    <script src="Scripts/js.cookie.js"></script>
     <script src="Scripts/bootstrap.min.js"></script>
     <script src="Scripts/ie10-viewport-bug-workaround.js"></script>
     <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
-    <script src="Scripts/knockout-3.4.0.js"></script>
-    <script src="Scripts/knockout.mapping.js"></script>
-    <script src="Scripts/formatDate.js"></script>
     <script src="signalr/hubs"></script>
     <script src="Scripts/Site.js"></script>
     @RenderSection("Scripts", false)

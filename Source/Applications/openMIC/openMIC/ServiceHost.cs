@@ -28,6 +28,7 @@ using GSF.Configuration;
 using GSF.IO;
 using Microsoft.Owin.Hosting;
 using GSF.ServiceProcess;
+using openMIC.Model;
 
 namespace openMIC
 {
@@ -88,11 +89,16 @@ namespace openMIC
         /// <summary>
         /// Gets the model used for the application.
         /// </summary>
-        public object Model
+        public dynamic Model
         {
             get;
             private set;
         }
+
+        /// <summary>
+        /// Gets current performance statistics
+        /// </summary>
+        public string PerformanceStatistics => ServiceHelper?.PerformanceMonitor?.Status;
 
         #endregion
 
@@ -135,6 +141,7 @@ namespace openMIC
             systemSettings.Add("WebHostURL", "http://localhost:8989", "The web hosting URL for remote system management.");
             systemSettings.Add("WebRootFolder", "wwwroot", "The default root for the hosted web server files. Location will be relative to install folder if full path is not specified.");
             systemSettings.Add("DefaultWebPage", "Index.cshtml", "The default web page for the hosted web server.");
+            systemSettings.Add("DateTimeFormat", "yyyy-MM-dd HH:mm.ss.fff", "The date/time format to use when rendering timestamps.");
 
             // Get configured web settings
             WebRootFolder = FilePath.GetAbsolutePath(systemSettings["WebRootFolder"].Value);
@@ -145,7 +152,11 @@ namespace openMIC
             {
                 CompanyName = systemSettings["CompanyName"].Value,
                 CompanyAcronym = systemSettings["CompanyAcronym"].Value,
-                ApplicationName = "openMIC"
+                ApplicationName = "openMIC",
+                ApplicationDescription = "open Meter Information Collection System",
+                ApplicationKeywords = "open source, utility, software, meter, interrogation",
+                DateTimeFormat = systemSettings["DateTimeFormat"].Value,
+                DbContext = new openMICData()
             };
 
             // Create new web application hosting environment

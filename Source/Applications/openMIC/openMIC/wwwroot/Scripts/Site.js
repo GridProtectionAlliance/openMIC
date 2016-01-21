@@ -89,4 +89,6 @@ $(function () {
     $.connection.hub.start().done(function () {
         hubConnected();
     });
+
+    $("[data-toggle='tooltip']").tooltip();
 });

@@ -205,6 +205,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataHub.cs" />
+    <Compile Include="IOrderedQueryableExtensions.cs" />
     <Compile Include="Model\AccessLog.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Model\AlarmLog.cs" />
@@ -228,6 +229,7 @@
     <Compile Include="Model\UserAccount.cs" />
     <Compile Include="Model\Vendor.cs" />
     <Compile Include="Model\VendorDevice.cs" />
+    <Compile Include="PagedList.cs" />
     <Compile Include="RazorView.cs" />
     <Compile Include="ServiceConnection.cs" />
     <Compile Include="ServiceHub.cs" />
@@ -261,6 +263,7 @@
     <None Include="wwwroot\Content\bootstrap-theme.min.css.map" />
     <None Include="wwwroot\Content\bootstrap.css.map" />
     <None Include="wwwroot\Content\bootstrap.min.css.map" />
+    <None Include="wwwroot\Devices.cshtml" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.eot" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.ttf" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff" />
@@ -274,9 +277,6 @@
     <Content Include="wwwroot\Content\bootstrap-theme.min.css" />
     <Content Include="wwwroot\Content\bootstrap.css" />
     <Content Include="wwwroot\Content\bootstrap.min.css" />
-    <Content Include="wwwroot\Content\RemoteConsole.css" />
-    <Content Include="wwwroot\RemoteConsole.html" />
-    <Content Include="wwwroot\Scripts\RemoteConsole.js" />
     <Content Include="wwwroot\Content\Site.css" />
     <Content Include="wwwroot\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="wwwroot\Images\gpa-lock.png" />

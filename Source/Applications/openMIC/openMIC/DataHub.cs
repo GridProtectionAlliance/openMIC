@@ -44,7 +44,7 @@ namespace openMIC
 
         public DataHub()
         {
-            m_dataModel = new openMICData();
+            m_dataModel = Program.Host.Model.DbContext;
         }
 
         #endregion
@@ -77,7 +77,7 @@ namespace openMIC
         public override Task OnConnected()
         {
             s_connectCount++;
-            Program.Host.LogStatusMessage($"DataHub connect by {Context.User?.Identity?.Name} [{Context.ConnectionId}] - count = {s_connectCount}");
+            Program.Host.LogStatusMessage($"DataHub connect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
             return base.OnConnected();
         }
 
@@ -86,10 +86,18 @@ namespace openMIC
             if (stopCalled)
             {
                 s_connectCount--;
-                Program.Host.LogStatusMessage($"DataHub disconnect by {Context.User?.Identity?.Name} [{Context.ConnectionId}] - count = {s_connectCount}");
+                Program.Host.LogStatusMessage($"DataHub disconnect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
             }
 
             return base.OnDisconnected(stopCalled);
+        }
+
+        public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize)
+        {
+            if (ascending)
+                return m_dataModel.Devices.OrderBy(sortField).ToPagedList(page, pageSize);
+
+            return m_dataModel.Devices.OrderByDescending(sortField).ToPagedList(page, pageSize);
         }
 
         public Vendor FindVendor(int id)
