@@ -20,6 +20,9 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using openMIC.Model
+@using RazorEngine.Templating
+@inherits TemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
     ViewBag.Title = "Remote Service Console";
@@ -39,23 +42,23 @@
         /* Auto font resize CSS for remote console window - targeting fixed 80 char width without wrap */
         @@media screen {
             .remote-console {
+                font-size: 5.25px;
+            }
+        }
+        
+        @@media screen and (min-width: 430px) {
+            .remote-console {
                 font-size: 7px;
             }
         }
 
-        @@media screen and (min-width: 425px) {
-            .remote-console {
-                font-size: 7.25px;
-            }
-        }
-
-        @@media screen and (min-width: 465px) {
+        @@media screen and (min-width: 470px) {
             .remote-console {
                 font-size: 8px;
             }
         }
 
-        @@media screen and (min-width: 505px) {
+        @@media screen and (min-width: 515px) {
             .remote-console {
                 font-size: 9px;
             }
@@ -67,7 +70,7 @@
             }
         }
 
-        @@media screen and (min-width: 595px) {
+        @@media screen and (min-width: 600px) {
             .remote-console {
                 font-size: 11px;
             }
@@ -203,8 +206,8 @@
 }
 <div class="well fill-height" id="remoteConsoleWell">
     <button class="btn btn-link btn-xs" id="remoteConsoleSettingsShowButton">Settings</button>
-    <label class="pull-right" id="remoteConsolePausedLabel" style="font-size: smaller; display: none"><em>Scrolling paused during mouse interaction...</em></label>
-    <div class="well well-sm floating-form" id="remoteConsoleSettingsForm">
+    <label class="small pull-right" id="remoteConsolePausedLabel" style="display: none"><small><em>Scrolling paused during mouse interaction...</em></small></label>
+    <div class="well well-sm floating-form" id="remoteConsoleSettingsForm" style="z-index: 1000">
         <form class="form-inline" role="form">
             <div class="form-group form-group-sm">
                 <a href="#" class="close" aria-label="close" id="remoteConsoleSettingsCloseButton">&times;</a>

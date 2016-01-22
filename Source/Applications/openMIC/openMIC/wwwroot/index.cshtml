@@ -22,6 +22,9 @@
 //*****************************************************************************************************@
 @using System
 @using GSF.Identity
+@using openMIC.Model
+@using RazorEngine.Templating
+@inherits TemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
     ViewBag.Title = "Home";
@@ -29,26 +32,26 @@
 @section StyleSheets {
     <style>
         /* Auto font resize CSS for system health window - targeting fixed 80 char width without wrap and
-           allowing for responive screen rearrangement when window is col-**-8 and on the right */
+           allowing for responsive screen rearrangement when window is col-**-8 and on the right */
         @@media screen {
+            .performance-statistics {
+                font-size: 5.25px;
+            }
+        }
+        
+        @@media screen and (min-width: 430px) {
             .performance-statistics {
                 font-size: 7px;
             }
         }
 
-        @@media screen and (min-width: 425px) {
-            .performance-statistics {
-                font-size: 7.25px;
-            }
-        }
-
-        @@media screen and (min-width: 465px) {
+        @@media screen and (min-width: 470px) {
             .performance-statistics {
                 font-size: 8px;
             }
         }
 
-        @@media screen and (min-width: 505px) {
+        @@media screen and (min-width: 515px) {
             .performance-statistics {
                 font-size: 9px;
             }
@@ -60,7 +63,7 @@
             }
         }
 
-        @@media screen and (min-width: 595px) {
+        @@media screen and (min-width: 600px) {
             .performance-statistics {
                 font-size: 11px;
             }
@@ -176,6 +179,7 @@
             <li class="list-group-item"><span class="badge" id="localTime">@DateTime.UtcNow.ToString(Model.DateTimeFormat)</span>Local&nbsp;Time</li>
             <li class="list-group-item"><span class="badge">@UserInfo.CurrentUserID</span> Current User</li>
         </ul>
+        <p class="text-info text-center small">@ViewBag.Request.RequestUri.ToString()</p>
     </div>
     <div class="col-lg-8 col-md-8 col-sm-7">
         <div class="panel panel-default">

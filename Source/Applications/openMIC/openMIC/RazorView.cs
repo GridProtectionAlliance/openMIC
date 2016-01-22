@@ -21,6 +21,8 @@
 //
 //******************************************************************************************************
 
+using System.Net.Http;
+using openMIC.Model;
 using RazorEngine;
 using RazorEngine.Configuration;
 using RazorEngine.Templating;
@@ -66,7 +68,7 @@ namespace openMIC
             this.TemplateName = templateName;
         }
 
-        public RazorView(string templateName, object model) : this(templateName)
+        public RazorView(string templateName, AppModel model) : this(templateName)
         {
             this.Model = model;
         }
@@ -80,7 +82,7 @@ namespace openMIC
             get; set;
         }
 
-        public object Model
+        public AppModel Model
         {
             get; set;
         }
@@ -91,9 +93,22 @@ namespace openMIC
 
         #region [ Methods ]
 
-        public string Run()
+        public string Execute(HttpRequestMessage requestMessage, dynamic postData)
         {
-            return s_engineService.RunCompile(TemplateName, null, Model, m_viewBag);
+            m_viewBag.AddValue("DbContext", new openMICData());
+            m_viewBag.AddValue("Request", requestMessage);
+
+            if ((object)postData == null)
+            {
+                m_viewBag.AddValue("IsPost", false);
+            }
+            else
+            {
+                m_viewBag.AddValue("IsPost", true);
+                m_viewBag.AddValue("PostData", postData);
+            }
+
+            return s_engineService.RunCompile(TemplateName, typeof(AppModel), Model, m_viewBag);
         }
 
         #endregion

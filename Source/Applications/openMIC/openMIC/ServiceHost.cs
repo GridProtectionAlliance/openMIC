@@ -89,7 +89,7 @@ namespace openMIC
         /// <summary>
         /// Gets the model used for the application.
         /// </summary>
-        public dynamic Model
+        public AppModel Model
         {
             get;
             private set;
@@ -142,13 +142,13 @@ namespace openMIC
             systemSettings.Add("WebRootFolder", "wwwroot", "The default root for the hosted web server files. Location will be relative to install folder if full path is not specified.");
             systemSettings.Add("DefaultWebPage", "Index.cshtml", "The default web page for the hosted web server.");
             systemSettings.Add("DateTimeFormat", "yyyy-MM-dd HH:mm.ss.fff", "The date/time format to use when rendering timestamps.");
+            systemSettings.Add("BootstrapTheme", "Content/bootstrap.min.css", "Path to Bootstrap CSS to use for rendering styles.");
 
             // Get configured web settings
             WebRootFolder = FilePath.GetAbsolutePath(systemSettings["WebRootFolder"].Value);
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
-            // TODO: Define needed application model properties
-            Model = new
+            Model = new AppModel
             {
                 CompanyName = systemSettings["CompanyName"].Value,
                 CompanyAcronym = systemSettings["CompanyAcronym"].Value,
@@ -156,6 +156,7 @@ namespace openMIC
                 ApplicationDescription = "open Meter Information Collection System",
                 ApplicationKeywords = "open source, utility, software, meter, interrogation",
                 DateTimeFormat = systemSettings["DateTimeFormat"].Value,
+                BootstrapTheme = systemSettings["BootstrapTheme"].Value,
                 DbContext = new openMICData()
             };
 

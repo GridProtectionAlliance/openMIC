@@ -210,6 +210,7 @@
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Model\AlarmLog.cs" />
     <Compile Include="Model\ApplicationRole.cs" />
+    <Compile Include="Model\AppModel.cs" />
     <Compile Include="Model\Company.cs" />
     <Compile Include="Model\CustomActionAdapter.cs" />
     <Compile Include="Model\CustomInputAdapter.cs" />
@@ -263,6 +264,7 @@
     <None Include="wwwroot\Content\bootstrap-theme.min.css.map" />
     <None Include="wwwroot\Content\bootstrap.css.map" />
     <None Include="wwwroot\Content\bootstrap.min.css.map" />
+    <None Include="wwwroot\Status.cshtml" />
     <None Include="wwwroot\Devices.cshtml" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.eot" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.ttf" />
@@ -278,6 +280,13 @@
     <Content Include="wwwroot\Content\bootstrap.css" />
     <Content Include="wwwroot\Content\bootstrap.min.css" />
     <Content Include="wwwroot\Content\Site.css" />
+    <Content Include="wwwroot\Content\bootstrap-cerulean.css" />
+    <Content Include="wwwroot\Content\bootstrap-cosmo.css" />
+    <Content Include="wwwroot\Content\bootstrap-cyborg.css" />
+    <Content Include="wwwroot\Content\bootstrap-readable.css" />
+    <Content Include="wwwroot\Content\bootstrap-sandstone.css" />
+    <Content Include="wwwroot\Content\bootstrap-slate.css" />
+    <Content Include="wwwroot\Content\bootstrap-united.css" />
     <Content Include="wwwroot\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="wwwroot\Images\gpa-lock.png" />
     <Content Include="wwwroot\Images\gpa-smalllock.png" />
@@ -360,6 +369,7 @@ CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(SolutionDir)Dependencie
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(SolutionDir)Applications\openMIC\openMICSetup\*.exe*"
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(ProjectDir)Sample1344.PmuCapture"
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)wwwroot" "$(SolutionDir)Applications\openMIC\openMIC\wwwroot\*.*"
+CALL "$(ProjectDir)PostBuildSetup.bat" "$(ProjectDir)bin" "$(TargetDir)*.dll"
 XCOPY "$(SolutionDir)Data\SerializedSchema.bin" "$(TargetDir)" /Y
 </PostBuildEvent>
   </PropertyGroup>

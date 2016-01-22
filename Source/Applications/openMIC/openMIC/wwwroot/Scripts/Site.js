@@ -34,21 +34,33 @@ function hideInfoMessage() {
     $("#info-msg-block").hide();
 }
 
-function showErrorMessage(message) {
+function showErrorMessage(message, timeout) {
     $("#error-msg-text").html(message);
     $("#error-msg-block").show();
+
+    if (timeout != undefined && timeout > 0)
+        setTimeout(hideErrorMessage, timeout);
 }
 
-function showInfoMessage(message) {
+function showInfoMessage(message, timeout) {
     $("#info-msg-text").html(message);
     $("#info-msg-block").show();
+
+    if (timeout === undefined)
+        timeout = 3000;
+
+    if (timeout > 0)
+        setTimeout(hideInfoMessage, timeout);
 }
 
 function hubConnected() {
+    hideErrorMessage();
+
+    if (hubIsConnecting)
+        showInfoMessage("Reconnected to service.");
+
     hubIsConnecting = false;
     hubIsConnected = true;
-
-    hideErrorMessage();
 
     // Call "onHubConnected" function, if page has defined one
     if (typeof onHubConnected == "function")
@@ -66,6 +78,7 @@ $(function () {
 
     $.connection.hub.reconnecting(function () {
         hubIsConnecting = true;
+        showInfoMessage("Attempting to reconnect to service&nbsp;&nbsp;<span class='glyphicon glyphicon-refresh glyphicon-spin'></span>", -1);
     });
 
     $.connection.hub.reconnected(function () {
@@ -90,5 +103,13 @@ $(function () {
         hubConnected();
     });
 
+    $(window).on('beforeunload', function () {
+        if (!hubIsConnected || hubIsConnecting)
+            return "Service is disconnected, web pages are currently unavailable.";
+
+        return undefined;
+    });
+
+    // Enable tool-tips on the page
     $("[data-toggle='tooltip']").tooltip();
 });

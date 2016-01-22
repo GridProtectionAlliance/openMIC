@@ -20,11 +20,12 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using openMIC.Model
+@using RazorEngine.Templating
+@inherits TemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
     ViewBag.Title = "Devices";
-
-    string sortField = WebPageContext.Current.Request(;
 }
 @section StyleSheets {
     <style>
@@ -38,18 +39,67 @@
     <script src="Scripts/knockout-3.4.0.js"></script>
     <script src="Scripts/knockout.mapping.js"></script>
     <script>
+        function dataModelDef() {
+            var self = this;
+
+            self.devicesLoaded = ko.observable(false);
+
+            self.loadData = function () {
+                //dataHub.queryDevices("ID", true, 1, 6).done(function (devices) {
+                //    self.devices = devices;
+                //});
+                self.devicesLoaded(true);
+            };
+
+            self.devices = ko.observableArray([
+                { Acronym: 'Bert', Enabled: true },
+                { Acronym: 'Charles', Enabled: true },
+                { Acronym: 'Denise', Enabled: false }
+            ]);
+        };
+
+        var dataModels = dataModelDef();
+
         function onHubConnected() {
+            dataModels.loadData();
         }
 
-        $(function () {
+        $(function() {
             $("#bodyContainer").addClass("fill-height");
+            ko.applyBindings(dataModels);
         });
     </script>
 }
 <div class="well fill-height">
-    @foreach (var device in Model.DbContext.QueryDevices(""))
-    {
-        <li>@x</li>
-    }
+    <div class="table-responsive">
+        <table class="table table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th>Acronym</th>
+                    <th>Schedule</th>
+                    <th>Enabled</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: devices">
+                <tr data-bind="visible: devicesLoaded()" style="display: none">
+                    <td width="70%" data-bind="text: Acronym"></td>
+                    <td width="20%"><button type="button" class="btn btn-link"><u>Undefined</u></button></td>
+                    <td width="5%" class="text-center" style="vertical-align: middle" nowrap><input type="checkbox" data-bind="checked: Enabled"/></td>
+                    <td width="5%" class="text-center" style="vertical-align: middle" nowrap>
+                        <button type="button" class="btn btn-xs"><span class="glyphicon glyphicon-pencil"></span></button>
+                        <button type="button" class="btn btn-xs"><span class="glyphicon glyphicon-remove"></span></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div data-bind="visible: !devicesLoaded()">
+            Loading devices&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+        </div>
+    </div>
+    <div class="pull-right">
+        <button type="button" class="btn btn-xs btn-primary">
+            <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New
+        </button>
+    </div>
 </div>
     

@@ -48,6 +48,18 @@ namespace openMIC
         [Route("{pageName}"), HttpGet]
         public HttpResponseMessage GetPage(string pageName)
         {
+            return RenderResponse(pageName);
+        }
+
+        // Common post handler
+        [Route("{pageName}"), HttpPost]
+        public HttpResponseMessage PostPage(string pageName, dynamic postData)
+        {
+            return RenderResponse(pageName, postData);
+        }
+
+        private HttpResponseMessage RenderResponse(string pageName, dynamic postData = null)
+        {
             HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
 
             string fileExtension = FilePath.GetExtension(pageName).ToLowerInvariant();
@@ -55,10 +67,10 @@ namespace openMIC
             switch (fileExtension)
             {
                 case ".cshtml":
-                    response.Content = new StringContent(new RazorView<CSharp>(pageName, Program.Host.Model).Run(), Encoding.UTF8, "text/html");
+                    response.Content = new StringContent(new RazorView<CSharp>(pageName, Program.Host.Model).Execute(Request, postData), Encoding.UTF8, "text/html");
                     break;
                 case ".vbhtml":
-                    response.Content = new StringContent(new RazorView<VisualBasic>(pageName, Program.Host.Model).Run(), Encoding.UTF8, "text/html");
+                    response.Content = new StringContent(new RazorView<VisualBasic>(pageName, Program.Host.Model).Execute(Request, postData), Encoding.UTF8, "text/html");
                     break;
                 default:
                     string fileName = FilePath.GetAbsolutePath($"{Program.Host.WebRootFolder}\\{pageName}");
@@ -78,39 +90,78 @@ namespace openMIC
             return response;
         }
 
-        // Sub folder request handler - depth 1
+        #region [ Sub-folder Handlers ]
+
+        // Sub-folder request handler - depth 1
         [Route("{folder1}/{pageName}"), HttpGet]
         public HttpResponseMessage GetPage(string folder1, string pageName)
         {
             return GetPage($"{folder1}/{pageName}");
         }
 
-        // Sub folder request handler - depth 2
+        // Sub-folder post handler - depth 1
+        [Route("{folder1}/{pageName}"), HttpPost]
+        public HttpResponseMessage PostPage(string folder1, string pageName, dynamic postData)
+        {
+            return PostPage($"{folder1}/{pageName}", postData);
+        }
+
+        // Sub-folder request handler - depth 2
         [Route("{folder1}/{folder2}/{pageName}"), HttpGet]
         public HttpResponseMessage GetPage(string folder1, string folder2, string pageName)
         {
             return GetPage($"{folder1}/{folder2}/{pageName}");
         }
 
-        // Sub folder request handler - depth 3
+        // Sub-folder post handler - depth 2
+        [Route("{folder1}/{folder2}/{pageName}"), HttpPost]
+        public HttpResponseMessage PostPage(string folder1, string folder2, string pageName, dynamic postData)
+        {
+            return PostPage($"{folder1}/{folder2}/{pageName}", postData);
+        }
+
+        // Sub-folder request handler - depth 3
         [Route("{folder1}/{folder2}/{folder3}/{pageName}"), HttpGet]
         public HttpResponseMessage GetPage(string folder1, string folder2, string folder3, string pageName)
         {
             return GetPage($"{folder1}/{folder2}/{folder3}/{pageName}");
         }
 
-        // Sub folder request handler - depth 4
+        // Sub-folder post handler - depth 3
+        [Route("{folder1}/{folder2}/{folder3}/{pageName}"), HttpPost]
+        public HttpResponseMessage PostPage(string folder1, string folder2, string folder3, string pageName, dynamic postData)
+        {
+            return PostPage($"{folder1}/{folder2}/{folder3}/{pageName}", postData);
+        }
+
+        // Sub-folder request handler - depth 4
         [Route("{folder1}/{folder2}/{folder3}/{folder4}/{pageName}"), HttpGet]
         public HttpResponseMessage GetPage(string folder1, string folder2, string folder3, string folder4, string pageName)
         {
             return GetPage($"{folder1}/{folder2}/{folder3}/{folder4}/{pageName}");
         }
 
-        // Sub folder request handler - depth 5
+        // Sub-folder post handler - depth 4
+        [Route("{folder1}/{folder2}/{folder3}/{folder4}/{pageName}"), HttpPost]
+        public HttpResponseMessage PostPage(string folder1, string folder2, string folder3, string folder4, string pageName, dynamic postData)
+        {
+            return PostPage($"{folder1}/{folder2}/{folder3}/{folder4}/{pageName}", postData);
+        }
+
+        // Sub-folder request handler - depth 5
         [Route("{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}"), HttpGet]
         public HttpResponseMessage GetPage(string folder1, string folder2, string folder3, string folder4, string folder5, string pageName)
         {
             return GetPage($"{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}");
         }
+
+        // Sub-folder post handler - depth 5
+        [Route("{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}"), HttpPost]
+        public HttpResponseMessage PostPage(string folder1, string folder2, string folder3, string folder4, string folder5, string pageName, dynamic postData)
+        {
+            return PostPage($"{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}", postData);
+        }
+
+        #endregion
     }
 }

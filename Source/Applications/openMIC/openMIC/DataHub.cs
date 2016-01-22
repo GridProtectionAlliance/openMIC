@@ -36,7 +36,6 @@ namespace openMIC
 
         // Fields
         private readonly openMICData m_dataModel;
-        private bool m_disposed;
 
         #endregion
 
@@ -50,29 +49,6 @@ namespace openMIC
         #endregion
 
         #region [ Methods ]
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the <see cref="DataHub"/> object and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (!m_disposed)
-            {
-                try
-                {
-                    if (disposing)
-                    {
-                        m_dataModel?.Dispose();
-                    }
-                }
-                finally
-                {
-                    m_disposed = true;          // Prevent duplicate dispose.
-                    base.Dispose(disposing);    // Call base class Dispose().
-                }
-            }
-        }
 
         public override Task OnConnected()
         {
