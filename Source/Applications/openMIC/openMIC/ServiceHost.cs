@@ -156,8 +156,7 @@ namespace openMIC
                 ApplicationDescription = "open Meter Information Collection System",
                 ApplicationKeywords = "open source, utility, software, meter, interrogation",
                 DateTimeFormat = systemSettings["DateTimeFormat"].Value,
-                BootstrapTheme = systemSettings["BootstrapTheme"].Value,
-                DbContext = new openMICData()
+                BootstrapTheme = systemSettings["BootstrapTheme"].Value
             };
 
             // Create new web application hosting environment

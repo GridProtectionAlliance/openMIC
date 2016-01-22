@@ -91,6 +91,10 @@ $(function () {
         if (hubIsConnecting)
             showErrorMessage("Disconnected from server");
 
+        // Call "onHubDisconnected" function, if page has defined one
+        if (typeof onHubDisconnected == "function")
+            onHubDisconnected();
+
         setTimeout(function () {
             $.connection.hub.start().done(function () {
                 hubConnected();

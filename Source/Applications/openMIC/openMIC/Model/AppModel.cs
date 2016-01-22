@@ -69,12 +69,6 @@ namespace openMIC.Model
             set;
         }
 
-        public openMICData DbContext
-        {
-            get;
-            set;
-        }
-
         #endregion
     }
 }

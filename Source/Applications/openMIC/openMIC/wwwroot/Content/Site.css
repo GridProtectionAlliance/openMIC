@@ -3,6 +3,14 @@ body {
     padding-top: 30px;
 }
 
+.table tbody>tr>td.valign-middle {
+    vertical-align: middle;
+}
+
+.table tbody>tr>td.valign-bottom {
+    vertical-align: bottom;
+}
+
 .fill-height {
     min-height: calc(100% - 55px);
     height: calc(100% - 55px);

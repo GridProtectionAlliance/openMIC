@@ -95,20 +95,23 @@ namespace openMIC
 
         public string Execute(HttpRequestMessage requestMessage, dynamic postData)
         {
-            m_viewBag.AddValue("DbContext", new openMICData());
-            m_viewBag.AddValue("Request", requestMessage);
-
-            if ((object)postData == null)
+            using (openMICData dbContext = new openMICData())
             {
-                m_viewBag.AddValue("IsPost", false);
-            }
-            else
-            {
-                m_viewBag.AddValue("IsPost", true);
-                m_viewBag.AddValue("PostData", postData);
-            }
+                m_viewBag.AddValue("DbContext", dbContext);
+                m_viewBag.AddValue("Request", requestMessage);
 
-            return s_engineService.RunCompile(TemplateName, typeof(AppModel), Model, m_viewBag);
+                if ((object)postData == null)
+                {
+                    m_viewBag.AddValue("IsPost", false);
+                }
+                else
+                {
+                    m_viewBag.AddValue("IsPost", true);
+                    m_viewBag.AddValue("PostData", postData);
+                }
+
+                return s_engineService.RunCompile(TemplateName, typeof(AppModel), Model, m_viewBag);
+            }
         }
 
         #endregion

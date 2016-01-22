@@ -39,60 +39,43 @@
     <script src="Scripts/knockout-3.4.0.js"></script>
     <script src="Scripts/knockout.mapping.js"></script>
     <script>
-        function dataModelDef() {
-            var self = this;
-
-            self.devicesLoaded = ko.observable(false);
-
-            self.loadData = function () {
-                //dataHub.queryDevices("ID", true, 1, 6).done(function (devices) {
-                //    self.devices = devices;
-                //});
-                self.devicesLoaded(true);
-            };
-
-            self.devices = ko.observableArray([
-                { Acronym: 'Bert', Enabled: true },
-                { Acronym: 'Charles', Enabled: true },
-                { Acronym: 'Denise', Enabled: false }
-            ]);
-        };
-
-        var dataModels = dataModelDef();
-
         function onHubConnected() {
-            dataModels.loadData();
+            dataHub.queryDevices("ID", true, 1, 10).done(function (devices) {
+                ko.applyBindings({ devices: ko.mapping.fromJS(devices) });
+                $("[id='deviceRow']").show();
+                $("#loadingDevicesLabel").hide();
+            });
         }
 
         $(function() {
             $("#bodyContainer").addClass("fill-height");
-            ko.applyBindings(dataModels);
         });
     </script>
 }
 <div class="well fill-height">
     <div class="table-responsive">
-        <table class="table table-condensed table-hover">
+        <table class="table table-condensed table-striped">
             <thead>
                 <tr>
-                    <th>Acronym</th>
-                    <th>Schedule</th>
-                    <th>Enabled</th>
+                    <th class="text-left">Acronym</th>
+                    <th class="text-center">Schedule</th>
+                    <th class="text-center">Enabled</th>
+                    <th>&nbsp;</th>
                 </tr>
             </thead>
             <tbody data-bind="foreach: devices">
-                <tr data-bind="visible: devicesLoaded()" style="display: none">
-                    <td width="70%" data-bind="text: Acronym"></td>
-                    <td width="20%"><button type="button" class="btn btn-link"><u>Undefined</u></button></td>
-                    <td width="5%" class="text-center" style="vertical-align: middle" nowrap><input type="checkbox" data-bind="checked: Enabled"/></td>
-                    <td width="5%" class="text-center" style="vertical-align: middle" nowrap>
+                <tr style="display: none" id="deviceRow">
+                    <td width="70%" class="text-left valign-middle" data-bind="text: Acronym"><label></label></td>
+                    <td width="20%" class="text-center"><button type="button" class="btn btn-link"><u>Undefined</u></button></td>
+                    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" /></td>
+                    <td width="5%" class="text-center valign-middle" nowrap>
                         <button type="button" class="btn btn-xs"><span class="glyphicon glyphicon-pencil"></span></button>
                         <button type="button" class="btn btn-xs"><span class="glyphicon glyphicon-remove"></span></button>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <div data-bind="visible: !devicesLoaded()">
+        <div id="loadingDevicesLabel">
             Loading devices&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
         </div>
     </div>

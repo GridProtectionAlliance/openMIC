@@ -153,7 +153,17 @@
         function onHubConnected() {
             updatePerformanceStatistics();
             setInterval(updatePerformanceStatistics, 5000);
+            $("#restartButton").removeClass("disabled");
         }
+
+        function onHubDisconnected() {
+            $("#restartButton").addClass("disabled");
+        }
+
+        $("#restartButton").click(function () {
+            if (hubIsConnected)
+                serviceHub.sendCommand("restart");
+        });
 
         $(function () {
             updateTimestamps();
@@ -167,10 +177,10 @@
             <div class="panel-heading">Quick Links</div>
             <div class="panel-body">
                 <div class="btn-group-vertical btn-block">
-                    <button type="button" class="btn btn-primary">Devices</button>
-                    <button type="button" class="btn btn-default">Status</button>
-                    <button type="button" class="btn btn-default">Schedules</button>
-                    <button type="button" class="btn btn-default">Restart Service</button>
+                    <a href="Devices.cshtml" role="button" class="btn btn-primary">Devices</a>
+                    <a href="" role="button" class="btn btn-default">Status</a>
+                    <a href="" role="button" class="btn btn-default">Schedules</a>
+                    <button type="button" class="btn btn-default disabled" id="restartButton">Restart Service</button>
                 </div>
             </div>
         </div>
