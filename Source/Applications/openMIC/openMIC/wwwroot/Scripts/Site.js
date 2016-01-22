@@ -53,6 +53,15 @@ function showInfoMessage(message, timeout) {
         setTimeout(hideInfoMessage, timeout);
 }
 
+$.fn.paddingHeight = function () {
+    return this.outerHeight(true) - this.height();
+}
+
+function calculateRemainingBodyHeight() {
+    // Calculation based on content in Layout.cshtml
+    return $(window).height() - $("#menuBar").outerHeight(true) - $("#bodyContainer").paddingHeight() - $("#pageHeader").outerHeight(true);
+}
+
 function hubConnected() {
     hideErrorMessage();
 
@@ -62,13 +71,26 @@ function hubConnected() {
     hubIsConnecting = false;
     hubIsConnected = true;
 
+    // Re-enable hub dependent controls
+    updateHubDependentControlState(true);
+
     // Call "onHubConnected" function, if page has defined one
     if (typeof onHubConnected == "function")
         onHubConnected();
 }
 
+function updateHubDependentControlState(enabled) {
+    if (enabled)
+        $("[hub-dependent]").removeClass("disabled");
+    else
+        $("[hub-dependent]").addClass("disabled");
+}
+
 $(function () {
     $(".page-header").css("margin-bottom", "-5px");
+
+    // Set initial state of hub dependent controls
+    updateHubDependentControlState(false);
 
     // Initialize proxy references to the SignalR hubs
     dataHub = $.connection.dataHub.server;
@@ -79,6 +101,9 @@ $(function () {
     $.connection.hub.reconnecting(function () {
         hubIsConnecting = true;
         showInfoMessage("Attempting to reconnect to service&nbsp;&nbsp;<span class='glyphicon glyphicon-refresh glyphicon-spin'></span>", -1);
+
+        // Disable hub dependent controls
+        updateHubDependentControlState(false);
     });
 
     $.connection.hub.reconnected(function () {
@@ -90,6 +115,9 @@ $(function () {
 
         if (hubIsConnecting)
             showErrorMessage("Disconnected from server");
+
+        // Disable hub dependent controls
+        updateHubDependentControlState(false);
 
         // Call "onHubDisconnected" function, if page has defined one
         if (typeof onHubDisconnected == "function")

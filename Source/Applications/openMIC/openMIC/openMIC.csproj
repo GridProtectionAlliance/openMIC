@@ -264,6 +264,7 @@
     <None Include="wwwroot\Content\bootstrap-theme.min.css.map" />
     <None Include="wwwroot\Content\bootstrap.css.map" />
     <None Include="wwwroot\Content\bootstrap.min.css.map" />
+    <None Include="wwwroot\SelectTheme.cshtml" />
     <None Include="wwwroot\Status.cshtml" />
     <None Include="wwwroot\Devices.cshtml" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.eot" />
@@ -280,12 +281,12 @@
     <Content Include="wwwroot\Content\bootstrap.css" />
     <Content Include="wwwroot\Content\bootstrap.min.css" />
     <Content Include="wwwroot\Content\Site.css" />
-    <Content Include="wwwroot\Content\bootstrap-cerulean.css" />
-    <Content Include="wwwroot\Content\bootstrap-cosmo.css" />
-    <Content Include="wwwroot\Content\bootstrap-cyborg.css" />
-    <Content Include="wwwroot\Content\bootstrap-readable.css" />
-    <Content Include="wwwroot\Content\bootstrap-sandstone.css" />
-    <Content Include="wwwroot\Content\bootstrap-slate.css" />
+    <Content Include="wwwroot\Content\bootstrap-theme-cerulean.css" />
+    <Content Include="wwwroot\Content\bootstrap-theme-cosmo.css" />
+    <Content Include="wwwroot\Content\bootstrap-theme-cyborg.css" />
+    <Content Include="wwwroot\Content\bootstrap-theme-readable.css" />
+    <Content Include="wwwroot\Content\bootstrap-theme-sandstone.css" />
+    <Content Include="wwwroot\Content\bootstrap-theme-slate.css" />
     <Content Include="wwwroot\Content\bootstrap-united.css" />
     <Content Include="wwwroot\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="wwwroot\Images\gpa-lock.png" />
@@ -309,6 +310,7 @@
     <Content Include="wwwroot\Images\Icons\mstile-310x150.png" />
     <Content Include="wwwroot\Images\Icons\mstile-310x310.png" />
     <Content Include="wwwroot\Images\Icons\mstile-70x70.png" />
+    <Content Include="wwwroot\Images\openMIC.png" />
     <Content Include="wwwroot\Scripts\Site.js" />
     <None Include="wwwroot\Index.cshtml" />
     <None Include="wwwroot\Layout.cshtml" />

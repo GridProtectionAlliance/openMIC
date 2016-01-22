@@ -35,7 +35,7 @@ namespace openMIC
         #region [ Members ]
 
         // Fields
-        private openMICData m_dataModel;
+        private readonly openMICData m_dataModel;
         private bool m_disposed;
 
         #endregion

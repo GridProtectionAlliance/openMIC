@@ -39,48 +39,89 @@
     <script src="Scripts/knockout-3.4.0.js"></script>
     <script src="Scripts/knockout.mapping.js"></script>
     <script>
+        var viewModel = {
+            devices: ko.observableArray()
+        };
+
+        var currentPage = 1;
+        var currentPageSize = 0;
+
+        function queryDevices() {
+            if (hubIsConnected)
+                dataHub.queryDevices("ID", true, currentPage, currentPageSize).done(function (devices) {
+                    viewModel.devices.removeAll();
+                    viewModel.devices(devices.slice());
+                    $("[id='deviceRow']").css('visibility', 'visible');
+                    $("#loadingDevicesLabel").hide();
+                });
+        }
+
         function onHubConnected() {
-            dataHub.queryDevices("ID", true, 1, 10).done(function (devices) {
-                ko.applyBindings({ devices: ko.mapping.fromJS(devices) });
-                $("[id='deviceRow']").show();
-                $("#loadingDevicesLabel").hide();
-            });
+            queryDevices();
+        }
+
+        function calculatePageSize() {
+            // Calculate total number of table rows that will fit within current page height
+            var remainingHeight = calculateRemainingBodyHeight() - 
+                $("contentWell").paddingHeight() - 
+                $("deviceTable").paddingHeight() - 
+                $("#addNewRow").outerHeight(true);
+
+            var rowHeight = 
+
+            var pageSize = Math.floor(remainingHeight / $("#deviceRow").outerHeight(true)) - 1;
+
+            if (pageSize < 1)
+                pageSize = 1;
+
+            return pageSize;
         }
 
         $(function() {
             $("#bodyContainer").addClass("fill-height");
+            currentPageSize = calculatePageSize();
+            ko.applyBindings(viewModel);
+        });
+
+        $(window).resize(function () {
+            var pageSize = calculatePageSize();
+
+            if (pageSize !== currentPageSize) {
+                currentPageSize = pageSize;
+                queryDevices();
+            }
         });
     </script>
 }
-<div class="well fill-height">
+<div class="well fill-height" id="contentWell" style="overflow: auto">
     <div class="table-responsive">
-        <table class="table table-condensed table-striped">
+        <table class="table table-condensed table-striped" id="deviceTable">
             <thead>
-                <tr>
-                    <th class="text-left">Acronym</th>
-                    <th class="text-center">Schedule</th>
-                    <th class="text-center">Enabled</th>
-                    <th>&nbsp;</th>
-                </tr>
+            <tr>
+                <th class="text-left">Acronym</th>
+                <th class="text-center">Schedule</th>
+                <th class="text-center">Enabled</th>
+                <th>&nbsp;</th>
+            </tr>
             </thead>
             <tbody data-bind="foreach: devices">
-                <tr style="display: none" id="deviceRow">
-                    <td width="70%" class="text-left valign-middle" data-bind="text: Acronym"><label></label></td>
-                    <td width="20%" class="text-center"><button type="button" class="btn btn-link"><u>Undefined</u></button></td>
-                    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" /></td>
-                    <td width="5%" class="text-center valign-middle" nowrap>
-                        <button type="button" class="btn btn-xs"><span class="glyphicon glyphicon-pencil"></span></button>
-                        <button type="button" class="btn btn-xs"><span class="glyphicon glyphicon-remove"></span></button>
-                    </td>
-                </tr>
+            <tr style="visibility: hidden" id="deviceRow">
+                <td width="70%" class="text-left valign-middle" data-bind="text: Acronym"><label></label></td>
+                <td width="20%" class="text-center"><button type="button" class="btn btn-link"><u>Undefined</u></button></td>
+                <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled"/></td>
+                <td width="5%" class="text-center valign-middle" nowrap>
+                    <button type="button" class="btn btn-xs" hub-dependent><span class="glyphicon glyphicon-pencil"></span></button>
+                    <button type="button" class="btn btn-xs" hub-dependent><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            </tr>
             </tbody>
         </table>
         <div id="loadingDevicesLabel">
             Loading devices&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
         </div>
     </div>
-    <div class="pull-right">
-        <button type="button" class="btn btn-xs btn-primary">
+    <div class="pull-right" id="addNewRow">
+        <button type="button" class="btn btn-xs btn-primary" hub-dependent>
             <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New
         </button>
     </div>
