@@ -25,6 +25,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GSF.Configuration;
+using GSF.Identity;
 using Microsoft.AspNet.SignalR;
 using openMIC.Model;
 
@@ -36,6 +38,7 @@ namespace openMIC
 
         // Fields
         private readonly openMICData m_dataModel;
+        private readonly Guid m_currentNodeID;
         private bool m_disposed;
 
         #endregion
@@ -92,6 +95,13 @@ namespace openMIC
             return base.OnDisconnected(stopCalled);
         }
 
+        #region [ Device Table Operations ]
+
+        public int QueryDeviceCount()
+        {
+            return m_dataModel.Database.SqlQuery<int>("SELECT COUNT(*) FROM Device").FirstOrDefault();
+        }
+
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize)
         {
             if (ascending)
@@ -100,67 +110,209 @@ namespace openMIC
             return m_dataModel.Devices.OrderByDescending(sortField).ToPagedList(page, pageSize);
         }
 
-        public Vendor FindVendor(int id)
+        public void DeleteDevice(int id)
         {
-            return m_dataModel.Vendors.Find(id);
+            m_dataModel.Database.ExecuteSqlCommand("DELETE FROM Device WHERE ID = @p0", id);
         }
 
-        public IEnumerable<int> QueryVendorIDs()
+        public Device NewDevice()
         {
-            return m_dataModel.Database.SqlQuery<int>("SELECT ID FROM Vendor");
+            return new Device();
         }
 
-        public IEnumerable<Vendor> QueryVendors()
+        public void AddNewDevice(Device device)
         {
-            return m_dataModel.Vendors;
+            device.NodeID = Program.Host.Model.NodeID;
+            device.CreatedBy = UserInfo.CurrentUserID;
+            device.CreatedOn = DateTime.UtcNow;
+            device.UpdatedBy = device.CreatedBy;
+            device.UpdatedOn = device.CreatedOn;
+            m_dataModel.Devices.Add(device);
+            m_dataModel.SaveChanges();
         }
 
-        public IEnumerable<Vendor> QueryVendors(string sql)
+        public void UpdateDevice(Device update)
         {
-            return string.IsNullOrEmpty(sql) ? QueryVendors() : QueryVendors(sql, null);
+            Device source = m_dataModel.Devices.Find(update.ID);
+
+            if (source != null)
+            {
+                update.CopyProperties(source);
+                m_dataModel.SaveChanges();
+            }
+            else
+            {
+                throw new InvalidOperationException("Record not found, cannot save update.");
+            }
         }
 
-        public IEnumerable<Vendor> QueryVendors(string sql, params object[] parameters)
+        #endregion
+
+        #region [ Vendor Table Operations ]
+
+        public int QueryVendorCount()
         {
-            if (string.IsNullOrEmpty(sql))
-                throw new ArgumentNullException(nameof(sql));
-
-            if ((object)parameters == null)
-                parameters = new object[0];
-
-            return m_dataModel.Vendors.SqlQuery($"SELECT * FROM Vendor WHERE {sql}", parameters).AsNoTracking().ToArray();
+            return m_dataModel.Database.SqlQuery<int>("SELECT COUNT(*) FROM Vendor").FirstOrDefault();
         }
 
-        public VendorDevice FindVendorDevice(int id)
+        public IEnumerable<Vendor> QueryVendors(string sortField, bool ascending, int page, int pageSize)
         {
-            return m_dataModel.VendorDevices.Find(id);
+            if (ascending)
+                return m_dataModel.Vendors.OrderBy(sortField).ToPagedList(page, pageSize);
+
+            return m_dataModel.Vendors.OrderByDescending(sortField).ToPagedList(page, pageSize);
         }
 
-        public IEnumerable<int> QueryVendorDeviceIDs()
+        public void DeleteVendor(int id)
         {
-            return m_dataModel.Database.SqlQuery<int>("SELECT ID FROM VendorDevice");
+            m_dataModel.Database.ExecuteSqlCommand("DELETE FROM Vendor WHERE ID = @p0", id);
         }
 
-        public IEnumerable<VendorDevice> QueryVendorDevices()
+        public Vendor NewVendor()
         {
-            return m_dataModel.VendorDevices;
+            return new Vendor();
         }
 
-        public IEnumerable<VendorDevice> QueryVendorDevices(string sql)
+        public void AddNewVendor(Vendor vendor)
         {
-            return string.IsNullOrEmpty(sql) ? QueryVendorDevices() : QueryVendorDevices(sql, null);
+            vendor.CreatedBy = UserInfo.CurrentUserID;
+            vendor.CreatedOn = DateTime.UtcNow;
+            vendor.UpdatedBy = vendor.CreatedBy;
+            vendor.UpdatedOn = vendor.CreatedOn;
+            m_dataModel.Vendors.Add(vendor);
+            m_dataModel.SaveChanges();
         }
 
-        public IEnumerable<VendorDevice> QueryVendorDevices(string sql, params object[] parameters)
+        public void UpdateVendor(Vendor vendor)
         {
-            if (string.IsNullOrEmpty(sql))
-                throw new ArgumentNullException(nameof(sql));
+            Vendor source = m_dataModel.Vendors.Find(vendor.ID);
 
-            if ((object)parameters == null)
-                parameters = new object[0];
-
-            return m_dataModel.VendorDevices.SqlQuery($"SELECT * FROM VendorDevice WHERE {sql}", parameters).AsNoTracking().ToArray();
+            if (source != null)
+            {
+                vendor.CopyProperties(source);
+                m_dataModel.SaveChanges();
+            }
+            else
+            {
+                throw new InvalidOperationException("Record not found, cannot save update.");
+            }
         }
+
+        //public Vendor FindVendor(int id)
+        //{
+        //    return m_dataModel.Vendors.Find(id);
+        //}
+
+        //public IEnumerable<int> QueryVendorIDs()
+        //{
+        //    return m_dataModel.Database.SqlQuery<int>("SELECT ID FROM Vendor");
+        //}
+
+        //public IEnumerable<Vendor> QueryVendors()
+        //{
+        //    return m_dataModel.Vendors;
+        //}
+
+        //public IEnumerable<Vendor> QueryVendors(string sql)
+        //{
+        //    return string.IsNullOrEmpty(sql) ? QueryVendors() : QueryVendors(sql, null);
+        //}
+
+        //public IEnumerable<Vendor> QueryVendors(string sql, params object[] parameters)
+        //{
+        //    if (string.IsNullOrEmpty(sql))
+        //        throw new ArgumentNullException(nameof(sql));
+
+        //    if ((object)parameters == null)
+        //        parameters = new object[0];
+
+        //    return m_dataModel.Vendors.SqlQuery($"SELECT * FROM Vendor WHERE {sql}", parameters).AsNoTracking().ToArray();
+        //}
+
+        #endregion
+
+        #region [ VendorDevice Table Operations ]
+
+        public int QueryVendorDeviceCount()
+        {
+            return m_dataModel.Database.SqlQuery<int>("SELECT COUNT(*) FROM VendorDevice").FirstOrDefault();
+        }
+
+        public IEnumerable<VendorDevice> QueryVendorDevices(string sortField, bool ascending, int page, int pageSize)
+        {
+            if (ascending)
+                return m_dataModel.VendorDevices.OrderBy(sortField).ToPagedList(page, pageSize);
+
+            return m_dataModel.VendorDevices.OrderByDescending(sortField).ToPagedList(page, pageSize);
+        }
+
+        public void DeleteVendorDevice(int id)
+        {
+            m_dataModel.Database.ExecuteSqlCommand("DELETE FROM VendorDevice WHERE ID = @p0", id);
+        }
+
+        public VendorDevice NewVendorDevice()
+        {
+            return new VendorDevice();
+        }
+
+        public void AddNewVendorDevice(VendorDevice vendorDevice)
+        {
+            vendorDevice.CreatedBy = UserInfo.CurrentUserID;
+            vendorDevice.CreatedOn = DateTime.UtcNow;
+            vendorDevice.UpdatedBy = vendorDevice.CreatedBy;
+            vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
+            m_dataModel.VendorDevices.Add(vendorDevice);
+            m_dataModel.SaveChanges();
+        }
+
+        public void UpdateVendorDevice(VendorDevice vendorDevice)
+        {
+            VendorDevice source = m_dataModel.VendorDevices.Find(vendorDevice.ID);
+
+            if (source != null)
+            {
+                vendorDevice.CopyProperties(source);
+                m_dataModel.SaveChanges();
+            }
+            else
+            {
+                throw new InvalidOperationException("Record not found, cannot save update.");
+            }
+        }
+
+        //public VendorDevice FindVendorDevice(int id)
+        //{
+        //    return m_dataModel.VendorDevices.Find(id);
+        //}
+
+        //public IEnumerable<int> QueryVendorDeviceIDs()
+        //{
+        //    return m_dataModel.Database.SqlQuery<int>("SELECT ID FROM VendorDevice");
+        //}
+
+        //public IEnumerable<VendorDevice> QueryVendorDevices()
+        //{
+        //    return m_dataModel.VendorDevices;
+        //}
+
+        //public IEnumerable<VendorDevice> QueryVendorDevices(string sql)
+        //{
+        //    return string.IsNullOrEmpty(sql) ? QueryVendorDevices() : QueryVendorDevices(sql, null);
+        //}
+
+        //public IEnumerable<VendorDevice> QueryVendorDevices(string sql, params object[] parameters)
+        //{
+        //    if (string.IsNullOrEmpty(sql))
+        //        throw new ArgumentNullException(nameof(sql));
+
+        //    if ((object)parameters == null)
+        //        parameters = new object[0];
+
+        //    return m_dataModel.VendorDevices.SqlQuery($"SELECT * FROM VendorDevice WHERE {sql}", parameters).AsNoTracking().ToArray();
+        //}
+
+        #endregion
 
         #endregion
 

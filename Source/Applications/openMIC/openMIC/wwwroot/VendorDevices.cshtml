@@ -1,5 +1,5 @@
 ﻿@*******************************************************************************************************
-//  Devices.cshtml - Gbtc
+//  Vendors.cshtml - Gbtc
 //
 //  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -33,65 +33,40 @@
 }
 @{
     Layout = "Layout.cshtml";
-    ViewBag.Title = "Devices";
+    ViewBag.Title = "Vendor Devices";
     ViewBag.PageControlScripts = new StringBuilder();
 
     ViewBag.HeaderColumns = new string[][]
     {   //    { "Field", "Label", "Classes" }
-        new[] { "Acronym", "Acronym", "text-left" },
-        new[] { null, "Schedule", "text-center valign-middle" },
-        new[] { "Enabled", "Enabled", "text-center" }
+        new[] { "Name", "Name", "text-left" },
+        new[] { "Description", "Description", "text-center" },
+        new[] { "URL", "URL", "text-center" }
     };
 
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
 }
-@helper BodyRows() {
-    <td width="70%" class="text-left valign-middle" data-bind="text: Acronym"></td>
-    <td width="20%" class="text-center"><button type="button" class="btn btn-link"><u>Undefined</u></button></td>
-    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" /></td>
+@helper BodyRows()
+{
+    <td width="25%" class="text-left valign-middle" data-bind="text: Name"></td>
+    <td width="30%" class="text-center dont-break-out" data-bind="text: Description"></td>
+    <td width="40%" class="text-left dont-break-out"><a data-bind="attr:{href: URL}" target="_blank"><div data-bind="text: URL"></div></a></td>
     <td width="5%" class="text-center valign-middle" nowrap>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord" hub-dependent><span class="glyphicon glyphicon-pencil"></span></button>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord" hub-dependent><span class="glyphicon glyphicon-remove"></span></button>
     </td>
 }
-@helper AddNewEditDialog() {
+@helper AddNewEditDialog()
+{
     <form role="form">
-        <div class="form-group" data-bind="css: {'has-error': isEmpty(Acronym()), 'has-feedback': isEmpty(Acronym())}">
-            <label for="acronym">Device Acronym:</label>
-            <input type="text" class="form-control" data-bind="textInput: Acronym" id="acronym" required>
-            <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(Acronym())"></span>
+        <div class="form-group" data-bind="css: {'has-error': isEmpty(Name()), 'has-feedback': isEmpty(Name())}">
+            <label for="name">Name:</label>
+            <input type="text" class="form-control" data-bind="textInput: Name" id="name" required>
+            <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(Name())"></span>
         </div>
         <div class="form-group">
-            <label for="connectionUserName">Connection User Name:</label>
-            <input type="text" class="form-control" id="connectionUserName">
-        </div>
-        <div class="form-group">
-            <label for="connectionPassword">Connection Password:</label>
-            <input type="password" class="form-control" id="connectionPassword">
-        </div>
-        <div class="checkbox">
-            <label><input type="checkbox" id="useDialUp"> Use Dial-up Connection</label>
-        </div>
-        <div class="form-group" data-bind="visible: $('#useDialUp').is(':checked')">
-            <label for="dialUpPhoneNumber">Dial-up Phone Number:</label>
-            <input type="tel" class="form-control" id="dialUpPhoneNumber">
-        </div>
-        <div class="form-group">
-            <label for="maxConnectionRetries">Maximum Connection Retries:</label>
-            <input type="number" class="form-control" id="maxConnectionRetries" value="3">
-        </div>
-        <div class="form-group">
-            <label for="sel1">Connection Profile:</label>
-            <select class="form-control" id="connectionProfile">
-                @foreach (Vendor vendor in ViewBag.DbContext.Vendors)
-                {
-                    <option value="@vendor.ID">@vendor.Acronym</option>
-                }
-            </select>
-        </div>
-        <div class="checkbox">
-            <label><input type="checkbox" data-bind="checked: Enabled"> Enabled</label>
+            <label for="description">Description:</label>
+            <input type="text" class="form-control" data-bind="textInput: Description" id="description">
         </div>
     </form>
 }
@@ -101,31 +76,31 @@
     <script>
         // Configure view model
         viewModel.defaultSortField = "ID";
-        viewModel.labelField = "Acronym";
+        viewModel.labelField = "Name";
         viewModel.identityField = "ID";
 
         viewModel.setQueryRecordCount(function () {
-            return dataHub.queryDeviceCount();
+            return dataHub.queryVendorDeviceCount();
         });
 
         viewModel.setQueryRecords(function (sortField, ascending, page, pageSize) {
-            return dataHub.queryDevices(sortField, ascending, page, pageSize);
+            return dataHub.queryVendorDevices(sortField, ascending, page, pageSize);
         });
 
         viewModel.setDeleteRecord(function (id) {
-            return dataHub.deleteDevice(id);
+            return dataHub.deleteVendorDevice(id);
         });
 
         viewModel.setNewRecord(function () {
-            return dataHub.newDevice();
+            return dataHub.newVendorDevice();
         });
 
         viewModel.setAddNewRecord(function (record) {
-            return dataHub.addNewDevice(record);
+            return dataHub.addNewVendorDevice(record);
         });
 
         viewModel.setUpdateRecord(function (record) {
-            return dataHub.updateDevice(record);
+            return dataHub.updateVendorDevice(record);
         });
     </script>
 }

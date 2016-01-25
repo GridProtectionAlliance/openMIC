@@ -57,9 +57,26 @@ $.fn.paddingHeight = function () {
     return this.outerHeight(true) - this.height();
 }
 
+$.fn.paddingWidth = function () {
+    return this.outerWidth(true) - this.width();
+}
+
+function isEmpty(str) {
+    return !str || 0 === str.length;
+}
+
 function calculateRemainingBodyHeight() {
     // Calculation based on content in Layout.cshtml
-    return $(window).height() - $("#menuBar").outerHeight(true) - $("#bodyContainer").paddingHeight() - $("#pageHeader").outerHeight(true);
+    return $(window).height() -
+        $("#menuBar").outerHeight(true) -
+        $("#bodyContainer").paddingHeight() -
+        $("#pageHeader").outerHeight(true) - 5;
+}
+
+if (typeof Math.trunc != "function" && Math.__proto__) {
+    Math.__proto__.trunc = function (val) {
+        return parseInt(val.toString());
+    }
 }
 
 function hubConnected() {
@@ -84,6 +101,11 @@ function updateHubDependentControlState(enabled) {
         $("[hub-dependent]").removeClass("disabled");
     else
         $("[hub-dependent]").addClass("disabled");
+}
+
+// Useful to call when dyanmic data-binding adds new controls
+function refreshHubDependentControlState() {
+    updateHubDependentControlState(hubIsConnected);
 }
 
 $(function () {

@@ -1,0 +1,168 @@
+﻿@*******************************************************************************************************
+//  PagedViewModel.cshtml - Gbtc
+//
+//  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  01/22/2016 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System.Text
+@using GSF
+@using openMIC.Model
+@using RazorEngine.Templating
+@inherits TemplateBase<AppModel>
+@{
+    StringBuilder pageControlScripts = ViewBag.PageControlScripts;
+
+    pageControlScripts.Append(@"
+    <script src=""Scripts/knockout-3.4.0.js""></script>
+    <script src=""Scripts/knockout.mapping.js""></script>
+    <script src=""Scripts/pagedViewModel.js""></script>
+    <script src=""Scripts/js.cookie.js""></script>
+    <script>
+        $(function () {
+            $(""#clearSortOrder"").click(function () {
+                viewModel.updateSortOrder(viewModel.defaultSortField, true);
+            });
+    ");
+}
+@functions
+{
+    string SingularForm(string value)
+    {
+        if (value.EndsWith("s", StringComparison.InvariantCultureIgnoreCase))
+            return value.Substring(0, value.Length - 1);
+
+        return value;
+    }
+
+    string RemoveSpaces(string value)
+    {
+        return value.RemoveWhiteSpace();
+    }
+
+    string RenderSortScript(string fieldName, bool ascending)
+    {
+        const string ScriptFormat = @"
+            $(""#sort{0} #{1}"").click(function () {{
+                viewModel.updateSortOrder(""{0}"", {2});
+            }});
+        ";
+
+        return string.Format(ScriptFormat, fieldName, ascending ? "asc" : "desc", ascending.ToString().ToLower());
+    }
+}
+@helper WriteFieldHeader(StringBuilder pageControlScripts, string fieldName, string labelName = null, string classes = null)
+{
+    if (string.IsNullOrEmpty(fieldName))
+    {
+        <th class="@classes" nowrap>@(labelName ?? "")</th>
+    }
+    else
+    {
+        <th class="@(classes ?? "text-center")" id="sort@(fieldName)" nowrap>@(labelName ?? fieldName)&nbsp;
+            <div class="btn-group-vertical btn-group-sort">
+                <button type="button" class="btn" id="asc" data-bind="css: {'btn-primary': isSortOrder('@fieldName', true)}" hub-dependent><span class="glyphicon glyphicon-chevron-up"></span></button>
+                <button type="button" class="btn" id="desc" data-bind="css: {'btn-primary': isSortOrder('@fieldName', false)}" hub-dependent><span class="glyphicon glyphicon-chevron-down"></span></button>
+            </div>
+        </th>
+
+        pageControlScripts.Append(RenderSortScript(fieldName, true));
+        pageControlScripts.Append(RenderSortScript(fieldName, false));
+    }
+}
+<div class="well well-dynamic-content fill-height" id="contentWell">
+    <div class="table-responsive">
+        <table class="table table-condensed table-hover" id="recordsTable">
+            <thead>
+                <tr>
+                    @foreach (string[] headerColumn in ViewBag.HeaderColumns) {
+                        @WriteFieldHeader(pageControlScripts, headerColumn[0], headerColumn[1], headerColumn[2]);
+                    }
+                    <th class="text-center">
+                        <button type="button" class="btn btn-link btn-xs" style="line-height: 1.1" id="clearSortOrder" hub-dependent>Clear<br />Sort</button> 
+                    </th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: pageRecords">
+                <tr style="visibility: hidden" id="recordRow">
+                    @Raw(ViewBag.BodyRows)
+                </tr>
+            </tbody>
+        </table>
+        <div id="loadingDataLabel">
+            Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+        </div>
+    </div>
+    <div class="pull-right" id="pageControlsRow">
+        <button type="button" class="btn btn-xs btn-primary pull-right" id="addRecordButton" hub-dependent>
+            <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New
+        </button>
+        <br />
+        <hr class="quarter-break" />
+        <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-default" id="firstPageButton" data-bind="css: {'disabled': onFirstPage()}"><span class="glyphicon glyphicon-backward"></span></button>
+            <button type="button" class="btn btn-default" id="previousPageButton" data-bind="css: {'disabled': onFirstPage()}"><span class="glyphicon glyphicon-triangle-left"></span></button>
+        </div>
+        <input type="number" class="content input-sm" style="padding: 0 0 0 5px; width: 55px" id="selectedPage" data-bind="numeric, textInput: currentPage" value="1">
+        &nbsp;of&nbsp;
+        <span data-bind="text: totalPages">1</span>
+        &nbsp;
+        <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-default" id="nextPageButton" data-bind="css: {'disabled': onLastPage()}"><span class="glyphicon glyphicon-triangle-right"></span></button>
+            <button type="button" class="btn btn-default" id="lastPageButton" data-bind="css: {'disabled': onLastPage()}"><span class="glyphicon glyphicon-forward"></span></button>
+        </div>
+    </div>
+</div>
+<div id="addNewEditDialog" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">
+                    <span data-bind="visible: !editMode()">Add New</span>
+                    <span data-bind="visible: editMode()">Edit</span>
+                    @SingularForm(ViewBag.Title)
+                </h4>
+            </div>
+            <div class="modal-body" data-bind="with: currentRecord">
+                @Raw(ViewBag.AddNewEditDialog)
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="saveRecordButton" hub-dependent>Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+@{
+    pageControlScripts.Append(@"
+            $(""#addRecordButton"").click(function () {
+                viewModel.addPageRecord();
+            });
+
+            $(""#saveRecordButton"").click(function () {
+                viewModel.savePageRecord();
+            });
+
+            $(""#addNewEditDialog"").modal({show: false});
+        });
+    ");
+    pageControlScripts.AppendFormat("\r\n        viewModel.modelName = \"{0}\";", RemoveSpaces(ViewBag.Title));
+    pageControlScripts.Append(@"
+    </script>");
+}

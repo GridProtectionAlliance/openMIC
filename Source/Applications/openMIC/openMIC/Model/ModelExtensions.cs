@@ -1,12 +1,12 @@
 ﻿//******************************************************************************************************
-//  AppModel.cs - Gbtc
+//  ModelExtensions.cs - Gbtc
 //
 //  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
 //
 //  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
 //  the NOTICE file distributed with this work for additional information regarding copyright ownership.
-//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
-//  file except in compliance with the License. You may obtain a copy of the License at:
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
+//  not use this file except in compliance with the License. You may obtain a copy of the License at:
 //
 //      http://opensource.org/licenses/MIT
 //
@@ -16,67 +16,24 @@
 //
 //  Code Modification History:
 //  ----------------------------------------------------------------------------------------------------
-//  01/21/2016 - J. Ritchie Carroll
+//  01/25/2016 - J. Ritchie Carroll
 //       Generated original version of source code.
 //
 //******************************************************************************************************
 
 using System;
+using System.Reflection;
 
 namespace openMIC.Model
 {
-    public class AppModel
+    static class ModelExtensions
     {
-        #region [ Properties ]
-
-        public string CompanyName
+        public static void CopyProperties<T>(this T source, T target)
         {
-            get;
-            set;
-        }
+            Type type = typeof(T);
 
-        public string CompanyAcronym
-        {
-            get;
-            set;
+            foreach (PropertyInfo property in type.GetProperties())
+                property.SetValue(target, property.GetValue(source, null), null);
         }
-
-        public Guid NodeID
-        {
-            get;
-            set;
-        }
-
-        public string ApplicationName
-        {
-            get;
-            set;
-        }
-
-        public string ApplicationDescription
-        {
-            get;
-            set;
-        }
-
-        public string ApplicationKeywords
-        {
-            get;
-            set;
-        }
-
-        public string DateTimeFormat
-        {
-            get;
-            set;
-        }
-
-        public string BootstrapTheme
-        {
-            get;
-            set;
-        }
-
-        #endregion
     }
 }

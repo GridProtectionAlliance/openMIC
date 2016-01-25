@@ -152,6 +152,7 @@ namespace openMIC
             {
                 CompanyName = systemSettings["CompanyName"].Value,
                 CompanyAcronym = systemSettings["CompanyAcronym"].Value,
+                NodeID = Guid.Parse(systemSettings["NodeID"].Value),
                 ApplicationName = "openMIC",
                 ApplicationDescription = "open Meter Information Collection System",
                 ApplicationKeywords = "open source, utility, software, meter, interrogation",

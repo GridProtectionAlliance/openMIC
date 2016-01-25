@@ -31,19 +31,23 @@ namespace openMIC
     {
         public void Configuration(IAppBuilder app)
         {
-            HttpConfiguration config = new HttpConfiguration();
+            HubConfiguration hubConfig = new HubConfiguration();
+            HttpConfiguration httpConfig = new HttpConfiguration();
 
-            // Set configuration to use reflection to setup routes
-            config.MapHttpAttributeRoutes();
+            // Enabled deailed client errors
+            hubConfig.EnableDetailedErrors = true;
 
             // Load ServiceHub SignalR class
-            app.MapSignalR();
+            app.MapSignalR(hubConfig);
+
+            // Set configuration to use reflection to setup routes
+            httpConfig.MapHttpAttributeRoutes();
 
             // Load the WebPageController class and assign its routes
-            app.UseWebApi(config);
+            app.UseWebApi(httpConfig);
 
             // Check for configuration issues before first request
-            config.EnsureInitialized();
+            httpConfig.EnsureInitialized();
         }
     }
 }

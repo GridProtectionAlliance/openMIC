@@ -3,14 +3,50 @@ body {
     padding-top: 30px;
 }
 
+/* Bootstrap defaults table cells to valign top, following styles allow customization */
+.table thead>tr>th.valign-middle,
 .table tbody>tr>td.valign-middle {
     vertical-align: middle;
 }
 
+.table thead>tr>th.valign-bottom,
 .table tbody>tr>td.valign-bottom {
     vertical-align: bottom;
 }
 
+/* Table column sorting button style */
+.btn-group-sort > .btn {
+    padding: 0px 1px;
+    font-size: 7.25px;
+    line-height: 1.75;
+    margin-top: -2px;
+    border-radius: 1px;
+}
+
+/* Handle URL and long word wrapping in a table cell */
+.dont-break-out {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -ms-word-break: break-all;
+    word-break: break-all;
+    word-break: break-word;
+}
+
+.dont-break-out div {
+    display: inline-block;
+    vertical-align: middle;
+    height: 40px;
+    overflow: hidden;
+}
+
+/*.dont-break-out a div {
+    display: table-cell;
+    vertical-align: middle;
+    height: 40px;
+    overflow: hidden;
+}*/
+
+/* Style for controls to fill page height minus spacing for navbar and header */
 .fill-height {
     min-height: calc(100% - 55px);
     height: calc(100% - 55px);
@@ -19,6 +55,35 @@ body {
     height: -moz-calc(100% - 55px);     /* firefox */
 }
 
+/* Style for dyanmically sized content wells */
+.well-dynamic-content {
+    overflow: auto;
+    padding-bottom: 0px
+}
+
+/* Following styles create breaks with custom heights */
+hr.quarter-break {
+    height: 5px;
+    margin: 0px;
+    padding: 0px;
+    visibility: hidden;
+}
+
+hr.half-break {
+    height: 10px;
+    margin: 0px;
+    padding: 0px;
+    visibility: hidden;
+}
+
+hr.full-break {
+    height: 20px;
+    margin: 0px;
+    padding: 0px;
+    visibility: hidden;
+}
+
+/* Style for in-screen pop-up forms */
 .floating-form {
     position: absolute;
     margin: 5px;
@@ -27,12 +92,14 @@ body {
     clear: both;
 }
 
+/* Pre-loads an image off-screen */
 .pre-cache {
     position: absolute;
     left: -999em;
     visibility: hidden
 }
 
+/* Glyphicon animations and rotations */
 .glyphicon-spin {
   -webkit-animation: spin 1.25s infinite linear;
   -moz-animation: spin 1.25s infinite linear;

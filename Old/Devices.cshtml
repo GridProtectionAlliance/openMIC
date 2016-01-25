@@ -1,0 +1,293 @@
+@*******************************************************************************************************
+//  Devices.cshtml - Gbtc
+//
+//  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
+//  not use this file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  01/15/2016 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System.Text
+@using openMIC.Model
+@using RazorEngine.Templating
+@inherits TemplateBase<AppModel>
+@{
+    Layout = "Layout.cshtml";
+    ViewBag.Title = "Devices";
+    ViewBag.TableName = "Device";
+
+    StringBuilder extraScripts = new StringBuilder();
+
+    extraScripts.Append(@"
+            $(""#clearSortOrder"").click(function () {
+                viewModel.updateSortOrder(viewModel.defaultSortField, true);
+            });
+    ");
+}
+@section StyleSheets {
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        .btn-group-sort > .btn {
+            padding: 0px 1px;
+            font-size: 7.25px;
+            line-height: 1.75;
+            margin-top: -2px;
+            border-radius: 1px;
+        }
+    </style>
+}
+@section Scripts {
+    <script src="Scripts/formatDate.js"></script>
+    <script src="Scripts/knockout-3.4.0.js"></script>
+    <script src="Scripts/knockout.mapping.js"></script>
+    <script>
+        function pagedViewModel() {
+            var self = this;
+
+            // Fields
+            self.pageRecords = ko.observableArray();
+            self.recordCount = ko.observable(0);
+            self.pageCount = ko.observable(1);
+            self._currentPageSize = ko.observable(1);
+            self._currentPage = ko.observable(0);
+            self.defaultSortField = "ID";
+            self.sortField = ko.observable(self.defaultSortField);
+            self.sortAscending = ko.observable(true);
+
+            // Properties
+            self.currentPageSize = ko.pureComputed({
+                read: self._currentPageSize,
+                write: function (value) {
+                    if (value < 1)
+                        value = 1;
+
+                    if (value != self._currentPageSize()) {
+                        self._currentPageSize(value);
+
+                        // Validate current page after page size change
+                        if (self.currentPage())
+                            self.currentPage(self.currentPage());
+                    }
+                },
+                owner: self
+            });
+
+            self.currentPage = ko.pureComputed({
+                read: self._currentPage,
+                write: function (value) {
+                    if (value < 1)
+                        value = 1;
+                    else if (value > self.totalPages())
+                        value = self.totalPages();
+
+                    if (value != self._currentPage()) {
+                        self._currentPage(value);
+                        self.queryDevices();
+                    }
+                },
+                owner: self
+            });
+
+            self.totalPages = ko.pureComputed(function () {
+                return Math.max(Math.ceil(self.recordCount() / self.currentPageSize()), 1);
+            });
+
+            self.onFirstPage = ko.pureComputed(function () {
+                return self.currentPage() === 1;
+            });
+
+            self.onLastPage = ko.pureComputed(function () {
+                return self.currentPage() === self.totalPages();
+            });
+
+            // Methods
+            self.initialize = function () {
+                if (hubIsConnected) {
+                    dataHub.queryDeviceCount().done(function (total) {
+                        self.recordCount(total);
+                    });
+
+                    self.currentPage(1);
+                }
+            }
+
+            self.nextPage = function () {
+                if (self.currentPage() < self.totalPages())
+                    self.currentPage(self.currentPage() + 1);
+            }
+
+            self.previousPage = function () {
+                if (self.currentPage() > 1)
+                    self.currentPage(self.currentPage() - 1);
+            }
+
+            self.updateSortOrder = function (fieldName, ascending) {
+                self.sortField(fieldName);
+                self.sortAscending(ascending);
+                self.queryDevices();
+            }
+
+            self.isSortOrder = function (fieldName, ascending) {
+                return self.sortField().toUpperCase() === fieldName.toUpperCase() && self.sortAscending() === ascending;
+            }
+
+            self.queryDevices = function () {
+                if (hubIsConnected)
+                    dataHub.queryDevices(self.sortField(), self.sortAscending(), self.currentPage(), self.currentPageSize()).done(function (records) {
+                    self.pageRecords.removeAll();
+                    self.pageRecords(records.slice());
+                    refreshHubDependentControlState();
+                    $("[id='deviceRow']").css('visibility', 'visible');
+                    $("#loadingDataLabel").hide();
+                });
+            }
+        };
+
+        var viewModel = new pagedViewModel();
+
+        function onHubConnected() {
+            viewModel.initialize();
+        }
+
+        function calculatePageSize() {
+            // Calculate total number of table rows that will fit within current page height
+            var remainingHeight = calculateRemainingBodyHeight() -
+                $("#contentWell").paddingHeight() -
+                $("#deviceTable").paddingHeight() -
+                $("#pageControlsRow").outerHeight(true);
+
+            var pageSize = Math.trunc(remainingHeight / $("#deviceRow").outerHeight(true));
+
+            if (pageSize < 1)
+                pageSize = 1;
+
+            return pageSize;
+        }
+
+        $(function () {
+            $("#bodyContainer").addClass("fill-height");
+
+            $("#titleText").html("Records: <span data-bind='text: recordCount'>calculating...</span>")
+
+            $("#firstPageButton").click(function () {
+                viewModel.currentPage(1);
+            });
+
+            $("#previousPageButton").click(function () {
+                viewModel.previousPage();
+            });
+
+            $("#nextPageButton").click(function () {
+                viewModel.nextPage();
+            });
+
+            $("#lastPageButton").click(function () {
+                viewModel.currentPage(viewModel.totalPages());
+            });
+
+            @Raw(extraScripts.ToString())
+            viewModel.currentPageSize(calculatePageSize());
+            ko.applyBindings(viewModel);
+        });
+
+        $(window).resize(function () {
+            var pageSize = calculatePageSize();
+
+            if (pageSize !== viewModel.currentPageSize()) {
+                var currentPage = viewModel.currentPage();
+                viewModel.currentPageSize(pageSize);
+
+                // Requery data for page unless page was dyanmically changed
+                // and reloaded data already
+                if (currentPage === viewModel.currentPage())
+                    viewModel.queryDevices();
+            }
+        });
+    </script>
+}
+@functions {
+    string RenderSortScript(string fieldName, bool ascending)
+    {
+        const string ScriptFormat = @"
+            $(""#sort{0} #{1}"").click(function () {{
+                viewModel.updateSortOrder(""{0}"", {2});
+            }});
+        ";
+
+        return string.Format(ScriptFormat, fieldName, ascending ? "asc" : "desc", ascending.ToString().ToLower());
+    }
+}
+@helper WriteFieldHeader(StringBuilder extraScripts, string fieldName, string labelName = null, string classes = "text-center") {
+    <th class="@classes" id="sort@(fieldName)" nowrap>@(labelName ?? fieldName)&nbsp;
+        <div class="btn-group-vertical btn-group-sort">
+            <button type="button" class="btn" id="asc" data-bind="css: {'btn-primary': isSortOrder('@fieldName', true)}" hub-dependent><span class="glyphicon glyphicon-chevron-up"></span></button>
+            <button type="button" class="btn" id="desc" data-bind="css: {'btn-primary': isSortOrder('@fieldName', false)}" hub-dependent><span class="glyphicon glyphicon-chevron-down"></span></button>
+        </div>
+    </th>
+
+    extraScripts.Append(RenderSortScript(fieldName, true));
+    extraScripts.Append(RenderSortScript(fieldName, false));
+}
+<div class="well well-dynamic-content fill-height" id="contentWell">
+    <div class="table-responsive">
+        <table class="table table-condensed table-hover" id="deviceTable">
+            <thead>
+            <tr>
+                @WriteFieldHeader(extraScripts, "Acronym", classes: "text-left")
+                @WriteFieldHeader(extraScripts, "ID", "Schedule")
+                @WriteFieldHeader(extraScripts, "Enabled")
+                <th class="text-center" style="line-height: 0.9"><a href="#" class="small" id="clearSortOrder">Clear<br />Sort</a></th>
+            </tr>
+            </thead>
+            <tbody data-bind="foreach: pageRecords">
+            <tr style="visibility: hidden" id="deviceRow">
+                <td width="70%" class="text-left valign-middle" data-bind="text: Acronym"></td>
+                <td width="20%" class="text-center"><button type="button" class="btn btn-link"><u>Undefined</u></button></td>
+                <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled"/></td>
+                <td width="5%" class="text-center valign-middle" nowrap>
+                    <button type="button" class="btn btn-xs" hub-dependent><span class="glyphicon glyphicon-pencil"></span></button>
+                    <button type="button" class="btn btn-xs" hub-dependent><span class="glyphicon glyphicon-remove"></span></button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div id="loadingDataLabel">
+            Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+        </div>
+    </div>
+    <div class="pull-right" id="pageControlsRow">
+        <button type="button" class="btn btn-xs btn-primary pull-right" hub-dependent>
+            <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New
+        </button>
+        <br />
+        <hr class="quarter-break" />
+        <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-default" id="firstPageButton" data-bind="css: {'disabled': onFirstPage()}"><span class="glyphicon glyphicon-backward"></span></button>
+            <button type="button" class="btn btn-default" id="previousPageButton" data-bind="css: {'disabled': onFirstPage()}"><span class="glyphicon glyphicon-triangle-left"></span></button>
+        </div>
+        <input type="number" class="content input-sm" style="padding: 0 0 0 5px; width: 55px" id="selectedPage" data-bind="textInput: currentPage" value="1">
+        &nbsp;of&nbsp;
+        <span data-bind="text: totalPages">1</span>
+        &nbsp;
+        <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-default" id="nextPageButton" data-bind="css: {'disabled': onLastPage()}"><span class="glyphicon glyphicon-triangle-right"></span></button>
+            <button type="button" class="btn btn-default" id="lastPageButton" data-bind="css: {'disabled': onLastPage()}"><span class="glyphicon glyphicon-forward"></span></button>
+        </div>
+    </div>
+</div>
