@@ -82,7 +82,7 @@
             <input type="number" class="form-control" id="maxConnectionRetries" value="3">
         </div>
         <div class="form-group">
-            <label for="sel1">Connection Profile:</label>
+            <label for="connectionProfile">Connection Profile:</label>
             <select class="form-control" id="connectionProfile">
                 @foreach (Vendor vendor in ViewBag.DbContext.Vendors)
                 {
@@ -126,6 +126,12 @@
 
         viewModel.setUpdateRecord(function (record) {
             return dataHub.updateDevice(record);
+        });
+
+        $(document).ready(function () {
+            $("#addNewEditDialog").on('shown.bs.modal', function () {
+                $("#acronym").focus();
+            });
         });
     </script>
 }

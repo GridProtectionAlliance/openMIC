@@ -68,7 +68,7 @@
     <meta name="msapplication-wide310x150logo" content="Images/Icons/mstile-310x150.png" />
     <meta name="msapplication-square310x310logo" content="Images/Icons/mstile-310x310.png" />
     <script>
-        /*const*/ var DateTimeFormat = "@Model.DateTimeFormat";
+        const DateTimeFormat = "@Model.DateTimeFormat";
     </script>
 </head>
 <body role="document">
@@ -136,7 +136,7 @@
                 <span class="sr-only">Error</span>
                 <span id="error-msg-text"></span>
             </div>
-            <h3>@ViewBag.Title <small class="pull-right" id="titleText"></small></h3>
+            <h3>@ViewBag.Title <small class="pull-right" id="titleText" style="margin-top: 8px"></small></h3>
         </div>
         <!-- Page Body for @ViewBag.Request.RequestUri.AbsolutePath -->
         @RenderBody()

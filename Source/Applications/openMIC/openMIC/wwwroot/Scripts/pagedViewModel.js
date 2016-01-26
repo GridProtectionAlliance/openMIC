@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 // Define paged view model class
-function pagedViewModel() {
+function PagedViewModel() {
     var self = this;
 
     // Fields
@@ -39,6 +39,7 @@ function pagedViewModel() {
     self.editMode = ko.observable(true);
     self._currentPageSize = ko.observable(1);
     self._currentPage = ko.observable(0);
+    self._executingCalculation = false;
 
     // Properties
     self.currentPageSize = ko.pureComputed({
@@ -47,7 +48,7 @@ function pagedViewModel() {
             if (value < 1)
                 value = 1;
 
-            if (value != self._currentPageSize()) {
+            if (value !== self._currentPageSize()) {
                 self._currentPageSize(value);
 
                 // Validate current page after page size change
@@ -66,7 +67,7 @@ function pagedViewModel() {
             else if (value > self.totalPages())
                 value = self.totalPages();
 
-            if (value != self._currentPage()) {
+            if (value !== self._currentPage()) {
                 self._currentPage(value);
                 self.queryPageRecords();
             }
@@ -88,12 +89,13 @@ function pagedViewModel() {
 
     // Delegates
     self.queryRecordCount = function () { };
-    self.queryRecords = function (sortField, ascending, page, pageSize) { };
-    self.deleteRecord = function (id) { };
+    self.queryRecords = function (/* sortField, ascending, page, pageSize */) { };
+    self.deleteRecord = function (/* id */) { };
     self.newRecord = function () { };
-    self.addNewRecord = function (record) { };
-    self.updateRecord = function (record) { };
+    self.addNewRecord = function (/* record */) { };
+    self.updateRecord = function (/* record */) { };
 
+    // Setters needed to assign delegate properties, "'cause Javascript"
     self.setQueryRecordCount = function (queryRecordCountFunction) {
         self.queryRecordCount = queryRecordCountFunction;
     }
@@ -135,9 +137,9 @@ function pagedViewModel() {
             self.sortAscending(lastSortAscending == "true");
 
         if (hubIsConnected) {
-            // Update total record count
+            // Query total record count
             self.queryRecordCount().done(function (total) {
-                // Update record count
+                // Update record count observable
                 self.recordCount(total);
 
                 // Force page refresh when record count has been updated
@@ -146,6 +148,39 @@ function pagedViewModel() {
                 self.currentPage(currentPage);
             });
         }
+    }
+
+    self.calculatePageSize = function () {
+        if (self._executingCalculation)
+            return;
+
+        self._executingCalculation = true;
+
+        // Calculate total number of table rows that will fit within current page height
+        var remainingHeight = calculateRemainingBodyHeight() -
+            $("#contentWell").paddingHeight() -
+            $("#responsiveTableDiv").paddingHeight() -
+            $("#recordsTable").paddingHeight() -
+            $("#pageControlsRow").outerHeight(true);
+
+        var pageSize = truncateNumber(remainingHeight / $("#recordRow").outerHeight(true));
+
+        if (!pageSize || isNaN(pageSize) || !isFinite(pageSize) || pageSize < 1)
+            pageSize = 1;
+
+        if (pageSize !== self.currentPageSize()) {
+            var currentPage = self.currentPage();
+
+            // Updating page size will validate current page number
+            self.currentPageSize(pageSize);
+
+            // Requery data for page unless current page was dynamically changed
+            // and has reloaded data already
+            if (currentPage === self.currentPage())
+                self.queryPageRecords();
+        }
+
+        self._executingCalculation = false;
     }
 
     self.nextPage = function () {
@@ -238,31 +273,16 @@ function pagedViewModel() {
 };
 
 // Define page scoped view model instance
-var viewModel = new pagedViewModel();
+var viewModel = new PagedViewModel();
 
 function onHubConnected() {
     viewModel.initialize();
 }
 
-function calculatePageSize() {
-    // Calculate total number of table rows that will fit within current page height
-    var remainingHeight = calculateRemainingBodyHeight() -
-        $("#contentWell").paddingHeight() -
-        $("#recordsTable").paddingHeight() -
-        $("#pageControlsRow").outerHeight(true);
-
-    var pageSize = Math.trunc(remainingHeight / $("#recordRow").outerHeight(true));
-
-    if (pageSize < 1)
-        pageSize = 1;
-
-    return pageSize;
-}
-
 $(function () {
     $("#bodyContainer").addClass("fill-height");
 
-    $("#titleText").html("Records: <span data-bind='text: recordCount'>calculating...</span>")
+    $("#titleText").html("Records: <span data-bind='text: recordCount'>calculating...</span>");
 
     $("#firstPageButton").click(function () {
         viewModel.currentPage(1);
@@ -280,22 +300,10 @@ $(function () {
         viewModel.currentPage(viewModel.totalPages());
     });
 
-    viewModel.currentPageSize(calculatePageSize());
+    viewModel.calculatePageSize();
     ko.applyBindings(viewModel);
 });
 
 $(window).resize(function () {
-    var pageSize = calculatePageSize();
-
-    if (pageSize !== viewModel.currentPageSize()) {
-        var currentPage = viewModel.currentPage();
-
-        // Updating page size will validate current page number
-        viewModel.currentPageSize(pageSize);
-
-        // Requery data for page unless current page was dyanmically changed
-        // and has reloaded data already
-        if (currentPage === viewModel.currentPage())
-            viewModel.queryPageRecords();
-    }
+    viewModel.calculatePageSize();
 });

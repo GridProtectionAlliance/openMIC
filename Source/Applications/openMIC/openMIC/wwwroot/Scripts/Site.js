@@ -65,18 +65,75 @@ function isEmpty(str) {
     return !str || 0 === str.length;
 }
 
+function truncateNumber(value)
+{
+    if (typeof Math.trunc != "function")
+        return parseInt(value.toString());
+
+    return Math.trunc(value);
+}
+
+function truncateString(value, limit) {
+    if (!value)
+        return "";
+
+    if (typeof value != "string")
+        value = value.toString();
+
+    value = value.trim();
+
+    if (isEmpty(value))
+        return "";
+
+    if (!limit)
+        limit = 65;
+
+    if (value.length > limit)
+        return value.substr(0, limit - 3) + "...";
+
+    return value;
+}
+
+function nonNull(value, nonNullValue) {
+    return value || (nonNullValue || "");
+}
+
+function detectIE() {
+    var ua = window.navigator.userAgent;
+    var msie = ua.indexOf('MSIE ');
+
+    if (msie > 0) {
+        // IE 10 or older => return version number
+        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
+    }
+
+    var trident = ua.indexOf('Trident/');
+
+    if (trident > 0) {
+        // IE 11 => return version number
+        var rv = ua.indexOf('rv:');
+        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
+    }
+
+    var edge = ua.indexOf('Edge/');
+
+    if (edge > 0) {
+        // Edge (IE 12+) => return version number
+        return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
+    }
+
+    // Other browser
+    return false;
+}
+
 function calculateRemainingBodyHeight() {
+
     // Calculation based on content in Layout.cshtml
     return $(window).height() -
         $("#menuBar").outerHeight(true) -
         $("#bodyContainer").paddingHeight() -
-        $("#pageHeader").outerHeight(true) - 5;
-}
-
-if (typeof Math.trunc != "function" && Math.__proto__) {
-    Math.__proto__.trunc = function (val) {
-        return parseInt(val.toString());
-    }
+        $("#pageHeader").outerHeight(true) -
+        ($(window).width() < 768 ? 30 : 5);
 }
 
 function hubConnected() {
@@ -103,7 +160,7 @@ function updateHubDependentControlState(enabled) {
         $("[hub-dependent]").addClass("disabled");
 }
 
-// Useful to call when dyanmic data-binding adds new controls
+// Useful to call when dynamic data-binding adds new controls
 function refreshHubDependentControlState() {
     updateHubDependentControlState(hubIsConnected);
 }
@@ -157,7 +214,7 @@ $(function () {
         hubConnected();
     });
 
-    $(window).on('beforeunload', function () {
+    $(window).on("beforeunload", function () {
         if (!hubIsConnected || hubIsConnecting)
             return "Service is disconnected, web pages are currently unavailable.";
 

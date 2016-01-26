@@ -25,18 +25,23 @@ body {
 
 /* Handle URL and long word wrapping in a table cell */
 .dont-break-out {
-    overflow-wrap: break-word;
+    overflow-wrap: normal;
     word-wrap: break-word;
     -ms-word-break: break-all;
-    word-break: break-all;
     word-break: break-word;
 }
 
+.dont-break-out-hard-wrap {
+    overflow-wrap: normal;
+    -ms-word-break: break-all;
+    word-break: break-all;
+}
+
+.dont-break-out-hard-wrap div,
 .dont-break-out div {
-    display: inline-block;
+    display: table-cell;
     vertical-align: middle;
     height: 40px;
-    overflow: hidden;
 }
 
 /*.dont-break-out a div {
@@ -55,7 +60,7 @@ body {
     height: -moz-calc(100% - 55px);     /* firefox */
 }
 
-/* Style for dyanmically sized content wells */
+/* Style for dynamically sized content wells */
 .well-dynamic-content {
     overflow: auto;
     padding-bottom: 0px
@@ -70,14 +75,14 @@ hr.quarter-break {
 }
 
 hr.half-break {
-    height: 10px;
+    height: 15px;
     margin: 0px;
     padding: 0px;
     visibility: hidden;
 }
 
 hr.full-break {
-    height: 20px;
+    height: 25px;
     margin: 0px;
     padding: 0px;
     visibility: hidden;
@@ -92,7 +97,7 @@ hr.full-break {
     clear: both;
 }
 
-/* Pre-loads an image off-screen */
+/* Preloads an image off-screen */
 .pre-cache {
     position: absolute;
     left: -999em;
