@@ -40,6 +40,7 @@ function PagedViewModel() {
     self._currentPageSize = ko.observable(1);
     self._currentPage = ko.observable(0);
     self._executingCalculation = false;
+    self._columnWidths = [];
 
     // Properties
     self.currentPageSize = ko.pureComputed({
@@ -148,6 +149,14 @@ function PagedViewModel() {
                 self.currentPage(currentPage);
             });
         }
+
+        // Initialize column widths array
+        self._columnWidths = [];
+        var columns = $("#recordRow").find("td");
+
+        for (var i = 0; i < columns.length; i++) {
+            self._columnWidths[i].push($(columns[i]).width());
+        }
     }
 
     self.calculatePageSize = function () {
@@ -163,12 +172,29 @@ function PagedViewModel() {
             $("#recordsTable").paddingHeight() -
             $("#pageControlsRow").outerHeight(true);
 
-        var pageSize = truncateNumber(remainingHeight / $("#recordRow").outerHeight(true));
+        // Estimate page size based on height of first record row
+        var firstRow = $("#recordRow");
+        var pageSize = truncateNumber(remainingHeight / firstRow.outerHeight(true));
 
         if (!pageSize || isNaN(pageSize) || !isFinite(pageSize) || pageSize < 1)
             pageSize = 1;
 
-        if (pageSize !== self.currentPageSize()) {
+        // Check for dynamic Bootstrap column resizing, in which case we need to refresh data
+        // for cases where binding may be truncating data lengths, see $.fn.truncateToWidth
+        var forceRefresh = false;
+        var columns = firstRow.find("td");
+        var columnWidth;
+
+        for (var i = 0; i < columns.length; i++) {
+            columnWidth = $(columns[i]).width();
+
+            if (self._columnWidths[i] !== columnWidth) {
+                self._columnWidths[i] = columnWidth;
+                forceRefresh = true;
+            }
+        }
+
+        if (pageSize !== self.currentPageSize() || forceRefresh) {
             var currentPage = self.currentPage();
 
             // Updating page size will validate current page number

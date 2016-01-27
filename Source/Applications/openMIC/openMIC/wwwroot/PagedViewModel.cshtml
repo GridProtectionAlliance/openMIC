@@ -71,11 +71,11 @@
 {
     if (string.IsNullOrEmpty(fieldName))
     {
-        <th class="@classes" nowrap>@(labelName ?? "")</th>
+        <th class="@Raw(classes ?? "text-center")" nowrap>@Raw(labelName ?? "")</th>
     }
     else
     {
-        <th class="@(classes ?? "text-center")" id="sort@(fieldName)" nowrap>@(labelName ?? fieldName)&nbsp;
+        <th class="@Raw(classes ?? "text-center")" id="sort@(fieldName)" nowrap>@Raw(labelName ?? fieldName)&nbsp;
             <div class="btn-group-vertical btn-group-sort">
                 <button type="button" class="btn" id="asc" title="Sort&nbsp;ascending..." data-bind="css: {'btn-primary': isSortOrder('@fieldName', true)}" hub-dependent><span class="glyphicon glyphicon-chevron-up"></span></button>
                 <button type="button" class="btn" id="desc" title="Sort&nbsp;descending..." data-bind="css: {'btn-primary': isSortOrder('@fieldName', false)}" hub-dependent><span class="glyphicon glyphicon-chevron-down"></span></button>
@@ -90,12 +90,12 @@
     <div class="table-responsive" id="responsiveTableDiv">
         <table class="table table-condensed table-hover" id="recordsTable">
             <thead>
-                <tr>
+                <tr>                
                     @foreach (string[] headerColumn in ViewBag.HeaderColumns) {
                         @WriteFieldHeader(pageControlScripts, headerColumn[0], headerColumn[1], headerColumn[2])
                     }
                     <th class="text-center">
-                        <button type="button" class="btn btn-link btn-xs" style="line-height: 1.1" id="clearSortOrder" hub-dependent>Clear<br />Sort</button> 
+                        <button type="button" class="btn btn-link btn-xs" style="line-height: 1.1" id="clearSortOrder" hub-dependent>Clear<br/>Sort</button>
                     </th>
                 </tr>
             </thead>

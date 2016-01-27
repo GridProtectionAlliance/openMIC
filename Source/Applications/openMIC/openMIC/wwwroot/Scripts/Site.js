@@ -25,6 +25,7 @@
 var dataHub, dataHubClient, serviceHub, serviceHubClient;
 var hubIsConnecting = false;
 var hubIsConnected = false;
+var textMetrics;
 
 function hideErrorMessage() {
     $("#error-msg-block").hide();
@@ -61,40 +62,93 @@ $.fn.paddingWidth = function () {
     return this.outerWidth(true) - this.width();
 }
 
-function isEmpty(str) {
-    return !str || 0 === str.length;
+$.fn.truncateToWidth = function (text, rows) {
+    if (isEmpty(text))
+        return "";
+
+    if (!rows)
+        rows = 1;
+
+    textMetrics.font = this.css("font");
+
+    var targetWidth = this.innerWidth();
+    var textWidth = textMetrics.measureText(text).width;
+
+    if (rows > 1) {
+        targetWidth *= (0.65 * rows);
+        //this.height(40);
+    }
+
+    var limit = Math.min(text.length, Math.ceil(targetWidth / (textWidth / text.length)));
+    
+    while (textWidth > targetWidth && limit > 1) {
+        limit--;
+        text = truncateString(text, limit);
+        textWidth = textMetrics.measureText(text).width;
+    }
+
+    return text;
 }
 
-function truncateNumber(value)
-{
+var getTextHeight = function (font) {
+
+    var text = $('<span>H</span>').css({ fontFamily: font });
+    var block = $('<div style="display: inline-block; width: 1px; height: 0px;"></div>');
+
+    var div = $('<div></div>');
+    div.append(text, block);
+
+    var body = $('body');
+    body.append(div);
+
+    var result = {};
+
+    try {
+        block.css({ verticalAlign: 'baseline' });
+        result.ascent = block.offset().top - text.offset().top;
+
+        block.css({ verticalAlign: 'bottom' });
+        result.height = block.offset().top - text.offset().top;
+
+        result.descent = result.height - result.ascent;
+
+    } finally {
+        div.remove();
+    }
+
+    return result;
+};
+
+function truncateString(text, limit) {
+    if (!text)
+        return "";
+
+    if (typeof text != "string")
+        text = text.toString();
+
+    text = text.trim();
+
+    if (!limit)
+        limit = 65;
+
+    if (text.length > limit)
+        return text.substr(0, limit - 3) + "...";
+
+    return text;
+}
+
+function truncateNumber(value) {
     if (typeof Math.trunc != "function")
         return parseInt(value.toString());
 
     return Math.trunc(value);
 }
 
-function truncateString(value, limit) {
-    if (!value)
-        return "";
-
-    if (typeof value != "string")
-        value = value.toString();
-
-    value = value.trim();
-
-    if (isEmpty(value))
-        return "";
-
-    if (!limit)
-        limit = 65;
-
-    if (value.length > limit)
-        return value.substr(0, limit - 3) + "...";
-
-    return value;
+function isEmpty(str) {
+    return !str || 0 === str.length;
 }
 
-function nonNull(value, nonNullValue) {
+function notNull(value, nonNullValue) {
     return value || (nonNullValue || "");
 }
 
@@ -167,6 +221,9 @@ function refreshHubDependentControlState() {
 
 $(function () {
     $(".page-header").css("margin-bottom", "-5px");
+
+    // Get text metrics canvas
+    textMetrics = document.getElementById("textMetricsCanvas").getContext("2d");
 
     // Set initial state of hub dependent controls
     updateHubDependentControlState(false);
