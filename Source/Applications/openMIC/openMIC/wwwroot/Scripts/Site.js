@@ -35,6 +35,7 @@ function hideInfoMessage() {
     $("#info-msg-block").hide();
 }
 
+// TODO: showing these messages show cause "resize" events
 function showErrorMessage(message, timeout) {
     $("#error-msg-text").html(message);
     $("#error-msg-block").show();
@@ -52,104 +53,6 @@ function showInfoMessage(message, timeout) {
 
     if (timeout > 0)
         setTimeout(hideInfoMessage, timeout);
-}
-
-$.fn.paddingHeight = function () {
-    return this.outerHeight(true) - this.height();
-}
-
-$.fn.paddingWidth = function () {
-    return this.outerWidth(true) - this.width();
-}
-
-$.fn.truncateToWidth = function (text, rows) {
-    if (isEmpty(text))
-        return "";
-
-    if (!rows)
-        rows = 1;
-
-    textMetrics.font = this.css("font");
-
-    var targetWidth = this.innerWidth();
-    var textWidth = textMetrics.measureText(text).width;
-
-    if (rows > 1) {
-        targetWidth *= (0.65 * rows);
-        //this.height(40);
-    }
-
-    var limit = Math.min(text.length, Math.ceil(targetWidth / (textWidth / text.length)));
-    
-    while (textWidth > targetWidth && limit > 1) {
-        limit--;
-        text = truncateString(text, limit);
-        textWidth = textMetrics.measureText(text).width;
-    }
-
-    return text;
-}
-
-var getTextHeight = function (font) {
-
-    var text = $('<span>H</span>').css({ fontFamily: font });
-    var block = $('<div style="display: inline-block; width: 1px; height: 0px;"></div>');
-
-    var div = $('<div></div>');
-    div.append(text, block);
-
-    var body = $('body');
-    body.append(div);
-
-    var result = {};
-
-    try {
-        block.css({ verticalAlign: 'baseline' });
-        result.ascent = block.offset().top - text.offset().top;
-
-        block.css({ verticalAlign: 'bottom' });
-        result.height = block.offset().top - text.offset().top;
-
-        result.descent = result.height - result.ascent;
-
-    } finally {
-        div.remove();
-    }
-
-    return result;
-};
-
-function truncateString(text, limit) {
-    if (!text)
-        return "";
-
-    if (typeof text != "string")
-        text = text.toString();
-
-    text = text.trim();
-
-    if (!limit)
-        limit = 65;
-
-    if (text.length > limit)
-        return text.substr(0, limit - 3) + "...";
-
-    return text;
-}
-
-function truncateNumber(value) {
-    if (typeof Math.trunc != "function")
-        return parseInt(value.toString());
-
-    return Math.trunc(value);
-}
-
-function isEmpty(str) {
-    return !str || 0 === str.length;
-}
-
-function notNull(value, nonNullValue) {
-    return value || (nonNullValue || "");
 }
 
 function detectIE() {
