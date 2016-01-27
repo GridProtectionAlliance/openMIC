@@ -324,6 +324,8 @@
     <Content Include="wwwroot\Images\Icons\mstile-310x310.png" />
     <Content Include="wwwroot\Images\Icons\mstile-70x70.png" />
     <Content Include="wwwroot\Images\openMIC.png" />
+    <Content Include="wwwroot\Scripts\bootstrap-toolkit.js" />
+    <Content Include="wwwroot\Scripts\bootstrap-toolkit.min.js" />
     <Content Include="wwwroot\Scripts\gsf.web.client.js" />
     <Content Include="wwwroot\Scripts\pagedViewModel.js" />
     <Content Include="wwwroot\Scripts\Site.js" />

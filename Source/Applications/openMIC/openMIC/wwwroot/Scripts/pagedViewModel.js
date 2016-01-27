@@ -21,9 +21,12 @@
 //
 //******************************************************************************************************
 
+// Paged view model base class scripts
+"use strict";
+
 // Define paged view model class
 function PagedViewModel() {
-    var self = this;
+    const self = this;
 
     // Fields
     self.pageRecords = ko.observableArray();
@@ -96,7 +99,7 @@ function PagedViewModel() {
     self.addNewRecord = function (/* record */) { };
     self.updateRecord = function (/* record */) { };
 
-    // Setters needed to assign delegate properties, "'cause Javascript"
+    // Setters needed to assign delegate properties, 'cause Javascript
     self.setQueryRecordCount = function (queryRecordCountFunction) {
         self.queryRecordCount = queryRecordCountFunction;
     }
@@ -124,8 +127,8 @@ function PagedViewModel() {
     // Methods
     self.initialize = function () {
         // Restore any previous sort order
-        var lastSortField = Cookies.get(self.modelName + "!LastSortField");
-        var lastSortAscending = Cookies.get(self.modelName + "!LastSortAscending");
+        const lastSortField = Cookies.get(self.modelName + "!LastSortField");
+        const lastSortAscending = Cookies.get(self.modelName + "!LastSortAscending");
 
         if (lastSortField === undefined)
             self.sortField(self.defaultSortField);
@@ -144,7 +147,7 @@ function PagedViewModel() {
                 self.recordCount(total);
 
                 // Force page refresh when record count has been updated
-                var currentPage = self.currentPage();
+                const currentPage = self.currentPage();
                 self._currentPage(0);
                 self.currentPage(currentPage);
             });
@@ -152,9 +155,9 @@ function PagedViewModel() {
 
         // Initialize column widths array
         self._columnWidths = [];
-        var columns = $("#recordRow").find("td");
+        const columns = $("#recordRow").find("td");
 
-        for (var i = 0; i < columns.length; i++) {
+        for (let i = 0; i < columns.length; i++) {
             self._columnWidths[i].push($(columns[i]).width());
         }
     }
@@ -166,15 +169,15 @@ function PagedViewModel() {
         self._executingCalculation = true;
 
         // Calculate total number of table rows that will fit within current page height
-        var remainingHeight = calculateRemainingBodyHeight() -
+        const remainingHeight = calculateRemainingBodyHeight() -
             $("#contentWell").paddingHeight() -
             $("#responsiveTableDiv").paddingHeight() -
             $("#recordsTable").paddingHeight() -
             $("#pageControlsRow").outerHeight(true);
 
         // Estimate page size based on height of first record row
-        var firstRow = $("#recordRow");
-        var pageSize = truncateNumber(remainingHeight / firstRow.outerHeight(true));
+        const firstRow = $("#recordRow");
+        var pageSize = (remainingHeight / firstRow.outerHeight(true)).truncate();
 
         if (!pageSize || isNaN(pageSize) || !isFinite(pageSize) || pageSize < 1)
             pageSize = 1;
@@ -182,10 +185,10 @@ function PagedViewModel() {
         // Check for dynamic Bootstrap column resizing, in which case we need to refresh data
         // for cases where binding may be truncating data lengths, see $.fn.truncateToWidth
         var forceRefresh = false;
-        var columns = firstRow.find("td");
+        const columns = firstRow.find("td");
         var columnWidth;
 
-        for (var i = 0; i < columns.length; i++) {
+        for (let i = 0; i < columns.length; i++) {
             columnWidth = $(columns[i]).width();
 
             if (self._columnWidths[i] !== columnWidth) {
@@ -195,7 +198,7 @@ function PagedViewModel() {
         }
 
         if (pageSize !== self.currentPageSize() || forceRefresh) {
-            var currentPage = self.currentPage();
+            const currentPage = self.currentPage();
 
             // Updating page size will validate current page number
             self.currentPageSize(pageSize);
@@ -330,6 +333,9 @@ $(function () {
     ko.applyBindings(viewModel);
 });
 
-$(window).resize(function () {
-    viewModel.calculatePageSize();
-});
+(function($, viewPort) {
+    $(window).resize(
+        viewPort.changed(function () {
+            viewModel.calculatePageSize();
+    }));
+})(jQuery, ResponsiveBootstrapToolkit);

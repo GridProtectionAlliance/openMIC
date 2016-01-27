@@ -21,6 +21,9 @@
 //
 //******************************************************************************************************
 
+// Hub connectivity ans site specific scripts
+"use strict";
+
 // Declare page scoped SignalR variables
 var dataHub, dataHubClient, serviceHub, serviceHubClient;
 var hubIsConnecting = false;
@@ -55,36 +58,7 @@ function showInfoMessage(message, timeout) {
         setTimeout(hideInfoMessage, timeout);
 }
 
-function detectIE() {
-    var ua = window.navigator.userAgent;
-    var msie = ua.indexOf('MSIE ');
-
-    if (msie > 0) {
-        // IE 10 or older => return version number
-        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
-    }
-
-    var trident = ua.indexOf('Trident/');
-
-    if (trident > 0) {
-        // IE 11 => return version number
-        var rv = ua.indexOf('rv:');
-        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
-    }
-
-    var edge = ua.indexOf('Edge/');
-
-    if (edge > 0) {
-        // Edge (IE 12+) => return version number
-        return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
-    }
-
-    // Other browser
-    return false;
-}
-
 function calculateRemainingBodyHeight() {
-
     // Calculation based on content in Layout.cshtml
     return $(window).height() -
         $("#menuBar").outerHeight(true) -
@@ -106,7 +80,7 @@ function hubConnected() {
     updateHubDependentControlState(true);
 
     // Call "onHubConnected" function, if page has defined one
-    if (typeof onHubConnected == "function")
+    if (typeof onHubConnected === "function")
         onHubConnected();
 }
 
@@ -159,7 +133,7 @@ $(function () {
         updateHubDependentControlState(false);
 
         // Call "onHubDisconnected" function, if page has defined one
-        if (typeof onHubDisconnected == "function")
+        if (typeof onHubDisconnected === "function")
             onHubDisconnected();
 
         setTimeout(function () {

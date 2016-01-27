@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  GSF.Web.Scripts.js - Gbtc
+//  gsf.web.client.js - Gbtc
 //
 //  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -21,36 +21,58 @@
 //
 //******************************************************************************************************
 
+// Grid Solutions Framework Core Web Client Script Functions
+"use strict";
+
 // Miscellaneous functions
 function notNull(value, nonNullValue) {
     return value || (nonNullValue || "");
 }
 
-// Associative arrays (i.e., dictionaries) have no "length", hence the following
-Object.size = function (obj) {
-    var size = 0, key;
+function detectIE() {
+    const ua = window.navigator.userAgent;
+    const msie = ua.indexOf('MSIE ');
 
-    for (key in obj)
-        if (obj.hasOwnProperty(key))
-            size++;
+    if (msie > 0) {
+        // IE 10 or older => return version number
+        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
+    }
 
-    return size;
-};
+    const trident = ua.indexOf('Trident/');
+
+    if (trident > 0) {
+        // IE 11 => return version number
+        const rv = ua.indexOf('rv:');
+        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
+    }
+
+    const edge = ua.indexOf('Edge/');
+
+    if (edge > 0) {
+        // Edge (IE 12+) => return version number
+        return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
+    }
+
+    // Other browser
+    return false;
+}
+
+const isIE = detectIE();
 
 // Number functions
-function truncateNumber(value) {
+Number.prototype.truncate = function() {
     if (typeof Math.trunc != "function")
-        return parseInt(value.toString());
+        return parseInt(this.toString());
 
-    return Math.trunc(value);
+    return Math.trunc(this);
 }
 
 Number.prototype.padLeft = function (totalWidth, paddingChar) {
-    return this.toString().padLeft(totalWidth, paddingChar || "0");
+    return this.truncate().toString().padLeft(totalWidth, paddingChar || "0");
 }
 
 Number.prototype.padRight = function (totalWidth, paddingChar) {
-    return this.toString().padRight(totalWidth, paddingChar || "0");
+    return this.truncate().toString().padRight(totalWidth, paddingChar || "0");
 }
 
 // Array functions
@@ -71,37 +93,113 @@ Array.prototype.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimi
     if (!endValueDelimiter)
         endValueDelimiter = "}";
 
-    var values = [];
-    var value;
+    const self = this;
+    const values = [];
 
-    for (key in this) {
-        value = this[key];
+    for (let key in self) {
+        if (self.hasOwnProperty(key)) {
+            let value = self[key];
 
-        if (value.indexOf(parameterDelimiter) >= 0 || value.indexOf(keyValueDelimiter) >= 0)
-            value = startValueDelimiter + value + endValueDelimiter;
+            if (value.indexOf(parameterDelimiter) >= 0 || value.indexOf(keyValueDelimiter) >= 0)
+                value = startValueDelimiter + value + endValueDelimiter;
 
-        values.push(key + keyValueDelimiter + value);
+            values.push(key + keyValueDelimiter + value);
+        }
     }
 
     return values.join(parameterDelimiter + " ");
 };
 
-// String functions
-function isEmpty(str) {
-    return !str || 0 === str.length;
+// Represents a dictionary style class with case-insensitive keys
+function Dictionary(source) {
+    const self = this;
+
+    if (!source)
+        source = [];
+
+    self._values = source;
+
+    self.count = function () {
+        var size = 0;
+
+        for (let property in self._values) {
+            if (self._values.hasOwnProperty(property))
+                size++;
+        }
+
+        return size;
+    }
+
+    self.keys = function () {
+        const keys = [];
+
+        for (let property in self._values) {
+            if (self._values.hasOwnProperty(property))
+                keys.push(property);
+        }
+
+        return keys;
+    }
+
+    self.values = function () {
+        const values = [];
+
+        for (let property in self._values) {
+            if (self._keys.hasOwnProperty(property))
+                values.push(self._values[property]);
+        }
+
+        return values;
+    }
+
+    self.getValue = function (key) {
+        return self._values[String(key).toLowerCase()];
+    }
+
+    self.setValue = function (key, value) {
+        self._values[String(key).toLowerCase()] = value;
+    }
+
+    self.remove = function (key) {
+        delete self._values[String(key).toLowerCase()];
+    }
+
+    self.containsKey = function (key) {
+        const lkey = String(key).toLowerCase();
+
+        for (let property in self._values) {
+            if (self._values.hasOwnProperty(property) && property === lkey)
+                return true;
+        }
+
+        return false;
+    }
+
+    self.containsValue = function (value) {
+        for (let property in self._values) {
+            if (self._values.hasOwnProperty(property) && self._values[property] === value)
+                return true;
+        }
+
+        return false;
+    }
+
+    self.clear = function () {
+        self._values = [];
+    }
+
+    self.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter) {
+        return self._values.joinKeyValuePairs(parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter);
+    }
 }
 
-function truncateString(text, limit) {
-    if (!text)
-        return "";
+// String functions
+function isEmpty(str) {
+    return !str || 0 === String(str).length;
+}
 
-    if (typeof text != "string")
-        text = text.toString();
-
-    text = text.trim();
-
-    if (!limit)
-        limit = 65;
+String.prototype.truncate = function (limit) {
+    const text = this.trim();
 
     if (text.length > limit)
         return text.substr(0, limit - 3) + "...";
@@ -110,19 +208,25 @@ function truncateString(text, limit) {
 }
 
 String.prototype.padLeft = function (totalWidth, paddingChar) {
-    return Array(totalWidth - String(this).length + 1).join(paddingChar || " ") + this;
+    if (totalWidth > this.length)
+        return Array(totalWidth - this.length + 1).join(paddingChar || " ") + this;
+
+    return this;
 }
 
 String.prototype.padRight = function (totalWidth, paddingChar) {
-    return this + Array(totalWidth - String(this).length + 1).join(paddingChar || " ");
+    if (totalWidth > this.length)
+        return this + Array(totalWidth - this.length + 1).join(paddingChar || " ");
+
+    return this;
 }
 
 String.prototype.regexEncode = function (item) {
-    return "\\u" + data.charCodeAt(0).toString(16).PadLeft(4, "0");
+    return "\\u" + item.charCodeAt(0).toString(16).padLeft(4, "0");
 }
 
-// Parses key/value pair expressions from a string. Parameter pairs are delimited by keyValueDelimiter and multiple pairs
-// separated by parameterDelimiter. Supports encapsulated nested expressions.
+// Returns a Dictionary of the parsed key/value pair expressions from a string. Parameter pairs are delimited by keyValueDelimiter
+// and multiple pairs separated by parameterDelimiter. Supports encapsulated nested expressions.
 String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter, ignoreDuplicateKeys) {
     if (!parameterDelimiter)
         parameterDelimiter = ";";
@@ -139,12 +243,12 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
     if (ignoreDuplicateKeys === undefined)
         ignoreDuplicateKeys = true;
 
-    if (parameterDelimiter == keyValueDelimiter ||
-        parameterDelimiter == startValueDelimiter ||
-        parameterDelimiter == endValueDelimiter ||
-        keyValueDelimiter == startValueDelimiter ||
-        keyValueDelimiter == endValueDelimiter ||
-        startValueDelimiter == endValueDelimiter)
+    if (parameterDelimiter === keyValueDelimiter ||
+        parameterDelimiter === startValueDelimiter ||
+        parameterDelimiter === endValueDelimiter ||
+        keyValueDelimiter === startValueDelimiter ||
+        keyValueDelimiter === endValueDelimiter ||
+        startValueDelimiter === endValueDelimiter)
             throw "All delimiters must be unique";
 
     const escapedParameterDelimiter = parameterDelimiter.regexEncode();
@@ -152,7 +256,8 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
     const escapedStartValueDelimiter = startValueDelimiter.regexEncode();
     const escapedEndValueDelimiter = endValueDelimiter.regexEncode();
     const backslashDelimiter = "\\".regexEncode();
-    var keyValuePairs = [];
+
+    var keyValuePairs = new Dictionary();
     var escapedValue = [];
     var elements = [];
     var key, unescapedValue, parameter, pairs;
@@ -165,10 +270,10 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
     //          "normalKVP=-1; nestedKVP={p1=true; p2=false}")
     //      would be encoded as:
     //          "normalKVP=-1; nestedKVP=p1\\u003dtrue\\u003b p2\\u003dfalse")
-    for (var i = 0; i < value.Length; i++) {
+    for (let i = 0; i < value.length; i++) {
         character = this[i];
 
-        if (character == startValueDelimiter) {
+        if (character === startValueDelimiter) {
             if (!valueEscaped) {
                 valueEscaped = true;
                 continue;   // Don't add tag start delimiter to final value
@@ -178,7 +283,7 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
             delimiterDepth++;
         }
 
-        if (character == endValueDelimiter) {
+        if (character === endValueDelimiter) {
             if (valueEscaped) {
                 if (delimiterDepth > 0) {
                     // Handle nested delimiters
@@ -196,47 +301,47 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
 
         if (valueEscaped) {
             // Escape any delimiter characters inside nested key/value pair
-            if (character == parameterDelimiter)
+            if (character === parameterDelimiter)
                 escapedValue.push(escapedParameterDelimiter);
-            else if (character == keyValueDelimiter)
+            else if (character === keyValueDelimiter)
                 escapedValue.push(escapedKeyValueDelimiter);
-            else if (character == startValueDelimiter)
+            else if (character === startValueDelimiter)
                 escapedValue.push(escapedStartValueDelimiter);
-            else if (character == endValueDelimiter)
+            else if (character === endValueDelimiter)
                 escapedValue.push(escapedEndValueDelimiter);
-            else if (character == "\\")
+            else if (character === "\\")
                 escapedValue.push(backslashDelimiter);
             else
                 escapedValue.push(character);
         }
         else {
-            if (character == "\\")
+            if (character === "\\")
                 escapedValue.push(backslashDelimiter);
             else
                 escapedValue.push(character);
         }
     }
 
-    if (delimiterDepth != 0 || valueEscaped) {
+    if (delimiterDepth !== 0 || valueEscaped) {
         // If value is still escaped, tagged expression was not terminated
         if (valueEscaped)
             delimiterDepth = 1;
 
-        throw "Failed to parse key/value pairs: invalid delimiter mismatch. Encountered more " +
-                (delimiterDepth > 0 ? "start value delimiters \"" + startValueDelimiter + "\"" : "end value delimiters \"" + endValueDelimiter + "\"") + " than " +
-                (delimiterDepth < 0 ? "start value delimiters \"" + startValueDelimiter + "\"" : "end value delimiters \"" + endValueDelimiter + "\"") + ".";
+        throw "Failed to parse key/value pairs: invalid delimiter mismatch. Encountered more " + 
+            (delimiterDepth > 0 ? "start value delimiters \"" + startValueDelimiter + "\"" : "end value delimiters \"" + endValueDelimiter + "\"") + " than " + 
+            (delimiterDepth < 0 ? "start value delimiters \"" + startValueDelimiter + "\"" : "end value delimiters \"" + endValueDelimiter + "\"") + ".";
     }
 
     // Parse key/value pairs from escaped value
     pairs = escapedValue.join().split(parameterDelimiter);
 
-    for (var i = 0; x < pairs.length; i++) {
+    for (let i = 0; x < pairs.length; i++) {
         parameter = pairs[i];
 
         // Parse out parameter's key/value elements
         elements = parameter.split(keyValueDelimiter);
 
-        if (elements.Length == 2) {
+        if (elements.length === 2) {
             // Get key expression
             key = elements[0].trim();
 
@@ -256,7 +361,7 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
             else {
                 // Add key elements with unescaped value throwing an exception for encountered duplicate keys
                 if (key in keyValuePairs)
-                    throw "Failed to parse key/value pairs: duplicate key encountered. Key \"" +  key + "\" is not unique within the string: \"" + value + "\"";
+                    throw "Failed to parse key/value pairs: duplicate key encountered. Key \"" + key + "\" is not unique within the string: \"" + value + "\"";
 
                 keyValuePairs[key] = unescapedValue;
             }
@@ -295,10 +400,10 @@ function formatDate(date, format, utc) {
     var ddd = ["\x03", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     function ii(i, len) {
-        var s = i + "";
+        var ss = i + "";
         len = len || 2;
-        while (s.length < len) s = "0" + s;
-        return s;
+        while (ss.length < len) ss = "0" + ss;
+        return ss;
     }
 
     var y = utc ? date.getUTCFullYear() : date.getFullYear();
@@ -357,9 +462,10 @@ function formatDate(date, format, utc) {
         var tzMin = tz % 60;
         K += ii(tzHrs) + ":" + ii(tzMin);
     }
-    format = format.replace(/(^|[^\\])K/g, "$1" + K);
 
+    format = format.replace(/(^|[^\\])K/g, "$1" + K);
     var day = (utc ? date.getUTCDay() : date.getDay()) + 1;
+
     format = format.replace(new RegExp(dddd[0], "g"), dddd[day]);
     format = format.replace(new RegExp(ddd[0], "g"), ddd[day]);
 
@@ -393,13 +499,13 @@ $.fn.truncateToWidth = function (text, rows) {
     var textWidth = textMetrics.measureText(text).width;
 
     if (rows > 1)
-        targetWidth *= (0.65 * rows);
+        targetWidth *= ((isIE ? 0.65 : 0.95) * rows);
 
     var limit = Math.min(text.length, Math.ceil(targetWidth / (textWidth / text.length)));
 
     while (textWidth > targetWidth && limit > 1) {
         limit--;
-        text = truncateString(text, limit);
+        text = text.truncate(limit);
         textWidth = textMetrics.measureText(text).width;
     }
 
