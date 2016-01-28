@@ -42,7 +42,6 @@ function PagedViewModel() {
     self.editMode = ko.observable(true);
     self._currentPageSize = ko.observable(1);
     self._currentPage = ko.observable(0);
-    self._executingCalculation = false;
     self._columnWidths = [];
 
     // Properties
@@ -163,11 +162,6 @@ function PagedViewModel() {
     }
 
     self.calculatePageSize = function () {
-        if (self._executingCalculation)
-            return;
-
-        self._executingCalculation = true;
-
         // Calculate total number of table rows that will fit within current page height
         const remainingHeight = calculateRemainingBodyHeight() -
             $("#contentWell").paddingHeight() -
@@ -208,8 +202,6 @@ function PagedViewModel() {
             if (currentPage === self.currentPage())
                 self.queryPageRecords();
         }
-
-        self._executingCalculation = false;
     }
 
     self.nextPage = function () {

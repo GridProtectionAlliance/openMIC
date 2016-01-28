@@ -21,14 +21,13 @@
 //
 //******************************************************************************************************
 
-// Hub connectivity ans site specific scripts
+// Hub connectivity and site specific scripts
 "use strict";
 
 // Declare page scoped SignalR variables
 var dataHub, dataHubClient, serviceHub, serviceHubClient;
 var hubIsConnecting = false;
 var hubIsConnected = false;
-var textMetrics;
 
 function hideErrorMessage() {
     $("#error-msg-block").hide();
@@ -98,9 +97,6 @@ function refreshHubDependentControlState() {
 
 $(function () {
     $(".page-header").css("margin-bottom", "-5px");
-
-    // Get text metrics canvas
-    textMetrics = document.getElementById("textMetricsCanvas").getContext("2d");
 
     // Set initial state of hub dependent controls
     updateHubDependentControlState(false);

@@ -50,7 +50,7 @@
 {
     <td width="25%" class="text-left valign-middle" data-bind="text: Acronym"></td>
     <td width="30%" class="text-left valign-middle" data-bind="text: Name"></td>
-    <td width="40%" class="text-left table-cell-hard-wrap"><a data-bind="attr:{href: notNull(URL)}" target="_blank"><div data-bind="text: truncateString(URL)"></div></a></td>
+    <td width="40%" class="text-left table-cell-hard-wrap"><a data-bind="attr:{href: notNull(URL)}" target="_blank"><div data-bind="text: $($element.parentElement.parentElement).truncateToWidth(URL, 2)"></div></a></td>
     <td width="5%" class="text-center valign-middle" nowrap>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord" hub-dependent><span class="glyphicon glyphicon-pencil"></span></button>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord" hub-dependent><span class="glyphicon glyphicon-remove"></span></button>

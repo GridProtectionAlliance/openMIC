@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 using System.Net.Http;
+using System.Threading.Tasks;
 using openMIC.Model;
 using RazorEngine;
 using RazorEngine.Configuration;
@@ -112,6 +113,11 @@ namespace openMIC
 
                 return s_engineService.RunCompile(TemplateName, typeof(AppModel), Model, m_viewBag);
             }
+        }
+
+        public async Task<string> ExecuteAsync(HttpRequestMessage requestMessage, dynamic postData)
+        {
+            return await Task.Run(() => Execute(requestMessage, postData));
         }
 
         #endregion

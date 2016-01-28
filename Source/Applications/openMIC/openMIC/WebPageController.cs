@@ -21,14 +21,18 @@
 //
 //******************************************************************************************************
 
+using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using GSF.IO;
+using GSF.IO.Checksums;
 
 namespace openMIC
 {
@@ -37,48 +41,89 @@ namespace openMIC
     /// </summary>
     public class WebPageController : ApiController
     {
+        #region [ Methods ]
+
         // Default page request handler
         [Route, HttpGet]
-        public HttpResponseMessage GetPage()
+        public async Task<HttpResponseMessage> GetPage()
         {
-            return GetPage(Program.Host.DefaultWebPage);
+            return await GetPage(Program.Host.DefaultWebPage);
         }
 
         // Common request handler
         [Route("{pageName}"), HttpGet]
-        public HttpResponseMessage GetPage(string pageName)
+        public async Task<HttpResponseMessage> GetPage(string pageName)
         {
-            return RenderResponse(pageName);
+            return await RenderResponse(pageName);
         }
 
         // Common post handler
         [Route("{pageName}"), HttpPost]
-        public HttpResponseMessage PostPage(string pageName, dynamic postData)
+        public async Task<HttpResponseMessage> PostPage(string pageName, dynamic postData)
         {
-            return RenderResponse(pageName, postData);
+            return await RenderResponse(pageName, postData);
         }
 
-        private HttpResponseMessage RenderResponse(string pageName, dynamic postData = null)
+        private async Task<HttpResponseMessage> RenderResponse(string pageName, dynamic postData = null)
         {
             HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
 
-            string fileExtension = FilePath.GetExtension(pageName).ToLowerInvariant();
+            string content, fileExtension = FilePath.GetExtension(pageName).ToLowerInvariant();
 
             switch (fileExtension)
             {
                 case ".cshtml":
-                    response.Content = new StringContent(new RazorView<CSharp>(pageName, Program.Host.Model).Execute(Request, postData), Encoding.UTF8, "text/html");
+                    content = await new RazorView<CSharp>(pageName, Program.Host.Model).ExecuteAsync(Request, postData);
+
+                    if (PublishResponseContent(response, content.GetHashCode()))
+                        response.Content = new StringContent(content, Encoding.UTF8, "text/html");
                     break;
                 case ".vbhtml":
-                    response.Content = new StringContent(new RazorView<VisualBasic>(pageName, Program.Host.Model).Execute(Request, postData), Encoding.UTF8, "text/html");
+                    content = await new RazorView<VisualBasic>(pageName, Program.Host.Model).ExecuteAsync(Request, postData);
+
+                    if (PublishResponseContent(response, content.GetHashCode()))
+                        response.Content = new StringContent(content, Encoding.UTF8, "text/html");
                     break;
                 default:
-                    string fileName = FilePath.GetAbsolutePath($"{Program.Host.WebRootFolder}\\{pageName}");
+                    string fileName = FilePath.GetAbsolutePath($"{Program.Host.WebRootFolder}\\{pageName.Replace('/','\\')}");
 
                     if (File.Exists(fileName))
                     {
-                        response.Content = new StreamContent(File.OpenRead(fileName));
-                        response.Content.Headers.ContentType = new MediaTypeHeaderValue(MimeMapping.GetMimeMapping(pageName));
+                        FileStream fileData = null;                        
+                        uint responseHash;
+
+                        if (!s_etagCache.TryGetValue(fileName, out responseHash))
+                        {
+                            const int BufferSize = 32768;
+                            byte[] buffer = new byte[BufferSize];
+                            Crc32 calculatedHash = new Crc32();
+
+                            fileData = File.OpenRead(fileName);
+                            int bytesRead = await fileData.ReadAsync(buffer, 0, BufferSize);
+
+                            while (bytesRead > 0)
+                            {
+                                calculatedHash.Update(buffer, 0, bytesRead);
+                                bytesRead = await fileData.ReadAsync(buffer, 0, BufferSize);
+                            }
+
+                            responseHash = calculatedHash.Value;
+                            s_etagCache.TryAdd(fileName, responseHash);
+                            fileData.Seek(0, SeekOrigin.Begin);
+                        }
+
+                        if (PublishResponseContent(response, responseHash))
+                        {
+                            if ((object)fileData == null)
+                                fileData = File.OpenRead(fileName);
+
+                            response.Content = new StreamContent(fileData);
+                            response.Content.Headers.ContentType = new MediaTypeHeaderValue(MimeMapping.GetMimeMapping(pageName));
+                        }
+                        else
+                        {
+                            fileData?.Dispose();
+                        }                       
                     }
                     else
                     {
@@ -90,76 +135,129 @@ namespace openMIC
             return response;
         }
 
+        private bool PublishResponseContent(HttpResponseMessage response, long responseHash)
+        {
+            long requestHash;
+
+            foreach (EntityTagHeaderValue headerValue in Request.Headers.IfNoneMatch)
+            {
+                if (long.TryParse(headerValue.Tag?.Substring(1, headerValue.Tag.Length - 2), out requestHash) && responseHash == requestHash)
+                {
+                    response.StatusCode = HttpStatusCode.NotModified;
+                    return false;
+                }
+            }
+
+            response.Headers.CacheControl = new CacheControlHeaderValue
+            {
+                Public = true,
+                MaxAge = new TimeSpan(31536000 * TimeSpan.TicksPerSecond)
+            };
+
+            //response.Content.Headers.Expires = DateTime.UtcNow + response.Headers.CacheControl.MaxAge;
+            response.Headers.ETag = new EntityTagHeaderValue($"\"{responseHash}\"");
+
+            return true;
+        }
+
         #region [ Sub-folder Handlers ]
 
         // Sub-folder request handler - depth 1
         [Route("{folder1}/{pageName}"), HttpGet]
-        public HttpResponseMessage GetPage(string folder1, string pageName)
+        public async Task<HttpResponseMessage> GetPage(string folder1, string pageName)
         {
-            return GetPage($"{folder1}/{pageName}");
+            return await GetPage($"{folder1}/{pageName}");
         }
 
         // Sub-folder post handler - depth 1
         [Route("{folder1}/{pageName}"), HttpPost]
-        public HttpResponseMessage PostPage(string folder1, string pageName, dynamic postData)
+        public async Task<HttpResponseMessage> PostPage(string folder1, string pageName, dynamic postData)
         {
-            return PostPage($"{folder1}/{pageName}", postData);
+            return await PostPage($"{folder1}/{pageName}", postData);
         }
 
         // Sub-folder request handler - depth 2
         [Route("{folder1}/{folder2}/{pageName}"), HttpGet]
-        public HttpResponseMessage GetPage(string folder1, string folder2, string pageName)
+        public async Task<HttpResponseMessage> GetPage(string folder1, string folder2, string pageName)
         {
-            return GetPage($"{folder1}/{folder2}/{pageName}");
+            return await GetPage($"{folder1}/{folder2}/{pageName}");
         }
 
         // Sub-folder post handler - depth 2
         [Route("{folder1}/{folder2}/{pageName}"), HttpPost]
-        public HttpResponseMessage PostPage(string folder1, string folder2, string pageName, dynamic postData)
+        public async Task<HttpResponseMessage> PostPage(string folder1, string folder2, string pageName, dynamic postData)
         {
-            return PostPage($"{folder1}/{folder2}/{pageName}", postData);
+            return await PostPage($"{folder1}/{folder2}/{pageName}", postData);
         }
 
         // Sub-folder request handler - depth 3
         [Route("{folder1}/{folder2}/{folder3}/{pageName}"), HttpGet]
-        public HttpResponseMessage GetPage(string folder1, string folder2, string folder3, string pageName)
+        public async Task<HttpResponseMessage> GetPage(string folder1, string folder2, string folder3, string pageName)
         {
-            return GetPage($"{folder1}/{folder2}/{folder3}/{pageName}");
+            return await GetPage($"{folder1}/{folder2}/{folder3}/{pageName}");
         }
 
         // Sub-folder post handler - depth 3
         [Route("{folder1}/{folder2}/{folder3}/{pageName}"), HttpPost]
-        public HttpResponseMessage PostPage(string folder1, string folder2, string folder3, string pageName, dynamic postData)
+        public async Task<HttpResponseMessage> PostPage(string folder1, string folder2, string folder3, string pageName, dynamic postData)
         {
-            return PostPage($"{folder1}/{folder2}/{folder3}/{pageName}", postData);
+            return await PostPage($"{folder1}/{folder2}/{folder3}/{pageName}", postData);
         }
 
         // Sub-folder request handler - depth 4
         [Route("{folder1}/{folder2}/{folder3}/{folder4}/{pageName}"), HttpGet]
-        public HttpResponseMessage GetPage(string folder1, string folder2, string folder3, string folder4, string pageName)
+        public async Task<HttpResponseMessage> GetPage(string folder1, string folder2, string folder3, string folder4, string pageName)
         {
-            return GetPage($"{folder1}/{folder2}/{folder3}/{folder4}/{pageName}");
+            return await GetPage($"{folder1}/{folder2}/{folder3}/{folder4}/{pageName}");
         }
 
         // Sub-folder post handler - depth 4
         [Route("{folder1}/{folder2}/{folder3}/{folder4}/{pageName}"), HttpPost]
-        public HttpResponseMessage PostPage(string folder1, string folder2, string folder3, string folder4, string pageName, dynamic postData)
+        public async Task<HttpResponseMessage> PostPage(string folder1, string folder2, string folder3, string folder4, string pageName, dynamic postData)
         {
-            return PostPage($"{folder1}/{folder2}/{folder3}/{folder4}/{pageName}", postData);
+            return await PostPage($"{folder1}/{folder2}/{folder3}/{folder4}/{pageName}", postData);
         }
 
         // Sub-folder request handler - depth 5
         [Route("{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}"), HttpGet]
-        public HttpResponseMessage GetPage(string folder1, string folder2, string folder3, string folder4, string folder5, string pageName)
+        public async Task<HttpResponseMessage> GetPage(string folder1, string folder2, string folder3, string folder4, string folder5, string pageName)
         {
-            return GetPage($"{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}");
+            return await GetPage($"{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}");
         }
 
         // Sub-folder post handler - depth 5
         [Route("{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}"), HttpPost]
-        public HttpResponseMessage PostPage(string folder1, string folder2, string folder3, string folder4, string folder5, string pageName, dynamic postData)
+        public async Task<HttpResponseMessage> PostPage(string folder1, string folder2, string folder3, string folder4, string folder5, string pageName, dynamic postData)
         {
-            return PostPage($"{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}", postData);
+            return await PostPage($"{folder1}/{folder2}/{folder3}/{folder4}/{folder5}/{pageName}", postData);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region [ Static ]
+
+        // Static Fields
+        private static ConcurrentDictionary<string, uint> s_etagCache;
+        private static FileSystemWatcher s_fileWatcher;
+
+        // Static Constructor
+        static WebPageController()
+        {
+            s_etagCache = new ConcurrentDictionary<string, uint>(StringComparer.InvariantCultureIgnoreCase);
+            s_fileWatcher = new FileSystemWatcher(Program.Host.WebRootFolder);
+            s_fileWatcher.IncludeSubdirectories = true;
+            s_fileWatcher.Changed += s_fileWatcher_FileChange;
+            s_fileWatcher.Deleted += s_fileWatcher_FileChange;
+            s_fileWatcher.Renamed += s_fileWatcher_FileChange;
+            s_fileWatcher.EnableRaisingEvents = true;
+        }
+
+        private static void s_fileWatcher_FileChange(object sender, FileSystemEventArgs e)
+        {
+            uint hash;
+            s_etagCache.TryRemove(e.FullPath, out hash);
         }
 
         #endregion

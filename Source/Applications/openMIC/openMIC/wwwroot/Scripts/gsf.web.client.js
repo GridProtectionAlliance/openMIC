@@ -24,6 +24,17 @@
 // Grid Solutions Framework Core Web Client Script Functions
 "use strict";
 
+const isIE = detectIE();
+var textMetrics;
+
+$(function () {
+    // Create a canvas object that will be used for text metrics calculations
+    $("<canvas id=\"textMetricsCanvas\" height=\"1\" width=\"1\" style=\"visibility: hidden\"></canvas>").appendTo("body");
+
+    // Get text metrics canvas context
+    textMetrics = document.getElementById("textMetricsCanvas").getContext("2d");
+});
+
 // Miscellaneous functions
 function notNull(value, nonNullValue) {
     return value || (nonNullValue || "");
@@ -56,8 +67,6 @@ function detectIE() {
     // Other browser
     return false;
 }
-
-const isIE = detectIE();
 
 // Number functions
 Number.prototype.truncate = function() {
@@ -195,7 +204,7 @@ function Dictionary(source) {
 
 // String functions
 function isEmpty(str) {
-    return !str || 0 === String(str).length;
+    return !str || String(str).length === 0;
 }
 
 String.prototype.truncate = function (limit) {
@@ -259,19 +268,16 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
 
     var keyValuePairs = new Dictionary();
     var escapedValue = [];
-    var elements = [];
-    var key, unescapedValue, parameter, pairs;
     var valueEscaped = false;
     var delimiterDepth = 0;
-    var character;
 
     // Escape any parameter or key/value delimiters within tagged value sequences
     //      For example, the following string:
     //          "normalKVP=-1; nestedKVP={p1=true; p2=false}")
     //      would be encoded as:
     //          "normalKVP=-1; nestedKVP=p1\\u003dtrue\\u003b p2\\u003dfalse")
-    for (let i = 0; i < value.length; i++) {
-        character = this[i];
+    for (let i = 0; i < this.length; i++) {
+        let character = this[i];
 
         if (character === startValueDelimiter) {
             if (!valueEscaped) {
@@ -333,20 +339,18 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
     }
 
     // Parse key/value pairs from escaped value
-    pairs = escapedValue.join().split(parameterDelimiter);
+    let pairs = escapedValue.join().split(parameterDelimiter);
 
     for (let i = 0; x < pairs.length; i++) {
-        parameter = pairs[i];
-
-        // Parse out parameter's key/value elements
-        elements = parameter.split(keyValueDelimiter);
+        // Separate key from value
+        let elements = pairs[i].split(keyValueDelimiter);
 
         if (elements.length === 2) {
-            // Get key expression
-            key = elements[0].trim();
+            // Get key
+            let key = elements[0].trim();
 
-            // Get unescaped value expression
-            unescapedValue = elements[1].trim().
+            // Get unescaped value
+            let unescapedValue = elements[1].trim().
                 replace(escapedParameterDelimiter, parameterDelimiter).
                 replace(escapedKeyValueDelimiter, keyValueDelimiter).
                 replace(escapedStartValueDelimiter, startValueDelimiter).
@@ -360,8 +364,8 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
             }
             else {
                 // Add key elements with unescaped value throwing an exception for encountered duplicate keys
-                if (key in keyValuePairs)
-                    throw "Failed to parse key/value pairs: duplicate key encountered. Key \"" + key + "\" is not unique within the string: \"" + value + "\"";
+                if (keyValuePairs.containsKey(key))
+                    throw "Failed to parse key/value pairs: duplicate key encountered. Key \"" + key + "\" is not unique within the string: \"" + this + "\"";
 
                 keyValuePairs[key] = unescapedValue;
             }
