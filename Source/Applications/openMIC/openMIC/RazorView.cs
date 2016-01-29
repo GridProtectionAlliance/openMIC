@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 using System.Net.Http;
+using System.Threading.Tasks;
 using openMIC.Model;
 using RazorEngine;
 using RazorEngine.Configuration;
@@ -114,10 +115,10 @@ namespace openMIC
             }
         }
 
-        //public Task<string> ExecuteAsync(HttpRequestMessage requestMessage, dynamic postData)
-        //{
-        //    return new Task<string>(() => Execute(requestMessage, postData));
-        //}
+        public Task ExecuteAsync(HttpRequestMessage requestMessage, dynamic postData)
+        {
+            return Task.Run(() => Execute(requestMessage, postData));
+        }
 
         #endregion
 

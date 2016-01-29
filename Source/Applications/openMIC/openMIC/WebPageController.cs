@@ -73,13 +73,13 @@ namespace openMIC
             switch (fileExtension)
             {
                 case ".cshtml":
-                    content = new RazorView<CSharp>(pageName, Program.Host.Model).Execute(Request, postData);
+                    content = await new RazorView<CSharp>(pageName, Program.Host.Model).ExecuteAsync(Request, postData);
 
                     if (PublishResponseContent(response, content.GetHashCode()))
                         response.Content = new StringContent(content, Encoding.UTF8, "text/html");
                     break;
                 case ".vbhtml":
-                    content = new RazorView<VisualBasic>(pageName, Program.Host.Model).Execute(Request, postData);
+                    content = await new RazorView<VisualBasic>(pageName, Program.Host.Model).ExecuteAsync(Request, postData);
 
                     if (PublishResponseContent(response, content.GetHashCode()))
                         response.Content = new StringContent(content, Encoding.UTF8, "text/html");
@@ -113,6 +113,8 @@ namespace openMIC
                                 responseHash = calculatedHash.Value;
                                 s_etagCache.TryAdd(fileName, responseHash);
                                 fileData.Seek(0, SeekOrigin.Begin);
+
+                                Program.Host.LogStatusMessage($"Cache [{responseHash}] added for file \"{fileName}\"");
                             });
                         }
 
@@ -121,7 +123,7 @@ namespace openMIC
                             if ((object)fileData == null)
                                 fileData = File.OpenRead(fileName);
 
-                            response.Content = new StreamContent(fileData);
+                            response.Content = await Task.Run(() => new StreamContent(fileData));
                             response.Content.Headers.ContentType = new MediaTypeHeaderValue(MimeMapping.GetMimeMapping(pageName));
                         }
                         else
@@ -245,25 +247,30 @@ namespace openMIC
         #region [ Static ]
 
         // Static Fields
-        private static ConcurrentDictionary<string, uint> s_etagCache;
-        private static FileSystemWatcher s_fileWatcher;
+        private static readonly ConcurrentDictionary<string, uint> s_etagCache;
+        private static readonly FileSystemWatcher s_fileWatcher;
 
         // Static Constructor
         static WebPageController()
         {
             s_etagCache = new ConcurrentDictionary<string, uint>(StringComparer.InvariantCultureIgnoreCase);
-            s_fileWatcher = new FileSystemWatcher(Program.Host.WebRootFolder);
-            s_fileWatcher.IncludeSubdirectories = true;
+            s_fileWatcher = new FileSystemWatcher(Program.Host.WebRootFolder)
+            {
+                IncludeSubdirectories = true,
+                EnableRaisingEvents = true
+            };
+
             s_fileWatcher.Changed += s_fileWatcher_FileChange;
             s_fileWatcher.Deleted += s_fileWatcher_FileChange;
             s_fileWatcher.Renamed += s_fileWatcher_FileChange;
-            s_fileWatcher.EnableRaisingEvents = true;
         }
 
         private static void s_fileWatcher_FileChange(object sender, FileSystemEventArgs e)
         {
-            uint hash;
-            s_etagCache.TryRemove(e.FullPath, out hash);
+            uint responseHash;
+
+            if (s_etagCache.TryRemove(e.FullPath, out responseHash))
+                Program.Host.LogStatusMessage($"Cache [{responseHash}] cleared for file \"{e.FullPath}\"");
         }
 
         #endregion

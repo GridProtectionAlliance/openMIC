@@ -34,9 +34,9 @@ function hideErrorMessage() {
 
     $("#error-msg-block").hide();
 
-    // Raise "onMessageVisibiltyChanged" event
+    // Raise "messageVisibiltyChanged" event
     if (wasVisible)
-        $(window).trigger("onMessageVisibiltyChanged");    
+        $(window).trigger("messageVisibiltyChanged");    
 }
 
 function hideInfoMessage() {
@@ -44,9 +44,9 @@ function hideInfoMessage() {
 
     $("#info-msg-block").hide();
 
-    // Raise "onMessageVisibiltyChanged" event
+    // Raise "messageVisibiltyChanged" event
     if (wasVisible)
-        $(window).trigger("onMessageVisibiltyChanged");
+        $(window).trigger("messageVisibiltyChanged");
 }
 
 function showErrorMessage(message, timeout) {
@@ -58,9 +58,9 @@ function showErrorMessage(message, timeout) {
     if (timeout != undefined && timeout > 0)
         setTimeout(hideErrorMessage, timeout);
 
-    // Raise "onMessageVisibiltyChanged" event
+    // Raise "messageVisibiltyChanged" event
     if (!wasVisible)
-        $(window).trigger("onMessageVisibiltyChanged");
+        $(window).trigger("messageVisibiltyChanged");
 }
 
 function showInfoMessage(message, timeout) {
@@ -75,9 +75,9 @@ function showInfoMessage(message, timeout) {
     if (timeout > 0)
         setTimeout(hideInfoMessage, timeout);
 
-    // Raise "onMessageVisibiltyChanged" event
+    // Raise "messageVisibiltyChanged" event
     if (!wasVisible)
-        $(window).trigger("onMessageVisibiltyChanged");
+        $(window).trigger("messageVisibiltyChanged");
 }
 
 function calculateRemainingBodyHeight() {
@@ -101,8 +101,8 @@ function hubConnected() {
     // Re-enable hub dependent controls
     updateHubDependentControlState(true);
 
-    // Raise "onHubConnected" event
-    $(window).trigger("onHubConnected");
+    // Raise "hubConnected" event
+    $(window).trigger("hubConnected");
 }
 
 function updateHubDependentControlState(enabled) {
@@ -150,8 +150,8 @@ $(function () {
         // Disable hub dependent controls
         updateHubDependentControlState(false);
 
-        // Raise "onHubDisconnected" event
-        $(window).trigger("onHubDisconnected");
+        // Raise "hubDisconnected" event
+        $(window).trigger("hubDisconnected");
 
         setTimeout(function () {
             $.connection.hub.start().done(function () {
@@ -168,7 +168,7 @@ $(function () {
     // Apply initial content-fill-height styles
     $("[content-fill-height]").addClass("fill-height");
 
-    $(window).on("onMessageVisibiltyChanged", function (event) {
+    $(window).on("messageVisibiltyChanged", function (event) {
         const contentWells = $("[content-fill-height]");
         const errorIsVisble = $("#error-msg-block").is(":visible");
         const infoIsVisible = $("#info-msg-block").is(":visible");

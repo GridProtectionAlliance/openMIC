@@ -29,8 +29,7 @@ function PagedViewModel() {
     const self = this;
 
     // Fields
-    self.pageRecords = ko.observableArray();
-    self.currentRecord = ko.observable();
+    self.pageRecords = ko.observableArray();    
     self.recordCount = ko.observable(0);
     self.pageCount = ko.observable(1);
     self.modelName = "{name}";
@@ -42,6 +41,7 @@ function PagedViewModel() {
     self.editMode = ko.observable(true);
     self._currentPageSize = ko.observable(1);
     self._currentPage = ko.observable(0);
+    self._currentRecord = ko.observable();
     self._columnWidths = [];
 
     // Properties
@@ -74,6 +74,15 @@ function PagedViewModel() {
                 self._currentPage(value);
                 self.queryPageRecords();
             }
+        },
+        owner: self
+    });
+
+    self.currentRecord = ko.pureComputed({
+        read: self._currentRecord,
+        write: function (value) {
+            self._currentRecord(value);
+            $(window).trigger("currentRecordChanged");
         },
         owner: self
     });
@@ -248,7 +257,7 @@ function PagedViewModel() {
             self.deleteRecord(record[self.identityField]).done(function () {
                 self.pageRecords.remove(record);
                 self.initialize();
-                showInfoMessage("Record deleted...");
+                showInfoMessage("Deleted record...");
             }).fail(function (error) {
                 showErrorMessage(error);
             });
@@ -319,11 +328,11 @@ var viewModel = new PagedViewModel();
         viewModel.currentPage(viewModel.totalPages());
     });
 
-    $(window).on("onHubConnected", function (event) {
+    $(window).on("hubConnected", function (event) {
         viewModel.initialize();
     });
 
-    $(window).on("onMessageVisibiltyChanged", function (event) {
+    $(window).on("messageVisibiltyChanged", function (event) {
         viewModel.calculatePageSize();
     });
 

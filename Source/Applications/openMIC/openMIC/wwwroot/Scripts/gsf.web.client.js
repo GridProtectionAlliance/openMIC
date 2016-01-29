@@ -218,6 +218,11 @@ String.prototype.truncate = function (limit) {
     return text;
 }
 
+String.prototype.replaceAll = function (findText, replaceWith, ignoreCase) {
+    return this.replace(new RegExp(findText.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&"), (ignoreCase ? "gi" : "g")), (typeof replaceWith == "string") ? replaceWith.replace(/\$/g, "$$$$") : replaceWith);
+};
+
+
 String.prototype.padLeft = function (totalWidth, paddingChar) {
     if (totalWidth > this.length)
         return Array(totalWidth - this.length + 1).join(paddingChar || " ") + this;
@@ -232,8 +237,8 @@ String.prototype.padRight = function (totalWidth, paddingChar) {
     return this;
 }
 
-String.prototype.regexEncode = function (item) {
-    return "\\u" + item.charCodeAt(0).toString(16).padLeft(4, "0");
+String.prototype.regexEncode = function () {
+    return "\\u" + this.charCodeAt(0).toString(16).padLeft(4, "0");
 }
 
 // Returns a Dictionary of the parsed key/value pair expressions from a string. Parameter pairs are delimited by keyValueDelimiter
@@ -341,9 +346,9 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
     }
 
     // Parse key/value pairs from escaped value
-    let pairs = escapedValue.join().split(parameterDelimiter);
+    let pairs = escapedValue.join("").split(parameterDelimiter);
 
-    for (let i = 0; x < pairs.length; i++) {
+    for (let i = 0; i < pairs.length; i++) {
         // Separate key from value
         let elements = pairs[i].split(keyValueDelimiter);
 
@@ -353,11 +358,11 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
 
             // Get unescaped value
             let unescapedValue = elements[1].trim().
-                replace(escapedParameterDelimiter, parameterDelimiter).
-                replace(escapedKeyValueDelimiter, keyValueDelimiter).
-                replace(escapedStartValueDelimiter, startValueDelimiter).
-                replace(escapedEndValueDelimiter, endValueDelimiter).
-                replace(backslashDelimiter, "\\");
+                replaceAll(escapedParameterDelimiter, parameterDelimiter).
+                replaceAll(escapedKeyValueDelimiter, keyValueDelimiter).
+                replaceAll(escapedStartValueDelimiter, startValueDelimiter).
+                replaceAll(escapedEndValueDelimiter, endValueDelimiter).
+                replaceAll(backslashDelimiter, "\\");
 
             // Add key/value pair to dictionary
             if (ignoreDuplicateKeys) {

@@ -36,7 +36,7 @@
     ViewBag.Title = "Devices";
     ViewBag.PageControlScripts = new StringBuilder();
 
-    ViewBag.HeaderColumns = new string[][]
+    ViewBag.HeaderColumns = new[]
     {   //    { "Field", "Label", "Classes" }
         new[] { "Acronym", "Acronym", "text-left" },
         new[] { null, "Schedule", "text-center valign-middle" },
@@ -57,43 +57,49 @@
 }
 @helper AddNewEditDialog() {
     <form role="form">
-        <div class="form-group" data-bind="css: {'has-error': isEmpty(Acronym()), 'has-feedback': isEmpty(Acronym())}">
-            <label for="acronym">Device Acronym:</label>
-            <input type="text" class="form-control" data-bind="textInput: Acronym" id="acronym" required>
-            <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(Acronym())"></span>
+        <div class="col-md-6">
+            <div class="form-group" data-bind="css: {'has-error': isEmpty(Acronym()), 'has-feedback': isEmpty(Acronym())}">
+                <label for="acronym">Device Acronym:</label>
+                <input type="text" class="form-control" data-bind="textInput: Acronym" id="acronym" required>
+                <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(Acronym())"></span>
+            </div>
+            <div class="form-group">
+                <label for="connectionUserName">Connection User Name:</label>
+                <input type="text" class="form-control" id="connectionUserName">
+            </div>
+            <div class="form-group">
+                <label for="connectionPassword">Connection Password:</label>
+                <input type="password" class="form-control" id="connectionPassword">
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" id="useDialUp"> Use Dial-up Connection</label>
+            </div>
+            <div class="form-group" data-bind="visible: $('#useDialUp').is(':checked')">
+                <label for="dialUpPhoneNumber">Dial-up Phone Number:</label>
+                <input type="tel" class="form-control" id="dialUpPhoneNumber">
+            </div>
+            <div class="form-group">
+                <label for="maxConnectionRetries">Maximum Connection Retries:</label>
+                <input type="number" class="form-control" id="maxConnectionRetries" value="3">
+            </div>
         </div>
-        <div class="form-group">
-            <label for="connectionUserName">Connection User Name:</label>
-            <input type="text" class="form-control" id="connectionUserName">
-        </div>
-        <div class="form-group">
-            <label for="connectionPassword">Connection Password:</label>
-            <input type="password" class="form-control" id="connectionPassword">
-        </div>
-        <div class="checkbox">
-            <label><input type="checkbox" id="useDialUp"> Use Dial-up Connection</label>
-        </div>
-        <div class="form-group" data-bind="visible: $('#useDialUp').is(':checked')">
-            <label for="dialUpPhoneNumber">Dial-up Phone Number:</label>
-            <input type="tel" class="form-control" id="dialUpPhoneNumber">
-        </div>
-        <div class="form-group">
-            <label for="maxConnectionRetries">Maximum Connection Retries:</label>
-            <input type="number" class="form-control" id="maxConnectionRetries" value="3">
-        </div>
-        <div class="form-group">
-            <label for="connectionProfile">Connection Profile:</label>
-            <select class="form-control" id="connectionProfile">
-                @foreach (Vendor vendor in ViewBag.DbContext.Vendors)
-                {
-                    <option value="@vendor.ID">@vendor.Acronym</option>
-                }
-            </select>
-        </div>
-        <div class="checkbox">
-            <label><input type="checkbox" data-bind="checked: Enabled"> Enabled</label>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="connectionProfile">Connection Profile:</label>
+                <select class="form-control" id="connectionProfile">
+                    @foreach (Vendor vendor in ViewBag.DbContext.Vendors) {
+                        <option value="@vendor.ID">@vendor.Acronym</option>
+                    }
+                </select>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" data-bind="checked: Enabled"> Enabled</label>
+            </div>
         </div>
     </form>
+    <div class="col-md-12">
+        <span class="label label-default" data-bind="text: ConnectionString"></span>
+    </div>
 }
 @Include("PagedViewModel.cshtml")
 @section Scripts {
@@ -104,34 +110,55 @@
         viewModel.labelField = "Acronym";
         viewModel.identityField = "ID";
 
-        viewModel.setQueryRecordCount(function () {
+        // Defined connection string for current record
+        var connectionString = new Dictionary();
+
+        //PagedViewModel.prototype.connectionString = ko.pureComputed({
+        //    read: function (key) {
+        //        _connectionString.getValue(key);
+        //    },
+        //    write: function (key, value) {
+        //        _connectionString.setValue(key, value);
+        //    },
+        //    owner: viewModel
+        //});
+
+        connectionString.setValue("connectionUserName", "test");
+
+        viewModel.setQueryRecordCount(function() {
             return dataHub.queryDeviceCount();
         });
 
-        viewModel.setQueryRecords(function (sortField, ascending, page, pageSize) {
+        viewModel.setQueryRecords(function(sortField, ascending, page, pageSize) {
             return dataHub.queryDevices(sortField, ascending, page, pageSize);
         });
 
-        viewModel.setDeleteRecord(function (id) {
+        viewModel.setDeleteRecord(function(id) {
             return dataHub.deleteDevice(id);
         });
 
-        viewModel.setNewRecord(function () {
+        viewModel.setNewRecord(function() {
             return dataHub.newDevice();
         });
 
         viewModel.setAddNewRecord(function (record) {
+            record.ConnectionString(connectionString.joinKeyValuePairs());
             return dataHub.addNewDevice(record);
         });
 
-        viewModel.setUpdateRecord(function (record) {
+        viewModel.setUpdateRecord(function(record) {
+            record.ConnectionString(connectionString.joinKeyValuePairs());
             return dataHub.updateDevice(record);
         });
 
-        $(document).ready(function () {
-            $("#addNewEditDialog").on('shown.bs.modal', function () {
+        $(document).ready(function() {
+            $("#addNewEditDialog").on('shown.bs.modal', function() {
                 $("#acronym").focus();
             });
+        });
+
+        $(window).on("currentRecordChanged", function (event) {
+            connectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
         });
     </script>
 }
