@@ -157,11 +157,11 @@ function PagedViewModel() {
         const columns = $("#recordRow").find("td");
 
         for (let i = 0; i < columns.length; i++) {
-            self._columnWidths[i].push($(columns[i]).width());
+            self._columnWidths.push($(columns[i]).width());
         }
     }
 
-    self.calculatePageSize = function () {
+    self.calculatePageSize = function (forceRefresh) {
         // Calculate total number of table rows that will fit within current page height
         const remainingHeight = calculateRemainingBodyHeight() -
             $("#contentWell").paddingHeight() -
@@ -176,9 +176,11 @@ function PagedViewModel() {
         if (!pageSize || isNaN(pageSize) || !isFinite(pageSize) || pageSize < 1)
             pageSize = 1;
 
+        if (forceRefresh === undefined)
+            forceRefresh = false;
+
         // Check for dynamic Bootstrap column resizing, in which case we need to refresh data
         // for cases where binding may be truncating data lengths, see $.fn.truncateToWidth
-        var forceRefresh = false;
         const columns = firstRow.find("td");
         var columnWidth;
 
@@ -198,7 +200,7 @@ function PagedViewModel() {
             self.currentPageSize(pageSize);
 
             // Requery data for page unless current page was dynamically changed
-            // and has reloaded data already
+            // by page size update and has reloaded data already
             if (currentPage === self.currentPage())
                 self.queryPageRecords();
         }
@@ -296,11 +298,7 @@ function PagedViewModel() {
 // Define page scoped view model instance
 var viewModel = new PagedViewModel();
 
-function onHubConnected() {
-    viewModel.initialize();
-}
-
-$(function () {
+(function ($, viewPort) {
     $("#bodyContainer").addClass("fill-height");
 
     $("#titleText").html("Records: <span data-bind='text: recordCount'>calculating...</span>");
@@ -321,13 +319,21 @@ $(function () {
         viewModel.currentPage(viewModel.totalPages());
     });
 
-    viewModel.calculatePageSize();
-    ko.applyBindings(viewModel);
-});
+    $(window).on("onHubConnected", function (event) {
+        viewModel.initialize();
+    });
 
-(function($, viewPort) {
+    $(window).on("onMessageVisibiltyChanged", function (event) {
+        viewModel.calculatePageSize();
+    });
+
     $(window).resize(
         viewPort.changed(function () {
             viewModel.calculatePageSize();
     }));
+
+    viewModel.calculatePageSize();
+
+    ko.applyBindings(viewModel);
+
 })(jQuery, ResponsiveBootstrapToolkit);

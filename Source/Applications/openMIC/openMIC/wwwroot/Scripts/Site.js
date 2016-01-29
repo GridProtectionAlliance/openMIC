@@ -30,23 +30,42 @@ var hubIsConnecting = false;
 var hubIsConnected = false;
 
 function hideErrorMessage() {
+    const wasVisible = $("#error-msg-block").is(":visible");
+
     $("#error-msg-block").hide();
+
+    // Raise "onMessageVisibiltyChanged" event
+    if (wasVisible)
+        $(window).trigger("onMessageVisibiltyChanged");    
 }
 
 function hideInfoMessage() {
+    const wasVisible = $("#info-msg-block").is(":visible");
+
     $("#info-msg-block").hide();
+
+    // Raise "onMessageVisibiltyChanged" event
+    if (wasVisible)
+        $(window).trigger("onMessageVisibiltyChanged");
 }
 
-// TODO: showing these messages show cause "resize" events
 function showErrorMessage(message, timeout) {
+    const wasVisible = $("#error-msg-block").is(":visible");
+
     $("#error-msg-text").html(message);
     $("#error-msg-block").show();
 
     if (timeout != undefined && timeout > 0)
         setTimeout(hideErrorMessage, timeout);
+
+    // Raise "onMessageVisibiltyChanged" event
+    if (!wasVisible)
+        $(window).trigger("onMessageVisibiltyChanged");
 }
 
 function showInfoMessage(message, timeout) {
+    const wasVisible = $("#info-msg-block").is(":visible");
+
     $("#info-msg-text").html(message);
     $("#info-msg-block").show();
 
@@ -55,6 +74,10 @@ function showInfoMessage(message, timeout) {
 
     if (timeout > 0)
         setTimeout(hideInfoMessage, timeout);
+
+    // Raise "onMessageVisibiltyChanged" event
+    if (!wasVisible)
+        $(window).trigger("onMessageVisibiltyChanged");
 }
 
 function calculateRemainingBodyHeight() {
@@ -78,9 +101,8 @@ function hubConnected() {
     // Re-enable hub dependent controls
     updateHubDependentControlState(true);
 
-    // Call "onHubConnected" function, if page has defined one
-    if (typeof onHubConnected === "function")
-        onHubConnected();
+    // Raise "onHubConnected" event
+    $(window).trigger("onHubConnected");
 }
 
 function updateHubDependentControlState(enabled) {
@@ -128,9 +150,8 @@ $(function () {
         // Disable hub dependent controls
         updateHubDependentControlState(false);
 
-        // Call "onHubDisconnected" function, if page has defined one
-        if (typeof onHubDisconnected === "function")
-            onHubDisconnected();
+        // Raise "onHubDisconnected" event
+        $(window).trigger("onHubDisconnected");
 
         setTimeout(function () {
             $.connection.hub.start().done(function () {
@@ -142,6 +163,24 @@ $(function () {
     // Start the connection
     $.connection.hub.start().done(function () {
         hubConnected();
+    });
+
+    // Apply initial content-fill-height styles
+    $("[content-fill-height]").addClass("fill-height");
+
+    $(window).on("onMessageVisibiltyChanged", function (event) {
+        const contentWells = $("[content-fill-height]");
+        const errorIsVisble = $("#error-msg-block").is(":visible");
+        const infoIsVisible = $("#info-msg-block").is(":visible");
+
+        contentWells.removeClass("fill-height fill-height-one-message fill-height-two-messages");
+
+        if (errorIsVisble && infoIsVisible)
+            contentWells.addClass("fill-height-two-messages");
+        else if (errorIsVisble || infoIsVisible)
+            contentWells.addClass("fill-height-one-message");
+        else
+            contentWells.addClass("fill-height");
     });
 
     $(window).on("beforeunload", function () {

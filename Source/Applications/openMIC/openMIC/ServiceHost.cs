@@ -87,6 +87,15 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Gets flags that determines if cache control is enabled for browser clients.
+        /// </summary>
+        public bool ClientCacheEnabled
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Gets the model used for the application.
         /// </summary>
         public AppModel Model
@@ -141,12 +150,14 @@ namespace openMIC
             systemSettings.Add("WebHostURL", "http://localhost:8989", "The web hosting URL for remote system management.");
             systemSettings.Add("WebRootFolder", "wwwroot", "The default root for the hosted web server files. Location will be relative to install folder if full path is not specified.");
             systemSettings.Add("DefaultWebPage", "Index.cshtml", "The default web page for the hosted web server.");
+            systemSettings.Add("ClientCacheEnabled", "true", "Determines if cache control is enabled for browser clients.");
             systemSettings.Add("DateTimeFormat", "yyyy-MM-dd HH:mm.ss.fff", "The date/time format to use when rendering timestamps.");
             systemSettings.Add("BootstrapTheme", "Content/bootstrap.min.css", "Path to Bootstrap CSS to use for rendering styles.");
 
             // Get configured web settings
             WebRootFolder = FilePath.GetAbsolutePath(systemSettings["WebRootFolder"].Value);
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
+            ClientCacheEnabled = systemSettings["ClientCacheEnabled"].Value.ParseBoolean();
 
             Model = new AppModel
             {

@@ -55,7 +55,23 @@ body {
     height: -moz-calc(100% - 55px);     /* firefox */
 }
 
-/* Style for dynamically sized content wells */
+.fill-height-one-message {
+    min-height: calc(100% - 128px);
+    height: calc(100% - 128px);
+    height: -o-calc(100% - 128px);
+    height: -webkit-calc(100% - 128px);
+    height: -moz-calc(100% - 128px);
+}
+
+.fill-height-two-messages {
+    min-height: calc(100% - 200px);
+    height: calc(100% - 200px);
+    height: -o-calc(100% - 200px);
+    height: -webkit-calc(100% - 200px);
+    height: -moz-calc(100% - 200px);
+}
+
+/* Style for content wells with dyanmic content, e.g., variable rows */
 .well-dynamic-content {
     overflow: auto;
     padding-bottom: 0px

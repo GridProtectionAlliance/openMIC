@@ -185,6 +185,10 @@
                 scrollRemoteConsoleToBottom();
             });
 
+            $(window).on("onMessageVisibiltyChanged", function (event) {
+                scrollRemoteConsoleToBottom();
+            });
+
             $("#sendCommandButton").click(function () {
                 // Call the send command method on the hub
                 if (hubIsConnected)
@@ -204,7 +208,7 @@
         });
     </script>
 }
-<div class="well fill-height" id="remoteConsoleWell">
+<div class="well" content-fill-height>
     <button class="btn btn-link btn-xs" id="remoteConsoleSettingsShowButton">Settings</button>
     <label class="small pull-right" id="remoteConsolePausedLabel" style="display: none"><small><em>Scrolling paused during mouse interaction...</em></small></label>
     <div class="well well-sm floating-form" id="remoteConsoleSettingsForm" style="z-index: 1000">

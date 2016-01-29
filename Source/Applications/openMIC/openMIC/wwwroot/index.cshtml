@@ -175,15 +175,10 @@
                 });
         }
 
-        function onHubConnected() {
+        $(window).on("onHubConnected", function (event) {
             updatePerformanceStatistics();
             setInterval(updatePerformanceStatistics, 5000);
-            $("#restartButton").removeClass("disabled");
-        }
-
-        function onHubDisconnected() {
-            $("#restartButton").addClass("disabled");
-        }
+        });
 
         $("#restartButton").click(function () {
             if (hubIsConnected)

@@ -86,7 +86,7 @@ Number.prototype.padRight = function (totalWidth, paddingChar) {
 
 // Array functions
 
-// Combines a dictionary of key-value pairs in to a string. Values will be escaped within startValueDelimiter and endValueDelimiter
+// Combines a dictionary of key-value pairs into a string. Values will be escaped within startValueDelimiter and endValueDelimiter
 // to contain nested key/value pair expressions like the following: "normalKVP=-1; nestedKVP={p1=true; p2=0.001}" when either the
 // parameterDelimiter or the keyValueDelimiter are detected in the value of the key/value pair.
 Array.prototype.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter) {
@@ -108,6 +108,8 @@ Array.prototype.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimi
     for (let key in self) {
         if (self.hasOwnProperty(key)) {
             let value = self[key];
+
+            value = value ? value.toString() : "";
 
             if (value.indexOf(parameterDelimiter) >= 0 || value.indexOf(keyValueDelimiter) >= 0)
                 value = startValueDelimiter + value + endValueDelimiter;
@@ -360,14 +362,14 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
             // Add key/value pair to dictionary
             if (ignoreDuplicateKeys) {
                 // Add or replace key elements with unescaped value
-                keyValuePairs[key] = unescapedValue;
+                keyValuePairs.setValue(key, unescapedValue);
             }
             else {
                 // Add key elements with unescaped value throwing an exception for encountered duplicate keys
                 if (keyValuePairs.containsKey(key))
                     throw "Failed to parse key/value pairs: duplicate key encountered. Key \"" + key + "\" is not unique within the string: \"" + this + "\"";
 
-                keyValuePairs[key] = unescapedValue;
+                keyValuePairs.setValue(key, unescapedValue);
             }
         }
     }
