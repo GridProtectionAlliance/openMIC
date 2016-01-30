@@ -65,11 +65,11 @@
             </div>
             <div class="form-group">
                 <label for="connectionUserName">Connection User Name:</label>
-                <input type="text" class="form-control" id="connectionUserName">
+                <input type="text" class="form-control" data-bind="textInput: $root.connectionString.connectionusername" id="connectionUserName">
             </div>
             <div class="form-group">
                 <label for="connectionPassword">Connection Password:</label>
-                <input type="password" class="form-control" id="connectionPassword">
+                <input type="password" class="form-control" data-bind="textInput: $root.connectionString.connectionpassword" id="connectionPassword">
             </div>
             <div class="checkbox">
                 <label><input type="checkbox" id="useDialUp"> Use Dial-up Connection</label>
@@ -111,19 +111,7 @@
         viewModel.identityField = "ID";
 
         // Defined connection string for current record
-        var connectionString = new Dictionary();
-
-        //PagedViewModel.prototype.connectionString = ko.pureComputed({
-        //    read: function (key) {
-        //        _connectionString.getValue(key);
-        //    },
-        //    write: function (key, value) {
-        //        _connectionString.setValue(key, value);
-        //    },
-        //    owner: viewModel
-        //});
-
-        connectionString.setValue("connectionUserName", "test");
+        viewModel.connectionString = [];
 
         viewModel.setQueryRecordCount(function() {
             return dataHub.queryDeviceCount();
@@ -142,12 +130,12 @@
         });
 
         viewModel.setAddNewRecord(function (record) {
-            record.ConnectionString(connectionString.joinKeyValuePairs());
+            record.ConnectionString = Dictionary.fromObservableModel(viewModel.connectionString).joinKeyValuePairs();
             return dataHub.addNewDevice(record);
         });
 
         viewModel.setUpdateRecord(function(record) {
-            record.ConnectionString(connectionString.joinKeyValuePairs());
+            record.ConnectionString = Dictionary.fromObservableModel(viewModel.connectionString).joinKeyValuePairs();
             return dataHub.updateDevice(record);
         });
 
@@ -158,7 +146,7 @@
         });
 
         $(window).on("currentRecordChanged", function (event) {
-            connectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
+            viewModel.connectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs().toObservableModel();
         });
     </script>
 }

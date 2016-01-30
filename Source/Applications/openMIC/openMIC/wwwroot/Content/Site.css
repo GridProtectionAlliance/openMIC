@@ -46,17 +46,15 @@ body {
     height: 40px;
 }
 
-/* Style for controls to fill page height minus spacing for navbar and header */
+/* Style for controls to fill page height minus spacing for navbar, header and possible messages */
 .fill-height {
-    min-height: calc(100% - 55px);
     height: calc(100% - 55px);
-    height: -o-calc(100% - 55px);       /* opera */
-    height: -webkit-calc(100% - 55px);  /* google, safari */
-    height: -moz-calc(100% - 55px);     /* firefox */
+    height: -o-calc(100% - 55px);
+    height: -webkit-calc(100% - 55px);
+    height: -moz-calc(100% - 55px);
 }
 
 .fill-height-one-message {
-    min-height: calc(100% - 128px);
     height: calc(100% - 128px);
     height: -o-calc(100% - 128px);
     height: -webkit-calc(100% - 128px);
@@ -64,7 +62,6 @@ body {
 }
 
 .fill-height-two-messages {
-    min-height: calc(100% - 200px);
     height: calc(100% - 200px);
     height: -o-calc(100% - 200px);
     height: -webkit-calc(100% - 200px);

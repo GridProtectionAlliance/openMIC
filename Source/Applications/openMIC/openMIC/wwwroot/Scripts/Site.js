@@ -120,6 +120,27 @@ function refreshHubDependentControlState() {
 $(function () {
     $(".page-header").css("margin-bottom", "-5px");
 
+    // Apply initial content-fill-height styles
+    $("[content-fill-height]").addClass("fill-height");
+
+    $(window).on("messageVisibiltyChanged", function (event) {
+        const contentWells = $("[content-fill-height]");
+        const errorIsVisble = $("#error-msg-block").is(":visible");
+        const infoIsVisible = $("#info-msg-block").is(":visible");
+
+        contentWells.removeClass("fill-height fill-height-one-message fill-height-two-messages");
+
+        if (errorIsVisble && infoIsVisible)
+            contentWells.addClass("fill-height-two-messages");
+        else if (errorIsVisble || infoIsVisible)
+            contentWells.addClass("fill-height-one-message");
+        else
+            contentWells.addClass("fill-height");
+    });
+
+    $("#dismissInfoMsg").click(hideInfoMessage);
+    $("#dismissErrorMsg").click(hideErrorMessage);
+
     // Set initial state of hub dependent controls
     updateHubDependentControlState(false);
 
@@ -163,24 +184,6 @@ $(function () {
     // Start the connection
     $.connection.hub.start().done(function () {
         hubConnected();
-    });
-
-    // Apply initial content-fill-height styles
-    $("[content-fill-height]").addClass("fill-height");
-
-    $(window).on("messageVisibiltyChanged", function (event) {
-        const contentWells = $("[content-fill-height]");
-        const errorIsVisble = $("#error-msg-block").is(":visible");
-        const infoIsVisible = $("#info-msg-block").is(":visible");
-
-        contentWells.removeClass("fill-height fill-height-one-message fill-height-two-messages");
-
-        if (errorIsVisble && infoIsVisible)
-            contentWells.addClass("fill-height-two-messages");
-        else if (errorIsVisble || infoIsVisible)
-            contentWells.addClass("fill-height-one-message");
-        else
-            contentWells.addClass("fill-height");
     });
 
     $(window).on("beforeunload", function () {

@@ -175,7 +175,7 @@
                 });
         }
 
-        $(window).on("onHubConnected", function (event) {
+        $(window).on("hubConnected", function (event) {
             updatePerformanceStatistics();
             setInterval(updatePerformanceStatistics, 5000);
         });

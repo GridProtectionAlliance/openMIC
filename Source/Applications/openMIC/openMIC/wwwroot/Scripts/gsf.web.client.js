@@ -202,6 +202,28 @@ function Dictionary(source) {
     self.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter) {
         return self._values.joinKeyValuePairs(parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter);
     }
+
+    self.toObservableModel = function() {
+        var model = [];
+
+        for (let property in self._values) {
+            if (self._values.hasOwnProperty(property))
+                model[property] = ko.observable(self._values[property]);
+        }
+
+        return model;
+    }
+}
+
+Dictionary.fromObservableModel = function (model) {
+    var dictionary = new Dictionary();
+
+    for (let property in model) {
+        if (model.hasOwnProperty(property))
+            dictionary.setValue(property, model[property]());
+    }
+
+    return dictionary;
 }
 
 // String functions
@@ -219,9 +241,10 @@ String.prototype.truncate = function (limit) {
 }
 
 String.prototype.replaceAll = function (findText, replaceWith, ignoreCase) {
-    return this.replace(new RegExp(findText.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&"), (ignoreCase ? "gi" : "g")), (typeof replaceWith == "string") ? replaceWith.replace(/\$/g, "$$$$") : replaceWith);
-};
-
+    return this.replace(
+        new RegExp(findText.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g, "\\$&"), (ignoreCase ? "gi" : "g")),
+        (typeof replaceWith == "string") ? replaceWith.replace(/\$/g, "$$$$") : replaceWith);
+}
 
 String.prototype.padLeft = function (totalWidth, paddingChar) {
     if (totalWidth > this.length)
