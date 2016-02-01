@@ -159,7 +159,6 @@ namespace openMIC.Model
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
         public string AddSelectField<T>(string fieldName, string fieldLabel = null, string selectLabel = null) where T : class, new()
         {
-            StringBuilder html = new StringBuilder();
             StringBuilder options = new StringBuilder();
             TableOperations<T> tableOperations = Table<T>();
             RequiredAttribute requiredAttribute;
@@ -173,7 +172,7 @@ namespace openMIC.Model
             foreach (T record in QueryRecords<T>($"SELECT {fieldName}, {fieldLabel} FROM {typeof(T).Name} ORDER BY {fieldLabel}"))
                 options.AppendLine($"<option value=\"{tableOperations.GetFieldValue(record, fieldName)}\">{tableOperations.GetFieldValue(record, fieldLabel)}</option>");
 
-            html.AppendFormat(@"
+            return string.Format(@"
                     <div class=""form-group"">
                         <label for=""{0}"">{1}:</label>
                         <select class=""form-control"" id=""{0}"" data-bind=""value: {0}, optionsCaption: 'Select {1}...', valueAllowUnset: {2}"">
@@ -181,8 +180,6 @@ namespace openMIC.Model
                         </select>
                     </div>
                     ", fieldName, selectLabel, required, options);
-
-            return html.ToString();
         }
 
         #endregion
