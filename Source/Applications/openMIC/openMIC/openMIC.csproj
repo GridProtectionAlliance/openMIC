@@ -225,6 +225,8 @@
     <Compile Include="Model\CustomActionAdapter.cs" />
     <Compile Include="Model\CustomInputAdapter.cs" />
     <Compile Include="Model\CustomOutputAdapter.cs" />
+    <Compile Include="Model\DataContext.cs" />
+    <Compile Include="Model\TableOperations.cs" />
     <Compile Include="Model\DataOperation.cs" />
     <Compile Include="Model\Device.cs" />
     <Compile Include="Model\ErrorLog.cs" />
@@ -233,12 +235,10 @@
     <Compile Include="Model\Measurement.cs" />
     <Compile Include="Model\ModelExtensions.cs" />
     <Compile Include="Model\Node.cs" />
-    <Compile Include="Model\openMICData.cs" />
     <Compile Include="Model\PrimaryKeyAttribute.cs" />
     <Compile Include="Model\Protocol.cs" />
     <Compile Include="Model\SecurityGroup.cs" />
     <Compile Include="Model\SignalType.cs" />
-    <Compile Include="Model\Sql.cs" />
     <Compile Include="Model\Statistic.cs" />
     <Compile Include="Model\UserAccount.cs" />
     <Compile Include="Model\Vendor.cs" />
@@ -292,6 +292,7 @@
     <None Include="wwwroot\Scripts\jquery-2.1.4.min.map" />
     <None Include="wwwroot\TestModel.cshtml" />
     <None Include="wwwroot\VendorDevices.cshtml" />
+    <None Include="wwwroot\Companies.cshtml" />
     <None Include="wwwroot\Vendors.cshtml" />
   </ItemGroup>
   <ItemGroup>

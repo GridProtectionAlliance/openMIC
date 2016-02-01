@@ -99,9 +99,9 @@ namespace openMIC
 
         public string Execute(HttpRequestMessage requestMessage, dynamic postData)
         {
-            using (openMICData dbContext = new openMICData())
+            using (DataContext dataContext = new DataContext())
             {
-                m_viewBag.AddValue("DbContext", dbContext);
+                m_viewBag.AddValue("DataContext", dataContext);
                 m_viewBag.AddValue("Request", requestMessage);
 
                 if ((object)postData == null)

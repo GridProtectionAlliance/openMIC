@@ -56,47 +56,45 @@
     </td>
 }
 @helper AddNewEditDialog() {
-    <form role="form">
-        <div class="col-md-6">
-            <div class="form-group" data-bind="css: {'has-error': isEmpty(Acronym()), 'has-feedback': isEmpty(Acronym())}">
-                <label for="acronym">Device Acronym:</label>
-                <input type="text" class="form-control" data-bind="textInput: Acronym" id="acronym" required>
-                <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(Acronym())"></span>
-            </div>
-            <div class="form-group">
-                <label for="connectionUserName">Connection User Name:</label>
-                <input type="text" class="form-control" data-bind="textInput: $root.connectionString.connectionusername" id="connectionUserName">
-            </div>
-            <div class="form-group">
-                <label for="connectionPassword">Connection Password:</label>
-                <input type="password" class="form-control" data-bind="textInput: $root.connectionString.connectionpassword" id="connectionPassword">
-            </div>
-            <div class="checkbox">
-                <label><input type="checkbox" id="useDialUp"> Use Dial-up Connection</label>
-            </div>
-            <div class="form-group" data-bind="visible: $('#useDialUp').is(':checked')">
-                <label for="dialUpPhoneNumber">Dial-up Phone Number:</label>
-                <input type="tel" class="form-control" id="dialUpPhoneNumber">
-            </div>
-            <div class="form-group">
-                <label for="maxConnectionRetries">Maximum Connection Retries:</label>
-                <input type="number" class="form-control" id="maxConnectionRetries" value="3">
-            </div>
+    <div class="col-md-6">
+        <div class="form-group" data-bind="css: {'has-error': isEmpty(Acronym()), 'has-feedback': isEmpty(Acronym())}">
+            <label for="acronym">Device Acronym:</label>
+            <input type="text" class="form-control" data-bind="textInput: Acronym" id="acronym" required>
+            <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(Acronym())"></span>
         </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="connectionProfile">Connection Profile:</label>
-                <select class="form-control" id="connectionProfile">
-                    @foreach (Vendor vendor in ViewBag.DbContext.Vendors) {
-                        <option value="@vendor.ID">@vendor.Acronym</option>
-                    }
-                </select>
-            </div>
-            <div class="checkbox">
-                <label><input type="checkbox" data-bind="checked: Enabled"> Enabled</label>
-            </div>
+        <div class="form-group">
+            <label for="connectionUserName">Connection User Name:</label>
+            <input type="text" class="form-control" data-bind="textInput: $root.connectionString.connectionusername" id="connectionUserName">
         </div>
-    </form>
+        <div class="form-group">
+            <label for="connectionPassword">Connection Password:</label>
+            <input type="password" class="form-control" data-bind="textInput: $root.connectionString.connectionpassword" id="connectionPassword">
+        </div>
+        <div class="checkbox">
+            <label><input type="checkbox" id="useDialUp"> Use Dial-up Connection</label>
+        </div>
+        <div class="form-group" data-bind="visible: $('#useDialUp').is(':checked')">
+            <label for="dialUpPhoneNumber">Dial-up Phone Number:</label>
+            <input type="tel" class="form-control" id="dialUpPhoneNumber">
+        </div>
+        <div class="form-group">
+            <label for="maxConnectionRetries">Maximum Connection Retries:</label>
+            <input type="number" class="form-control" id="maxConnectionRetries" value="3">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="connectionProfile">Connection Profile:</label>
+            <select class="form-control" id="connectionProfile">
+                @foreach (Vendor vendor in ViewBag.DataContext.QueryRecords<Vendor>("SELECT ID, Acronym From Vendor")) {
+                    <option value="@vendor.ID">@vendor.Acronym</option>
+                }
+            </select>
+        </div>
+        <div class="checkbox">
+            <label><input type="checkbox" data-bind="checked: Enabled"> Enabled</label>
+        </div>
+    </div>
     <div class="col-md-12">
         <span class="label label-default" data-bind="text: ConnectionString"></span>
     </div>

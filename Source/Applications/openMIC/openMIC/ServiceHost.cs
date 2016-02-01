@@ -171,14 +171,22 @@ namespace openMIC
                 BootstrapTheme = systemSettings["BootstrapTheme"].Value
             };
 
-            // Create new web application hosting environment
-            m_webAppHost = WebApp.Start<Startup>(systemSettings["WebHostURL"].Value);
-
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
             ServiceHelper.LoggedException += LoggedExceptionHandler;
 
-            // Initialize web page controller
-            new WebPageController();
+            try
+            {
+                // Create new web application hosting environment
+                m_webAppHost = WebApp.Start<Startup>(systemSettings["WebHostURL"].Value);
+
+                // Initialize web page controller
+                // ReSharper disable once ObjectCreationAsStatement
+                new WebPageController();
+            }
+            catch (Exception ex)
+            {
+                LogException(new InvalidOperationException($"Failed to initialize web hosting: {ex.Message}", ex));
+            }
         }
 
         protected override void ServiceStoppingHandler(object sender, EventArgs e)

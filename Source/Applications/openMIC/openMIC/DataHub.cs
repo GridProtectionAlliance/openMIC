@@ -23,8 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Threading.Tasks;
 using GSF.Data;
 using GSF.Identity;
@@ -38,8 +36,7 @@ namespace openMIC
         #region [ Members ]
 
         // Fields
-        private readonly AdoDataConnection m_dataConnection;
-        private readonly openMICData m_dataModel;
+        private readonly DataContext m_dataContext;
         private bool m_disposed;
 
         #endregion
@@ -48,8 +45,7 @@ namespace openMIC
 
         public DataHub()
         {
-            m_dataConnection = new AdoDataConnection("systemSettings");
-            m_dataModel = new openMICData();
+            m_dataContext = new DataContext();
         }
 
         #endregion
@@ -68,8 +64,7 @@ namespace openMIC
                 {
                     if (disposing)
                     {
-                        m_dataConnection?.Dispose();
-                        m_dataModel?.Dispose();
+                        m_dataContext?.Dispose();
                     }
                 }
                 finally
@@ -100,21 +95,19 @@ namespace openMIC
 
         #region [ Device Table Operations ]
 
-        private Sql<Device> m_devices = new Sql<Device>();
-
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize)
         {
-            return m_devices.QueryRecords(m_dataConnection, sortField, ascending, page, pageSize);
+            return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
         }
 
         public int QueryDeviceCount()
         {
-            return Sql<Device>.QueryRecordCount(m_dataConnection);
+            return m_dataContext.Table<Device>().QueryRecordCount();
         }
 
         public void DeleteDevice(int id)
         {
-            Sql<Device>.DeleteRecord(m_dataConnection, id);
+            m_dataContext.Table<Device>().DeleteRecord(id);
         }
 
         public Device NewDevice()
@@ -130,12 +123,51 @@ namespace openMIC
             device.UpdatedBy = device.CreatedBy;
             device.UpdatedOn = device.CreatedOn;
 
-            Sql<Device>.AddNewRecord(m_dataConnection, device);
+            m_dataContext.Table<Device>().AddNewRecord(device);
         }
 
         public void UpdateDevice(Device device)
         {
-            Sql<Device>.UpdateRecord(m_dataConnection, device);
+            m_dataContext.Table<Device>().UpdateRecord(device);
+        }
+
+        #endregion
+
+        #region [ Company Table Operations ]
+
+        public int QueryCompanyCount()
+        {
+            return m_dataContext.Table<Company>().QueryRecordCount();
+        }
+
+        public IEnumerable<Company> QueryCompanies(string sortField, bool ascending, int page, int pageSize)
+        {
+            return m_dataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize);
+        }
+
+        public void DeleteCompany(int id)
+        {
+            m_dataContext.Table<Company>().DeleteRecord(id);
+        }
+
+        public Company NewCompany()
+        {
+            return new Company();
+        }
+
+        public void AddNewCompany(Company company)
+        {
+            company.CreatedBy = UserInfo.CurrentUserID;
+            company.CreatedOn = DateTime.UtcNow;
+            company.UpdatedBy = company.CreatedBy;
+            company.UpdatedOn = company.CreatedOn;
+
+            m_dataContext.Table<Company>().AddNewRecord(company);
+        }
+
+        public void UpdateCompany(Company company)
+        {
+            m_dataContext.Table<Company>().UpdateRecord(company);
         }
 
         #endregion
@@ -144,20 +176,17 @@ namespace openMIC
 
         public int QueryVendorCount()
         {
-            return m_dataModel.Database.SqlQuery<int>("SELECT COUNT(*) FROM Vendor").FirstOrDefault();
+            return m_dataContext.Table<Vendor>().QueryRecordCount();
         }
 
         public IEnumerable<Vendor> QueryVendors(string sortField, bool ascending, int page, int pageSize)
         {
-            if (ascending)
-                return m_dataModel.Vendors.OrderBy(sortField).ToPagedList(page, pageSize);
-
-            return m_dataModel.Vendors.OrderByDescending(sortField).ToPagedList(page, pageSize);
+            return m_dataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize);
         }
 
         public void DeleteVendor(int id)
         {
-            m_dataModel.Database.ExecuteSqlCommand("DELETE FROM Vendor WHERE ID = @p0", id);
+            m_dataContext.Table<Vendor>().DeleteRecord(id);
         }
 
         public Vendor NewVendor()
@@ -171,55 +200,14 @@ namespace openMIC
             vendor.CreatedOn = DateTime.UtcNow;
             vendor.UpdatedBy = vendor.CreatedBy;
             vendor.UpdatedOn = vendor.CreatedOn;
-            m_dataModel.Vendors.Add(vendor);
-            m_dataModel.SaveChanges();
+
+            m_dataContext.Table<Vendor>().AddNewRecord(vendor);
         }
 
         public void UpdateVendor(Vendor vendor)
         {
-            Vendor source = m_dataModel.Vendors.Find(vendor.ID);
-
-            if (source != null)
-            {
-                vendor.CopyProperties(source);
-                m_dataModel.SaveChanges();
-            }
-            else
-            {
-                throw new InvalidOperationException("Record not found, cannot save update.");
-            }
+            m_dataContext.Table<Vendor>().UpdateRecord(vendor);
         }
-
-        //public Vendor FindVendor(int id)
-        //{
-        //    return m_dataModel.Vendors.Find(id);
-        //}
-
-        //public IEnumerable<int> QueryVendorIDs()
-        //{
-        //    return m_dataModel.Database.SqlQuery<int>("SELECT ID FROM Vendor");
-        //}
-
-        //public IEnumerable<Vendor> QueryVendors()
-        //{
-        //    return m_dataModel.Vendors;
-        //}
-
-        //public IEnumerable<Vendor> QueryVendors(string sql)
-        //{
-        //    return string.IsNullOrEmpty(sql) ? QueryVendors() : QueryVendors(sql, null);
-        //}
-
-        //public IEnumerable<Vendor> QueryVendors(string sql, params object[] parameters)
-        //{
-        //    if (string.IsNullOrEmpty(sql))
-        //        throw new ArgumentNullException(nameof(sql));
-
-        //    if ((object)parameters == null)
-        //        parameters = new object[0];
-
-        //    return m_dataModel.Vendors.SqlQuery($"SELECT * FROM Vendor WHERE {sql}", parameters).AsNoTracking().ToArray();
-        //}
 
         #endregion
 
@@ -227,20 +215,17 @@ namespace openMIC
 
         public int QueryVendorDeviceCount()
         {
-            return m_dataModel.Database.SqlQuery<int>("SELECT COUNT(*) FROM VendorDevice").FirstOrDefault();
+            return m_dataContext.Table<VendorDevice>().QueryRecordCount();
         }
 
         public IEnumerable<VendorDevice> QueryVendorDevices(string sortField, bool ascending, int page, int pageSize)
         {
-            if (ascending)
-                return m_dataModel.VendorDevices.OrderBy(sortField).ToPagedList(page, pageSize);
-
-            return m_dataModel.VendorDevices.OrderByDescending(sortField).ToPagedList(page, pageSize);
+            return m_dataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize);
         }
 
         public void DeleteVendorDevice(int id)
         {
-            m_dataModel.Database.ExecuteSqlCommand("DELETE FROM VendorDevice WHERE ID = @p0", id);
+            m_dataContext.Table<VendorDevice>().DeleteRecord(id);
         }
 
         public VendorDevice NewVendorDevice()
@@ -254,55 +239,14 @@ namespace openMIC
             vendorDevice.CreatedOn = DateTime.UtcNow;
             vendorDevice.UpdatedBy = vendorDevice.CreatedBy;
             vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
-            m_dataModel.VendorDevices.Add(vendorDevice);
-            m_dataModel.SaveChanges();
+
+            m_dataContext.Table<VendorDevice>().AddNewRecord(vendorDevice);
         }
 
         public void UpdateVendorDevice(VendorDevice vendorDevice)
         {
-            VendorDevice source = m_dataModel.VendorDevices.Find(vendorDevice.ID);
-
-            if (source != null)
-            {
-                vendorDevice.CopyProperties(source);
-                m_dataModel.SaveChanges();
-            }
-            else
-            {
-                throw new InvalidOperationException("Record not found, cannot save update.");
-            }
+            m_dataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
         }
-
-        //public VendorDevice FindVendorDevice(int id)
-        //{
-        //    return m_dataModel.VendorDevices.Find(id);
-        //}
-
-        //public IEnumerable<int> QueryVendorDeviceIDs()
-        //{
-        //    return m_dataModel.Database.SqlQuery<int>("SELECT ID FROM VendorDevice");
-        //}
-
-        //public IEnumerable<VendorDevice> QueryVendorDevices()
-        //{
-        //    return m_dataModel.VendorDevices;
-        //}
-
-        //public IEnumerable<VendorDevice> QueryVendorDevices(string sql)
-        //{
-        //    return string.IsNullOrEmpty(sql) ? QueryVendorDevices() : QueryVendorDevices(sql, null);
-        //}
-
-        //public IEnumerable<VendorDevice> QueryVendorDevices(string sql, params object[] parameters)
-        //{
-        //    if (string.IsNullOrEmpty(sql))
-        //        throw new ArgumentNullException(nameof(sql));
-
-        //    if ((object)parameters == null)
-        //        parameters = new object[0];
-
-        //    return m_dataModel.VendorDevices.SqlQuery($"SELECT * FROM VendorDevice WHERE {sql}", parameters).AsNoTracking().ToArray();
-        //}
 
         #endregion
 

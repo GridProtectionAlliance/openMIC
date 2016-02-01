@@ -204,7 +204,7 @@ function Dictionary(source) {
     }
 
     self.toObservableModel = function() {
-        var model = [];
+        const model = [];
 
         for (let property in self._values) {
             if (self._values.hasOwnProperty(property))
@@ -216,7 +216,7 @@ function Dictionary(source) {
 }
 
 Dictionary.fromObservableModel = function (model) {
-    var dictionary = new Dictionary();
+    const dictionary = new Dictionary();
 
     for (let property in model) {
         if (model.hasOwnProperty(property))
@@ -461,7 +461,7 @@ function formatDate(date, format, utc) {
     format = format.replace(/(^|[^\\])HH+/g, "$1" + ii(H));
     format = format.replace(/(^|[^\\])H/g, "$1" + H);
 
-    var h = H > 12 ? H - 12 : H == 0 ? 12 : H;
+    var h = H > 12 ? H - 12 : H === 0 ? 12 : H;
     format = format.replace(/(^|[^\\])hh+/g, "$1" + ii(h));
     format = format.replace(/(^|[^\\])h/g, "$1" + h);
 

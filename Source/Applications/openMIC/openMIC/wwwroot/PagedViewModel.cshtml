@@ -46,7 +46,13 @@
 {
     string SingularForm(string value)
     {
-        if (value.EndsWith("s", StringComparison.InvariantCultureIgnoreCase))
+        if (value.EndsWith("ies", StringComparison.Ordinal))
+            return value.Substring(0, value.Length - 3) + "y";
+
+        if (value.EndsWith("IES", StringComparison.Ordinal))
+            return value.Substring(0, value.Length - 3) + "Y";
+
+        if (value.EndsWith("s", StringComparison.OrdinalIgnoreCase))
             return value.Substring(0, value.Length - 1);
 
         return value;
@@ -142,7 +148,9 @@
                 </h4>
             </div>
             <div class="modal-body" data-bind="with: currentRecord">
-                @Raw(ViewBag.AddNewEditDialog)
+                <form role="form">
+                    @Raw(ViewBag.AddNewEditDialog)
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-primary" data-dismiss="modal" id="saveRecordButton" hub-dependent>Save</button>
