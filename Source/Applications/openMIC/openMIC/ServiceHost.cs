@@ -147,7 +147,7 @@ namespace openMIC
 
             systemSettings.Add("CompanyName", "Grid Protection Alliance", "The name of the company who owns this instance of the openMIC.");
             systemSettings.Add("CompanyAcronym", "GPA", "The acronym representing the company who owns this instance of the openMIC.");
-            systemSettings.Add("WebHostURL", "http://localhost:8989", "The web hosting URL for remote system management.");
+            systemSettings.Add("WebHostURL", "http://localhost:8080", "The web hosting URL for remote system management.");
             systemSettings.Add("WebRootFolder", "wwwroot", "The default root for the hosted web server files. Location will be relative to install folder if full path is not specified.");
             systemSettings.Add("DefaultWebPage", "Index.cshtml", "The default web page for the hosted web server.");
             systemSettings.Add("ClientCacheEnabled", "true", "Determines if cache control is enabled for browser clients.");
@@ -176,6 +176,9 @@ namespace openMIC
 
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
             ServiceHelper.LoggedException += LoggedExceptionHandler;
+
+            // Initialize web page controller
+            new WebPageController();
         }
 
         protected override void ServiceStoppingHandler(object sender, EventArgs e)
@@ -194,6 +197,15 @@ namespace openMIC
         public void LogStatusMessage(string message, UpdateType type = UpdateType.Information)
         {
             DisplayStatusMessage(message, type);
+        }
+
+        /// <summary>
+        /// Logs an exception to the service.
+        /// </summary>
+        /// <param name="ex">Excpetion to log.</param>
+        public new void LogException(Exception ex)
+        {
+            base.LogException(ex);
         }
 
         /// <summary>

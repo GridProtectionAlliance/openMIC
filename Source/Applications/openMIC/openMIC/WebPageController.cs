@@ -263,6 +263,10 @@ namespace openMIC
             s_fileWatcher.Changed += s_fileWatcher_FileChange;
             s_fileWatcher.Deleted += s_fileWatcher_FileChange;
             s_fileWatcher.Renamed += s_fileWatcher_FileChange;
+
+            // Initialize RazorView for target languages - this invokes static contructors which will pre-compile templates
+            new RazorView<CSharp>();
+            new RazorView<VisualBasic>();
         }
 
         private static void s_fileWatcher_FileChange(object sender, FileSystemEventArgs e)

@@ -21,8 +21,11 @@
 //
 //******************************************************************************************************
 
+using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using GSF.IO;
 using openMIC.Model;
 using RazorEngine;
 using RazorEngine.Configuration;
@@ -154,6 +157,24 @@ namespace openMIC
                 Debug = false
             });
 #endif
+            Task.Run(() =>
+            {
+                string webRootFolder = FilePath.AddPathSuffix(Program.Host.WebRootFolder);
+                string[] razorFiles = FilePath.GetFileList($"{webRootFolder}*.{(languageType.TargetLanguage == Language.CSharp ? "cs" : "vb")}html");
+
+                foreach (string fileName in razorFiles)
+                {
+                    try
+                    {
+                        Program.Host.LogStatusMessage($"Precompiling razor template \"{fileName}\"...");
+                        s_engineService.Compile(FilePath.GetFileName(fileName), typeof(AppModel));
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.Host.LogException(new InvalidOperationException($"Failed to pre-compile razor template \"{fileName}\": {ex.Message}", ex));
+                    }
+                }
+            });
         }
 
         #endregion

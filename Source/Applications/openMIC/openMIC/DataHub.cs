@@ -23,9 +23,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using GSF.Configuration;
+using GSF.Data;
 using GSF.Identity;
 using Microsoft.AspNet.SignalR;
 using openMIC.Model;
@@ -37,8 +38,8 @@ namespace openMIC
         #region [ Members ]
 
         // Fields
+        private readonly AdoDataConnection m_dataConnection;
         private readonly openMICData m_dataModel;
-        private readonly Guid m_currentNodeID;
         private bool m_disposed;
 
         #endregion
@@ -47,6 +48,7 @@ namespace openMIC
 
         public DataHub()
         {
+            m_dataConnection = new AdoDataConnection("systemSettings");
             m_dataModel = new openMICData();
         }
 
@@ -66,6 +68,7 @@ namespace openMIC
                 {
                     if (disposing)
                     {
+                        m_dataConnection?.Dispose();
                         m_dataModel?.Dispose();
                     }
                 }
@@ -97,22 +100,21 @@ namespace openMIC
 
         #region [ Device Table Operations ]
 
-        public int QueryDeviceCount()
-        {
-            return m_dataModel.Database.SqlQuery<int>("SELECT COUNT(*) FROM Device").FirstOrDefault();
-        }
+        private Sql<Device> m_devices = new Sql<Device>();
 
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize)
         {
-            if (ascending)
-                return m_dataModel.Devices.OrderBy(sortField).ToPagedList(page, pageSize);
+            return m_devices.QueryRecords(m_dataConnection, sortField, ascending, page, pageSize);
+        }
 
-            return m_dataModel.Devices.OrderByDescending(sortField).ToPagedList(page, pageSize);
+        public int QueryDeviceCount()
+        {
+            return Sql<Device>.QueryRecordCount(m_dataConnection);
         }
 
         public void DeleteDevice(int id)
         {
-            m_dataModel.Database.ExecuteSqlCommand("DELETE FROM Device WHERE ID = @p0", id);
+            Sql<Device>.DeleteRecord(m_dataConnection, id);
         }
 
         public Device NewDevice()
@@ -127,23 +129,13 @@ namespace openMIC
             device.CreatedOn = DateTime.UtcNow;
             device.UpdatedBy = device.CreatedBy;
             device.UpdatedOn = device.CreatedOn;
-            m_dataModel.Devices.Add(device);
-            m_dataModel.SaveChanges();
+
+            Sql<Device>.AddNewRecord(m_dataConnection, device);
         }
 
-        public void UpdateDevice(Device update)
+        public void UpdateDevice(Device device)
         {
-            Device source = m_dataModel.Devices.Find(update.ID);
-
-            if (source != null)
-            {
-                update.CopyProperties(source);
-                m_dataModel.SaveChanges();
-            }
-            else
-            {
-                throw new InvalidOperationException("Record not found, cannot save update.");
-            }
+            Sql<Device>.UpdateRecord(m_dataConnection, device);
         }
 
         #endregion

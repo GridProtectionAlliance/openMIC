@@ -53,7 +53,7 @@ namespace openMIC
             private set;
         }
 
-        public PagedList(IQueryable<T> source, int page, int pageSize)
+        public PagedList(IEnumerable<T> source, int page, int pageSize)
         {
             TotalCount = source.Count();
             PageCount = GetPageCount(pageSize, TotalCount);
@@ -75,7 +75,7 @@ namespace openMIC
 
     public static class PagedListExtensions
     {
-        public static PagedList<T> ToPagedList<T>(this IQueryable<T> source, int page, int pageSize)
+        public static PagedList<T> ToPagedList<T>(this IEnumerable<T> source, int page, int pageSize)
         {
             return new PagedList<T>(source, page, pageSize);
         }

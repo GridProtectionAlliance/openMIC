@@ -33,10 +33,10 @@ namespace openMIC
         {
             HubConfiguration hubConfig = new HubConfiguration();
             HttpConfiguration httpConfig = new HttpConfiguration();
-
+#if DEBUG
             // Enabled deailed client errors
             hubConfig.EnableDetailedErrors = true;
-
+#endif
             // Load ServiceHub SignalR class
             app.MapSignalR(hubConfig);
 

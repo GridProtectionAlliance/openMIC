@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,6 +14,7 @@ namespace openMIC.Model
             set;
         }
 
+        [PrimaryKey(true)]
         public int ID
         {
             get;

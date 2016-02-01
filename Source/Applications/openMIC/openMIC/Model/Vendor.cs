@@ -7,6 +7,7 @@ namespace openMIC.Model
     [Table("Vendor")]
     public class Vendor
     {
+        [PrimaryKey(true)]
         public int ID
         {
             get;

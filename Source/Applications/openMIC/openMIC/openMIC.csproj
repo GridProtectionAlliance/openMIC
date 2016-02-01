@@ -234,9 +234,11 @@
     <Compile Include="Model\ModelExtensions.cs" />
     <Compile Include="Model\Node.cs" />
     <Compile Include="Model\openMICData.cs" />
+    <Compile Include="Model\PrimaryKeyAttribute.cs" />
     <Compile Include="Model\Protocol.cs" />
     <Compile Include="Model\SecurityGroup.cs" />
     <Compile Include="Model\SignalType.cs" />
+    <Compile Include="Model\Sql.cs" />
     <Compile Include="Model\Statistic.cs" />
     <Compile Include="Model\UserAccount.cs" />
     <Compile Include="Model\Vendor.cs" />
