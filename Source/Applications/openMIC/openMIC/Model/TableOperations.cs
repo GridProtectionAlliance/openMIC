@@ -193,6 +193,23 @@ namespace openMIC.Model
         }
 
         /// <summary>
+        /// Determines if the specified field has an associated attribute.
+        /// </summary>
+        /// <typeparam name="TAttribute">Type of attribute to search for.</typeparam>
+        /// <param name="fieldName">Name of field to use for attribute lookup.</param>
+        /// <returns><c>true</c> if field has attribute; otherwise, <c>false</c>.</returns>
+        public bool FieldHasAttribute<TAttribute>(string fieldName) where TAttribute : Attribute
+        {
+            PropertyInfo property;
+            HashSet<Type> attributes;
+
+            if (s_properties.TryGetValue(fieldName, out property) && s_attributes.TryGetValue(property, out attributes))
+                return attributes.Contains(typeof(TAttribute));
+
+           return false;
+        }
+
+        /// <summary>
         /// Gets the value for the specified field.
         /// </summary>
         /// <param name="record">Modeled table record.</param>
@@ -214,6 +231,7 @@ namespace openMIC.Model
 
         // Static Fields
         private static readonly Dictionary<string, PropertyInfo> s_properties;
+        private static readonly Dictionary<PropertyInfo, HashSet<Type>> s_attributes;
         private static readonly PropertyInfo[] s_addNewProperties;
         private static readonly PropertyInfo[] s_updateProperties;
         private static readonly PropertyInfo[] s_primaryKeyProperties;
@@ -244,6 +262,8 @@ namespace openMIC.Model
                 .Where(property => property.CanRead && property.CanWrite)
                 .ToDictionary(property => property.Name, StringComparer.OrdinalIgnoreCase);
 
+            s_attributes = new Dictionary<PropertyInfo, HashSet<Type>>();
+
             foreach (PropertyInfo property in s_properties.Values)
             {
                 PrimaryKeyAttribute primaryKeyAttribute;
@@ -270,6 +290,8 @@ namespace openMIC.Model
                     addNewProperties.Add(property);
                     updateproperties.Add(property);
                 }
+
+                s_attributes.Add(property, new HashSet<Type>(property.CustomAttributes.Select(attributeData => attributeData.AttributeType)));
             }
 
             List<object> updateWhereOffsets = new List<object>();

@@ -48,7 +48,7 @@
 }
 @helper BodyRows()
 {
-    <td width="25%" class="text-left valign-middle" data-bind="text: Name"></td>
+    <td width="25%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Name, click: $parent.viewPageRecord"></button></td>
     <td width="30%" class="text-left table-cell-wrap"><div data-bind="text: $($element.parentElement).truncateToWidth(Description, 2)"></div></td>
     <td width="40%" class="text-left table-cell-hard-wrap"><a data-bind="attr:{href: notNull(URL)}" target="_blank"><div data-bind="text: $($element.parentElement.parentElement).truncateToWidth(URL, 2)"></div></a></td>
     <td width="5%" class="text-center valign-middle" nowrap>
@@ -61,7 +61,7 @@
     @Raw(ViewBag.DataContext.AddSelectField<VendorDevice, Vendor>("VendorID", "ID", "Acronym"))
     @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("Name"))
     @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("Description"))
-    @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("URL", "url"))
+    @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("URL", "url", "Web Page"))
 }
 @Include("PagedViewModel.cshtml")
 @section Scripts {
@@ -71,6 +71,7 @@
         viewModel.defaultSortField = "ID";
         viewModel.labelField = "Name";
         viewModel.identityField = "ID";
+        viewModel.initialFocusField = "inputName";
 
         viewModel.setQueryRecordCount(function () {
             return dataHub.queryVendorDeviceCount();
@@ -94,12 +95,6 @@
 
         viewModel.setUpdateRecord(function (record) {
             return dataHub.updateVendorDevice(record);
-        });
-
-        $(document).ready(function () {
-            $("#addNewEditDialog").on('shown.bs.modal', function () {
-                $("#name").focus();
-            });
         });
     </script>
 }

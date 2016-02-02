@@ -336,6 +336,8 @@
     <Content Include="wwwroot\Scripts\bootstrap-toolkit.js" />
     <Content Include="wwwroot\Scripts\bootstrap-toolkit.min.js" />
     <Content Include="wwwroot\Scripts\gsf.web.client.js" />
+    <Content Include="wwwroot\Scripts\ko-reactor.js" />
+    <Content Include="wwwroot\Scripts\ko-reactor.min.js" />
     <Content Include="wwwroot\Scripts\pagedViewModel.js" />
     <Content Include="wwwroot\Scripts\Site.js" />
     <None Include="wwwroot\Index.cshtml" />

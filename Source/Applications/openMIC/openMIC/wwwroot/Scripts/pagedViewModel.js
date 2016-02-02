@@ -24,6 +24,12 @@
 // Paged view model base class scripts
 "use strict";
 
+var RecordMode = {
+    View: 0,
+    Edit: 1,
+    AddNew: 2
+}
+
 // Define paged view model class
 function PagedViewModel() {
     const self = this;
@@ -36,12 +42,14 @@ function PagedViewModel() {
     self.labelField = "{name}";
     self.identityField = "{id}";
     self.defaultSortField = "{id}";
+    self.initialFocusField = "";
     self.sortField = ko.observable(self.defaultSortField);
     self.sortAscending = ko.observable(true);
-    self.editMode = ko.observable(true);
+    self.unassignedFields = ko.observable(0);
     self._currentPageSize = ko.observable(1);
     self._currentPage = ko.observable(0);
     self._currentRecord = ko.observable();
+    self._recordMode = ko.observable(RecordMode.View);
     self._columnWidths = [];
 
     // Properties
@@ -80,9 +88,25 @@ function PagedViewModel() {
 
     self.currentRecord = ko.pureComputed({
         read: self._currentRecord,
-        write: function (value) {
+        write: function(value) {
             self._currentRecord(value);
+            self.unassignedFields(self.calculateUnassignedFields());
             $(window).trigger("currentRecordChanged");
+
+            ko.watch(self._currentRecord(), function (parents, child, item) {
+                self.unassignedFields(self.calculateUnassignedFields());
+                $(window).trigger("currentRecordUpdated");
+            });
+        },
+        owner: self
+    });
+
+    self.recordMode = ko.pureComputed({
+        read: self._recordMode,
+        write: function (value) {
+            const oldMode = self._recordMode();
+            self._recordMode(value);
+            $(window).trigger("recordModeChanged", [oldMode, self._recordMode()]);
         },
         owner: self
     });
@@ -215,6 +239,16 @@ function PagedViewModel() {
         }
     }
 
+    self.calculateUnassignedFields = function () {
+        // Deriving unassigned field count based on existence of Bootstrap "has-error" class
+        return $("#addNewEditDialog div.form-group.has-error").length;
+    }
+
+    self.setFocusOnInitialField = function () {
+        if (!isEmpty(self.initialFocusField))
+            $("#" + self.initialFocusField).focus();
+    }
+
     self.nextPage = function () {
         if (self.currentPage() < self.totalPages())
             self.currentPage(self.currentPage() + 1);
@@ -264,14 +298,20 @@ function PagedViewModel() {
         }
     }
 
+    self.viewPageRecord = function (record) {
+        self.recordMode(RecordMode.View);
+        self.currentRecord(ko.mapping.fromJS(record));
+        $("#addNewEditDialog").modal("show");
+    }
+
     self.editPageRecord = function (record) {
-        self.editMode(true);
+        self.recordMode(RecordMode.Edit);
         self.currentRecord(ko.mapping.fromJS(record));
         $("#addNewEditDialog").modal("show");
     }
 
     self.addPageRecord = function () {
-        self.editMode(false);
+        self.recordMode(RecordMode.AddNew);
         self.newRecord().done(function (emptyRecord) {
             self.currentRecord(ko.mapping.fromJS(emptyRecord));
             $("#addNewEditDialog").modal("show");
@@ -279,10 +319,14 @@ function PagedViewModel() {
     }
 
     self.savePageRecord = function () {
-        if (self.editMode())
-            self.saveEditedRecord();
-        else
-            self.saveNewRecord();
+        switch (self.recordMode()) {
+            case RecordMode.Edit:
+                self.saveEditedRecord();
+                break;
+            case RecordMode.AddNew:
+                self.saveNewRecord();
+                break;
+        }
     }
 
     self.saveEditedRecord = function () {
@@ -304,6 +348,13 @@ function PagedViewModel() {
     }
 };
 
+ko.bindingHandlers.missingFields = {
+
+    init: function (el, valueAccessor, allBindings, data, context) {
+        $(el).datepicker(data.modalOptions);
+    }
+
+};
 // Define page scoped view model instance
 var viewModel = new PagedViewModel();
 
@@ -334,6 +385,15 @@ var viewModel = new PagedViewModel();
 
     $(window).on("messageVisibiltyChanged", function (event) {
         viewModel.calculatePageSize();
+    });
+
+    $(window).on("recordModeChanged", function (event, oldMode, newMode) {
+        if (oldMode === RecordMode.View && newMode === RecordMode.Edit)
+            viewModel.setFocusOnInitialField();
+    });
+
+    $("#addNewEditDialog").on("shown.bs.modal", function () {
+        viewModel.setFocusOnInitialField();
     });
 
     $(window).resize(

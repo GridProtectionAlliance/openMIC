@@ -48,7 +48,7 @@
 }
 @helper BodyRows()
 {
-    <td width="25%" class="text-left valign-middle" data-bind="text: Acronym"></td>
+    <td width="25%" class="text-left valign-middle"><button type="button" class="btn btn-link btn-xs" data-bind="text: Acronym, click: $parent.viewPageRecord"></button></td>
     <td width="30%" class="text-left valign-middle" data-bind="text: Name"></td>
     <td width="40%" class="text-left table-cell-hard-wrap"><a data-bind="attr:{href: notNull(URL)}" target="_blank"><div data-bind="text: $($element.parentElement.parentElement).truncateToWidth(URL, 2)"></div></a></td>
     <td width="5%" class="text-center valign-middle" nowrap>
@@ -72,35 +72,30 @@
         viewModel.defaultSortField = "LoadOrder";
         viewModel.labelField = "Acronym";
         viewModel.identityField = "ID";
+        viewModel.initialFocusField = "inputAcronym";
 
-        viewModel.setQueryRecordCount(function () {
+        viewModel.setQueryRecordCount(function() {
             return dataHub.queryCompanyCount();
         });
 
-        viewModel.setQueryRecords(function (sortField, ascending, page, pageSize) {
+        viewModel.setQueryRecords(function(sortField, ascending, page, pageSize) {
             return dataHub.queryCompanies(sortField, ascending, page, pageSize);
         });
 
-        viewModel.setDeleteRecord(function (id) {
+        viewModel.setDeleteRecord(function(id) {
             return dataHub.deleteCompany(id);
         });
 
-        viewModel.setNewRecord(function () {
+        viewModel.setNewRecord(function() {
             return dataHub.newCompany();
         });
 
-        viewModel.setAddNewRecord(function (record) {
+        viewModel.setAddNewRecord(function(record) {
             return dataHub.addNewCompany(record);
         });
 
-        viewModel.setUpdateRecord(function (record) {
+        viewModel.setUpdateRecord(function(record) {
             return dataHub.updateCompany(record);
-        });
-
-        $(document).ready(function () {
-            $("#addNewEditDialog").on('shown.bs.modal', function () {
-                $("#acronym").focus();
-            });
         });
     </script>
 }

@@ -24,25 +24,26 @@
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
 @{
-    bool required = ViewBag.Required;
-    int stringLength = ViewBag.StringLength;
     string fieldName = ViewBag.FieldName;
+    bool required = ViewBag.Required;
+    int maxLength = ViewBag.MaxLength;
     string inputType = ViewBag.InputType;
     string inputLabel = ViewBag.InputLabel;
-    string inputSizeRestriction = stringLength > 0 ? string.Format(" maxlength=\"{0}\" size=\"{0}\"", stringLength) : "";
+    string fieldID = ViewBag.FieldID;
+    string inputSizeRestriction = maxLength > 0 ? string.Format(" maxlength=\"{0}\" size=\"{0}\"", maxLength) : "";
 }
 @if (required)
 {
     <div class="form-group" data-bind="css: {'has-error': isEmpty(@(fieldName)()), 'has-feedback': isEmpty(@(fieldName)())}">
-        <label for="input@(fieldName)">@inputLabel:</label>
-        <input type="@inputType" class="form-control" data-bind="textInput: @fieldName" id="input@(fieldName)"@Raw(inputSizeRestriction) required>
+        <label for="@fieldID">@inputLabel:</label>
+        <input type="@inputType" class="form-control" data-bind="textInput: @fieldName, attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}" id="@fieldID"@Raw(inputSizeRestriction) required>
         <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(fieldName)())"></span>
     </div>
 }
 else
 {
     <div class="form-group">
-        <label for="input@(fieldName)">@inputLabel</label>
-        <input type="@inputType" class="form-control" data-bind="textInput: @fieldName" id="input@(fieldName)"@Raw(inputSizeRestriction)>
+        <label for="@fieldID">@inputLabel</label>
+        <input type="@inputType" class="form-control" data-bind="textInput: @fieldName, attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}" id="@fieldID"@Raw(inputSizeRestriction)>
     </div>
 }

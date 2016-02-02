@@ -47,7 +47,7 @@
     ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
 }
 @helper BodyRows() {
-    <td width="70%" class="text-left valign-middle" data-bind="text: Acronym"></td>
+    <td width="70%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: $parent.viewPageRecord"></button></td>
     <td width="20%" class="text-center"><button type="button" class="btn btn-link"><u>Undefined</u></button></td>
     <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" /></td>
     <td width="5%" class="text-center valign-middle" nowrap>
@@ -57,30 +57,14 @@
 }
 @helper AddNewEditDialog() {
     <div class="col-md-6">
-        <div class="form-group" data-bind="css: {'has-error': isEmpty(Acronym()), 'has-feedback': isEmpty(Acronym())}">
-            <label for="acronym">Device Acronym:</label>
-            <input type="text" class="form-control" data-bind="textInput: Acronym" id="acronym" required>
-            <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(Acronym())"></span>
-        </div>
-        <div class="form-group">
-            <label for="connectionUserName">Connection User Name:</label>
-            <input type="text" class="form-control" data-bind="textInput: $root.connectionString.connectionusername" id="connectionUserName">
-        </div>
-        <div class="form-group">
-            <label for="connectionPassword">Connection Password:</label>
-            <input type="password" class="form-control" data-bind="textInput: $root.connectionString.connectionpassword" id="connectionPassword">
-        </div>
+        @Raw(ViewBag.DataContext.AddInputField<Device>("Acronym"))
+        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.connectionusername", true, inputLabel: "Connection User Name", fieldID: "inputConnectionUserName"))
+        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.connectionpassword", true, inputType: "password", inputLabel: "Connection Password", fieldID: "inputConnectionPassword"))
         <div class="checkbox">
-            <label><input type="checkbox" id="useDialUp"> Use Dial-up Connection</label>
+            <label><input type="checkbox" id="useDialUp" data-bind="checked: Boolean(notNull($root.connectionString.usedialup(), false))"> Use Dial-up Connection</label>
         </div>
-        <div class="form-group" data-bind="visible: $('#useDialUp').is(':checked')">
-            <label for="dialUpPhoneNumber">Dial-up Phone Number:</label>
-            <input type="tel" class="form-control" id="dialUpPhoneNumber">
-        </div>
-        <div class="form-group">
-            <label for="maxConnectionRetries">Maximum Connection Retries:</label>
-            <input type="number" class="form-control" id="maxConnectionRetries" value="3">
-        </div>
+        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.dialupnumber", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber"))
+        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.maxconnectionretries", false, inputType: "number", inputLabel: "Dial-up Phone Number", fieldID: "inputMaxConnectionRetries"))
     </div>
     <div class="col-md-6">
         <div class="form-group">
@@ -107,9 +91,18 @@
         viewModel.defaultSortField = "ID";
         viewModel.labelField = "Acronym";
         viewModel.identityField = "ID";
+        viewModel.initialFocusField = "inputAcronym";
 
-        // Defined connection string for current record
-        viewModel.connectionString = [];
+        // Define bindable connection strings for a device record
+        const dictionary = new Dictionary();
+        dictionary.setValue("connectionUserName", "");
+        dictionary.setValue("connectionPassword", "");
+        dictionary.setValue("useDialUp", false);
+        dictionary.setValue("dialUpNumber", "");
+        dictionary.setValue("maxConnectionRetries", 0);
+
+        // Define a connection string model for current record
+        viewModel.connectionString = dictionary.toObservableModel();
 
         viewModel.setQueryRecordCount(function() {
             return dataHub.queryDeviceCount();
@@ -127,24 +120,22 @@
             return dataHub.newDevice();
         });
 
-        viewModel.setAddNewRecord(function (record) {
-            record.ConnectionString = Dictionary.fromObservableModel(viewModel.connectionString).joinKeyValuePairs();
+        viewModel.setAddNewRecord(function(record) {
             return dataHub.addNewDevice(record);
         });
 
         viewModel.setUpdateRecord(function(record) {
-            record.ConnectionString = Dictionary.fromObservableModel(viewModel.connectionString).joinKeyValuePairs();
             return dataHub.updateDevice(record);
         });
 
-        $(document).ready(function() {
-            $("#addNewEditDialog").on('shown.bs.modal', function() {
-                $("#acronym").focus();
-            });
+        $(window).on("currentRecordChanged", function(event) {
+            // New current record selected, parse key/value pairs into an observable model
+            notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs().updateObservableModel(viewModel.connectionString);
         });
 
-        $(window).on("currentRecordChanged", function (event) {
-            viewModel.connectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs().toObservableModel();
+        $(window).on("currentRecordUpdated", function(event) {
+            // Changes made to current record, convert key/value pairs of observable model back into a connection string
+            viewModel.currentRecord().ConnectionString(Dictionary.fromObservableModel(viewModel.connectionString).joinKeyValuePairs());
         });
     </script>
 }

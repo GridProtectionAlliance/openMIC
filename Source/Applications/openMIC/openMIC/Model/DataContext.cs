@@ -122,35 +122,52 @@ namespace openMIC.Model
         }
 
         /// <summary>
-        /// Generates input text field based on reflected modeled table field attributes.
+        /// Generates template based input text field based on reflected modeled table field attributes.
         /// </summary>
         /// <typeparam name="T">Modeled table.</typeparam>
         /// <param name="fieldName">Field name for input text field.</param>
         /// <param name="inputType">Input field type, defaults to text.</param>
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
+        /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null) where T : class, new()
+        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null) where T : class, new()
+        {
+            TableOperations<T> tableOperations = Table<T>();
+            StringLengthAttribute stringLengthAttribute;
+
+            tableOperations.TryGetFieldAttribute(fieldName, out stringLengthAttribute);
+
+            return AddInputField(fieldName, tableOperations.FieldHasAttribute<RequiredAttribute>(fieldName),
+                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID);
+        }
+
+        /// <summary>
+        /// Generates template based input text field based on specified parameters.
+        /// </summary>
+        /// <param name="fieldName">Field name for input text field.</param>
+        /// <param name="required">Determines if field name is required.</param>
+        /// <param name="maxLength">Defines maximum input field length.</param>
+        /// <param name="inputType">Input field type, defaults to text.</param>
+        /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
+        /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
+        /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
+        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null)
         {
             RazorView<CSharp> addInputFieldTemplate = new RazorView<CSharp>(AddInputFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addInputFieldTemplate.ViewBag;
-            TableOperations<T> tableOperations = Table<T>();
-            RequiredAttribute requiredAttribute;
-            StringLengthAttribute stringLengthAttribute;
 
-            tableOperations.TryGetFieldAttribute(fieldName, out requiredAttribute);
-            tableOperations.TryGetFieldAttribute(fieldName, out stringLengthAttribute);
-
-            viewBag.AddValue("Required", (object)requiredAttribute != null);
-            viewBag.AddValue("StringLength", stringLengthAttribute?.MaximumLength ?? 0);
             viewBag.AddValue("FieldName", fieldName);
+            viewBag.AddValue("Required", required);
+            viewBag.AddValue("MaxLength", maxLength);
             viewBag.AddValue("InputType", inputType ?? "text");
             viewBag.AddValue("InputLabel", inputLabel ?? fieldName);
+            viewBag.AddValue("FieldID", fieldID ?? $"input{fieldName}");
 
             return addInputFieldTemplate.Execute();
         }
 
         /// <summary>
-        /// Generates select field based on reflected modeled table field attributes.
+        /// Generates template based select field based on reflected modeled table field attributes.
         /// </summary>
         /// <typeparam name="TSelect">Modeled table for select field.</typeparam>
         /// <typeparam name="TOption">Modeled table for option data.</typeparam>
@@ -158,27 +175,25 @@ namespace openMIC.Model
         /// <param name="optionFieldID">Field name for ID of option data.</param>
         /// <param name="optionFieldLabel">Field name for label of option data, defaults to <paramref name="optionFieldID"/></param>
         /// <param name="selectLabel">Label name for select field, defaults to <paramref name="fieldName"/>.</param>
+        /// <param name="fieldID">ID to use for select field; defaults to select + <paramref name="fieldName"/>.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddSelectField<TSelect, TOption>(string fieldName, string optionFieldID, string optionFieldLabel = null, string selectLabel = null) where TSelect : class, new() where TOption : class, new()
+        public string AddSelectField<TSelect, TOption>(string fieldName, string optionFieldID, string optionFieldLabel = null, string selectLabel = null, string fieldID = null) where TSelect : class, new() where TOption : class, new()
         {
             RazorView<CSharp> addSelectFieldTemplate = new RazorView<CSharp>(AddSelectFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addSelectFieldTemplate.ViewBag;
-            TableOperations<TSelect> selectTableOperations = Table<TSelect>();
             TableOperations<TOption> optionTableOperations = Table<TOption>();
-            RequiredAttribute requiredAttribute;
             Dictionary<string, string> options = new Dictionary<string, string>();
-            string tableName = typeof(TOption).Name;
-
-            selectTableOperations.TryGetFieldAttribute(fieldName, out requiredAttribute);
+            string optionTableName = typeof(TOption).Name;
 
             optionFieldLabel = optionFieldLabel ?? optionFieldID;
-            selectLabel = selectLabel ?? tableName;
+            selectLabel = selectLabel ?? optionTableName;
 
-            viewBag.AddValue("Required", (object)requiredAttribute != null);
             viewBag.AddValue("FieldName", fieldName);
+            viewBag.AddValue("Required", Table<TSelect>().FieldHasAttribute<RequiredAttribute>(fieldName));
             viewBag.AddValue("SelectLabel", selectLabel);
+            viewBag.AddValue("FieldID", fieldID ?? $"select{fieldName}");
 
-            foreach (TOption record in QueryRecords<TOption>($"SELECT {optionFieldID} FROM {tableName} ORDER BY {optionFieldLabel}"))
+            foreach (TOption record in QueryRecords<TOption>($"SELECT {optionFieldID} FROM {optionTableName} ORDER BY {optionFieldLabel}"))
                 options.Add(optionTableOperations.GetFieldValue(record, optionFieldID).ToString(), optionTableOperations.GetFieldValue(record, optionFieldLabel).ToNonNullString(selectLabel));
 
             viewBag.AddValue("Options", options);

@@ -213,6 +213,22 @@ function Dictionary(source) {
 
         return model;
     }
+
+    self.updateObservableModel = function (model) {
+        for (let property in model) {
+            if (model.hasOwnProperty(property))
+                model[property] = null;
+        }
+
+        for (let property in self._values) {
+            if (self._values.hasOwnProperty(property)) {
+                if (model[property])
+                    model[property](self._values[property]);
+                else
+                    model[property] = ko.observable(self._values[property]);
+            }
+        }
+    }
 }
 
 Dictionary.fromObservableModel = function (model) {
