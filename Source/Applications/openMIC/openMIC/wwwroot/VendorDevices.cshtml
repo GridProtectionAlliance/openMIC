@@ -58,28 +58,10 @@
 }
 @helper AddNewEditDialog()
 {
-    <div class="form-group">
-        <label for="vendorID">Vendor:</label>
-        <select class="form-control" id="vendorID" data-bind="value: VendorID, optionsCaption: 'Select vendor...', valueAllowUnset: false">
-            @foreach (Vendor vendor in ViewBag.DataContext.QueryRecords<Vendor>("SELECT ID, Acronym From Vendor"))
-            {
-                <option value="@vendor.ID">@vendor.Acronym</option>
-            }
-        </select>
-    </div>
-    <div class="form-group" data-bind="css: {'has-error': isEmpty(Name()), 'has-feedback': isEmpty(Name())}">
-        <label for="name">Name:</label>
-        <input type="text" class="form-control" data-bind="textInput: Name" id="name" required>
-        <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(Name())"></span>
-    </div>
-    <div class="form-group">
-        <label for="description">Description:</label>
-        <input type="text" class="form-control" data-bind="textInput: Description" id="description">
-    </div>
-    <div class="form-group">
-        <label for="url">Description:</label>
-        <input type="url" class="form-control" data-bind="textInput: URL" id="url">
-    </div>
+    @Raw(ViewBag.DataContext.AddSelectField<VendorDevice, Vendor>("VendorID", "ID", "Acronym"))
+    @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("Name"))
+    @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("Description"))
+    @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("URL", "url"))
 }
 @Include("PagedViewModel.cshtml")
 @section Scripts {

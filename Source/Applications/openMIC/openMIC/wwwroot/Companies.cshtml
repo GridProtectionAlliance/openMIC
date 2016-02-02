@@ -58,10 +58,11 @@
 }
 @helper AddNewEditDialog()
 {
-@Raw(ViewBag.DataContext.AddInputTextField<Company>("Acronym"))
-@Raw(ViewBag.DataContext.AddInputTextField<Company>("Name"))
-@Raw(ViewBag.DataContext.AddInputTextField<Company>("MapAcronym"))
-@Raw(ViewBag.DataContext.AddInputTextField<Company>("URL"))
+    @Raw(ViewBag.DataContext.AddInputField<Company>("Acronym"))
+    @Raw(ViewBag.DataContext.AddInputField<Company>("Name"))
+    @Raw(ViewBag.DataContext.AddInputField<Company>("MapAcronym"))
+    @Raw(ViewBag.DataContext.AddInputField<Company>("URL", "url"))
+    @Raw(ViewBag.DataContext.AddInputField<Company>("LoadOrder", "number", "Load Order"))
 }
 @Include("PagedViewModel.cshtml")
 @section Scripts {

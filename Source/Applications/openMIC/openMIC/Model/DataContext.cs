@@ -26,8 +26,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Text;
+using GSF;
 using GSF.Collections;
 using GSF.Data;
+using GSF.IO;
+using RazorEngine.Templating;
 
 namespace openMIC.Model
 {
@@ -43,6 +46,8 @@ namespace openMIC.Model
         private readonly Dictionary<Type, object> m_tableOperations;
         private readonly string m_settingsCategory;
         private readonly bool m_disposeConnection;
+        private string m_addInputFieldTemplate;
+        private string m_addSelectFieldTemplate;
         private bool m_disposed;
 
         #endregion
@@ -77,13 +82,20 @@ namespace openMIC.Model
 
         #region [ Properties ]
 
-        // Only create object instances on demand
-
         /// <summary>
         /// Gets the <see cref="AdoDataConnection"/> for this <see cref="DataContext"/>.
         /// </summary>
         public AdoDataConnection Connection => m_connection ?? (m_connection = new AdoDataConnection(m_settingsCategory));
 
+        /// <summary>
+        /// Gets the input field razor template file name.
+        /// </summary>
+        public string AddInputFieldTemplate => m_addInputFieldTemplate ?? (m_addInputFieldTemplate = FilePath.GetAbsolutePath($"{FilePath.AddPathSuffix(Program.Host.WebRootFolder)}AddInputField.cshtml"));
+
+        /// <summary>
+        /// Gets the select field razor template file name.
+        /// </summary>
+        public string AddSelectFieldTemplate => m_addSelectFieldTemplate ?? (m_addSelectFieldTemplate = FilePath.GetAbsolutePath($"{FilePath.AddPathSuffix(Program.Host.WebRootFolder)}AddSelectField.cshtml"));
 
         /// <summary>
         /// Gets the table operations for the specified modeled table <typeparamref name="T"/>.
@@ -114,11 +126,13 @@ namespace openMIC.Model
         /// </summary>
         /// <typeparam name="T">Modeled table.</typeparam>
         /// <param name="fieldName">Field name for input text field.</param>
-        /// <param name="type">Input field type, defaults to text.</param>
+        /// <param name="inputType">Input field type, defaults to text.</param>
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField<T>(string fieldName, string type = null, string inputLabel = null) where T : class, new()
+        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null) where T : class, new()
         {
+            RazorView<CSharp> addInputFieldTemplate = new RazorView<CSharp>(AddInputFieldTemplate, Program.Host.Model);
+            DynamicViewBag viewBag = addInputFieldTemplate.ViewBag;
             TableOperations<T> tableOperations = Table<T>();
             RequiredAttribute requiredAttribute;
             StringLengthAttribute stringLengthAttribute;
@@ -126,60 +140,50 @@ namespace openMIC.Model
             tableOperations.TryGetFieldAttribute(fieldName, out requiredAttribute);
             tableOperations.TryGetFieldAttribute(fieldName, out stringLengthAttribute);
 
-            bool required = ((object)requiredAttribute != null);
-            int stringLength = stringLengthAttribute?.MaximumLength ?? 0;
-            type = type ?? "text";
-            inputLabel = inputLabel ?? fieldName;
+            viewBag.AddValue("Required", (object)requiredAttribute != null);
+            viewBag.AddValue("StringLength", stringLengthAttribute?.MaximumLength ?? 0);
+            viewBag.AddValue("FieldName", fieldName);
+            viewBag.AddValue("InputType", inputType ?? "text");
+            viewBag.AddValue("InputLabel", inputLabel ?? fieldName);
 
-            if (required)
-                return string.Format(@"
-                    <div class=""form-group"" data-bind=""css: {{'has-error': isEmpty({0}()), 'has-feedback': isEmpty({0}())}}"">
-                        <label for=""{0}"">{2}:</label>
-                        <input type=""{1}"" class=""form-control"" data-bind=""textInput: {0}"" id=""{0}""{3} required>
-                        <span class=""glyphicon glyphicon-remove form-control-feedback"" data-bind=""visible: isEmpty({0}())""></span>
-                    </div>
-                    ", fieldName, type, inputLabel, stringLength > 0 ? $" maxlength=\"{stringLength}\" size=\"{stringLength}\"" : "");
-
-            return string.Format(@"
-                <div class=""form-group"">
-                    <label for=""{0}"">{2}</label>
-                    <input type=""{1}"" class=""form-control"" data-bind=""textInput: {0}"" id=""{0}""{3}>
-                </div>
-                ", fieldName, type, inputLabel, stringLength > 0 ? $" maxlength=\"{stringLength}\" size=\"{stringLength}\"" : "");
+            return addInputFieldTemplate.Execute();
         }
 
         /// <summary>
         /// Generates select field based on reflected modeled table field attributes.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="T">Modeled table.</typeparam>
+        /// <typeparam name="TSelect">Modeled table for select field.</typeparam>
+        /// <typeparam name="TOption">Modeled table for option data.</typeparam>
         /// <param name="fieldName">Field name for value of select field.</param>
-        /// <param name="fieldLabel">Field name for label of select field, defaults to <paramref name="fieldName"/></param>
+        /// <param name="optionFieldID">Field name for ID of option data.</param>
+        /// <param name="optionFieldLabel">Field name for label of option data, defaults to <paramref name="optionFieldID"/></param>
         /// <param name="selectLabel">Label name for select field, defaults to <paramref name="fieldName"/>.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddSelectField<T>(string fieldName, string fieldLabel = null, string selectLabel = null) where T : class, new()
+        public string AddSelectField<TSelect, TOption>(string fieldName, string optionFieldID, string optionFieldLabel = null, string selectLabel = null) where TSelect : class, new() where TOption : class, new()
         {
-            StringBuilder options = new StringBuilder();
-            TableOperations<T> tableOperations = Table<T>();
+            RazorView<CSharp> addSelectFieldTemplate = new RazorView<CSharp>(AddSelectFieldTemplate, Program.Host.Model);
+            DynamicViewBag viewBag = addSelectFieldTemplate.ViewBag;
+            TableOperations<TSelect> selectTableOperations = Table<TSelect>();
+            TableOperations<TOption> optionTableOperations = Table<TOption>();
             RequiredAttribute requiredAttribute;
+            Dictionary<string, string> options = new Dictionary<string, string>();
+            string tableName = typeof(TOption).Name;
 
-            tableOperations.TryGetFieldAttribute(fieldName, out requiredAttribute);
+            selectTableOperations.TryGetFieldAttribute(fieldName, out requiredAttribute);
 
-            bool required = ((object)requiredAttribute != null);
-            fieldLabel = fieldLabel ?? fieldName;
-            selectLabel = selectLabel ?? fieldName;
+            optionFieldLabel = optionFieldLabel ?? optionFieldID;
+            selectLabel = selectLabel ?? tableName;
 
-            foreach (T record in QueryRecords<T>($"SELECT {fieldName}, {fieldLabel} FROM {typeof(T).Name} ORDER BY {fieldLabel}"))
-                options.AppendLine($"<option value=\"{tableOperations.GetFieldValue(record, fieldName)}\">{tableOperations.GetFieldValue(record, fieldLabel)}</option>");
+            viewBag.AddValue("Required", (object)requiredAttribute != null);
+            viewBag.AddValue("FieldName", fieldName);
+            viewBag.AddValue("SelectLabel", selectLabel);
 
-            return string.Format(@"
-                    <div class=""form-group"">
-                        <label for=""{0}"">{1}:</label>
-                        <select class=""form-control"" id=""{0}"" data-bind=""value: {0}, optionsCaption: 'Select {1}...', valueAllowUnset: {2}"">
-                            {3}
-                        </select>
-                    </div>
-                    ", fieldName, selectLabel, required, options);
+            foreach (TOption record in QueryRecords<TOption>($"SELECT {optionFieldID} FROM {tableName} ORDER BY {optionFieldLabel}"))
+                options.Add(optionTableOperations.GetFieldValue(record, optionFieldID).ToString(), optionTableOperations.GetFieldValue(record, optionFieldLabel).ToNonNullString(selectLabel));
+
+            viewBag.AddValue("Options", options);
+
+            return addSelectFieldTemplate.Execute();
         }
 
         #endregion

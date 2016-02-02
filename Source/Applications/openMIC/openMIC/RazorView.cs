@@ -97,6 +97,15 @@ namespace openMIC
 
         #region [ Methods ]
 
+        public string Execute()
+        {
+            using (DataContext dataContext = new DataContext())
+            {
+                m_viewBag.AddValue("DataContext", dataContext);
+                return s_engineService.RunCompile(TemplateName, typeof(AppModel), Model, m_viewBag);
+            }
+        }
+
         public string Execute(HttpRequestMessage requestMessage, dynamic postData)
         {
             using (DataContext dataContext = new DataContext())

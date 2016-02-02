@@ -275,6 +275,8 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="PostBuildSetup.bat" />
+    <None Include="wwwroot\AddSelectField.cshtml" />
+    <None Include="wwwroot\AddInputField.cshtml" />
     <None Include="wwwroot\Content\bootstrap-theme.css.map" />
     <None Include="wwwroot\Content\bootstrap-theme.min.css.map" />
     <None Include="wwwroot\Content\bootstrap.css.map" />
