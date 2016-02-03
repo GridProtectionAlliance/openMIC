@@ -27,6 +27,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using GSF;
 using GSF.Data;
 using GSF.Reflection;
 
@@ -87,8 +88,7 @@ namespace openMIC.Model
                 m_lastSortField = sortField;
             }
 
-            foreach (DataRow row in m_primaryKeyCache.ToPagedList(page, pageSize))
-                yield return LoadRecord(row.ItemArray);
+            return m_primaryKeyCache.ToPagedList(page, pageSize).Select(row => LoadRecord(row.ItemArray)).Where(record => record != null);
         }
 
         /// <summary>
@@ -110,6 +110,10 @@ namespace openMIC.Model
             T record = new T();
             DataRow row = m_connection.RetrieveRow(string.Format(s_selectSql, primaryKeys));
 
+            // Make sure record exists, return null instead of a blank record
+            if (GetPrimaryKeys(row).All(Common.IsDefaultValue))
+                return null;
+
             foreach (PropertyInfo property in s_properties.Values)
                 property.SetValue(record, NotDBNull(row[property.Name]), null);
 
@@ -123,7 +127,12 @@ namespace openMIC.Model
         /// <returns>Number of rows affected.</returns>
         public int DeleteRecord(params object[] primaryKeys)
         {
-            return m_connection.ExecuteNonQuery(s_deleteSql, primaryKeys);
+            int affectedRecords = m_connection.ExecuteNonQuery(s_deleteSql, primaryKeys);
+
+            if (affectedRecords > 0)
+                m_primaryKeyCache = null;
+
+            return affectedRecords;
         }
 
         /// <summary>
@@ -156,7 +165,12 @@ namespace openMIC.Model
             foreach (PropertyInfo property in s_addNewProperties)
                 values.Add(property.GetValue(record));
 
-            return m_connection.ExecuteNonQuery(s_addNewSql, values.ToArray());
+            int affectedRecords = m_connection.ExecuteNonQuery(s_addNewSql, values.ToArray());
+
+            if (affectedRecords > 0)
+                m_primaryKeyCache = null;
+
+            return affectedRecords;
         }
 
         /// <summary>

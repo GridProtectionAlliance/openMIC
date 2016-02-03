@@ -25,7 +25,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Text;
 using GSF;
 using GSF.Collections;
 using GSF.Data;

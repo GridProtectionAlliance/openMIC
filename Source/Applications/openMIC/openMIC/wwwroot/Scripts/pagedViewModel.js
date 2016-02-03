@@ -119,7 +119,7 @@ function PagedViewModel() {
         write: function (newMode) {
             const oldMode = self._recordMode();
 
-            if (newMode != oldMode) {
+            if (newMode !== oldMode) {
                 self._recordMode(newMode);
                 $(window).trigger("recordModeChanged", [oldMode, newMode]);
             }
@@ -307,7 +307,7 @@ function PagedViewModel() {
 
     self.removePageRecord = function (record) {
         if (hubIsConnected && confirm("Are you sure you want to delete \"" + record[self.labelField] + "\"?")) {
-            var keyValues = [];
+            const keyValues = [];
 
             for (var i = 0; i < self.primaryKeyFields.length; i++) {
                 keyValues.push(record[self.primaryKeyFields[i]]);

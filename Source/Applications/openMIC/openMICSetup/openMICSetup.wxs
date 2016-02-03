@@ -68,6 +68,9 @@
         
         <ComponentGroupRef Id="GSFDependencyComponents" />
       </Feature>
+      
+      <!-- Web Files -->
+      <?include WebFeatures.wxi ?>
 
       <ComponentRef Id="InstallFolderPermissions"/>
       <ComponentRef Id="Registry" />
@@ -99,7 +102,7 @@
 
     <Property Id="SERVICENAME" Value="$(var.openMIC.TargetName)" />
     <Property Id="SERVICEPASSWORD" Hidden="yes" />
-    <Property Id="HTTPSERVICEPORTS" Value="6057,6058,6157,6158,5021" />
+    <Property Id="HTTPSERVICEPORTS" Value="8080, 6057,6058,6157,6158,5021" />
     <Property Id="COMPANYNAME" Value="Grid Protection Alliance" />
     <Property Id="COMPANYACRONYM" Value="GPA" />
     <SetProperty Id="SERVICEACCOUNT" Value="NT SERVICE\[SERVICENAME]" After="LaunchConditions" Sequence="first" />
@@ -148,6 +151,8 @@
             <Directory Id="SQLSERVERSCRIPTSFOLDER" Name="SQL Server" />
             <Directory Id="SQLITESCRIPTSFOLDER" Name="SQLite" />
           </Directory>
+          
+          <?include WebFolders.wxi ?>
         </Directory>
       </Directory>
       <?else ?>
@@ -166,6 +171,8 @@
             <Directory Id="SQLSERVERSCRIPTSFOLDER" Name="SQL Server" />
             <Directory Id="SQLITESCRIPTSFOLDER" Name="SQLite" />
           </Directory>
+          
+          <?include WebFolders.wxi ?>
         </Directory>
       </Directory>
       <?endif ?>
@@ -176,6 +183,10 @@
     </Directory>
   </Fragment>
 
+  <Fragment>
+    <?include WebFiles.wxi ?>
+  </Fragment>
+  
   <Fragment>
     <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <!-- Applications -->
@@ -541,15 +552,56 @@
       <Component Id="WPFToolkit">
         <File Id="WPFToolkit.dll" Name="WPFToolkit.dll" Source="$(var.SolutionDir)\Dependencies\Microsoft\WPF\WPFToolkit.dll" />
       </Component>
+
+      <!-- Self Hosting SignalR, WebAPI and Razor Engine Components (from NuGet) -->
+      <Component Id="Microsoft.AspNet.Razor">
+        <File Id="Microsoft.AspNet.Razor.dll" Name="Microsoft.AspNet.Razor.dll" Source="$(var.SolutionDir)packages\Microsoft.AspNet.Razor.4.0.0-beta7\lib\net45\Microsoft.AspNet.Razor.dll" />
+      </Component>
+      <Component Id="Microsoft.AspNet.SignalR.Core">
+        <File Id="Microsoft.AspNet.SignalR.Core.dll" Name="Microsoft.AspNet.SignalR.Core.dll" Source="$(var.SolutionDir)packages\Microsoft.AspNet.SignalR.Core.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll" />
+      </Component>
+      <Component Id="System.Net.Http.Formatting">
+        <File Id="System.Net.Http.Formatting.dll" Name="System.Net.Http.Formatting.dll" Source="$(var.SolutionDir)packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll" />
+      </Component>
+      <Component Id="System.Web.Http">
+        <File Id="System.Web.Http.dll" Name="System.Web.Http.dll" Source="$(var.SolutionDir)packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll" />
+      </Component>
+      <Component Id="System.Web.Http.Owin">
+        <File Id="System.Web.Http.Owin.dll" Name="System.Web.Http.Owin.dll" Source="$(var.SolutionDir)packages\Microsoft.AspNet.WebApi.Owin.5.2.3\lib\net45\System.Web.Http.Owin.dll" />
+      </Component>
+      <Component Id="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
+        <File Id="Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll" Name="Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll" Source="$(var.SolutionDir)packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll" />
+      </Component>
+      <Component Id="Microsoft.Owin">
+        <File Id="Microsoft.Owin.dll" Name="Microsoft.Owin.dll" Source="$(var.SolutionDir)packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll" />
+      </Component>
+      <Component Id="Microsoft.Owin.Diagnostics">
+        <File Id="Microsoft.Owin.Diagnostics.dll" Name="Microsoft.Owin.Diagnostics.dll" Source="$(var.SolutionDir)packages\Microsoft.Owin.Diagnostics.3.0.1\lib\net45\Microsoft.Owin.Diagnostics.dll" />
+      </Component>
+      <Component Id="Microsoft.Owin.Host.HttpListener">
+        <File Id="Microsoft.Owin.Host.HttpListener.dll" Name="Microsoft.Owin.Host.HttpListener.dll" Source="$(var.SolutionDir)packages\Microsoft.Owin.Host.HttpListener.3.0.1\lib\net45\Microsoft.Owin.Host.HttpListener.dll" />
+      </Component>
+      <Component Id="Microsoft.Owin.Hosting">
+        <File Id="Microsoft.Owin.Hosting.dll" Name="Microsoft.Owin.Hosting.dll" Source="$(var.SolutionDir)packages\Microsoft.Owin.Hosting.3.0.1\lib\net45\Microsoft.Owin.Hosting.dll" />
+      </Component>
+      <Component Id="Microsoft.Owin.Security">
+        <File Id="Microsoft.Owin.Security.dll" Name="Microsoft.Owin.Security.dll" Source="$(var.SolutionDir)packages\Microsoft.Owin.Security.3.0.1\lib\net45\Microsoft.Owin.Security.dll" />
+      </Component>
+      <Component Id="Newtonsoft.Json">
+        <File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" Source="$(var.SolutionDir)packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll" />
+      </Component>
+      <Component Id="Owin">
+        <File Id="Owin.dll" Name="Owin.dll" Source="$(var.SolutionDir)packages\Owin.1.0\lib\net40\Owin.dll" />
+      </Component>
+      <Component Id="RazorEngine">
+        <File Id="RazorEngine.dll" Name="RazorEngine.dll" Source="$(var.SolutionDir)packages\RazorEngine.3.7.7\lib\net45\RazorEngine.dll" />
+      </Component>
     </ComponentGroup>
 
     <!-- SQLite Dependencies -->
     <ComponentGroup Id="SQLiteDependencyComponents" Directory="INSTALLFOLDER">
       <Component Id="System.Data.SQLite">
         <File Id="System.Data.SQLite.dll" Name="System.Data.SQLite.dll" Source="$(var.SolutionDir)\Dependencies\SQLite\System.Data.SQLite.dll" />
-      </Component>
-      <Component Id="System.Data.SQLite.Linq">
-        <File Id="System.Data.SQLite.Linq.dll" Name="System.Data.SQLite.Linq.dll" Source="$(var.SolutionDir)\Dependencies\SQLite\System.Data.SQLite.Linq.dll" />
       </Component>
     </ComponentGroup>
 

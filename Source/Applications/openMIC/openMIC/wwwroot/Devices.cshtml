@@ -64,7 +64,7 @@
             <label><input type="checkbox" id="useDialUp" data-bind="checked: Boolean(notNull($root.connectionString.usedialup(), false)), attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
         </div>
         @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.dialupnumber", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber"))
-        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.maxconnectionretries", false, inputType: "number", inputLabel: "Dial-up Phone Number", fieldID: "inputMaxConnectionRetries"))
+        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.maxconnectionretries", false, inputType: "number", inputLabel: "Maximum Connection Retries", fieldID: "inputMaxConnectionRetries"))
     </div>
     <div class="col-md-6">
         <div class="form-group">
@@ -102,6 +102,8 @@
         dictionary.setValue("dialUpNumber", "");
         dictionary.setValue("maxConnectionRetries", 0);
 
+        alert(dictionary.joinKeyValuePairs());
+
         // Define a connection string model for current record
         viewModel.connectionString = dictionary.toObservableModel();
 
@@ -135,7 +137,7 @@
         });
 
         $(window).on("currentRecordChanged", function(event) {
-            // New current record selected, parse key/value pairs into an observable model
+            // New current record selected, parse key/value pairs of connection string into an observable model
             notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs().updateObservableModel(viewModel.connectionString);
         });
     </script>

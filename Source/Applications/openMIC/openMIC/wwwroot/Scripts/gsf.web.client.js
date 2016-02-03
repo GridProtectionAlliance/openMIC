@@ -29,7 +29,7 @@ var textMetrics;
 
 $(function () {
     // Create a canvas object that will be used for text metrics calculations
-    $("<canvas id=\"textMetricsCanvas\" height=\"1\" width=\"1\" style=\"visibility: hidden\"></canvas>").appendTo("body");
+    $("<canvas id=\"textMetricsCanvas\" height=\"1px\" width=\"1px\" style=\"visibility: hidden\"></canvas>").appendTo("body");
 
     // Get text metrics canvas context
     textMetrics = document.getElementById("textMetricsCanvas").getContext("2d");
@@ -128,7 +128,13 @@ function Dictionary(source) {
     if (!source)
         source = [];
 
-    self._values = source;
+    self._keys = [];
+    self._values = [];
+
+    for (let property in source) {
+        if (source.hasOwnProperty(property))
+            self.setValue(property, source[property]);
+    }
 
     self.count = function () {
         var size = 0;
@@ -144,9 +150,9 @@ function Dictionary(source) {
     self.keys = function () {
         const keys = [];
 
-        for (let property in self._values) {
-            if (self._values.hasOwnProperty(property))
-                keys.push(property);
+        for (let property in self._keys) {
+            if (self._keys.hasOwnProperty(property))
+                keys.push(self._keys[property]);
         }
 
         return keys;
@@ -168,11 +174,15 @@ function Dictionary(source) {
     }
 
     self.setValue = function (key, value) {
-        self._values[String(key).toLowerCase()] = value;
+        const lkey = String(key).toLowerCase();
+        self._keys[lkey] = key;
+        self._values[lkey] = value;
     }
 
     self.remove = function (key) {
-        delete self._values[String(key).toLowerCase()];
+        const lkey = String(key).toLowerCase();
+        delete self._keys[lkey];
+        delete self._values[lkey];
     }
 
     self.containsKey = function (key) {
@@ -196,11 +206,19 @@ function Dictionary(source) {
     }
 
     self.clear = function () {
+        self._keys = [];
         self._values = [];
     }
 
     self.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter) {
-        return self._values.joinKeyValuePairs(parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter);
+        const keyValuePairs = [];
+
+        for (let property in self._values) {
+            if (self._values.hasOwnProperty(property))
+                keyValuePairs[self._keys[property]] = self._values[property];
+        }
+
+        return keyValuePairs.joinKeyValuePairs(parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter);
     }
 
     self.toObservableModel = function() {
@@ -549,7 +567,7 @@ $.fn.truncateToWidth = function (text, rows) {
     var textWidth = textMetrics.measureText(text).width;
 
     if (rows > 1)
-        targetWidth *= ((isIE ? 0.65 : 0.95) * rows);
+        targetWidth *= ((isIE ? 0.65 : 0.90) * rows);
 
     var limit = Math.min(text.length, Math.ceil(targetWidth / (textWidth / text.length)));
 

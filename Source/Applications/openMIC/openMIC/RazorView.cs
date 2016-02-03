@@ -22,7 +22,6 @@
 //******************************************************************************************************
 
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using GSF.IO;
@@ -175,7 +174,7 @@ namespace openMIC
                 {
                     try
                     {
-                        Program.Host.LogStatusMessage($"Precompiling razor template \"{fileName}\"...");
+                        Program.Host.LogStatusMessage($"Pre-compiling razor template \"{fileName}\"...");
                         s_engineService.Compile(FilePath.GetFileName(fileName), typeof(AppModel));
                     }
                     catch (Exception ex)

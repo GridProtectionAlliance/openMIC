@@ -1,0 +1,242 @@
+<Include>
+<ComponentGroup Id="wwwroot_Components" Directory="WWWROOTFOLDER">
+  <Component Id="AddInputField_cshtml">
+    <File Id="AddInputField.cshtml" Name="AddInputField.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\AddInputField.cshtml" />
+  </Component>
+  <Component Id="AddSelectField_cshtml">
+    <File Id="AddSelectField.cshtml" Name="AddSelectField.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\AddSelectField.cshtml" />
+  </Component>
+  <Component Id="Companies_cshtml">
+    <File Id="Companies.cshtml" Name="Companies.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Companies.cshtml" />
+  </Component>
+  <Component Id="Devices_cshtml">
+    <File Id="Devices.cshtml" Name="Devices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Devices.cshtml" />
+  </Component>
+  <Component Id="index_cshtml">
+    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
+  </Component>
+  <Component Id="Layout_cshtml">
+    <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
+  </Component>
+  <Component Id="PagedViewModel_cshtml">
+    <File Id="PagedViewModel.cshtml" Name="PagedViewModel.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\PagedViewModel.cshtml" />
+  </Component>
+  <Component Id="RemoteConsole_cshtml">
+    <File Id="RemoteConsole.cshtml" Name="RemoteConsole.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\RemoteConsole.cshtml" />
+  </Component>
+  <Component Id="SelectTheme_cshtml">
+    <File Id="SelectTheme.cshtml" Name="SelectTheme.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SelectTheme.cshtml" />
+  </Component>
+  <Component Id="Status_cshtml">
+    <File Id="Status.cshtml" Name="Status.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Status.cshtml" />
+  </Component>
+  <Component Id="Test_cshtml">
+    <File Id="Test.cshtml" Name="Test.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Test.cshtml" />
+  </Component>
+  <Component Id="TestModel_cshtml">
+    <File Id="TestModel.cshtml" Name="TestModel.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\TestModel.cshtml" />
+  </Component>
+  <Component Id="VendorDevices_cshtml">
+    <File Id="VendorDevices.cshtml" Name="VendorDevices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\VendorDevices.cshtml" />
+  </Component>
+  <Component Id="Vendors_cshtml">
+    <File Id="Vendors.cshtml" Name="Vendors.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Vendors.cshtml" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_Content_Components" Directory="CONTENTFOLDER">
+  <Component Id="Content__bootstrap_theme_cerulean_css">
+    <File Id="Content__bootstrap_theme_cerulean.css" Name="bootstrap-theme-cerulean.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cerulean.css" />
+  </Component>
+  <Component Id="Content__bootstrap_theme_cosmo_css">
+    <File Id="Content__bootstrap_theme_cosmo.css" Name="bootstrap-theme-cosmo.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cosmo.css" />
+  </Component>
+  <Component Id="Content__bootstrap_theme_cyborg_css">
+    <File Id="Content__bootstrap_theme_cyborg.css" Name="bootstrap-theme-cyborg.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cyborg.css" />
+  </Component>
+  <Component Id="Content__bootstrap_theme_readable_css">
+    <File Id="Content__bootstrap_theme_readable.css" Name="bootstrap-theme-readable.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-readable.css" />
+  </Component>
+  <Component Id="Content__bootstrap_theme_sandstone_css">
+    <File Id="Content__bootstrap_theme_sandstone.css" Name="bootstrap-theme-sandstone.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-sandstone.css" />
+  </Component>
+  <Component Id="Content__bootstrap_theme_slate_css">
+    <File Id="Content__bootstrap_theme_slate.css" Name="bootstrap-theme-slate.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-slate.css" />
+  </Component>
+  <Component Id="Content__bootstrap_theme_css">
+    <File Id="Content__bootstrap_theme.css" Name="bootstrap-theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.css" />
+  </Component>
+  <Component Id="Content__bootstrap_theme_css_map">
+    <File Id="Content__bootstrap_theme.css.map" Name="bootstrap-theme.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.css.map" />
+  </Component>
+  <Component Id="Content__bootstrap_theme_min_css">
+    <File Id="Content__bootstrap_theme.min.css" Name="bootstrap-theme.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.min.css" />
+  </Component>
+  <Component Id="Content__bootstrap_theme_min_css_map">
+    <File Id="Content__bootstrap_theme.min.css.map" Name="bootstrap-theme.min.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.min.css.map" />
+  </Component>
+  <Component Id="Content__bootstrap_united_css">
+    <File Id="Content__bootstrap_united.css" Name="bootstrap-united.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-united.css" />
+  </Component>
+  <Component Id="Content__bootstrap_css">
+    <File Id="Content__bootstrap.css" Name="bootstrap.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.css" />
+  </Component>
+  <Component Id="Content__bootstrap_css_map">
+    <File Id="Content__bootstrap.css.map" Name="bootstrap.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.css.map" />
+  </Component>
+  <Component Id="Content__bootstrap_min_css">
+    <File Id="Content__bootstrap.min.css" Name="bootstrap.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.min.css" />
+  </Component>
+  <Component Id="Content__bootstrap_min_css_map">
+    <File Id="Content__bootstrap.min.css.map" Name="bootstrap.min.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.min.css.map" />
+  </Component>
+  <Component Id="Content__Site_css">
+    <File Id="Content__Site.css" Name="Site.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Site.css" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_fonts_Components" Directory="FONTSFOLDER">
+  <Component Id="fonts__glyphicons_halflings_regular_eot">
+    <File Id="fonts__glyphicons_halflings_regular.eot" Name="glyphicons-halflings-regular.eot" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.eot" />
+  </Component>
+  <Component Id="fonts__glyphicons_halflings_regular_svg">
+    <File Id="fonts__glyphicons_halflings_regular.svg" Name="glyphicons-halflings-regular.svg" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.svg" />
+  </Component>
+  <Component Id="fonts__glyphicons_halflings_regular_ttf">
+    <File Id="fonts__glyphicons_halflings_regular.ttf" Name="glyphicons-halflings-regular.ttf" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.ttf" />
+  </Component>
+  <Component Id="fonts__glyphicons_halflings_regular_woff">
+    <File Id="fonts__glyphicons_halflings_regular.woff" Name="glyphicons-halflings-regular.woff" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.woff" />
+  </Component>
+  <Component Id="fonts__glyphicons_halflings_regular_woff2">
+    <File Id="fonts__glyphicons_halflings_regular.woff2" Name="glyphicons-halflings-regular.woff2" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.woff2" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_Images_Components" Directory="IMAGESFOLDER">
+  <Component Id="Images__gpa_lock_png">
+    <File Id="Images__gpa_lock.png" Name="gpa-lock.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\gpa-lock.png" />
+  </Component>
+  <Component Id="Images__gpa_smalllock_png">
+    <File Id="Images__gpa_smalllock.png" Name="gpa-smalllock.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\gpa-smalllock.png" />
+  </Component>
+  <Component Id="Images__openMIC_png">
+    <File Id="Images__openMIC.png" Name="openMIC.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\openMIC.png" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_Images_Icons_Components" Directory="IMAGESICONSFOLDER">
+  <Component Id="Images_Icons__apple_touch_icon_114x114_png">
+    <File Id="Images_Icons__apple_touch_icon_114x114.png" Name="apple-touch-icon-114x114.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-114x114.png" />
+  </Component>
+  <Component Id="Images_Icons__apple_touch_icon_120x120_png">
+    <File Id="Images_Icons__apple_touch_icon_120x120.png" Name="apple-touch-icon-120x120.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-120x120.png" />
+  </Component>
+  <Component Id="Images_Icons__apple_touch_icon_144x144_png">
+    <File Id="Images_Icons__apple_touch_icon_144x144.png" Name="apple-touch-icon-144x144.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-144x144.png" />
+  </Component>
+  <Component Id="Images_Icons__apple_touch_icon_152x152_png">
+    <File Id="Images_Icons__apple_touch_icon_152x152.png" Name="apple-touch-icon-152x152.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-152x152.png" />
+  </Component>
+  <Component Id="Images_Icons__apple_touch_icon_57x57_png">
+    <File Id="Images_Icons__apple_touch_icon_57x57.png" Name="apple-touch-icon-57x57.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-57x57.png" />
+  </Component>
+  <Component Id="Images_Icons__apple_touch_icon_60x60_png">
+    <File Id="Images_Icons__apple_touch_icon_60x60.png" Name="apple-touch-icon-60x60.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-60x60.png" />
+  </Component>
+  <Component Id="Images_Icons__apple_touch_icon_72x72_png">
+    <File Id="Images_Icons__apple_touch_icon_72x72.png" Name="apple-touch-icon-72x72.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-72x72.png" />
+  </Component>
+  <Component Id="Images_Icons__apple_touch_icon_76x76_png">
+    <File Id="Images_Icons__apple_touch_icon_76x76.png" Name="apple-touch-icon-76x76.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-76x76.png" />
+  </Component>
+  <Component Id="Images_Icons__favicon_128_png">
+    <File Id="Images_Icons__favicon_128.png" Name="favicon-128.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-128.png" />
+  </Component>
+  <Component Id="Images_Icons__favicon_16x16_png">
+    <File Id="Images_Icons__favicon_16x16.png" Name="favicon-16x16.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-16x16.png" />
+  </Component>
+  <Component Id="Images_Icons__favicon_196x196_png">
+    <File Id="Images_Icons__favicon_196x196.png" Name="favicon-196x196.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-196x196.png" />
+  </Component>
+  <Component Id="Images_Icons__favicon_32x32_png">
+    <File Id="Images_Icons__favicon_32x32.png" Name="favicon-32x32.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-32x32.png" />
+  </Component>
+  <Component Id="Images_Icons__favicon_96x96_png">
+    <File Id="Images_Icons__favicon_96x96.png" Name="favicon-96x96.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-96x96.png" />
+  </Component>
+  <Component Id="Images_Icons__favicon_ico">
+    <File Id="Images_Icons__favicon.ico" Name="favicon.ico" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon.ico" />
+  </Component>
+  <Component Id="Images_Icons__mstile_144x144_png">
+    <File Id="Images_Icons__mstile_144x144.png" Name="mstile-144x144.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-144x144.png" />
+  </Component>
+  <Component Id="Images_Icons__mstile_150x150_png">
+    <File Id="Images_Icons__mstile_150x150.png" Name="mstile-150x150.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-150x150.png" />
+  </Component>
+  <Component Id="Images_Icons__mstile_310x150_png">
+    <File Id="Images_Icons__mstile_310x150.png" Name="mstile-310x150.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-310x150.png" />
+  </Component>
+  <Component Id="Images_Icons__mstile_310x310_png">
+    <File Id="Images_Icons__mstile_310x310.png" Name="mstile-310x310.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-310x310.png" />
+  </Component>
+  <Component Id="Images_Icons__mstile_70x70_png">
+    <File Id="Images_Icons__mstile_70x70.png" Name="mstile-70x70.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-70x70.png" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_Scripts_Components" Directory="SCRIPTSFOLDER">
+  <Component Id="Scripts__bootstrap_toolkit_js">
+    <File Id="Scripts__bootstrap_toolkit.js" Name="bootstrap-toolkit.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-toolkit.js" />
+  </Component>
+  <Component Id="Scripts__bootstrap_toolkit_min_js">
+    <File Id="Scripts__bootstrap_toolkit.min.js" Name="bootstrap-toolkit.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-toolkit.min.js" />
+  </Component>
+  <Component Id="Scripts__bootstrap_js">
+    <File Id="Scripts__bootstrap.js" Name="bootstrap.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap.js" />
+  </Component>
+  <Component Id="Scripts__bootstrap_min_js">
+    <File Id="Scripts__bootstrap.min.js" Name="bootstrap.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap.min.js" />
+  </Component>
+  <Component Id="Scripts__gsf_web_client_js">
+    <File Id="Scripts__gsf.web.client.js" Name="gsf.web.client.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\gsf.web.client.js" />
+  </Component>
+  <Component Id="Scripts__ie10_viewport_bug_workaround_js">
+    <File Id="Scripts__ie10_viewport_bug_workaround.js" Name="ie10-viewport-bug-workaround.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ie10-viewport-bug-workaround.js" />
+  </Component>
+  <Component Id="Scripts__jquery_2_1_4_intellisense_js">
+    <File Id="Scripts__jquery_2.1.4.intellisense.js" Name="jquery-2.1.4.intellisense.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.1.4.intellisense.js" />
+  </Component>
+  <Component Id="Scripts__jquery_2_1_4_js">
+    <File Id="Scripts__jquery_2.1.4.js" Name="jquery-2.1.4.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.1.4.js" />
+  </Component>
+  <Component Id="Scripts__jquery_2_1_4_min_js">
+    <File Id="Scripts__jquery_2.1.4.min.js" Name="jquery-2.1.4.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.1.4.min.js" />
+  </Component>
+  <Component Id="Scripts__jquery_2_1_4_min_map">
+    <File Id="Scripts__jquery_2.1.4.min.map" Name="jquery-2.1.4.min.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.1.4.min.map" />
+  </Component>
+  <Component Id="Scripts__jquery_signalR_2_2_0_js">
+    <File Id="Scripts__jquery.signalR_2.2.0.js" Name="jquery.signalR-2.2.0.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.signalR-2.2.0.js" />
+  </Component>
+  <Component Id="Scripts__jquery_signalR_2_2_0_min_js">
+    <File Id="Scripts__jquery.signalR_2.2.0.min.js" Name="jquery.signalR-2.2.0.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.signalR-2.2.0.min.js" />
+  </Component>
+  <Component Id="Scripts__js_cookie_js">
+    <File Id="Scripts__js.cookie.js" Name="js.cookie.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\js.cookie.js" />
+  </Component>
+  <Component Id="Scripts__knockout_3_4_0_js">
+    <File Id="Scripts__knockout_3.4.0.js" Name="knockout-3.4.0.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout-3.4.0.js" />
+  </Component>
+  <Component Id="Scripts__knockout_mapping_js">
+    <File Id="Scripts__knockout.mapping.js" Name="knockout.mapping.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.mapping.js" />
+  </Component>
+  <Component Id="Scripts__ko_reactor_js">
+    <File Id="Scripts__ko_reactor.js" Name="ko-reactor.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ko-reactor.js" />
+  </Component>
+  <Component Id="Scripts__ko_reactor_min_js">
+    <File Id="Scripts__ko_reactor.min.js" Name="ko-reactor.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ko-reactor.min.js" />
+  </Component>
+  <Component Id="Scripts__pagedViewModel_js">
+    <File Id="Scripts__pagedViewModel.js" Name="pagedViewModel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\pagedViewModel.js" />
+  </Component>
+  <Component Id="Scripts__Site_js">
+    <File Id="Scripts__Site.js" Name="Site.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\Site.js" />
+  </Component>
+</ComponentGroup>
+</Include>

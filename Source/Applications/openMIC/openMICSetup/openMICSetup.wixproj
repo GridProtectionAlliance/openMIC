@@ -84,9 +84,28 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ConfigCrypter.exe" />
+    <Content Include="ConfigCrypter.exe.config" />
+    <Content Include="ConfigurationEditor.exe" />
+    <Content Include="ConfigurationEditor.exe.Config" />
+    <Content Include="DataMigrationUtility.exe" />
+    <Content Include="DataMigrationUtility.exe.config" />
+    <Content Include="DNP3ConfigGenerator.exe" />
+    <Content Include="HistorianPlaybackUtility.exe" />
+    <Content Include="HistorianPlaybackUtility.exe.config" />
+    <Content Include="HistorianView.exe" />
+    <Content Include="HistorianView.exe.config" />
+    <Content Include="INSTALL_LICENSE.rtf" />
+    <Content Include="makecert.exe" />
+    <Content Include="NoInetFixUtil.exe" />
     <Content Include="openMICSetupBanner.bmp" />
     <Content Include="openMICSetupDialog.bmp" />
     <Content Include="openMICSetupLogo.jpg" />
+    <Content Include="StatHistorianReportGenerator.exe" />
+    <Content Include="StatHistorianReportGenerator.exe.config" />
+    <Content Include="WebFeatures.wxi" />
+    <Content Include="WebFiles.wxi" />
+    <Content Include="WebFolders.wxi" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <!--
