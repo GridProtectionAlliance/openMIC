@@ -34,8 +34,7 @@
 <div class="form-group">
     <label for="@fieldID">@selectLabel:</label>
     <select class="form-control" id="@fieldID" data-bind="value: @fieldName, optionsCaption: 'Select @selectLabel...', valueAllowUnset: @(required.ToString().ToLower()), attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}">
-        @foreach (KeyValuePair<string, string> item in options)
-        {
+        @foreach (KeyValuePair<string, string> item in options) {
             <option value="@item.Key">@item.Value</option>
         }
     </select>

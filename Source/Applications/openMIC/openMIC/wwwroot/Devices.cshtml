@@ -61,7 +61,7 @@
         @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.connectionusername", true, inputLabel: "Connection User Name", fieldID: "inputConnectionUserName"))
         @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.connectionpassword", true, inputType: "password", inputLabel: "Connection Password", fieldID: "inputConnectionPassword"))
         <div class="checkbox">
-            <label><input type="checkbox" id="useDialUp" data-bind="checked: Boolean(notNull($root.connectionString.usedialup(), false))"> Use Dial-up Connection</label>
+            <label><input type="checkbox" id="useDialUp" data-bind="checked: Boolean(notNull($root.connectionString.usedialup(), false)), attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
         </div>
         @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.dialupnumber", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber"))
         @Raw(ViewBag.DataContext.AddInputField("$root.connectionString.maxconnectionretries", false, inputType: "number", inputLabel: "Dial-up Phone Number", fieldID: "inputMaxConnectionRetries"))
@@ -75,12 +75,13 @@
                 }
             </select>
         </div>
+        @Raw(ViewBag.DataContext.AddSelectField<Device, Company>("CompanyID", "ID", "Name", "Company"))
         <div class="checkbox">
-            <label><input type="checkbox" data-bind="checked: Enabled"> Enabled</label>
+            <label><input type="checkbox" data-bind="checked: Enabled, attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}"> Enabled</label>
         </div>
     </div>
     <div class="col-md-12">
-        <span class="label label-default" data-bind="text: ConnectionString"></span>
+        <span data-bind="text: ConnectionString"></span>
     </div>
 }
 @Include("PagedViewModel.cshtml")
@@ -90,7 +91,7 @@
         // Configure view model
         viewModel.defaultSortField = "ID";
         viewModel.labelField = "Acronym";
-        viewModel.identityField = "ID";
+        viewModel.primaryKeyFields = ["ID"];
         viewModel.initialFocusField = "inputAcronym";
 
         // Define bindable connection strings for a device record
@@ -104,6 +105,11 @@
         // Define a connection string model for current record
         viewModel.connectionString = dictionary.toObservableModel();
 
+        // Watch for changes to fields in connection string
+        ko.watch(viewModel.connectionString, function (parents, child, item) {
+            viewModel.currentRecord().ConnectionString(Dictionary.fromObservableModel(viewModel.connectionString).joinKeyValuePairs());
+        });
+
         viewModel.setQueryRecordCount(function() {
             return dataHub.queryDeviceCount();
         });
@@ -112,8 +118,8 @@
             return dataHub.queryDevices(sortField, ascending, page, pageSize);
         });
 
-        viewModel.setDeleteRecord(function(id) {
-            return dataHub.deleteDevice(id);
+        viewModel.setDeleteRecord(function(keyValues) {
+            return dataHub.deleteDevice(keyValues[0]);
         });
 
         viewModel.setNewRecord(function() {
@@ -131,11 +137,6 @@
         $(window).on("currentRecordChanged", function(event) {
             // New current record selected, parse key/value pairs into an observable model
             notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs().updateObservableModel(viewModel.connectionString);
-        });
-
-        $(window).on("currentRecordUpdated", function(event) {
-            // Changes made to current record, convert key/value pairs of observable model back into a connection string
-            viewModel.currentRecord().ConnectionString(Dictionary.fromObservableModel(viewModel.connectionString).joinKeyValuePairs());
         });
     </script>
 }

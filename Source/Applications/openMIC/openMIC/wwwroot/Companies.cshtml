@@ -71,7 +71,7 @@
         // Configure view model
         viewModel.defaultSortField = "LoadOrder";
         viewModel.labelField = "Acronym";
-        viewModel.identityField = "ID";
+        viewModel.primaryKeyFields = ["ID"];
         viewModel.initialFocusField = "inputAcronym";
 
         viewModel.setQueryRecordCount(function() {
@@ -82,8 +82,8 @@
             return dataHub.queryCompanies(sortField, ascending, page, pageSize);
         });
 
-        viewModel.setDeleteRecord(function(id) {
-            return dataHub.deleteCompany(id);
+        viewModel.setDeleteRecord(function (keyValues) {
+            return dataHub.deleteCompany(keyValues[0]);
         });
 
         viewModel.setNewRecord(function() {

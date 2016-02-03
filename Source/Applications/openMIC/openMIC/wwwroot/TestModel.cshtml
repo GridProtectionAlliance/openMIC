@@ -38,7 +38,7 @@
         // Configure view model
         viewModel.defaultSortField = "ID";
         viewModel.labelField = "Acronym";
-        viewModel.identityField = "ID";
+        viewModel.primaryKeyFields = ["ID"];
 
         viewModel.setQueryRecordCount(function () {
             return dataHub.queryDeviceCount();

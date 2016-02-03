@@ -34,25 +34,31 @@ var RecordMode = {
 function PagedViewModel() {
     const self = this;
 
-    // Fields
-    self.pageRecords = ko.observableArray();    
-    self.recordCount = ko.observable(0);
-    self.pageCount = ko.observable(1);
-    self.modelName = "{name}";
-    self.labelField = "{name}";
-    self.identityField = "{id}";
-    self.defaultSortField = "{id}";
-    self.initialFocusField = "";
-    self.sortField = ko.observable(self.defaultSortField);
-    self.sortAscending = ko.observable(true);
-    self.unassignedFields = ko.observable(0);
+    // Configuration fields
+    self.labelField = "{name}";                             // Field name that best represents row for delete confirmation
+    self.primaryKeyFields = ["{id}"];                       // Primary key field names array
+    self.defaultSortField = "{id}";                         // Default sort field
+    self.initialFocusField = "";                            // Initial add/edit field with focus
+    self.modelName = "{name}";                              // Name of model used for cookie names, defaults to page title
+
+    // Observable fields
+    self.pageRecords = ko.observableArray();                // Records queried for current page
+    self.recordCount = ko.observable(0);                    // Queried record count
+    self.sortField = ko.observable(self.defaultSortField);  // Current sort field, persisted per model
+    self.sortAscending = ko.observable(true);               // Current sort ascending flag, persisted per model
+    self.unassignedFieldCount = ko.observable(0);           // Number of bound fields with missing data
+
+    // Internal fields
     self._currentPageSize = ko.observable(1);
     self._currentPage = ko.observable(0);
     self._currentRecord = ko.observable();
     self._recordMode = ko.observable(RecordMode.View);
+    self._isDirty = false;
     self._columnWidths = [];
 
     // Properties
+
+    // Gets or sets the number records to display on the page
     self.currentPageSize = ko.pureComputed({
         read: self._currentPageSize,
         write: function (value) {
@@ -70,6 +76,7 @@ function PagedViewModel() {
         owner: self
     });
 
+    // Gets or sets the current page number
     self.currentPage = ko.pureComputed({
         read: self._currentPage,
         write: function (value) {
@@ -78,6 +85,7 @@ function PagedViewModel() {
             else if (value > self.totalPages())
                 value = self.totalPages();
 
+            // Requery records for page when current page changes
             if (value !== self._currentPage()) {
                 self._currentPage(value);
                 self.queryPageRecords();
@@ -86,39 +94,50 @@ function PagedViewModel() {
         owner: self
     });
 
+    // Gets or sets current record on page
     self.currentRecord = ko.pureComputed({
         read: self._currentRecord,
         write: function(value) {
             self._currentRecord(value);
-            self.unassignedFields(self.calculateUnassignedFields());
+            self._isDirty = false;
+            self.unassignedFieldCount(self.deriveUnassignedFieldCount());
             $(window).trigger("currentRecordChanged");
 
+            // Watch for changes to fields in current record
             ko.watch(self._currentRecord(), function (parents, child, item) {
-                self.unassignedFields(self.calculateUnassignedFields());
+                self._isDirty = true;
+                self.unassignedFieldCount(self.deriveUnassignedFieldCount());
                 $(window).trigger("currentRecordUpdated");
             });
         },
         owner: self
     });
 
+    // Gets or sets the record mode, i.e., view, edit or add new
     self.recordMode = ko.pureComputed({
         read: self._recordMode,
-        write: function (value) {
+        write: function (newMode) {
             const oldMode = self._recordMode();
-            self._recordMode(value);
-            $(window).trigger("recordModeChanged", [oldMode, self._recordMode()]);
+
+            if (newMode != oldMode) {
+                self._recordMode(newMode);
+                $(window).trigger("recordModeChanged", [oldMode, newMode]);
+            }
         },
         owner: self
     });
 
+    // Gets total number pages based on total record count and current page size
     self.totalPages = ko.pureComputed(function () {
         return Math.max(Math.ceil(self.recordCount() / self.currentPageSize()), 1);
     });
 
+    // Gets flag for if on first page
     self.onFirstPage = ko.pureComputed(function () {
         return self.currentPage() <= 1;
     });
 
+    // Gets flag for if on last page
     self.onLastPage = ko.pureComputed(function () {
         return self.currentPage() >= self.totalPages();
     });
@@ -126,7 +145,7 @@ function PagedViewModel() {
     // Delegates
     self.queryRecordCount = function () { };
     self.queryRecords = function (/* sortField, ascending, page, pageSize */) { };
-    self.deleteRecord = function (/* id */) { };
+    self.deleteRecord = function (/* keyValues[] */) { };
     self.newRecord = function () { };
     self.addNewRecord = function (/* record */) { };
     self.updateRecord = function (/* record */) { };
@@ -239,7 +258,7 @@ function PagedViewModel() {
         }
     }
 
-    self.calculateUnassignedFields = function () {
+    self.deriveUnassignedFieldCount = function () {
         // Deriving unassigned field count based on existence of Bootstrap "has-error" class
         return $("#addNewEditDialog div.form-group.has-error").length;
     }
@@ -288,7 +307,13 @@ function PagedViewModel() {
 
     self.removePageRecord = function (record) {
         if (hubIsConnected && confirm("Are you sure you want to delete \"" + record[self.labelField] + "\"?")) {
-            self.deleteRecord(record[self.identityField]).done(function () {
+            var keyValues = [];
+
+            for (var i = 0; i < self.primaryKeyFields.length; i++) {
+                keyValues.push(record[self.primaryKeyFields[i]]);
+            }
+
+            self.deleteRecord(keyValues).done(function () {
                 self.pageRecords.remove(record);
                 self.initialize();
                 showInfoMessage("Deleted record...");
@@ -296,26 +321,6 @@ function PagedViewModel() {
                 showErrorMessage(error);
             });
         }
-    }
-
-    self.viewPageRecord = function (record) {
-        self.recordMode(RecordMode.View);
-        self.currentRecord(ko.mapping.fromJS(record));
-        $("#addNewEditDialog").modal("show");
-    }
-
-    self.editPageRecord = function (record) {
-        self.recordMode(RecordMode.Edit);
-        self.currentRecord(ko.mapping.fromJS(record));
-        $("#addNewEditDialog").modal("show");
-    }
-
-    self.addPageRecord = function () {
-        self.recordMode(RecordMode.AddNew);
-        self.newRecord().done(function (emptyRecord) {
-            self.currentRecord(ko.mapping.fromJS(emptyRecord));
-            $("#addNewEditDialog").modal("show");
-        });
     }
 
     self.savePageRecord = function () {
@@ -346,15 +351,33 @@ function PagedViewModel() {
             showErrorMessage(error);
         });
     }
-};
 
-ko.bindingHandlers.missingFields = {
-
-    init: function (el, valueAccessor, allBindings, data, context) {
-        $(el).datepicker(data.modalOptions);
+    self.viewPageRecord = function (record) {
+        self.recordMode(RecordMode.View);
+        self.currentRecord(ko.mapping.fromJS(record));
+        $("#addNewEditDialog").modal("show");
     }
 
+    self.editPageRecord = function (record) {
+        self.recordMode(RecordMode.Edit);
+        self.currentRecord(ko.mapping.fromJS(record));
+        $("#addNewEditDialog").modal("show");
+    }
+
+    self.addPageRecord = function () {
+        self.recordMode(RecordMode.AddNew);
+        self.newRecord().done(function (emptyRecord) {
+            self.currentRecord(ko.mapping.fromJS(emptyRecord));
+            $("#addNewEditDialog").modal("show");
+        });
+    }
+
+    self.cancelPageRecord = function () {
+        if (!self._isDirty || confirm("Are you sure you want to discard unsaved changes?"))
+            $("#addNewEditDialog").modal("hide");
+    }
 };
+
 // Define page scoped view model instance
 var viewModel = new PagedViewModel();
 

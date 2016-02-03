@@ -217,7 +217,7 @@ function Dictionary(source) {
     self.updateObservableModel = function (model) {
         for (let property in model) {
             if (model.hasOwnProperty(property))
-                model[property] = null;
+                model[property](null);
         }
 
         for (let property in self._values) {

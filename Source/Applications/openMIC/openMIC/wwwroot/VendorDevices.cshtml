@@ -70,7 +70,7 @@
         // Configure view model
         viewModel.defaultSortField = "ID";
         viewModel.labelField = "Name";
-        viewModel.identityField = "ID";
+        viewModel.primaryKeyFields = ["ID"];
         viewModel.initialFocusField = "inputName";
 
         viewModel.setQueryRecordCount(function () {
@@ -81,8 +81,8 @@
             return dataHub.queryVendorDevices(sortField, ascending, page, pageSize);
         });
 
-        viewModel.setDeleteRecord(function (id) {
-            return dataHub.deleteVendorDevice(id);
+        viewModel.setDeleteRecord(function (keyValues) {
+            return dataHub.deleteVendorDevice(keyValues[0]);
         });
 
         viewModel.setNewRecord(function () {

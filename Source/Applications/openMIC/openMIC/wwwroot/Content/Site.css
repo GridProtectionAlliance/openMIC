@@ -46,6 +46,11 @@ body {
     height: 40px;
 }
 
+.auto-height {
+    height: auto;
+    overflow: auto;
+}
+
 /* Style for controls to fill page height minus spacing for navbar, header and possible messages */
 .fill-height {
     height: calc(100% - 55px);

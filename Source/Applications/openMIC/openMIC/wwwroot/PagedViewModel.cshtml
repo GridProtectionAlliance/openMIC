@@ -149,16 +149,16 @@
                     @SingularForm(ViewBag.Title)
                 </h4>
             </div>
-            <div class="modal-body" data-bind="with: currentRecord">
+            <div class="modal-body auto-height" data-bind="with: currentRecord">
                 <form role="form">
                     @Raw(ViewBag.AddNewEditDialog)
                 </form>
             </div>
             <div class="modal-footer">
-                <em data-bind="visible: unassignedFields() > 0">Missing <span data-bind="text: unassignedFields"></span> required field<span data-bind="visible: unassignedFields() > 1">s</span>...</em>
+                <em data-bind="visible: unassignedFieldCount() > 0">Missing <span data-bind="text: unassignedFieldCount"></span> required field<span data-bind="visible: unassignedFieldCount() > 1">s</span>...</em>
                 <button type="button" class="btn btn-info" data-bind="visible: recordMode()===RecordMode.View" id="editRecordButton">Edit</button>
-                <button type="submit" class="btn btn-primary" data-dismiss="modal" data-bind="visible: recordMode()!==RecordMode.View, css: {'disabled': unassignedFields() > 0 || !hubIsConnected}" id="saveRecordButton" hub-dependent>Save</button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary" data-dismiss="modal" data-bind="visible: recordMode()!==RecordMode.View, css: {'disabled': unassignedFieldCount() > 0 || !hubIsConnected}" id="saveRecordButton" hub-dependent>Save</button>
+                <button type="button" class="btn btn-default" id="cancelRecordButton">Cancel</button>
             </div>
         </div>
     </div>
@@ -175,6 +175,10 @@
 
             $(""#saveRecordButton"").click(function () {
                 viewModel.savePageRecord();
+            });
+
+            $(""#cancelRecordButton"").click(function () {
+                viewModel.cancelPageRecord();
             });
 
             $(""#addNewEditDialog"").modal({show: false});     
