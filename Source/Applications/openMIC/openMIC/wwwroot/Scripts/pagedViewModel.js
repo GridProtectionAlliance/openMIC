@@ -105,9 +105,7 @@ function PagedViewModel() {
 
             // Watch for changes to fields in current record
             ko.watch(self._currentRecord(), function (parents, child, item) {
-                self._isDirty = true;
-                self.unassignedFieldCount(self.deriveUnassignedFieldCount());
-                $(window).trigger("currentRecordUpdated");
+                self.setDirtyFlag();
             });
         },
         owner: self
@@ -261,6 +259,12 @@ function PagedViewModel() {
     self.deriveUnassignedFieldCount = function () {
         // Deriving unassigned field count based on existence of Bootstrap "has-error" class
         return $("#addNewEditDialog div.form-group.has-error").length;
+    }
+
+    self.setDirtyFlag = function () {
+        self._isDirty = true;
+        self.unassignedFieldCount(self.deriveUnassignedFieldCount());
+        $(window).trigger("currentRecordUpdated");
     }
 
     self.setFocusOnInitialField = function () {
