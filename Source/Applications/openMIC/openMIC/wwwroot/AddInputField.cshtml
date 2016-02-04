@@ -39,18 +39,18 @@
 }
 @if (required)
 {
-    <div @Raw(groupDataBinding)>
-        <div class="form-group" data-bind="css: {'has-error': isEmpty(@(fieldName)()), 'has-feedback': isEmpty(@(fieldName)())}">
-            <label for="@fieldID">@inputLabel:</label>
-            <input type="@inputType" class="form-control" data-bind="textInput: @fieldName, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@fieldID" @Raw(inputSizeRestriction) required>
-            <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(fieldName)())"></span>
-        </div>
+    @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : string.Format("<div {0}>\r\n", groupDataBinding))
+    <div class="form-group" data-bind="css: {'has-error': isEmpty(@(Raw(fieldName))()), 'has-feedback': isEmpty(@(Raw(fieldName))())}">
+        <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
+        <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@Raw(fieldID)" @Raw(inputSizeRestriction) required>
+        <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(Raw(fieldName))())"></span>
     </div>
+    @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : "</div>\r\n")
 }
 else
 {
-    <div class="form-group"@Raw(groupDataBinding)>
-        <label for="@fieldID">@inputLabel</label>
-        <input type="@inputType" class="form-control" data-bind="textInput: @fieldName, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@fieldID"@Raw(inputSizeRestriction)>
+    <div class="form-group" @Raw(groupDataBinding)>
+        <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
+        <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@Raw(fieldID)" @Raw(inputSizeRestriction)>
     </div>
 }

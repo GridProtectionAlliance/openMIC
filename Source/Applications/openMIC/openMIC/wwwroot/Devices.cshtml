@@ -58,6 +58,7 @@
 @helper AddNewEditDialog() {
     <div class="col-md-6">
         @Raw(ViewBag.DataContext.AddInputField<Device>("Acronym"))
+        @Raw(ViewBag.DataContext.AddInputField("get('connectionhostname')", true, inputLabel: "Connection Host Name/IP", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('connectionusername')", true, inputLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('connectionpassword')", true, inputType: "password", inputLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString"))
         <div class="checkbox" data-bind="with: $root.connectionString">
@@ -66,7 +67,8 @@
         @Raw(ViewBag.DataContext.AddInputField("get('dialupnumber')", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('maxconnectionretries')", false, inputType: "number", inputLabel: "Maximum Connection Retries", fieldID: "inputMaxConnectionRetries", groupDataBinding: "with: $root.connectionString"))
     </div>
-    <div class="col-md-6">
+    <div class="col-md-6">        
+        @Raw(ViewBag.DataContext.AddInputField("get('schedule')", true, inputLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString"))
         <div class="form-group">
             <label for="connectionProfile">Connection Profile:</label>
             <select class="form-control" id="connectionProfile">
@@ -81,25 +83,62 @@
         </div>
     </div>
     <div class="col-md-12">
-        Connection string: <em data-bind="text: ConnectionString"></em>
+        <div class="form-group">
+            <label for="textConnectionString">Connection String:</label>
+            <textarea class="form-control" rows="2" data-bind="text: ConnectionString" id="textConnectionString" readonly></textarea>
+        </div>
     </div>
 }
 @Include("PagedViewModel.cshtml")
+<div id="cronHelpDialog" class="modal fade" role="dialog">
+    <div class="modal-vertical-align-container">
+        <div class="modal-dialog modal-md modal-vertical-align-center">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Cron Syntax</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="center-block" style="width: 380px">
+<pre>
+ # ┌───────────── min (0 - 59)
+ # │ ┌────────────── hour (0 - 23)
+ # │ │ ┌─────────────── day of month (1 - 31)
+ # │ │ │ ┌──────────────── month (1 - 12)
+ # │ │ │ │ ┌───────────────── day of week (0 - 6):
+ # │ │ │ │ │        0 to 6 are Sunday to Saturday,
+ # │ │ │ │ │        or 7 is Sunday, the same as 0
+ # * * * * *
+</pre>
+                            <div class="text-center">
+                                <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">https://en.wikipedia.org/wiki/Cron</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @section Scripts {
     @Raw(ViewBag.PageControlScripts.ToString())
     <script>
-        function defaultConnectionString() {
-            const dictionary = new Dictionary();
+        "use strict";
 
-            // Define bindable connection string keys for a device record
-            dictionary.setValue("connectionUserName", "");
-            dictionary.setValue("connectionPassword", "");
-            dictionary.setValue("useDialUp", false);
-            dictionary.setValue("dialUpNumber", "");
-            dictionary.setValue("maxConnectionRetries", 0);
+        // Define default connection string keys needed for binding
+        const defaultConnectionString = new Dictionary();
 
-            return dictionary;
-        }
+        defaultConnectionString.set("connectionHostName", "");
+        defaultConnectionString.set("connectionUserName", "");
+        defaultConnectionString.set("connectionPassword", "");
+        defaultConnectionString.set("useDialUp", false);
+        defaultConnectionString.set("dialUpNumber", "");
+        defaultConnectionString.set("maxConnectionRetries", 0);
+        defaultConnectionString.set("schedule", "");
 
         // Configure view model
         viewModel.defaultSortField = "ID";
@@ -107,11 +146,17 @@
         viewModel.primaryKeyFields = ["ID"];
         viewModel.initialFocusField = "inputAcronym";
 
-        viewModel.connectionString = new ko.observableDictionary(defaultConnectionString()._values);
+        // Create an observable key/value pair connection string dictionary
+        viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);
+        viewModel.loadingConnectionString = false;
 
+        // Watch the connection string dictionary for changes independent of current record
         ko.watch(viewModel.connectionString, { depth: -1 }, function () {
-            viewModel.setDirtyFlag();
-            const updates = defaultConnectionString();
+            if (viewModel.loadingConnectionString)
+                return;
+
+            // Update connection string applying camel-case key names as defined in default connection string
+            const updates = new Dictionary(defaultConnectionString);
             updates.pushAll(viewModel.connectionString.toJSON());
             viewModel.currentRecord().ConnectionString(updates.joinKeyValuePairs());
         });
@@ -140,12 +185,27 @@
             return dataHub.updateDevice(record);
         });
 
-        $(window).on("currentRecordChanged", function(event) {
-            // New current record selected, parse key/value pairs of connection string into an observable model
-            viewModel.connectionString.removeAll();
-            viewModel.connectionString.pushAll(defaultConnectionString()._values);
-            viewModel.connectionString.pushAll(notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs()._values);
+
+        $(window).on("currentRecordChanged", function (event) {
+            viewModel.loadingConnectionString = true;
+
+            // Reset observable dictionary to default values on record change
+            const keys = viewModel.connectionString.keys();
+
+            for (var i = 0; i < keys.length; i++) {
+                let key = keys[i];
+                if (defaultConnectionString.containsKey(key))
+                    viewModel.connectionString.set(key, defaultConnectionString.get(key))
+                else
+                    viewModel.connectionString.remove(key);
+            }
+
+            // Update observable dictionary with parsed key/value pairs of current connection string
+            var currentConnectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
+            currentConnectionString.updateObservableDictionary(viewModel.connectionString, true);
+
             viewModel.setDirtyFlag(false);
+            viewModel.loadingConnectionString = false;
         });
     </script>
 }

@@ -137,11 +137,6 @@ function Dictionary(source) {
     self._keys = [];
     self._values = [];
 
-    for (let property in source) {
-        if (source.hasOwnProperty(property))
-            self.setValue(property, source[property]);
-    }
-
     self.count = function () {
         var size = 0;
 
@@ -175,11 +170,11 @@ function Dictionary(source) {
         return values;
     }
 
-    self.getValue = function (key) {
+    self.get = function (key) {
         return self._values[String(key).toLowerCase()];
     }
 
-    self.setValue = function (key, value) {
+    self.set = function (key, value) {
         const lkey = String(key).toLowerCase();
 
         if (!self._keys[lkey] || self._keys[lkey].toLowerCase() !== key)
@@ -233,8 +228,46 @@ function Dictionary(source) {
     self.pushAll = function (source) {
         for (let property in source)
             if (source.hasOwnProperty(property))
-                self.setValue(property, source[property]);
+                self.set(property, source[property]);
     }
+
+    self.toObservableDictionary = function (useLowerKeys) {
+        // See ko.observableDictionary.js
+        const observableDictionary = new ko.observableDictionary();
+
+        for (let property in self._values) {
+            if (self._values.hasOwnProperty(property))
+                observableDictionary.push(useLowerKeys ? property : self._keys[property], self._values[property]);
+        }
+
+        return observableDictionary;
+    }
+
+    self.updateObservableDictionary = function (observableDictionary, useLowerKeys) {
+        for (let property in self._values) {
+            if (self._values.hasOwnProperty(property))
+                observableDictionary.set(useLowerKeys ? property : self._keys[property], self._values[property]);
+        }
+    }
+
+    // Construction
+    if (source instanceof Dictionary) {
+        for (let property in source._values)
+            if (source._values.hasOwnProperty(property))
+                self.set(source._keys[property], source._values[property]);
+    }
+    else {
+        for (let property in source) {
+            if (source.hasOwnProperty(property))
+                self.set(property, source[property]);
+        }
+    }
+}
+
+Dictionary.fromObservableDictionary = function (observableDictionary) {
+    var dictionary = new Dictionary();
+    dictionary.pushAll(observableDictionary.toJSON());
+    return dictionary;
 }
 
 // String functions
@@ -401,14 +434,14 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
             // Add key/value pair to dictionary
             if (ignoreDuplicateKeys) {
                 // Add or replace key elements with unescaped value
-                keyValuePairs.setValue(key, unescapedValue);
+                keyValuePairs.set(key, unescapedValue);
             }
             else {
                 // Add key elements with unescaped value throwing an exception for encountered duplicate keys
                 if (keyValuePairs.containsKey(key))
                     throw "Failed to parse key/value pairs: duplicate key encountered. Key \"" + key + "\" is not unique within the string: \"" + this + "\"";
 
-                keyValuePairs.setValue(key, unescapedValue);
+                keyValuePairs.set(key, unescapedValue);
             }
         }
     }

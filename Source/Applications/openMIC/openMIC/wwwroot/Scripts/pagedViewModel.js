@@ -104,7 +104,7 @@ function PagedViewModel() {
 
             // Watch for changes to fields in current record
             ko.watch(self._currentRecord(), function (parents, child, item) {
-                self.setDirtyFlag();
+                self.setDirtyFlag(true, child);
             });
         },
         owner: self
@@ -260,7 +260,7 @@ function PagedViewModel() {
         return $("#addNewEditDialog div.form-group.has-error").length;
     }
 
-    self.setDirtyFlag = function (value) {
+    self.setDirtyFlag = function (value, target) {
         if (value === undefined)
             value = true;
 
@@ -268,7 +268,7 @@ function PagedViewModel() {
         self.unassignedFieldCount(self.deriveUnassignedFieldCount());
 
         if (value)
-            $(window).trigger("currentRecordUpdated");
+            $(window).trigger("currentRecordUpdated", [target]);
     }
 
     self.setFocusOnInitialField = function () {
