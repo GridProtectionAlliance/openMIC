@@ -596,6 +596,9 @@
       <Component Id="RazorEngine">
         <File Id="RazorEngine.dll" Name="RazorEngine.dll" Source="$(var.SolutionDir)packages\RazorEngine.3.7.7\lib\net45\RazorEngine.dll" />
       </Component>
+      <Component Id="System.Web.Razor">
+        <File Id="System.Web.Razor.dll" Name="System.Web.Razor.dll" Source="$(var.SolutionDir)Dependencies\Microsoft\System.Web.Razor.dll" />
+      </Component>
     </ComponentGroup>
 
     <!-- SQLite Dependencies -->

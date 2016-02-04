@@ -204,36 +204,36 @@ namespace Setup
                     }
                 }
 
-                // Install or uninstall PMU Connection Tester
-                if (checkBoxConnectionTester.Checked)
-                {
-                    Process connectionTesterInstall = new Process();
+                //// Install or uninstall PMU Connection Tester
+                //if (checkBoxConnectionTester.Checked)
+                //{
+                //    Process connectionTesterInstall = new Process();
 
-                    connectionTesterInstall.StartInfo.FileName = "msiexec.exe";
+                //    connectionTesterInstall.StartInfo.FileName = "msiexec.exe";
 
-                    if (type == SetupType.Uninstall)
-                    {
-                        // Uninstall any version of the PMU Connection Tester
-                        connectionTesterInstall.StartInfo.Arguments = "/x Installers\\PMUConnectionTesterSetup64.msi /passive";
-                    }
-                    else
-                    {
-                        // Install current version of the PMU Connection Tester
-                        connectionTesterInstall.StartInfo.Arguments = "/i Installers\\PMUConnectionTesterSetup64.msi";
-                    }
+                //    if (type == SetupType.Uninstall)
+                //    {
+                //        // Uninstall any version of the PMU Connection Tester
+                //        connectionTesterInstall.StartInfo.Arguments = "/x Installers\\PMUConnectionTesterSetup64.msi /passive";
+                //    }
+                //    else
+                //    {
+                //        // Install current version of the PMU Connection Tester
+                //        connectionTesterInstall.StartInfo.Arguments = "/i Installers\\PMUConnectionTesterSetup64.msi";
+                //    }
 
-                    connectionTesterInstall.StartInfo.UseShellExecute = false;
-                    connectionTesterInstall.StartInfo.CreateNoWindow = true;
-                    connectionTesterInstall.Start();
-                    connectionTesterInstall.WaitForExit();
+                //    connectionTesterInstall.StartInfo.UseShellExecute = false;
+                //    connectionTesterInstall.StartInfo.CreateNoWindow = true;
+                //    connectionTesterInstall.Start();
+                //    connectionTesterInstall.WaitForExit();
 
-                    if (closeOnSuccess)
-                        this.Close();
-                    else
-                        this.WindowState = FormWindowState.Normal;
+                //    if (closeOnSuccess)
+                //        this.Close();
+                //    else
+                //        this.WindowState = FormWindowState.Normal;
 
-                    return true;
-                }
+                //    return true;
+                //}
 
                 if (closeOnSuccess)
                     this.Close();
@@ -359,26 +359,26 @@ namespace Setup
             {
             }
 
-            // If uninstalling the PMU Connection Tester, we try to stop any running instances
-            if (checkBoxConnectionTester.Checked)
-            {
-                try
-                {
-                    Process[] instances = Process.GetProcessesByName("PMUConnectionTester");
+            //// If uninstalling the PMU Connection Tester, we try to stop any running instances
+            //if (checkBoxConnectionTester.Checked)
+            //{
+            //    try
+            //    {
+            //        Process[] instances = Process.GetProcessesByName("PMUConnectionTester");
 
-                    if (instances.Length > 0)
-                    {
-                        // Terminate all instances of PMU Connection Tester running on the local computer
-                        foreach (Process process in instances)
-                        {
-                            process.Kill();
-                        }
-                    }
-                }
-                catch
-                {
-                }
-            }
+            //        if (instances.Length > 0)
+            //        {
+            //            // Terminate all instances of PMU Connection Tester running on the local computer
+            //            foreach (Process process in instances)
+            //            {
+            //                process.Kill();
+            //            }
+            //        }
+            //    }
+            //    catch
+            //    {
+            //    }
+            //}
         }
     }
 }
