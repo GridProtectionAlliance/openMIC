@@ -89,7 +89,7 @@ Number.prototype.padRight = function (totalWidth, paddingChar) {
 // Combines a dictionary of key-value pairs into a string. Values will be escaped within startValueDelimiter and endValueDelimiter
 // to contain nested key/value pair expressions like the following: "normalKVP=-1; nestedKVP={p1=true; p2=0.001}" when either the
 // parameterDelimiter or the keyValueDelimiter are detected in the value of the key/value pair.
-Array.prototype.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter) {
+function joinKeyValuePairs (source, parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter) {
     if (!parameterDelimiter)
         parameterDelimiter = ";";
 
@@ -102,14 +102,16 @@ Array.prototype.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimi
     if (!endValueDelimiter)
         endValueDelimiter = "}";
 
-    const self = this;
     const values = [];
 
-    for (let key in self) {
-        if (self.hasOwnProperty(key)) {
-            let value = self[key];
+    for (let key in source) {
+        if (source.hasOwnProperty(key)) {
+            let value = source[key];
 
-            value = value ? value.toString() : "";
+            if (typeof value === "boolean")
+                value = value.toString();
+            else
+                value = value ? value.toString() : "";
 
             if (value.indexOf(parameterDelimiter) >= 0 || value.indexOf(keyValueDelimiter) >= 0)
                 value = startValueDelimiter + value + endValueDelimiter;
@@ -119,6 +121,10 @@ Array.prototype.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimi
     }
 
     return values.join(parameterDelimiter + " ");
+};
+
+Array.prototype.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter) {
+    return joinKeyValuePairs(this, parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter);
 };
 
 // Represents a dictionary style class with case-insensitive keys
@@ -175,7 +181,10 @@ function Dictionary(source) {
 
     self.setValue = function (key, value) {
         const lkey = String(key).toLowerCase();
-        self._keys[lkey] = key;
+
+        if (!self._keys[lkey] || self._keys[lkey].toLowerCase() !== key)
+            self._keys[lkey] = key;
+
         self._values[lkey] = value;
     }
 
@@ -221,43 +230,11 @@ function Dictionary(source) {
         return keyValuePairs.joinKeyValuePairs(parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter);
     }
 
-    self.toObservableModel = function() {
-        const model = [];
-
-        for (let property in self._values) {
-            if (self._values.hasOwnProperty(property))
-                model[property] = ko.observable(self._values[property]);
-        }
-
-        return model;
+    self.pushAll = function (source) {
+        for (let property in source)
+            if (source.hasOwnProperty(property))
+                self.setValue(property, source[property]);
     }
-
-    self.updateObservableModel = function (model) {
-        for (let property in model) {
-            if (model.hasOwnProperty(property))
-                model[property](null);
-        }
-
-        for (let property in self._values) {
-            if (self._values.hasOwnProperty(property)) {
-                if (model[property])
-                    model[property](self._values[property]);
-                else
-                    model[property] = ko.observable(self._values[property]);
-            }
-        }
-    }
-}
-
-Dictionary.fromObservableModel = function (model) {
-    const dictionary = new Dictionary();
-
-    for (let property in model) {
-        if (model.hasOwnProperty(property))
-            dictionary.setValue(property, model[property]());
-    }
-
-    return dictionary;
 }
 
 // String functions

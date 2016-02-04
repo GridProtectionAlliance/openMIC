@@ -58,13 +58,13 @@
 @helper AddNewEditDialog() {
     <div class="col-md-6">
         @Raw(ViewBag.DataContext.AddInputField<Device>("Acronym"))
-        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString().connectionusername", true, inputLabel: "Connection User Name", fieldID: "inputConnectionUserName"))
-        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString().connectionpassword", true, inputType: "password", inputLabel: "Connection Password", fieldID: "inputConnectionPassword"))
-        <div class="checkbox">
-            <label><input type="checkbox" id="useDialUp" data-bind="checked: Boolean(notNull($root.connectionString().usedialup(), false)), attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
+        @Raw(ViewBag.DataContext.AddInputField("get('connectionusername')", true, inputLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString"))
+        @Raw(ViewBag.DataContext.AddInputField("get('connectionpassword')", true, inputType: "password", inputLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString"))
+        <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" id="useDialUp" data-bind="checked: get('usedialup'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
         </div>
-        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString().dialupnumber", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber"))
-        @Raw(ViewBag.DataContext.AddInputField("$root.connectionString().maxconnectionretries", false, inputType: "number", inputLabel: "Maximum Connection Retries", fieldID: "inputMaxConnectionRetries"))
+        @Raw(ViewBag.DataContext.AddInputField("get('dialupnumber')", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString"))
+        @Raw(ViewBag.DataContext.AddInputField("get('maxconnectionretries')", false, inputType: "number", inputLabel: "Maximum Connection Retries", fieldID: "inputMaxConnectionRetries", groupDataBinding: "with: $root.connectionString"))
     </div>
     <div class="col-md-6">
         <div class="form-group">
@@ -77,28 +77,28 @@
         </div>
         @Raw(ViewBag.DataContext.AddSelectField<Device, Company>("CompanyID", "ID", "Name", "Company"))
         <div class="checkbox">
-            <label><input type="checkbox" data-bind="checked: Enabled, attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}"> Enabled</label>
+            <label><input type="checkbox" data-bind="checked: Enabled, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Enabled</label>
         </div>
     </div>
     <div class="col-md-12">
-        <span data-bind="text: ConnectionString"></span>
+        Connection string: <em data-bind="text: ConnectionString"></em>
     </div>
 }
 @Include("PagedViewModel.cshtml")
 @section Scripts {
     @Raw(ViewBag.PageControlScripts.ToString())
     <script>
-        function createBindableConnectionString() {
+        function defaultConnectionString() {
             const dictionary = new Dictionary();
 
-            // Define bindable connection strings for a device record
+            // Define bindable connection string keys for a device record
             dictionary.setValue("connectionUserName", "");
             dictionary.setValue("connectionPassword", "");
             dictionary.setValue("useDialUp", false);
             dictionary.setValue("dialUpNumber", "");
             dictionary.setValue("maxConnectionRetries", 0);
 
-            return dictionary.toObservableModel();
+            return dictionary;
         }
 
         // Configure view model
@@ -107,11 +107,13 @@
         viewModel.primaryKeyFields = ["ID"];
         viewModel.initialFocusField = "inputAcronym";
 
-        // Define a connection string model for current record
-        viewModel.connectionString = ko.observable(createBindableConnectionString());
+        viewModel.connectionString = new ko.observableDictionary(defaultConnectionString()._values);
 
-        ko.watch(viewModel.connectionString, { depth: 2 }, function() {
-            console.log("Change detected in connection string view model...");
+        ko.watch(viewModel.connectionString, { depth: -1 }, function () {
+            viewModel.setDirtyFlag();
+            const updates = defaultConnectionString();
+            updates.pushAll(viewModel.connectionString.toJSON());
+            viewModel.currentRecord().ConnectionString(updates.joinKeyValuePairs());
         });
 
         viewModel.setQueryRecordCount(function() {
@@ -140,12 +142,10 @@
 
         $(window).on("currentRecordChanged", function(event) {
             // New current record selected, parse key/value pairs of connection string into an observable model
-            viewModel.connectionString(createBindableConnectionString());
-            notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs().updateObservableModel(viewModel.connectionString());
-        });
-
-        $(window).on("currentRecordUpdated", function(event) {
-            viewModel.currentRecord().ConnectionString(Dictionary.fromObservableModel(viewModel.connectionString()).joinKeyValuePairs());
+            viewModel.connectionString.removeAll();
+            viewModel.connectionString.pushAll(defaultConnectionString()._values);
+            viewModel.connectionString.pushAll(notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs()._values);
+            viewModel.setDirtyFlag(false);
         });
     </script>
 }

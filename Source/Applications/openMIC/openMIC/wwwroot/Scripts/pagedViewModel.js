@@ -99,8 +99,7 @@ function PagedViewModel() {
         read: self._currentRecord,
         write: function(value) {
             self._currentRecord(value);
-            self._isDirty = false;
-            self.unassignedFieldCount(self.deriveUnassignedFieldCount());
+            self.setDirtyFlag(false);
             $(window).trigger("currentRecordChanged");
 
             // Watch for changes to fields in current record
@@ -261,10 +260,15 @@ function PagedViewModel() {
         return $("#addNewEditDialog div.form-group.has-error").length;
     }
 
-    self.setDirtyFlag = function () {
-        self._isDirty = true;
+    self.setDirtyFlag = function (value) {
+        if (value === undefined)
+            value = true;
+
+        self._isDirty = value;
         self.unassignedFieldCount(self.deriveUnassignedFieldCount());
-        $(window).trigger("currentRecordUpdated");
+
+        if (value)
+            $(window).trigger("currentRecordUpdated");
     }
 
     self.setFocusOnInitialField = function () {

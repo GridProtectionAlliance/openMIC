@@ -30,20 +30,27 @@
     string inputType = ViewBag.InputType;
     string inputLabel = ViewBag.InputLabel;
     string fieldID = ViewBag.FieldID;
+    string groupDataBinding = ViewBag.GroupDataBinding;
     string inputSizeRestriction = maxLength > 0 ? string.Format(" maxlength=\"{0}\" size=\"{0}\"", maxLength) : "";
+
+    if (!string.IsNullOrEmpty(groupDataBinding)) {
+        groupDataBinding = string.Format("data-bind=\"{0}\"", groupDataBinding);
+    }
 }
 @if (required)
 {
-    <div class="form-group" data-bind="css: {'has-error': isEmpty(@(fieldName)()), 'has-feedback': isEmpty(@(fieldName)())}">
-        <label for="@fieldID">@inputLabel:</label>
-        <input type="@inputType" class="form-control" data-bind="textInput: @fieldName, attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}" id="@fieldID"@Raw(inputSizeRestriction) required>
-        <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(fieldName)())"></span>
+    <div @Raw(groupDataBinding)>
+        <div class="form-group" data-bind="css: {'has-error': isEmpty(@(fieldName)()), 'has-feedback': isEmpty(@(fieldName)())}">
+            <label for="@fieldID">@inputLabel:</label>
+            <input type="@inputType" class="form-control" data-bind="textInput: @fieldName, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@fieldID" @Raw(inputSizeRestriction) required>
+            <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(fieldName)())"></span>
+        </div>
     </div>
 }
 else
 {
-    <div class="form-group">
+    <div class="form-group"@Raw(groupDataBinding)>
         <label for="@fieldID">@inputLabel</label>
-        <input type="@inputType" class="form-control" data-bind="textInput: @fieldName, attr: {'disabled': ($parent.recordMode()===RecordMode.View ? true : undefined)}" id="@fieldID"@Raw(inputSizeRestriction)>
+        <input type="@inputType" class="form-control" data-bind="textInput: @fieldName, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@fieldID"@Raw(inputSizeRestriction)>
     </div>
 }

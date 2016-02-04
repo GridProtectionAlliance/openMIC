@@ -128,8 +128,9 @@ namespace openMIC.Model
         /// <param name="inputType">Input field type, defaults to text.</param>
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
+        /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null) where T : class, new()
+        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null) where T : class, new()
         {
             TableOperations<T> tableOperations = Table<T>();
             StringLengthAttribute stringLengthAttribute;
@@ -137,7 +138,7 @@ namespace openMIC.Model
             tableOperations.TryGetFieldAttribute(fieldName, out stringLengthAttribute);
 
             return AddInputField(fieldName, tableOperations.FieldHasAttribute<RequiredAttribute>(fieldName),
-                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID);
+                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding);
         }
 
         /// <summary>
@@ -149,8 +150,9 @@ namespace openMIC.Model
         /// <param name="inputType">Input field type, defaults to text.</param>
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
+        /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null)
+        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null)
         {
             RazorView<CSharp> addInputFieldTemplate = new RazorView<CSharp>(AddInputFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addInputFieldTemplate.ViewBag;
@@ -161,6 +163,7 @@ namespace openMIC.Model
             viewBag.AddValue("InputType", inputType ?? "text");
             viewBag.AddValue("InputLabel", inputLabel ?? fieldName);
             viewBag.AddValue("FieldID", fieldID ?? $"input{fieldName}");
+            viewBag.AddValue("GroupDataBinding", groupDataBinding);
 
             return addInputFieldTemplate.Execute();
         }
