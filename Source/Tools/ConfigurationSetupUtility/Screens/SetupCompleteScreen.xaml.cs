@@ -276,7 +276,11 @@ namespace ConfigurationSetupUtility.Screens
                         // If the user requested it, start the openMIC Manager.
                         if (m_managerStartCheckBox.IsChecked.Value)
                         {
-                            Process.Start("openMICManager.exe");
+                            //Process.Start("openMICManager.exe");
+                            Process process = new Process();
+                            process.StartInfo.UseShellExecute = true;
+                            process.StartInfo.FileName = "http://stackoverflow.com";
+                            process.Start();
                         }
                     }
                     finally
@@ -897,7 +901,7 @@ namespace ConfigurationSetupUtility.Screens
                 {
                     string destination = m_state["sqliteDatabaseFilePath"].ToString();
                     connectionString = "Data Source=" + destination + "; Version=3";
-                    dataProviderString = "AssemblyName={System.Data.SQLite, Version=1.0.93.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139}; ConnectionType=System.Data.SQLite.SQLiteConnection; AdapterType=System.Data.SQLite.SQLiteDataAdapter";
+                    dataProviderString = "AssemblyName={System.Data.SQLite, Version=1.0.99.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139}; ConnectionType=System.Data.SQLite.SQLiteConnection; AdapterType=System.Data.SQLite.SQLiteDataAdapter";
                 }
 
                 if (!string.IsNullOrEmpty(connectionString) && !string.IsNullOrEmpty(dataProviderString))

@@ -68,10 +68,10 @@
             this.tabPageInstallOptions.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("tabPageInstallOptions.BackgroundImage")));
             this.tabPageInstallOptions.Controls.Add(this.groupBoxInstallationOptions);
             this.tabPageInstallOptions.Controls.Add(this.labelNotes);
-            this.tabPageInstallOptions.Location = new System.Drawing.Point(4, 25);
+            this.tabPageInstallOptions.Location = new System.Drawing.Point(4, 33);
             this.tabPageInstallOptions.Name = "tabPageInstallOptions";
             this.tabPageInstallOptions.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageInstallOptions.Size = new System.Drawing.Size(493, 280);
+            this.tabPageInstallOptions.Size = new System.Drawing.Size(493, 272);
             this.tabPageInstallOptions.TabIndex = 0;
             this.tabPageInstallOptions.Text = "Installation";
             this.tabPageInstallOptions.UseVisualStyleBackColor = true;
@@ -130,14 +130,13 @@
             // checkBoxConnectionTester
             // 
             this.checkBoxConnectionTester.AutoSize = true;
-            this.checkBoxConnectionTester.Checked = true;
-            this.checkBoxConnectionTester.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBoxConnectionTester.Location = new System.Drawing.Point(41, 85);
             this.checkBoxConnectionTester.Name = "checkBoxConnectionTester";
-            this.checkBoxConnectionTester.Size = new System.Drawing.Size(303, 20);
+            this.checkBoxConnectionTester.Size = new System.Drawing.Size(468, 28);
             this.checkBoxConnectionTester.TabIndex = 2;
             this.checkBoxConnectionTester.Text = "Install PMU Connection Tester v4.5.5 - July 2014";
             this.checkBoxConnectionTester.UseVisualStyleBackColor = true;
+            this.checkBoxConnectionTester.Visible = false;
             // 
             // labelInstallationOptions
             // 
@@ -146,15 +145,15 @@
             this.labelInstallationOptions.Padding = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.labelInstallationOptions.Size = new System.Drawing.Size(379, 66);
             this.labelInstallationOptions.TabIndex = 6;
-            this.labelInstallationOptions.Text = "This setup utility will install the openMIC and/or related tools. This inst" +
-    "allation requires .NET 4.5 and is only available as a 64-bit installation.";
+            this.labelInstallationOptions.Text = "This setup utility will install the openMIC and/or related tools. This installati" +
+    "on requires .NET 4.6 and is only available as a 64-bit installation.";
             this.labelInstallationOptions.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelNotes
             // 
             this.labelNotes.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.labelNotes.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelNotes.Location = new System.Drawing.Point(3, 125);
+            this.labelNotes.Location = new System.Drawing.Point(3, 117);
             this.labelNotes.Name = "labelNotes";
             this.labelNotes.Padding = new System.Windows.Forms.Padding(15, 0, 15, 0);
             this.labelNotes.Size = new System.Drawing.Size(487, 152);
@@ -165,9 +164,9 @@
             // tabPageReleaseNotes
             // 
             this.tabPageReleaseNotes.Controls.Add(this.richTextBoxReleaseNotes);
-            this.tabPageReleaseNotes.Location = new System.Drawing.Point(4, 25);
+            this.tabPageReleaseNotes.Location = new System.Drawing.Point(4, 33);
             this.tabPageReleaseNotes.Name = "tabPageReleaseNotes";
-            this.tabPageReleaseNotes.Size = new System.Drawing.Size(493, 280);
+            this.tabPageReleaseNotes.Size = new System.Drawing.Size(493, 272);
             this.tabPageReleaseNotes.TabIndex = 2;
             this.tabPageReleaseNotes.Text = "Release Notes";
             this.tabPageReleaseNotes.ToolTipText = "Click here to see notes about this version of the product release.";
@@ -178,7 +177,7 @@
             this.richTextBoxReleaseNotes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richTextBoxReleaseNotes.Location = new System.Drawing.Point(0, 0);
             this.richTextBoxReleaseNotes.Name = "richTextBoxReleaseNotes";
-            this.richTextBoxReleaseNotes.Size = new System.Drawing.Size(493, 280);
+            this.richTextBoxReleaseNotes.Size = new System.Drawing.Size(493, 272);
             this.richTextBoxReleaseNotes.TabIndex = 0;
             this.richTextBoxReleaseNotes.Text = "";
             this.richTextBoxReleaseNotes.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBoxReleaseNotes_LinkClicked);
@@ -190,7 +189,7 @@
             this.labelVersion.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelVersion.Location = new System.Drawing.Point(375, 75);
             this.labelVersion.Name = "labelVersion";
-            this.labelVersion.Size = new System.Drawing.Size(105, 13);
+            this.labelVersion.Size = new System.Drawing.Size(161, 21);
             this.labelVersion.TabIndex = 2;
             this.labelVersion.Text = "Version: {0}.{1}.{2}";
             this.labelVersion.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -209,7 +208,7 @@
             // 
             // Main
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(501, 380);

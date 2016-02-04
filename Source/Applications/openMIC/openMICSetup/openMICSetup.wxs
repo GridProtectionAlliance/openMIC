@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
-  <Product Id="{88E29EE4-2904-47A5-91C6-41087519F0BE}" Name="openMIC" Language="1033" Version="!(bind.FileVersion.openMIC.exe)" Manufacturer="Grid Protection Alliance" UpgradeCode="{1A68E1ED-EE7E-477F-93CC-59E5E89C7645}">
+  <Product Id="{590a3109-858f-498e-9b25-0a20185ce928}" Name="openMIC" Language="1033" Version="!(bind.FileVersion.openMIC.exe)" Manufacturer="Grid Protection Alliance" UpgradeCode="{45dd202e-3c29-4fec-9ef4-a653ee989960}">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <MediaTemplate EmbedCab="yes" />    
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-    
-    <PropertyRef Id="NETFRAMEWORK45"/>    
-    <Condition Message='This setup requires Microsoft .NET Framework 4.5 or greater - this will need to be installed before installation can continue.'>
-      <![CDATA[Installed OR NETFRAMEWORK45]]>
+
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_46_OR_LATER_INSTALLED"/>
+    <Condition Message='This setup requires Microsoft .NET Framework 4.6 or greater - this will need to be installed before installation can continue.'>
+      <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_46_OR_LATER_INSTALLED]]>
     </Condition>
 
     <Feature Id="AllProducts" Title="All Products" Level="1" Display="expand" ConfigurableDirectory="INSTALLFOLDER">

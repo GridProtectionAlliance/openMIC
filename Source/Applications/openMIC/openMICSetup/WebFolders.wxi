@@ -4,6 +4,7 @@
   <Directory Id="FONTSFOLDER" Name="fonts" />
   <Directory Id="IMAGESFOLDER" Name="Images">
     <Directory Id="IMAGESICONSFOLDER" Name="Icons" />
+    <Directory Id="IMAGESSTATUSLIGHTSFOLDER" Name="StatusLights" />
   </Directory>
   <Directory Id="SCRIPTSFOLDER" Name="Scripts" />
 </Directory>

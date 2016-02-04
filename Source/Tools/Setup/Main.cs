@@ -34,7 +34,7 @@ namespace Setup
     public partial class Main : Form
     {
         // openMIC product code, as defined in the setup packages
-        private const string ProductCode = "{88E29EE4-2904-47A5-91C6-41087519F0BE}";
+        private const string ProductCode = "{590a3109-858f-498e-9b25-0a20185ce928}";
 
         private enum SetupType
         {
