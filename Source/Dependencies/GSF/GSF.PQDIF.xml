@@ -4,6 +4,39 @@
         <name>GSF.PQDIF</name>
     </assembly>
     <members>
+        <member name="T:GSF.PQDIF.Identifier">
+            <summary>
+            Represents an identifier as defined by the PQDIF standard.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Identifier.Name">
+            <summary>
+            Gets the name of the identifier as defined by the GSF.PQDIF library.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Identifier.StandardName">
+            <summary>
+            Gets the name of the identifier as defined by the standard.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Identifier.Value">
+            <summary>
+            Gets a string representation of the value of this identifier.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Identifier.Description">
+            <summary>
+            Gets a description of the identifier.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Identifier.GenerateIdentifiers(System.Xml.Linq.XDocument,GSF.PQDIF.Tag)">
+            <summary>
+            Generates a list of identifiers valid for the given tag from the given XML document.
+            </summary>
+            <param name="doc">The XML document containing tag definitions.</param>
+            <param name="tag">The tag for which valid identifier values are to be generated.</param>
+            <returns>The list of identifiers valid for the given tag.</returns>
+        </member>
         <member name="T:GSF.PQDIF.Logical.Phase">
             <summary>
             Phase types.
@@ -300,39 +333,9 @@
             <param name="physicalStructure">The collection element which is the physical structure of the channel definition.</param>
             <param name="dataSource">The data source in which the channel definition resides.</param>
         </member>
-        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.ChannelNameTag">
+        <member name="P:GSF.PQDIF.Logical.ChannelDefinition.PhysicalStructure">
             <summary>
-            Tag that identifies the channel name.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.PhaseIDTag">
-            <summary>
-            Tag that identifies the phase ID.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.QuantityTypeIDTag">
-            <summary>
-            Tag that identifies the quantity type.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.QuantityMeasuredIDTag">
-            <summary>
-            Tag that identifies the quantity measured ID.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.QuantityNameTag">
-            <summary>
-            Tag that identifies the quantity name.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.SeriesDefinitionsTag">
-            <summary>
-            Tag that identifies the series definitions collection.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.OneSeriesDefinitionTag">
-            <summary>
-            Tag that identifies a single series definition within the collection.
+            Gets the physical structure of the channel definition.
             </summary>
         </member>
         <member name="P:GSF.PQDIF.Logical.ChannelDefinition.DataSource">
@@ -373,6 +376,80 @@
             Gets the series definitions defined in this channel definition.
             </summary>
         </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelDefinition.AddNewSeriesDefinition">
+            <summary>
+            Adds a new series definition to the collection
+            of series definitions in this channel definition.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelDefinition.Remove(GSF.PQDIF.Logical.SeriesDefinition)">
+            <summary>
+            Removes the given series definition from the collection of series definitions.
+            </summary>
+            <param name="seriesDefinition">The series definition to be removed.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelDefinition.Equals(GSF.PQDIF.Logical.ChannelDefinition)">
+            <summary>
+            Indicates whether the current object is equal to another object of the same type.
+            </summary>
+            <param name="other">An object to compare with this object.</param>
+            <returns>true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelDefinition.Equals(System.Object)">
+            <summary>
+            Determines whether the specified <see cref="T:System.Object"/> is equal to the current <see cref="T:GSF.PQDIF.Logical.ChannelDefinition"/>.
+            </summary>
+            <param name="obj">The object to compare with the current object. </param>
+            <returns>true if the specified object  is equal to the current object; otherwise, false.</returns>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelDefinition.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type. 
+            </summary>
+            <returns>A hash code for the current <see cref="T:GSF.PQDIF.Logical.ChannelDefinition"/>.</returns>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.ChannelDefinitionIndexTag">
+            <summary>
+            Tag that identifies the channel definition index.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.ChannelNameTag">
+            <summary>
+            Tag that identifies the channel name.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.PhaseIDTag">
+            <summary>
+            Tag that identifies the phase ID.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.QuantityTypeIDTag">
+            <summary>
+            Tag that identifies the quantity type.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.QuantityMeasuredIDTag">
+            <summary>
+            Tag that identifies the quantity measured ID.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.QuantityNameTag">
+            <summary>
+            Tag that identifies the quantity name.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.SeriesDefinitionsTag">
+            <summary>
+            Tag that identifies the series definitions collection.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ChannelDefinition.OneSeriesDefinitionTag">
+            <summary>
+            Tag that identifies a single series definition within the collection.
+            </summary>
+        </member>
         <member name="T:GSF.PQDIF.Logical.ChannelInstance">
             <summary>
             Represents a channel instance in a PQDIF file. A channel instance
@@ -388,10 +465,89 @@
             <param name="physicalStructure">The collection element which is the physical structure of the channel instance.</param>
             <param name="observationRecord">The observation record in which the channel instance resides.</param>
         </member>
-        <member name="F:GSF.PQDIF.Logical.ChannelInstance.ChannelDefinitionIndexTag">
+        <member name="P:GSF.PQDIF.Logical.ChannelInstance.PhysicalStructure">
             <summary>
-            Tag that identifies the channel definition index.
+            Gets the physical structure of the channel instance.
             </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelInstance.ObservationRecord">
+            <summary>
+            Gets the observation record in which the channel instance resides.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelInstance.Definition">
+            <summary>
+            Gets the channel definition which defines the channel instance.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelInstance.Setting">
+            <summary>
+            Gets the channel setting which defines the instrument settings for the channel.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelInstance.ChannelDefinitionIndex">
+            <summary>
+            Gets the index of the <see cref="T:GSF.PQDIF.Logical.ChannelDefinition"/>
+            which defines the channel instance.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelInstance.ChannelGroupID">
+            <summary>
+            Gets the identifier for the harmonic or
+            interharmonic group represented by this channel.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelInstance.TriggerModuleName">
+            <summary>
+            Gets the name of the of a device specific code or hardware
+            module, algorithm, or rule not necessarily channel based
+            that cause this channel to be recorded.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelInstance.CrossTriggerDeviceName">
+            <summary>
+            Gets the name of the device involved in
+            an external cross trigger scenario.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelInstance.SeriesInstances">
+            <summary>
+            Gets the series instances contained in this channel.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelInstance.AddNewSeriesInstance">
+            <summary>
+            Adds a new series instance to the collection
+            of series instances in this channel instance.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelInstance.Remove(GSF.PQDIF.Logical.SeriesInstance)">
+            <summary>
+            Removes the given series instance from the collection of series instances.
+            </summary>
+            <param name="seriesInstance">The series instance to be removed.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelInstance.Equals(GSF.PQDIF.Logical.ChannelInstance)">
+            <summary>
+            Indicates whether the current object is equal to another object of the same type.
+            </summary>
+            <param name="other">An object to compare with this object.</param>
+            <returns>true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelInstance.Equals(System.Object)">
+            <summary>
+            Determines whether the specified <see cref="T:GSF.PQDIF.Logical.ChannelInstance"/> is equal to the current <see cref="T:GSF.PQDIF.Logical.ChannelInstance"/>.
+            </summary>
+            <param name="obj">The object to compare with the current object. </param>
+            <returns>true if the specified object  is equal to the current object; otherwise, false.</returns>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ChannelInstance.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type. 
+            </summary>
+            <returns>A hash code for the current <see cref="T:GSF.PQDIF.Logical.ChannelInstance"/>.</returns>
+            <filterpriority>2</filterpriority>
         </member>
         <member name="F:GSF.PQDIF.Logical.ChannelInstance.ChannelGroupIDTag">
             <summary>
@@ -418,44 +574,63 @@
             Tag that identifies the cross trigger device name.
             </summary>
         </member>
-        <member name="P:GSF.PQDIF.Logical.ChannelInstance.ObservationRecord">
+        <member name="T:GSF.PQDIF.Logical.ChannelSetting">
             <summary>
-            Gets the observation record in which the channel instance resides.
+            Represents a channel setting in a PQDIF file. A channel setting
+            resides in an <see cref="P:GSF.PQDIF.Logical.ChannelSetting.MonitorSettingsRecord"/>, and is defined by
+            a <see cref="T:GSF.PQDIF.Logical.ChannelDefinition"/> inside the observation record's
+            <see cref="T:GSF.PQDIF.Logical.DataSourceRecord"/>.
             </summary>
         </member>
-        <member name="P:GSF.PQDIF.Logical.ChannelInstance.ChannelDefinitionIndex">
+        <member name="M:GSF.PQDIF.Logical.ChannelSetting.#ctor(GSF.PQDIF.Physical.CollectionElement,GSF.PQDIF.Logical.MonitorSettingsRecord)">
+            <summary>
+            Creates a new instance of the <see cref="T:GSF.PQDIF.Logical.ChannelSetting"/> class.
+            </summary>
+            <param name="physicalStructure">The collection element which is the physical structure of the channel setting.</param>
+            <param name="monitorSettingsRecord">The monitor settings record in which the channel setting resides.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelSetting.PhysicalStructure">
+            <summary>
+            Gets the physical structure of the channel setting.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelSetting.MonitorSettingsRecord">
+            <summary>
+            Gets the monitor settings record in which the channel setting resides.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ChannelSetting.ChannelDefinitionIndex">
             <summary>
             Gets the index of the <see cref="T:GSF.PQDIF.Logical.ChannelDefinition"/>
             which defines the channel instance.
             </summary>
         </member>
-        <member name="P:GSF.PQDIF.Logical.ChannelInstance.Definition">
+        <member name="P:GSF.PQDIF.Logical.ChannelSetting.XDSystemSideRatio">
             <summary>
-            Gets the channel definition which defines the channel instance.
+            Gets the system-side part of the transducer ratio.
             </summary>
         </member>
-        <member name="P:GSF.PQDIF.Logical.ChannelInstance.ChannelGroupID">
+        <member name="P:GSF.PQDIF.Logical.ChannelSetting.XDMonitorSideRatio">
             <summary>
-            Gets the identifier for the harmonic or
-            interharmonic group represented by this channel.
+            Gets the monitor-side part of the transducer ratio.
             </summary>
         </member>
-        <member name="P:GSF.PQDIF.Logical.ChannelInstance.TriggerModuleName">
+        <member name="M:GSF.PQDIF.Logical.ChannelSetting.HasElement(System.Guid)">
             <summary>
-            Gets the name of the of a device specific code or hardware
-            module, algorithm, or rule not necessarily channel based
-            that cause this channel to be recorded.
+            Determines whether an element identified by the
+            given tag exists in this object's physical structure.
+            </summary>
+            <param name="tag">The tag of the element to search for.</param>
+            <returns>True if the element exists; false otherwise.</returns>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ChannelSetting.XDSystemSideRatioTag">
+            <summary>
+            Tag that identifies the system side ratio.
             </summary>
         </member>
-        <member name="P:GSF.PQDIF.Logical.ChannelInstance.CrossTriggerDeviceName">
+        <member name="F:GSF.PQDIF.Logical.ChannelSetting.XDMonitorSideRatioTag">
             <summary>
-            Gets the name of the device involved in
-            an external cross trigger scenario.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.ChannelInstance.SeriesInstances">
-            <summary>
-            Gets the series instances contained in this channel.
+            Tag that identifies the monitor side ratio.
             </summary>
         </member>
         <member name="T:GSF.PQDIF.Logical.Equipment">
@@ -998,12 +1173,91 @@
             The ID of the ELCOM BK 550 device.
             </summary>
         </member>
+        <member name="M:GSF.PQDIF.Logical.Equipment.GetInfo(System.Guid)">
+            <summary>
+            Gets information about the equipment identified by the given ID.
+            </summary>
+            <param name="equipmentID">The identifier for the equipment.</param>
+            <returns>Information about the equipment.</returns>
+        </member>
         <member name="M:GSF.PQDIF.Logical.Equipment.ToString(System.Guid)">
             <summary>
             Converts the given equpiment ID to a string containing the name of the equipment.
             </summary>
             <param name="equipmentID">The ID of the equipment to be converted to a string.</param>
             <returns>A string containing the name of the equipment with the given ID.</returns>
+        </member>
+        <member name="T:GSF.PQDIF.Logical.MissingTag">
+            <summary>
+            Represents an exception
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.MissingTag.#ctor(GSF.PQDIF.Physical.RecordType,System.String,System.Guid)">
+            <summary>
+            Creates a new instance of the <see cref="T:GSF.PQDIF.Logical.MissingTag"/> class.
+            </summary>
+            <param name="recordType">The type of record the tag is missing from.</param>
+            <param name="tagName">The name of the tag.</param>
+            <param name="tag">The globally unique identifier for the tag.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MissingTag.RecordType">
+            <summary>
+            Gets the type of the record in which
+            the tag was identified as missing.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MissingTag.TagName">
+            <summary>
+            Gets the name of the missing tag.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MissingTag.Tag">
+            <summary>
+            Gets the globally unique identifier for the given tag.
+            </summary>
+        </member>
+        <member name="T:GSF.PQDIF.Logical.LogicalWriter">
+            <summary>
+            Represents a writer used to create files using the PQDIF file format.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.LogicalWriter.#ctor(System.String)">
+            <summary>
+            Creates a new instance of the <see cref="T:GSF.PQDIF.Logical.LogicalWriter"/> class.
+            </summary>
+            <param name="filePath">The path to the file where the PQDIF data is to be written.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.LogicalWriter.#ctor(System.IO.Stream,System.Boolean)">
+            <summary>
+            Creates a new instance of the <see cref="T:GSF.PQDIF.Logical.LogicalWriter"/> class.
+            </summary>
+            <param name="stream">The stream to write the PQDIF data to.</param>
+            <param name="leaveOpen">Indicates whether to leave the stream open when disposing of the writer.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.LogicalWriter.MissingTags">
+            <summary>
+            Gets a collection of required tags identified as
+            missing from the records written to this PQDIF file.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.LogicalWriter.Write(GSF.PQDIF.Logical.ContainerRecord)">
+            <summary>
+            Writes the given container record to the file stream.
+            </summary>
+            <param name="containerRecord">The container record to be written to the PQDIF file.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.LogicalWriter.Write(GSF.PQDIF.Logical.ObservationRecord,System.Boolean)">
+            <summary>
+            Writes the given observation record, as well as its data source
+            and monitor settings records if necessary, to the file stream.
+            </summary>
+            <param name="observationRecord">The observation record to be written to the PQDIF file.</param>
+            <param name="lastRecord">Indicates whether this observation record is the last record in the file.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.LogicalWriter.Dispose">
+            <summary>
+            Releases the unmanaged resources used by the <see cref="T:GSF.PQDIF.Logical.LogicalWriter"/> object and optionally releases the managed resources.
+            </summary>
         </member>
         <member name="T:GSF.PQDIF.Logical.QuantityCharacteristic">
             <summary>
@@ -1613,18 +1867,26 @@
             Status data.
             </summary>
         </member>
+        <member name="M:GSF.PQDIF.Logical.QuantityCharacteristic.GetInfo(System.Guid)">
+            <summary>
+            Gets information about the quantity
+            characteristic identified by the given ID.
+            </summary>
+            <param name="quantityCharacteristicID">The identifier for the quantity characteristic.</param>
+            <returns>Inforamtion about the quantity characteristic.</returns>
+        </member>
         <member name="M:GSF.PQDIF.Logical.QuantityCharacteristic.ToName(System.Guid)">
             <summary>
             Returns the name of the given quantity characteristic.
             </summary>
-            <param name="quantityCharacteristic">The GUID tag which identifies the quantity characteristic.</param>
+            <param name="quantityCharacteristicID">The GUID tag which identifies the quantity characteristic.</param>
             <returns>The name of the given quantity characteristic.</returns>
         </member>
         <member name="M:GSF.PQDIF.Logical.QuantityCharacteristic.ToString(System.Guid)">
             <summary>
             Returns a string representation of the given quantity characteristic.
             </summary>
-            <param name="quantityCharacteristic">The GUID tag which identifies the quantity characteristic.</param>
+            <param name="quantityCharacteristicID">The GUID tag which identifies the quantity characteristic.</param>
             <returns>The name of the given quantity characteristic.</returns>
         </member>
         <member name="T:GSF.PQDIF.Logical.SeriesValueType">
@@ -1812,11 +2074,18 @@
             Frequency.
             </summary>
         </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesValueType.GetInfo(System.Guid)">
+            <summary>
+            Gets information about the series value type identified by the given ID.
+            </summary>
+            <param name="seriesValueTypeID">The identifier for the series value type.</param>
+            <returns>Information about the series value type.</returns>
+        </member>
         <member name="M:GSF.PQDIF.Logical.SeriesValueType.ToString(System.Guid)">
             <summary>
             Returns the name of the given series value type.
             </summary>
-            <param name="seriesValueType">The GUID tag which identifies the series value type.</param>
+            <param name="seriesValueTypeID">The GUID tag which identifies the series value type.</param>
             <returns>The name of the given series value type.</returns>
         </member>
         <member name="T:GSF.PQDIF.Logical.Vendor">
@@ -1984,111 +2253,19 @@
             The ID for vendor ELCOM.
             </summary>
         </member>
+        <member name="M:GSF.PQDIF.Logical.Vendor.GetInfo(System.Guid)">
+            <summary>
+            Gets information about the vendor identified by the given ID.
+            </summary>
+            <param name="vendorID">Globally unique identifier for the vendor.</param>
+            <returns>The information about the vendor.</returns>
+        </member>
         <member name="M:GSF.PQDIF.Logical.Vendor.ToString(System.Guid)">
             <summary>
             Converts the given vendor ID to a string containing the name of the vendor.
             </summary>
             <param name="vendorID">The ID of the vendor to be converted to a string.</param>
             <returns>A string containing the name of the vendor with the given ID.</returns>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.CollectionElement">
-            <summary>
-            Represents an <see cref="T:GSF.PQDIF.Physical.Element"/> which is a collection of other
-            elements. Collection elements are part of the physical structure of
-            a PQDIF file. They exist within the body of a <see cref="T:GSF.PQDIF.Physical.Record"/>.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.Element">
-            <summary>
-            Base class for elements. Elements are part of the physical structure
-            of a PQDIF file. They exist within the body of a <see cref="T:GSF.PQDIF.Physical.Record"/>.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.Element.TagOfElement">
-            <summary>
-            Gets or sets the tag which identifies the element.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.Element.TypeOfElement">
-            <summary>
-            Gets the type of the element. The element can be a
-            <see cref="T:GSF.PQDIF.Physical.ScalarElement"/>, a <see cref="T:GSF.PQDIF.Physical.VectorElement"/>,
-            or a <see cref="T:GSF.PQDIF.Physical.CollectionElement"/>.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.Element.TypeOfValue">
-            <summary>
-            Gets or sets the physical type of the value or values contained
-            by the element.
-            </summary>
-            <remarks>
-            This determines the data type and size of the
-            value or values. The value of this property is only relevant when
-            <see cref="P:GSF.PQDIF.Physical.Element.TypeOfElement"/> is either <see cref="F:GSF.PQDIF.Physical.ElementType.Scalar"/>
-            or <see cref="F:GSF.PQDIF.Physical.ElementType.Vector"/>.
-            </remarks>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.CollectionElement.#ctor">
-            <summary>
-            Creates a new instance of the <see cref="T:GSF.PQDIF.Physical.CollectionElement"/> class.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.CollectionElement.AddElement(GSF.PQDIF.Physical.Element)">
-            <summary>
-            Adds the given element to the collection.
-            </summary>
-            <param name="element">The element to be added.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.CollectionElement.GetElementsByTag(System.Guid)">
-            <summary>
-            Gets the elements whose tag matches the one given as a parameter.
-            </summary>
-            <param name="tag">The tag of the elements to be retrieved.</param>
-            <returns>
-            An <see cref="T:System.Collections.Generic.IEnumerable`1"/> of <see cref="T:GSF.PQDIF.Physical.Element"/>s
-            identified by the given <paramref name="tag"/>.
-            </returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.CollectionElement.GetCollectionByTag(System.Guid)">
-            <summary>
-            Gets the element whose tag matches the one given as a
-            parameter, type cast to <see cref="T:GSF.PQDIF.Physical.CollectionElement"/>.
-            </summary>
-            <param name="tag">The tag to search by.</param>
-            <returns>The element whose tag matches the one given, or null if no matching collection element exists.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.CollectionElement.GetScalarByTag(System.Guid)">
-            <summary>
-            Gets the element whose tag matches the one given as a
-            parameter, type cast to <see cref="T:GSF.PQDIF.Physical.ScalarElement"/>.
-            </summary>
-            <param name="tag">The tag to search by.</param>
-            <returns>The element whose tag matches the one given, or null if no matching scalar element exists.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.CollectionElement.GetVectorByTag(System.Guid)">
-            <summary>
-            Gets the element whose tag matches the one given as a
-            parameter, type cast to <see cref="T:GSF.PQDIF.Physical.VectorElement"/>.
-            </summary>
-            <param name="tag">The tag to search by.</param>
-            <returns>The element whose tag matches the one given, or null if no matching vector element exists.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.CollectionElement.ToString">
-            <summary>
-            Returns a string that represents the collection.
-            </summary>
-            <returns>A string that represents the collection.</returns>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.CollectionElement.Size">
-            <summary>
-            Gets or sets the number of elements in the collection.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.CollectionElement.TypeOfElement">
-            <summary>
-            Gets the type of the element.
-            Returns <see cref="F:GSF.PQDIF.Physical.ElementType.Collection"/>.
-            </summary>
         </member>
         <member name="T:GSF.PQDIF.Logical.ContainerRecord">
             <summary>
@@ -2103,44 +2280,10 @@
             </summary>
             <param name="physicalRecord">The physical structure of the container record.</param>
         </member>
-        <member name="F:GSF.PQDIF.Logical.ContainerRecord.VersionInfoTag">
+        <member name="P:GSF.PQDIF.Logical.ContainerRecord.PhysicalRecord">
             <summary>
-            Tag that identifies the version info.
+            Gets the physical structure of the container record.
             </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ContainerRecord.FileNameTag">
-            <summary>
-            Tag that identifies the file name.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ContainerRecord.CreationTag">
-            <summary>
-            Tag that identifies the date and time of creation.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ContainerRecord.NotesTag">
-            <summary>
-            Tag that identifies the notes stored in the PQDIF file.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ContainerRecord.CompressionStyleTag">
-            <summary>
-            Tag that identifies the compression style of the PQDIF file.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.ContainerRecord.CompressionAlgorithmTag">
-            <summary>
-            Tag that identifies the compression algorithm used when writing the PQDIF file.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Logical.ContainerRecord.CreateContainerRecord(GSF.PQDIF.Physical.Record)">
-            <summary>
-            Creates a new container record from the given physical record
-            if the physical record is of type container. Returns null if
-            it is not.
-            </summary>
-            <param name="physicalRecord">The physical record used to create the container record.</param>
-            <returns>The new container record, or null if the physical record does not define a container record.</returns>
         </member>
         <member name="P:GSF.PQDIF.Logical.ContainerRecord.WriterMajorVersion">
             <summary>
@@ -2187,6 +2330,51 @@
             Gets the compression algorithm used to compress the PQDIF file.
             </summary>
         </member>
+        <member name="M:GSF.PQDIF.Logical.ContainerRecord.RemoveElement(System.Guid)">
+            <summary>
+            Removes the element identified by the given tag from the record.
+            </summary>
+            <param name="tag">The tag of the element to be removed.</param>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ContainerRecord.VersionInfoTag">
+            <summary>
+            Tag that identifies the version info.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ContainerRecord.FileNameTag">
+            <summary>
+            Tag that identifies the file name.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ContainerRecord.CreationTag">
+            <summary>
+            Tag that identifies the date and time of creation.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ContainerRecord.NotesTag">
+            <summary>
+            Tag that identifies the notes stored in the PQDIF file.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ContainerRecord.CompressionStyleTag">
+            <summary>
+            Tag that identifies the compression style of the PQDIF file.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.ContainerRecord.CompressionAlgorithmTag">
+            <summary>
+            Tag that identifies the compression algorithm used when writing the PQDIF file.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ContainerRecord.CreateContainerRecord(GSF.PQDIF.Physical.Record)">
+            <summary>
+            Creates a new container record from the given physical record
+            if the physical record is of type container. Returns null if
+            it is not.
+            </summary>
+            <param name="physicalRecord">The physical record used to create the container record.</param>
+            <returns>The new container record, or null if the physical record does not define a container record.</returns>
+        </member>
         <member name="T:GSF.PQDIF.Logical.DataSourceRecord">
             <summary>
             Represents a data source record in a PQDIF file. The data source
@@ -2199,6 +2387,59 @@
             Creates a new instance of the <see cref="T:GSF.PQDIF.Logical.DataSourceRecord"/> class.
             </summary>
             <param name="physicalRecord">The physical structure of the data source record.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.PhysicalRecord">
+            <summary>
+            Gets the physical structure of the data source record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.VendorID">
+            <summary>
+            Gets the ID of the vendor of the data source.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.EquipmentID">
+            <summary>
+            Gets the ID of the equipment.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.DataSourceName">
+            <summary>
+            Gets the name of the data source.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.Longitude">
+            <summary>
+            Gets the longitude at which the data source is located.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.Latitude">
+            <summary>
+            Gets the latitude at which the device is located.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.ChannelDefinitions">
+            <summary>
+            Gets the definitions for the channels defined in the data source.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.DataSourceRecord.AddNewChannelDefinition">
+            <summary>
+            Adds a new channel definition to the collection
+            of channel definitions in this data source record.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.DataSourceRecord.Remove(GSF.PQDIF.Logical.ChannelDefinition)">
+            <summary>
+            Removes the given channel definition from the collection of channel definitions.
+            </summary>
+            <param name="channelDefinition">The channel definition to be removed.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.DataSourceRecord.RemoveElement(System.Guid)">
+            <summary>
+            Removes the element identified by the given tag from the record.
+            </summary>
+            <param name="tag">The tag of the element to be removed.</param>
         </member>
         <member name="F:GSF.PQDIF.Logical.DataSourceRecord.DataSourceTypeTag">
             <summary>
@@ -2249,60 +2490,6 @@
             <param name="physicalRecord">The physical record used to create the data source record.</param>
             <returns>The new data source record, or null if the physical record does not define a data source record.</returns>
         </member>
-        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.VendorID">
-            <summary>
-            Gets the ID of the vendor of the data source.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.EquipmentID">
-            <summary>
-            Gets the ID of the equipment.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.DataSourceName">
-            <summary>
-            Gets the name of the data source.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.Longitude">
-            <summary>
-            Gets the longitude at which the data source is located.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.Latitude">
-            <summary>
-            Gets the latitude at which the device is located.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.DataSourceRecord.ChannelDefinitions">
-            <summary>
-            Gets the definitions for the channels defined in the data source.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.ElementType">
-            <summary>
-            Enumeration that defines the types of
-            elements found in the body of a record.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.ElementType.Collection">
-            <summary>
-            Collection element.
-            Represents a collection of elements.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.ElementType.Scalar">
-            <summary>
-            Scalar element.
-            Represents a single value.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.ElementType.Vector">
-            <summary>
-            Vector element.
-            Represents a collection of values.
-            </summary>
-        </member>
         <member name="T:GSF.PQDIF.Logical.LogicalParser">
             <summary>
             Represents a parser which parses the logical structure of a PQDIF file.
@@ -2313,6 +2500,12 @@
             Creates a new instance of the <see cref="T:GSF.PQDIF.Logical.LogicalParser"/> class.
             </summary>
             <param name="fileName">Name of the PQDIF file to be parsed.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.LogicalParser.ContainerRecord">
+            <summary>
+            Gets the container record from the PQDIF file. This is
+            parsed as soon as the parser is <see cref="M:GSF.PQDIF.Logical.LogicalParser.Open"/>ed.
+            </summary>
         </member>
         <member name="M:GSF.PQDIF.Logical.LogicalParser.Open">
             <summary>
@@ -2348,12 +2541,6 @@
             Releases resources held by the parser.
             </summary>
         </member>
-        <member name="P:GSF.PQDIF.Logical.LogicalParser.ContainerRecord">
-            <summary>
-            Gets the container record from the PQDIF file. This is
-            parsed as soon as the parser is <see cref="M:GSF.PQDIF.Logical.LogicalParser.Open"/>ed.
-            </summary>
-        </member>
         <member name="T:GSF.PQDIF.Logical.MonitorSettingsRecord">
             <summary>
             Represents a monitor settings record in a PQDIF file.
@@ -2364,6 +2551,57 @@
             Creates a new instance of the <see cref="T:GSF.PQDIF.Logical.MonitorSettingsRecord"/> class.
             </summary>
             <param name="physicalRecord">The physical structure of the monitor settings record.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MonitorSettingsRecord.PhysicalRecord">
+            <summary>
+            Gets the physical record of the monitor settings record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MonitorSettingsRecord.Effective">
+            <summary>
+            Gets or sets the date time at which these settings become effective.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MonitorSettingsRecord.TimeInstalled">
+            <summary>
+            Gets or sets the time at which the settings were installed.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MonitorSettingsRecord.UseCalibration">
+            <summary>
+            Gets or sets the flag that determines whether the
+            calibration settings need to be applied before using
+            the values recorded by this monitor.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MonitorSettingsRecord.UseTransducer">
+            <summary>
+            Gets or sets the flag that determines whether the
+            transducer ratio needs to be applied before using
+            the values recorded by this monitor.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MonitorSettingsRecord.ChannelSettings">
+            <summary>
+            Gets or sets the settings for the channels defined in the data source.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.MonitorSettingsRecord.NominalFrequency">
+            <summary>
+            Gets or sets nominal frequency.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.MonitorSettingsRecord.AddNewChannelSetting">
+            <summary>
+            Adds a new channel setting to the collection
+            of channel settings in this monitor settings record.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.MonitorSettingsRecord.Remove(GSF.PQDIF.Logical.ChannelSetting)">
+            <summary>
+            Removes the given channel setting from the collection of channel settings.
+            </summary>
+            <param name="channelSetting">The channel setting to be removed.</param>
         </member>
         <member name="F:GSF.PQDIF.Logical.MonitorSettingsRecord.EffectiveTag">
             <summary>
@@ -2409,11 +2647,6 @@
             <param name="physicalRecord">The physical record used to create the monitor settings record.</param>
             <returns>The new monitor settings record, or null if the physical record does not define a monitor settings record.</returns>
         </member>
-        <member name="P:GSF.PQDIF.Logical.MonitorSettingsRecord.NominalFrequency">
-            <summary>
-            Gets nominal frequency.
-            </summary>
-        </member>
         <member name="T:GSF.PQDIF.Logical.ObservationRecord">
             <summary>
             Represents an observation record in a PQDIF file.
@@ -2426,6 +2659,50 @@
             <param name="physicalRecord">The physical structure of the observation record.</param>
             <param name="dataSource">The data source record that defines the channels in this observation record.</param>
             <param name="settings">The monitor settings to be applied to this observation record.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ObservationRecord.PhysicalRecord">
+            <summary>
+            Gets the physical structure of the observation record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ObservationRecord.DataSource">
+            <summary>
+            Gets the data source record that defines
+            the channels in this observation record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ObservationRecord.Settings">
+            <summary>
+            Gets the monitor settings record that defines the
+            settings to be applied to this observation record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ObservationRecord.Name">
+            <summary>
+            Gets the name of the observation record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ObservationRecord.StartTime">
+            <summary>
+            Gets the starting time of the data in the observation record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Logical.ObservationRecord.ChannelInstances">
+            <summary>
+            Gets the channel instances in this observation record.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ObservationRecord.AddNewChannelInstance">
+            <summary>
+            Adds a new channel instance to the collection
+            of channel instances in this observation record.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.ObservationRecord.Remove(GSF.PQDIF.Logical.ChannelInstance)">
+            <summary>
+            Removes the given channel instance from the collection of channel instances.
+            </summary>
+            <param name="channelInstance">The channel instance to be removed.</param>
         </member>
         <member name="F:GSF.PQDIF.Logical.ObservationRecord.ObservationNameTag">
             <summary>
@@ -2467,255 +2744,6 @@
             <param name="dataSource">The data source record that defines the channels in this observation record.</param>
             <param name="settings">The monitor settings to be applied to this observation record.</param>
             <returns>The new observation record, or null if the physical record does not define a observation record.</returns>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.ObservationRecord.DataSource">
-            <summary>
-            Gets the data source record that defines
-            the channels in this observation record.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.ObservationRecord.Settings">
-            <summary>
-            Gets the monitor settings record that defines the
-            settings to be applied to this observation record.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.ObservationRecord.Name">
-            <summary>
-            Gets the name of the observation record.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.ObservationRecord.StartTime">
-            <summary>
-            Gets the starting time of the data in the observation record.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Logical.ObservationRecord.ChannelInstances">
-            <summary>
-            Gets the channel instances in this observation record.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.CompressionStyle">
-            <summary>
-            Enumeration which defines the types of compression used in PQDIF files.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.CompressionStyle.None">
-            <summary>
-            No compression.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.CompressionStyle.TotalFile">
-            <summary>
-            Compress the entire file after the container record.
-            This compression style is deprecated and is currently
-            not supported by this PQDIF library.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.CompressionStyle.RecordLevel">
-            <summary>
-            Compress the body of each record.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.CompressionAlgorithm">
-            <summary>
-            Enumeration which defines the algorithms used to compress PQDIF files.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.CompressionAlgorithm.None">
-            <summary>
-            No compression.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.CompressionAlgorithm.Zlib">
-            <summary>
-            Zlib compression.
-            http://www.zlib.net/
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.CompressionAlgorithm.PKZIP">
-            <summary>
-            PKZIP compression.
-            This compression algorithm is deprecated and
-            is currently not supported by this PQDIF library.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.PhysicalParser">
-            <summary>
-            Represents a parser which parses the physical structure of a PQDIF file.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.PhysicalParser.#ctor(System.String)">
-            <summary>
-            Creates a new instance of the <see cref="T:GSF.PQDIF.Physical.PhysicalParser"/> class.
-            </summary>
-            <param name="fileName">Name of the PQDIF file to be parsed.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.PhysicalParser.Open">
-            <summary>
-            Opens the PQDIF file.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.PhysicalParser.HasNextRecord">
-            <summary>
-            Returns true if this parser has not reached the end of the PQDIF file.
-            </summary>
-            <returns><c>false</c> if the end of the file has been reached; <c>true</c> otherwise</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.PhysicalParser.NextRecord">
-            <summary>
-            Reads the next record from the PQDIF file.
-            </summary>
-            <returns>The next record to be parsed from the PQDIF file.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.PhysicalParser.Reset">
-            <summary>
-            Sets the parser back to the beginning of the file.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.PhysicalParser.Close">
-            <summary>
-            Closes the PQDIF file.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.PhysicalParser.Dispose">
-            <summary>
-            Releases all resources held by this parser.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.PhysicalParser.FileName">
-            <summary>
-            Gets or sets the file name of the PQDIF file to be parsed.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.PhysicalParser.CompressionStyle">
-            <summary>
-            Gets or sets the compression style used by the PQDIF file.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.PhysicalParser.CompressionAlgorithm">
-            <summary>
-            Gets or sets the compression algorithm used by the PQDIF file.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.PhysicalType">
-            <summary>
-            Enumeration that defines the types of values stored in
-            <see cref="T:GSF.PQDIF.Physical.ScalarElement"/>s and <see cref="T:GSF.PQDIF.Physical.VectorElement"/>s.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Boolean1">
-            <summary>
-            1-byte boolean
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Boolean2">
-            <summary>
-            2-byte boolean
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Boolean4">
-            <summary>
-            4-byte boolean
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Char1">
-            <summary>
-            1-byte character (ASCII)
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Char2">
-            <summary>
-            2-byte character (UTF-16)
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Integer1">
-            <summary>
-            8-bit signed integer
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Integer2">
-            <summary>
-            16-bit signed integer
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Integer4">
-            <summary>
-            32-bit signed integer
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.UnsignedInteger1">
-            <summary>
-            8-bit unsigned integer
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.UnsignedInteger2">
-            <summary>
-            16-bit unsigned integer
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.UnsignedInteger4">
-            <summary>
-            32-bit unsigned integer
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Real4">
-            <summary>
-            32-bit floating point number
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Real8">
-            <summary>
-            64-bit floating point number
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Complex8">
-            <summary>
-            8-byte complex number
-            </summary>
-            <remarks>
-            The first four bytes represent the real part of the complex
-            number, and the last four bytes represent the imaginary part.
-            Both values are 64-bit floating point numbers.
-            </remarks>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Complex16">
-            <summary>
-            16-byte complex number
-            </summary>
-            <remarks>
-            The first eight bytes represent the real part of the complex
-            number, and the last eight bytes represent the imaginary part.
-            Both values are 64-bit floating point numbers.
-            </remarks>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Timestamp">
-            <summary>
-            12-byte timestamp
-            </summary>
-            <remarks>
-            The first four bytes represent the days since January 1, 1900
-            UTC. The last eight bytes represent the number of seconds since
-            midnight. The number of days is an unsigned 32-bit integer, and
-            the number of seconds is a 64-bit floating point number.
-            </remarks>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.PhysicalType.Guid">
-            <summary>
-            128-bit globally unique identifier
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.PysicalTypeExtensions">
-            <summary>
-            Defines extension methods for <see cref="T:GSF.PQDIF.Physical.PhysicalType"/>.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.PysicalTypeExtensions.GetByteSize(GSF.PQDIF.Physical.PhysicalType)">
-            <summary>
-            Gets the size of the physical type, in bytes.
-            </summary>
-            <param name="type">The physical type.</param>
-            <returns>The size of the physical type, in bytes.</returns>
         </member>
         <member name="T:GSF.PQDIF.Logical.QuantityType">
             <summary>
@@ -2790,6 +2818,14 @@
             Time, magnitude, duration, and count.
             </summary>
         </member>
+        <member name="M:GSF.PQDIF.Logical.QuantityType.GetInfo(System.Guid)">
+            <summary>
+            Gets the information about the quantity
+            type identified by the given ID.
+            </summary>
+            <param name="quantityTypeID">The quantity type ID.</param>
+            <returns>Information about the quantity type.</returns>
+        </member>
         <member name="M:GSF.PQDIF.Logical.QuantityType.ToString(System.Guid)">
             <summary>
             Gets the name of the quantity type with the given ID.
@@ -2803,338 +2839,6 @@
             </summary>
             <param name="id">The ID to be tested.</param>
             <returns>True if the given ID is a quantity type ID; false otherwise.</returns>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.RecordHeader">
-            <summary>
-            The header of a PQDIF <see cref="T:GSF.PQDIF.Physical.Record"/>. The header is part of
-            the physical structure of a PQDIF file, and contains information
-            on how to parse the <see cref="T:GSF.PQDIF.Physical.RecordBody"/> as well as how to find
-            the next record.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.RecordHeader.ToString">
-            <summary>
-            Returns a string representation of the record header.
-            </summary>
-            <returns>A string representation of the record header.</returns>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.RecordHeader.RecordSignature">
-            <summary>
-            Gets or sets the record's globally unique identifier.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.RecordHeader.TypeOfRecord">
-            <summary>
-            Gets or sets the type of the record which determines
-            the logical structure of the record.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.RecordHeader.RecordTypeTag">
-            <summary>
-            Gets or sets the tag which identifies the type of the record.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.RecordHeader.HeaderSize">
-            <summary>
-            Gets or sets the size of the header, in bytes.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.RecordHeader.BodySize">
-            <summary>
-            Gets or sets the size of the body, in bytes.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.RecordHeader.NextRecordPosition">
-            <summary>
-            Gets or sets the position of the next record in the PQDIF file.
-            This value is a byte offset relative to the beginning of the file.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.RecordHeader.Checksum">
-            <summary>
-            Optional checksum (such as a 32-bit CRC)
-            of the record body to verify decompression.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.RecordHeader.Reserved">
-            <summary>
-            Reserved to fill structure to 64 bytes. Should be filled with 0.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.RecordType">
-            <summary>
-            Enumeration that defines type of record as per header definition.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.RecordType.Container">
-            <summary>
-            Represents a record level tag which identifies the container record.
-            Always the first one in the file, and only one per file.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.RecordType.DataSource">
-            <summary>
-            Represents a record level tag which identifies the data source record.
-            Instrument level information.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.RecordType.MonitorSettings">
-            <summary>
-            Represents an optional record level tag which identifies configuration parameters.
-            Used to capture configuration changes on the data source.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.RecordType.Observation">
-            <summary>
-            Represents a record-level tag which identifies an observation.
-            Used to capture an event, measurements etc.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Physical.RecordType.Unknown">
-            <summary>
-            Represents a record-level tag which is unknown to this library.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.Record">
-            <summary>
-            Represents a record in a PQDIF file. This class
-            exposes the physical structure of the record.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.Record.#ctor(GSF.PQDIF.Physical.RecordHeader,GSF.PQDIF.Physical.RecordBody)">
-            <summary>
-            Creates an instance of <see cref="T:GSF.PQDIF.Physical.Record"/>.
-            </summary>
-            <param name="header">The record header.</param>
-            <param name="body">The record body.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.Record.ToString">
-            <summary>
-            Returns a string representation of the record.
-            </summary>
-            <returns>A string representation of the record.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.Record.GetRecordType(System.Guid)">
-            <summary>
-            Gets the <see cref="T:GSF.PQDIF.Physical.RecordType"/> identified by the given tag.
-            </summary>
-            <param name="recordTypeTag">The tag of the <see cref="T:GSF.PQDIF.Physical.RecordType"/>.</param>
-            <returns>The <see cref="T:GSF.PQDIF.Physical.RecordType"/> identified by the given tag.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.Record.GetTypeAsTag(GSF.PQDIF.Physical.RecordType)">
-            <summary>
-            Gets the globally unique identifier used to identify the given record type.
-            </summary>
-            <param name="recordType">The record type to search for.</param>
-            <returns>The globally unique identifier used to identify the given record type.</returns>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.Record.Header">
-            <summary>
-            Gets or sets the record header.
-            </summary>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.Record.Body">
-            <summary>
-            Gets or sets the record body.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.RecordBody">
-            <summary>
-            The body of a PQDIF <see cref="T:GSF.PQDIF.Physical.Record"/>. The body is part of the
-            physical structure of a PQDIF file. It laid out as a hierarchy of
-            <see cref="T:GSF.PQDIF.Physical.Element"/>s, starting with a
-            <see cref="T:GSF.PQDIF.Physical.CollectionElement"/> that contains other elements.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.RecordBody.ToString">
-            <summary>
-            Returns a string representation of the record body.
-            </summary>
-            <returns>A string representation of the record body.</returns>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.RecordBody.Collection">
-            <summary>
-            Gets or sets the <see cref="T:GSF.PQDIF.Physical.CollectionElement"/> at the top
-            of the hierarchy. This can be used to traverse the hierarchy.
-            </summary>
-        </member>
-        <member name="T:GSF.PQDIF.Physical.ScalarElement">
-            <summary>
-            Represents an <see cref="T:GSF.PQDIF.Physical.Element"/> which is a single value in a
-            PQDIF file. Scalar elements are part of the physical structure of
-            a PQDIF file. They exist within the body of a <see cref="T:GSF.PQDIF.Physical.Record"/>
-            (contained by a <see cref="T:GSF.PQDIF.Physical.CollectionElement"/>).
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.#ctor">
-            <summary>
-            Creates a new instance of the <see cref="T:GSF.PQDIF.Physical.ScalarElement"/> class.
-            </summary>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.Get">
-            <summary>
-            Gets the value of the scalar as the physical type defined
-            by <see cref="P:GSF.PQDIF.Physical.Element.TypeOfValue"/> and returns it as a generic
-            <see cref="T:System.Object"/>.
-            </summary>
-            <returns>The value of the scalar.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetUInt2">
-            <summary>
-            Gets the value of this scalar as a 16-bit unsigned integer.
-            </summary>
-            <returns>The value as a 16-bit unsigned integer.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetUInt2(System.UInt16)">
-            <summary>
-            Sets the value of this scalar as a 16-bit unsigned integer.
-            </summary>
-            <param name="value">The new value as a 16-bit unsigned integer.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetInt2">
-            <summary>
-            Gets the value of this scalar as a 16-bit signed integer.
-            </summary>
-            <returns>The value as a 16-bit signed integer.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetInt2(System.Int16)">
-            <summary>
-            Sets the value of this scalar as a 16-bit signed integer.
-            </summary>
-            <param name="value">The new value as a 16-bit signed integer.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetUInt4">
-            <summary>
-            Gets the value of this scalar as a 32-bit unsigned integer.
-            </summary>
-            <returns>The value as a 32-bit unsigned integer.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetUInt4(System.UInt32)">
-            <summary>
-            Sets the value of this scalar as a 32-bit unsigned integer.
-            </summary>
-            <param name="value">The new value as a 32-bit unsigned integer.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetInt4">
-            <summary>
-            Gets the value of this scalar as a 32-bit signed integer.
-            </summary>
-            <returns>The value as a 32-bit signed integer.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetInt4(System.Int32)">
-            <summary>
-            Sets the value of this scalar as a 32-bit signed integer.
-            </summary>
-            <param name="value">The new value as a 32-bit signed integer.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetBool4">
-            <summary>
-            Gets the value of this scalar as a 4-byte boolean.
-            </summary>
-            <returns>The value as a 4-byte boolean.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetBool4(System.Boolean)">
-            <summary>
-            Sets the value of this scalar as a 4-byte boolean.
-            </summary>
-            <param name="value">The new value as a 4-byte boolean.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetReal4">
-            <summary>
-            Gets the value of this scalar as a 32-bit floating point number.
-            </summary>
-            <returns>The value as a 32-bit floating point number.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetReal4(System.Single)">
-            <summary>
-            Sets the value of this scalar as a 32-bit floating point number.
-            </summary>
-            <param name="value">The new value as a 32-bit floating point number.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetReal8">
-            <summary>
-            Gets the value of this scalar as a 64-bit floating point number.
-            </summary>
-            <returns>The value as a 64-bit floating point number.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetReal8(System.Double)">
-            <summary>
-            Sets the value of this scalar as a 64-bit floating point number.
-            </summary>
-            <param name="value">The new value as a 64-bit floating point number.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetComplex8">
-            <summary>
-            Gets the value of this scalar as an 8-byte complex number.
-            </summary>
-            <returns>The value as an 8-byte complex number.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetComplex8(GSF.ComplexNumber)">
-            <summary>
-            Sets the value of this scalar as an 8-byte complex number.
-            </summary>
-            <param name="value">The new value as an 8-byte complex number.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetComplex16">
-            <summary>
-            Gets the value of this scalar as a 16-byte complex number.
-            </summary>
-            <returns>The value as a 16-byte complex number.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetComplex16(GSF.ComplexNumber)">
-            <summary>
-            Sets the value of this scalar as a 16-byte complex number.
-            </summary>
-            <param name="value">The new value as a 16-byte complex number.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetGuid">
-            <summary>
-            Gets the value of this scalar as a globally unique identifier.
-            </summary>
-            <returns>The value as a globally unique identifier.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetGuid(System.Guid)">
-            <summary>
-            Sets the value of this scalar as a globally unique identifier.
-            </summary>
-            <param name="value">The new value as a globally unique identifier.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetTimestamp">
-            <summary>
-            Gets the value of this scalar as <see cref="T:System.DateTime"/>.
-            </summary>
-            <returns>The value of this scalar as a <see cref="T:System.DateTime"/>.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetTimestamp(System.DateTime)">
-            <summary>
-            Sets the value of this scalar as a <see cref="T:System.DateTime"/>.
-            </summary>
-            <param name="value">The new value of this scalar as a <see cref="T:System.DateTime"/>.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetValue">
-            <summary>
-            Gets the raw bytes of the value that this scalar represents.
-            </summary>
-            <returns>The value in bytes.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetValue(System.Byte[],System.Int32)">
-            <summary>
-            Sets the raw bytes of the value that this scalar represents.
-            </summary>
-            <param name="value">The array containing the bytes.</param>
-            <param name="offset">The offset into the array at which the value starts.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.ScalarElement.ToString">
-            <summary>
-            Returns a string representation of the scalar.
-            </summary>
-            <returns>A string representation of the scalar.</returns>
-        </member>
-        <member name="P:GSF.PQDIF.Physical.ScalarElement.TypeOfElement">
-            <summary>
-            Gets the type of the element.
-            Returns <see cref="F:GSF.PQDIF.Physical.ElementType.Scalar"/>.
-            </summary>
         </member>
         <member name="T:GSF.PQDIF.Logical.StorageMethods">
             <summary>
@@ -3368,29 +3072,9 @@
             <param name="physicalStructure">The collection that is the physical structure of the series definition.</param>
             <param name="channelDefinition">The channel definition in which the series definition resides.</param>
         </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.ValueTypeIDTag">
+        <member name="P:GSF.PQDIF.Logical.SeriesDefinition.PhysicalStructure">
             <summary>
-            Tag that identifies the value type ID of the series.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.QuantityUnitsIDTag">
-            <summary>
-            Tag that identifies the quantity units ID of the series.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.QuantityCharacteristicIDTag">
-            <summary>
-            Tag that identifies the characteristic ID of the series.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.StorageMethodIDTag">
-            <summary>
-            Tag that identifies the storage method ID of the series.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.ValueTypeNameTag">
-            <summary>
-            Tag that identifies the value type name of the series.
+            Gets the physical structure of the series definition.
             </summary>
         </member>
         <member name="P:GSF.PQDIF.Logical.SeriesDefinition.ChannelDefinition">
@@ -3425,6 +3109,71 @@
             Gets the value type name of the series.
             </summary>
         </member>
+        <member name="P:GSF.PQDIF.Logical.SeriesDefinition.SeriesNominalQuantity">
+            <summary>
+            Gets the nominal quantity of the series.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesDefinition.HasElement(System.Guid)">
+            <summary>
+            Determines whether an element identified by the
+            given tag exists in this object's physical structure.
+            </summary>
+            <param name="tag">The tag of the element to search for.</param>
+            <returns>True if the element exists; false otherwise.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesDefinition.Equals(GSF.PQDIF.Logical.SeriesDefinition)">
+            <summary>
+            Indicates whether the current object is equal to another object of the same type.
+            </summary>
+            <param name="other">An object to compare with this object.</param>
+            <returns>true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesDefinition.Equals(System.Object)">
+            <summary>
+            Determines whether the specified <see cref="T:System.Object"/> is equal to the current <see cref="T:System.Object"/>.
+            </summary>
+            <param name="obj">The object to compare with the current object. </param>
+            <returns>true if the specified object  is equal to the current object; otherwise, false.</returns>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesDefinition.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type. 
+            </summary>
+            <returns>A hash code for the current <see cref="T:System.Object"/>.</returns>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.ValueTypeIDTag">
+            <summary>
+            Tag that identifies the value type ID of the series.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.QuantityUnitsIDTag">
+            <summary>
+            Tag that identifies the quantity units ID of the series.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.QuantityCharacteristicIDTag">
+            <summary>
+            Tag that identifies the characteristic ID of the series.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.StorageMethodIDTag">
+            <summary>
+            Tag that identifies the storage method ID of the series.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.ValueTypeNameTag">
+            <summary>
+            Tag that identifies the value type name of the series.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesDefinition.SeriesNominalQuantityTag">
+            <summary>
+            Tag that identifies the nominal quantity of the series.
+            </summary>
+        </member>
         <member name="T:GSF.PQDIF.Logical.SeriesInstance">
             <summary>
             Represents an instance of a series in a PQDIF file. A series
@@ -3440,36 +3189,9 @@
             <param name="channel">The channel instance that this series instance resides in.</param>
             <param name="definition">The series definition that defines this series instance.</param>
         </member>
-        <member name="M:GSF.PQDIF.Logical.SeriesInstance.GetOriginalValues">
+        <member name="P:GSF.PQDIF.Logical.SeriesInstance.PhysicalStructure">
             <summary>
-            Gets the original data values by expanding
-            sequences and applying scale and offset.
-            </summary>
-            <returns>A list of the original data values.</returns>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesScaleTag">
-            <summary>
-            Tag that identifies the scale value to apply to the series.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesOffsetTag">
-            <summary>
-            Tag that identifies the offset value to apply to the series.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesValuesTag">
-            <summary>
-            Tag that identifies the values contained in the series.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesShareChannelIndexTag">
-            <summary>
-            Tag that identifies the index of the channel that owns the series to be shared.
-            </summary>
-        </member>
-        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesShareSeriesIndexTag">
-            <summary>
-            Tag that identifies the index of the series to be shared.
+            Gets the physical structure of the series instance.
             </summary>
         </member>
         <member name="P:GSF.PQDIF.Logical.SeriesInstance.Channel">
@@ -3525,6 +3247,849 @@
             Gets the series to be shared.
             </summary>
         </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesInstance.SetValues(System.Collections.Generic.IList{System.Object})">
+            <summary>
+            Sets the raw values to be written to the PQDIF file as the <see cref="P:GSF.PQDIF.Logical.SeriesInstance.SeriesValues"/>.
+            </summary>
+            <param name="values">The values to be written to the PQDIF file.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesInstance.SetValues(System.Object,System.Object,System.Object)">
+            <summary>
+            Sets the values to be written to the PQDIF
+            file for the increment storage method.
+            </summary>
+            <param name="start">The start of the increment.</param>
+            <param name="count">The number of values in the series.</param>
+            <param name="increment">The amount by which to increment each value in the series.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesInstance.Equals(GSF.PQDIF.Logical.SeriesInstance)">
+            <summary>
+            Indicates whether the current object is equal to another object of the same type.
+            </summary>
+            <param name="other">An object to compare with this object.</param>
+            <returns>true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesInstance.Equals(System.Object)">
+            <summary>
+            Determines whether the specified <see cref="T:GSF.PQDIF.Logical.SeriesInstance"/> is equal to the current <see cref="T:GSF.PQDIF.Logical.SeriesInstance"/>.
+            </summary>
+            <param name="obj">The object to compare with the current object. </param>
+            <returns>true if the specified object  is equal to the current object; otherwise, false.</returns>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesInstance.GetHashCode">
+            <summary>
+            Serves as a hash function for a particular type. 
+            </summary>
+            <returns>A hash code for the current <see cref="T:GSF.PQDIF.Logical.SeriesInstance"/>.</returns>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="M:GSF.PQDIF.Logical.SeriesInstance.GetOriginalValues">
+            <summary>
+            Gets the original data values by expanding
+            sequences and applying scale and offset.
+            </summary>
+            <returns>A list of the original data values.</returns>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesScaleTag">
+            <summary>
+            Tag that identifies the scale value to apply to the series.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesOffsetTag">
+            <summary>
+            Tag that identifies the offset value to apply to the series.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesValuesTag">
+            <summary>
+            Tag that identifies the values contained in the series.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesShareChannelIndexTag">
+            <summary>
+            Tag that identifies the index of the channel that owns the series to be shared.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Logical.SeriesInstance.SeriesShareSeriesIndexTag">
+            <summary>
+            Tag that identifies the index of the series to be shared.
+            </summary>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.CollectionElement">
+            <summary>
+            Represents an <see cref="T:GSF.PQDIF.Physical.Element"/> which is a collection of other
+            elements. Collection elements are part of the physical structure of
+            a PQDIF file. They exist within the body of a <see cref="T:GSF.PQDIF.Physical.Record"/>.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.CollectionElement.#ctor">
+            <summary>
+            Creates a new instance of the <see cref="T:GSF.PQDIF.Physical.CollectionElement"/> class.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.CollectionElement.Size">
+            <summary>
+            Gets or sets the number of elements in the collection.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.CollectionElement.TypeOfElement">
+            <summary>
+            Gets the type of the element.
+            Returns <see cref="F:GSF.PQDIF.Physical.ElementType.Collection"/>.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.CollectionElement.Elements">
+            <summary>
+            Gets a list of the element in this collection.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.CollectionElement.AddElement(GSF.PQDIF.Physical.Element)">
+            <summary>
+            Adds the given element to the collection.
+            </summary>
+            <param name="element">The element to be added.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.CollectionElement.RemoveElement(GSF.PQDIF.Physical.Element)">
+            <summary>
+            Removes the given element from the collection.
+            </summary>
+            <param name="element">The element to be removed.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.CollectionElement.RemoveElementsByTag(System.Guid)">
+            <summary>
+            Removes all elements identified by the given tag from the collection.
+            </summary>
+            <param name="tag">The tag of the elements to be removed.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.CollectionElement.GetElementsByTag(System.Guid)">
+            <summary>
+            Gets the elements whose tag matches the one given as a parameter.
+            </summary>
+            <param name="tag">The tag of the elements to be retrieved.</param>
+            <returns>
+            An <see cref="T:System.Collections.Generic.IEnumerable`1"/> of <see cref="T:GSF.PQDIF.Physical.Element"/>s
+            identified by the given <paramref name="tag"/>.
+            </returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.CollectionElement.GetCollectionByTag(System.Guid)">
+            <summary>
+            Gets the element whose tag matches the one given as a
+            parameter, type cast to <see cref="T:GSF.PQDIF.Physical.CollectionElement"/>.
+            </summary>
+            <param name="tag">The tag to search by.</param>
+            <returns>The element whose tag matches the one given, or null if no matching collection element exists.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.CollectionElement.GetScalarByTag(System.Guid)">
+            <summary>
+            Gets the element whose tag matches the one given as a
+            parameter, type cast to <see cref="T:GSF.PQDIF.Physical.ScalarElement"/>.
+            </summary>
+            <param name="tag">The tag to search by.</param>
+            <returns>The element whose tag matches the one given, or null if no matching scalar element exists.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.CollectionElement.GetVectorByTag(System.Guid)">
+            <summary>
+            Gets the element whose tag matches the one given as a
+            parameter, type cast to <see cref="T:GSF.PQDIF.Physical.VectorElement"/>.
+            </summary>
+            <param name="tag">The tag to search by.</param>
+            <returns>The element whose tag matches the one given, or null if no matching vector element exists.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.CollectionElement.ToString">
+            <summary>
+            Returns a string that represents the collection.
+            </summary>
+            <returns>A string that represents the collection.</returns>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.ElementType">
+            <summary>
+            Enumeration that defines the types of
+            elements found in the body of a record.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.ElementType.Collection">
+            <summary>
+            Collection element.
+            Represents a collection of elements.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.ElementType.Scalar">
+            <summary>
+            Scalar element.
+            Represents a single value.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.ElementType.Vector">
+            <summary>
+            Vector element.
+            Represents a collection of values.
+            </summary>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.Element">
+            <summary>
+            Base class for elements. Elements are part of the physical structure
+            of a PQDIF file. They exist within the body of a <see cref="T:GSF.PQDIF.Physical.Record"/>.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.Element.TagOfElement">
+            <summary>
+            Gets or sets the tag which identifies the element.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.Element.TypeOfElement">
+            <summary>
+            Gets the type of the element. The element can be a
+            <see cref="T:GSF.PQDIF.Physical.ScalarElement"/>, a <see cref="T:GSF.PQDIF.Physical.VectorElement"/>,
+            or a <see cref="T:GSF.PQDIF.Physical.CollectionElement"/>.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.Element.TypeOfValue">
+            <summary>
+            Gets or sets the physical type of the value or values contained
+            by the element.
+            </summary>
+            <remarks>
+            This determines the data type and size of the
+            value or values. The value of this property is only relevant when
+            <see cref="P:GSF.PQDIF.Physical.Element.TypeOfElement"/> is either <see cref="F:GSF.PQDIF.Physical.ElementType.Scalar"/>
+            or <see cref="F:GSF.PQDIF.Physical.ElementType.Vector"/>.
+            </remarks>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.CompressionStyle">
+            <summary>
+            Enumeration which defines the types of compression used in PQDIF files.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.CompressionStyle.None">
+            <summary>
+            No compression.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.CompressionStyle.TotalFile">
+            <summary>
+            Compress the entire file after the container record.
+            This compression style is deprecated and is currently
+            not supported by this PQDIF library.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.CompressionStyle.RecordLevel">
+            <summary>
+            Compress the body of each record.
+            </summary>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.CompressionAlgorithm">
+            <summary>
+            Enumeration which defines the algorithms used to compress PQDIF files.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.CompressionAlgorithm.None">
+            <summary>
+            No compression.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.CompressionAlgorithm.Zlib">
+            <summary>
+            Zlib compression.
+            http://www.zlib.net/
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.CompressionAlgorithm.PKZIP">
+            <summary>
+            PKZIP compression.
+            This compression algorithm is deprecated and
+            is currently not supported by this PQDIF library.
+            </summary>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.PhysicalParser">
+            <summary>
+            Represents a parser which parses the physical structure of a PQDIF file.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalParser.#ctor(System.String)">
+            <summary>
+            Creates a new instance of the <see cref="T:GSF.PQDIF.Physical.PhysicalParser"/> class.
+            </summary>
+            <param name="fileName">Name of the PQDIF file to be parsed.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.PhysicalParser.FileName">
+            <summary>
+            Gets or sets the file name of the PQDIF file to be parsed.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.PhysicalParser.CompressionStyle">
+            <summary>
+            Gets or sets the compression style used by the PQDIF file.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.PhysicalParser.CompressionAlgorithm">
+            <summary>
+            Gets or sets the compression algorithm used by the PQDIF file.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalParser.Open">
+            <summary>
+            Opens the PQDIF file.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalParser.HasNextRecord">
+            <summary>
+            Returns true if this parser has not reached the end of the PQDIF file.
+            </summary>
+            <returns><c>false</c> if the end of the file has been reached; <c>true</c> otherwise</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalParser.NextRecord">
+            <summary>
+            Reads the next record from the PQDIF file.
+            </summary>
+            <returns>The next record to be parsed from the PQDIF file.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalParser.Reset">
+            <summary>
+            Sets the parser back to the beginning of the file.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalParser.Close">
+            <summary>
+            Closes the PQDIF file.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalParser.Dispose">
+            <summary>
+            Releases all resources held by this parser.
+            </summary>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.PhysicalType">
+            <summary>
+            Enumeration that defines the types of values stored in
+            <see cref="T:GSF.PQDIF.Physical.ScalarElement"/>s and <see cref="T:GSF.PQDIF.Physical.VectorElement"/>s.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Boolean1">
+            <summary>
+            1-byte boolean
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Boolean2">
+            <summary>
+            2-byte boolean
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Boolean4">
+            <summary>
+            4-byte boolean
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Char1">
+            <summary>
+            1-byte character (ASCII)
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Char2">
+            <summary>
+            2-byte character (UTF-16)
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Integer1">
+            <summary>
+            8-bit signed integer
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Integer2">
+            <summary>
+            16-bit signed integer
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Integer4">
+            <summary>
+            32-bit signed integer
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.UnsignedInteger1">
+            <summary>
+            8-bit unsigned integer
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.UnsignedInteger2">
+            <summary>
+            16-bit unsigned integer
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.UnsignedInteger4">
+            <summary>
+            32-bit unsigned integer
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Real4">
+            <summary>
+            32-bit floating point number
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Real8">
+            <summary>
+            64-bit floating point number
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Complex8">
+            <summary>
+            8-byte complex number
+            </summary>
+            <remarks>
+            The first four bytes represent the real part of the complex
+            number, and the last four bytes represent the imaginary part.
+            Both values are 32-bit floating point numbers.
+            </remarks>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Complex16">
+            <summary>
+            16-byte complex number
+            </summary>
+            <remarks>
+            The first eight bytes represent the real part of the complex
+            number, and the last eight bytes represent the imaginary part.
+            Both values are 64-bit floating point numbers.
+            </remarks>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Timestamp">
+            <summary>
+            12-byte timestamp
+            </summary>
+            <remarks>
+            The first four bytes represent the days since January 1, 1900
+            UTC. The last eight bytes represent the number of seconds since
+            midnight. The number of days is an unsigned 32-bit integer, and
+            the number of seconds is a 64-bit floating point number.
+            </remarks>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.PhysicalType.Guid">
+            <summary>
+            128-bit globally unique identifier
+            </summary>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.PhysicalTypeExtensions">
+            <summary>
+            Defines extension methods for <see cref="T:GSF.PQDIF.Physical.PhysicalType"/>.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalTypeExtensions.GetByteSize(GSF.PQDIF.Physical.PhysicalType)">
+            <summary>
+            Gets the size of the physical type, in bytes.
+            </summary>
+            <param name="type">The physical type.</param>
+            <returns>The size of the physical type, in bytes.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalTypeExtensions.GetPhysicalType(System.Type)">
+            <summary>
+            Gets the physical type that most closely maps to the given type.
+            </summary>
+            <param name="type">The type to be converted to a PQDIF physical type.</param>
+            <returns>The physical type that most closely maps to the given type.</returns>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.PhysicalWriter">
+            <summary>
+            Represents a writer used to write the physical
+            structure of a PQDIF file to a byte stream.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalWriter.#ctor(System.String)">
+            <summary>
+            Creates a new instance of the <see cref="T:GSF.PQDIF.Physical.PhysicalWriter"/> class.
+            </summary>
+            <param name="filePath">The path to the file where the PQDIF data is to be written.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalWriter.#ctor(System.IO.Stream,System.Boolean)">
+            <summary>
+            Creates a new instance of the <see cref="T:GSF.PQDIF.Physical.PhysicalWriter"/> class.
+            </summary>
+            <param name="stream">The stream to write the PQDIF data to.</param>
+            <param name="leaveOpen">Indicates whether to leave the stream open when disposing of the writer.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.PhysicalWriter.CompressionStyle">
+            <summary>
+            Gets or sets the compression style used by the PQDIF file.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.PhysicalWriter.CompressionAlgorithm">
+            <summary>
+            Gets or sets the compression algorithm used by the PQDIF file.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalWriter.WriteRecord(GSF.PQDIF.Physical.Record,System.Boolean)">
+            <summary>
+            Writes the given record to the PQDIF file.
+            </summary>
+            <param name="record">The record to be written to the file.</param>
+            <param name="lastRecord">Indicates whether this record is the last record in the file.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.PhysicalWriter.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+            <filterpriority>2</filterpriority>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.RecordHeader">
+            <summary>
+            The header of a PQDIF <see cref="T:GSF.PQDIF.Physical.Record"/>. The header is part of
+            the physical structure of a PQDIF file, and contains information
+            on how to parse the <see cref="T:GSF.PQDIF.Physical.RecordBody"/> as well as how to find
+            the next record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.RecordHeader.RecordSignature">
+            <summary>
+            Gets or sets the record's globally unique identifier.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.RecordHeader.TypeOfRecord">
+            <summary>
+            Gets or sets the type of the record which determines
+            the logical structure of the record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.RecordHeader.RecordTypeTag">
+            <summary>
+            Gets or sets the tag which identifies the type of the record.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.RecordHeader.HeaderSize">
+            <summary>
+            Gets or sets the size of the header, in bytes.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.RecordHeader.BodySize">
+            <summary>
+            Gets or sets the size of the body, in bytes.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.RecordHeader.NextRecordPosition">
+            <summary>
+            Gets or sets the position of the next record in the PQDIF file.
+            This value is a byte offset relative to the beginning of the file.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.RecordHeader.Checksum">
+            <summary>
+            Optional checksum (such as a 32-bit CRC)
+            of the record body to verify decompression.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.RecordHeader.Reserved">
+            <summary>
+            Reserved to fill structure to 64 bytes. Should be filled with 0.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.RecordHeader.ToString">
+            <summary>
+            Returns a string representation of the record header.
+            </summary>
+            <returns>A string representation of the record header.</returns>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.RecordType">
+            <summary>
+            Enumeration that defines type of record as per header definition.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.RecordType.Container">
+            <summary>
+            Represents a record level tag which identifies the container record.
+            Always the first one in the file, and only one per file.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.RecordType.DataSource">
+            <summary>
+            Represents a record level tag which identifies the data source record.
+            Instrument level information.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.RecordType.MonitorSettings">
+            <summary>
+            Represents an optional record level tag which identifies configuration parameters.
+            Used to capture configuration changes on the data source.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.RecordType.Observation">
+            <summary>
+            Represents a record-level tag which identifies an observation.
+            Used to capture an event, measurements etc.
+            </summary>
+        </member>
+        <member name="F:GSF.PQDIF.Physical.RecordType.Unknown">
+            <summary>
+            Represents a record-level tag which is unknown to this library.
+            </summary>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.Record">
+            <summary>
+            Represents a record in a PQDIF file. This class
+            exposes the physical structure of the record.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.Record.#ctor(GSF.PQDIF.Physical.RecordHeader,GSF.PQDIF.Physical.RecordBody)">
+            <summary>
+            Creates an instance of <see cref="T:GSF.PQDIF.Physical.Record"/>.
+            </summary>
+            <param name="header">The record header.</param>
+            <param name="body">The record body.</param>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.Record.Header">
+            <summary>
+            Gets or sets the record header.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.Record.Body">
+            <summary>
+            Gets or sets the record body.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.Record.ToString">
+            <summary>
+            Returns a string representation of the record.
+            </summary>
+            <returns>A string representation of the record.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.Record.GetRecordType(System.Guid)">
+            <summary>
+            Gets the <see cref="T:GSF.PQDIF.Physical.RecordType"/> identified by the given tag.
+            </summary>
+            <param name="recordTypeTag">The tag of the <see cref="T:GSF.PQDIF.Physical.RecordType"/>.</param>
+            <returns>The <see cref="T:GSF.PQDIF.Physical.RecordType"/> identified by the given tag.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.Record.GetTypeAsTag(GSF.PQDIF.Physical.RecordType)">
+            <summary>
+            Gets the globally unique identifier used to identify the given record type.
+            </summary>
+            <param name="recordType">The record type to search for.</param>
+            <returns>The globally unique identifier used to identify the given record type.</returns>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.RecordBody">
+            <summary>
+            The body of a PQDIF <see cref="T:GSF.PQDIF.Physical.Record"/>. The body is part of the
+            physical structure of a PQDIF file. It laid out as a hierarchy of
+            <see cref="T:GSF.PQDIF.Physical.Element"/>s, starting with a
+            <see cref="T:GSF.PQDIF.Physical.CollectionElement"/> that contains other elements.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.RecordBody.Collection">
+            <summary>
+            Gets or sets the <see cref="T:GSF.PQDIF.Physical.CollectionElement"/> at the top
+            of the hierarchy. This can be used to traverse the hierarchy.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.RecordBody.ToString">
+            <summary>
+            Returns a string representation of the record body.
+            </summary>
+            <returns>A string representation of the record body.</returns>
+        </member>
+        <member name="T:GSF.PQDIF.Physical.ScalarElement">
+            <summary>
+            Represents an <see cref="T:GSF.PQDIF.Physical.Element"/> which is a single value in a
+            PQDIF file. Scalar elements are part of the physical structure of
+            a PQDIF file. They exist within the body of a <see cref="T:GSF.PQDIF.Physical.Record"/>
+            (contained by a <see cref="T:GSF.PQDIF.Physical.CollectionElement"/>).
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.#ctor">
+            <summary>
+            Creates a new instance of the <see cref="T:GSF.PQDIF.Physical.ScalarElement"/> class.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.ScalarElement.TypeOfElement">
+            <summary>
+            Gets the type of the element.
+            Returns <see cref="F:GSF.PQDIF.Physical.ElementType.Scalar"/>.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.Get">
+            <summary>
+            Gets the value of the scalar as the physical type defined
+            by <see cref="P:GSF.PQDIF.Physical.Element.TypeOfValue"/> and returns it as a generic
+            <see cref="T:System.Object"/>.
+            </summary>
+            <returns>The value of the scalar.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.Set(System.Int32,System.Object)">
+            <summary>                
+            Sets the value at the given index as the physical type defined by <see cref="P:GSF.PQDIF.Physical.Element.TypeOfValue"/>.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <param name="value">The new value to be stored.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetUInt1">
+            <summary>
+            Gets the value of this scalar as an 8-bit unsigned integer.
+            </summary>
+            <returns>The value as an 8-bit unsigned integer.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetUInt1(System.Byte)">
+            <summary>
+            Sets the value of this scalar as an 8-bit unsigned integer.
+            </summary>
+            <param name="value">The new value as an 8-bit unsigned integer.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetInt1">
+            <summary>
+            Gets the value of this scalar as an 8-bit signed integer.
+            </summary>
+            <returns>The value as an 8-bit signed integer.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetInt1(System.SByte)">
+            <summary>
+            Sets the value of this scalar as an 8-bit signed integer.
+            </summary>
+            <param name="value">The new value as an 8-bit signed integer.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetUInt2">
+            <summary>
+            Gets the value of this scalar as a 16-bit unsigned integer.
+            </summary>
+            <returns>The value as a 16-bit unsigned integer.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetUInt2(System.UInt16)">
+            <summary>
+            Sets the value of this scalar as a 16-bit unsigned integer.
+            </summary>
+            <param name="value">The new value as a 16-bit unsigned integer.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetInt2">
+            <summary>
+            Gets the value of this scalar as a 16-bit signed integer.
+            </summary>
+            <returns>The value as a 16-bit signed integer.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetInt2(System.Int16)">
+            <summary>
+            Sets the value of this scalar as a 16-bit signed integer.
+            </summary>
+            <param name="value">The new value as a 16-bit signed integer.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetUInt4">
+            <summary>
+            Gets the value of this scalar as a 32-bit unsigned integer.
+            </summary>
+            <returns>The value as a 32-bit unsigned integer.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetUInt4(System.UInt32)">
+            <summary>
+            Sets the value of this scalar as a 32-bit unsigned integer.
+            </summary>
+            <param name="value">The new value as a 32-bit unsigned integer.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetInt4">
+            <summary>
+            Gets the value of this scalar as a 32-bit signed integer.
+            </summary>
+            <returns>The value as a 32-bit signed integer.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetInt4(System.Int32)">
+            <summary>
+            Sets the value of this scalar as a 32-bit signed integer.
+            </summary>
+            <param name="value">The new value as a 32-bit signed integer.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetBool4">
+            <summary>
+            Gets the value of this scalar as a 4-byte boolean.
+            </summary>
+            <returns>The value as a 4-byte boolean.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetBool4(System.Boolean)">
+            <summary>
+            Sets the value of this scalar as a 4-byte boolean.
+            </summary>
+            <param name="value">The new value as a 4-byte boolean.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetReal4">
+            <summary>
+            Gets the value of this scalar as a 32-bit floating point number.
+            </summary>
+            <returns>The value as a 32-bit floating point number.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetReal4(System.Single)">
+            <summary>
+            Sets the value of this scalar as a 32-bit floating point number.
+            </summary>
+            <param name="value">The new value as a 32-bit floating point number.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetReal8">
+            <summary>
+            Gets the value of this scalar as a 64-bit floating point number.
+            </summary>
+            <returns>The value as a 64-bit floating point number.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetReal8(System.Double)">
+            <summary>
+            Sets the value of this scalar as a 64-bit floating point number.
+            </summary>
+            <param name="value">The new value as a 64-bit floating point number.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetComplex8">
+            <summary>
+            Gets the value of this scalar as an 8-byte complex number.
+            </summary>
+            <returns>The value as an 8-byte complex number.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetComplex8(GSF.ComplexNumber)">
+            <summary>
+            Sets the value of this scalar as an 8-byte complex number.
+            </summary>
+            <param name="value">The new value as an 8-byte complex number.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetComplex16">
+            <summary>
+            Gets the value of this scalar as a 16-byte complex number.
+            </summary>
+            <returns>The value as a 16-byte complex number.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetComplex16(GSF.ComplexNumber)">
+            <summary>
+            Sets the value of this scalar as a 16-byte complex number.
+            </summary>
+            <param name="value">The new value as a 16-byte complex number.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetGuid">
+            <summary>
+            Gets the value of this scalar as a globally unique identifier.
+            </summary>
+            <returns>The value as a globally unique identifier.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetGuid(System.Guid)">
+            <summary>
+            Sets the value of this scalar as a globally unique identifier.
+            </summary>
+            <param name="value">The new value as a globally unique identifier.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetTimestamp">
+            <summary>
+            Gets the value of this scalar as <see cref="T:System.DateTime"/>.
+            </summary>
+            <returns>The value of this scalar as a <see cref="T:System.DateTime"/>.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetTimestamp(System.DateTime)">
+            <summary>
+            Sets the value of this scalar as a <see cref="T:System.DateTime"/>.
+            </summary>
+            <param name="value">The new value of this scalar as a <see cref="T:System.DateTime"/>.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.GetValue">
+            <summary>
+            Gets the raw bytes of the value that this scalar represents.
+            </summary>
+            <returns>The value in bytes.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.SetValue(System.Byte[],System.Int32)">
+            <summary>
+            Sets the raw bytes of the value that this scalar represents.
+            </summary>
+            <param name="value">The array containing the bytes.</param>
+            <param name="offset">The offset into the array at which the value starts.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.ScalarElement.ToString">
+            <summary>
+            Returns a string representation of the scalar.
+            </summary>
+            <returns>A string representation of the scalar.</returns>
+        </member>
         <member name="T:GSF.PQDIF.Physical.VectorElement">
             <summary>
             Represents an <see cref="T:GSF.PQDIF.Physical.Element"/> which is a collection of values
@@ -3532,6 +4097,29 @@
             of a PQDIF file. They exist within the body of a <see cref="T:GSF.PQDIF.Physical.Record"/>
             (contained by a <see cref="T:GSF.PQDIF.Physical.CollectionElement"/>).
             </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.VectorElement.Size">
+            <summary>
+            Gets or sets the number of values in the vector.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.VectorElement.TypeOfElement">
+            <summary>
+            Gets the type of the element.
+            Returns <see cref="F:GSF.PQDIF.Physical.ElementType.Vector"/>.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Physical.VectorElement.TypeOfValue">
+            <summary>
+            Gets or sets the physical type of the value or values contained
+            by the element.
+            </summary>
+            <remarks>
+            This determines the data type and size of the
+            value or values. The value of this property is only relevant when
+            <see cref="P:GSF.PQDIF.Physical.VectorElement.TypeOfElement"/> is either <see cref="F:GSF.PQDIF.Physical.ElementType.Scalar"/>
+            or <see cref="F:GSF.PQDIF.Physical.ElementType.Vector"/>.
+            </remarks>
         </member>
         <member name="M:GSF.PQDIF.Physical.VectorElement.Get(System.Int32)">
             <summary>
@@ -3541,6 +4129,13 @@
             </summary>
             <param name="index">The index of the value to be retrieved.</param>
             <returns>The value that was retrieved from the vector.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.VectorElement.Set(System.Int32,System.Object)">
+            <summary>                
+            Sets the value at the given index as the physical type defined by <see cref="P:GSF.PQDIF.Physical.VectorElement.TypeOfValue"/>.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <param name="value">The new value to be stored.</param>
         </member>
         <member name="M:GSF.PQDIF.Physical.VectorElement.GetUInt1(System.Int32)">
             <summary>
@@ -3555,6 +4150,48 @@
             </summary>
             <param name="index">The index of the value.</param>
             <param name="value">The new value of an 8-bit unsigned integer.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.VectorElement.GetUInt2(System.Int32)">
+            <summary>
+            Gets a value in this vector as a 16-bit unsigned integer.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <returns>The value as a 16-bit unsigned integer.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.VectorElement.SetUInt2(System.Int32,System.UInt16)">
+            <summary>
+            Sets a value in this vector as a 16-bit unsigned integer.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <param name="value">The new value of a 16-bit unsigned integer.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.VectorElement.GetUInt4(System.Int32)">
+            <summary>
+            Gets a value in this vector as a 32-bit unsigned integer.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <returns>The value as a 32-bit unsigned integer.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.VectorElement.SetUInt4(System.Int32,System.UInt32)">
+            <summary>
+            Sets a value in this vector as a 32-bit unsigned integer.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <param name="value">The new value of a 32-bit unsigned integer.</param>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.VectorElement.GetInt1(System.Int32)">
+            <summary>
+            Gets a value in this vector as an 8-bit signed integer.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <returns>The value as an 8-bit signed integer.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.VectorElement.SetInt1(System.Int32,System.SByte)">
+            <summary>
+            Sets a value in this vector as an 8-bit signed integer.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <param name="value">The new value of an 8-bit signed integer.</param>
         </member>
         <member name="M:GSF.PQDIF.Physical.VectorElement.GetInt2(System.Int32)">
             <summary>
@@ -3583,20 +4220,6 @@
             </summary>
             <param name="index">The index of the value.</param>
             <param name="value">The new value of a 32-bit signed integer.</param>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.VectorElement.GetUInt4(System.Int32)">
-            <summary>
-            Gets a value in this vector as a 32-bit unsigned integer.
-            </summary>
-            <param name="index">The index of the value.</param>
-            <returns>The value as a 32-bit unsigned integer.</returns>
-        </member>
-        <member name="M:GSF.PQDIF.Physical.VectorElement.SetUInt4(System.Int32,System.UInt32)">
-            <summary>
-            Sets a value in this vector as a 32-bit unsigned integer.
-            </summary>
-            <param name="index">The index of the value.</param>
-            <param name="value">The new value of a 32-bit unsigned integer.</param>
         </member>
         <member name="M:GSF.PQDIF.Physical.VectorElement.GetReal4(System.Int32)">
             <summary>
@@ -3640,6 +4263,20 @@
             <param name="index">The index of the value.</param>
             <param name="value">The new value of a <see cref="T:System.DateTime"/>.</param>
         </member>
+        <member name="M:GSF.PQDIF.Physical.VectorElement.GetGuid(System.Int32)">
+            <summary>
+            Gets the value in this vector as a globally unique identifier.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <returns>The value as a globally unique identifier.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Physical.VectorElement.SetGuid(System.Int32,System.Guid)">
+            <summary>
+            Sets the value in this vector as a globally unique identifier.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <param name="value">The new value as a globally unique identifier.</param>
+        </member>
         <member name="M:GSF.PQDIF.Physical.VectorElement.GetValues">
             <summary>
             Gets the raw bytes of the values contained by this vector.
@@ -3659,28 +4296,80 @@
             </summary>
             <returns>A string representation of this vector.</returns>
         </member>
-        <member name="P:GSF.PQDIF.Physical.VectorElement.Size">
+        <member name="T:GSF.PQDIF.Tag">
             <summary>
-            Gets or sets the number of values in the vector.
+            Represents a tag as defined by the PQDIF standard.
             </summary>
         </member>
-        <member name="P:GSF.PQDIF.Physical.VectorElement.TypeOfElement">
+        <member name="P:GSF.PQDIF.Tag.ID">
             <summary>
-            Gets the type of the element.
-            Returns <see cref="F:GSF.PQDIF.Physical.ElementType.Vector"/>.
+            Gets the globally unique identifier for the tag.
             </summary>
         </member>
-        <member name="P:GSF.PQDIF.Physical.VectorElement.TypeOfValue">
+        <member name="P:GSF.PQDIF.Tag.Name">
             <summary>
-            Gets or sets the physical type of the value or values contained
-            by the element.
+            Gets the name of the tag as defined by the GSF.PQDIF library.
             </summary>
-            <remarks>
-            This determines the data type and size of the
-            value or values. The value of this property is only relevant when
-            <see cref="P:GSF.PQDIF.Physical.VectorElement.TypeOfElement"/> is either <see cref="F:GSF.PQDIF.Physical.ElementType.Scalar"/>
-            or <see cref="F:GSF.PQDIF.Physical.ElementType.Vector"/>.
-            </remarks>
+        </member>
+        <member name="P:GSF.PQDIF.Tag.StandardName">
+            <summary>
+            Gets the name of the tag as defined by the standard.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Tag.Description">
+            <summary>
+            Gets a description of the tag.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Tag.ElementType">
+            <summary>
+            Gets the type of the element identified by the tag
+            according to the logical structure of a PQDIF file.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Tag.PhysicalType">
+            <summary>
+            Gets the physical type of the value of the element identified
+            by the tag according to the logical structure of a PQDIF file.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Tag.Required">
+            <summary>
+            Gets the flag that determines whether it is
+            required that this tag be specified in a PQDIF file.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Tag.FormatString">
+            <summary>
+            Format string specified for some tags as a
+            hint for how the value should be displayed.
+            </summary>
+        </member>
+        <member name="P:GSF.PQDIF.Tag.ValidIdentifiers">
+            <summary>
+            Gets the collection of valid identifiers for this tag.
+            </summary>
+        </member>
+        <member name="M:GSF.PQDIF.Tag.GetTag(System.Guid)">
+            <summary>
+            Gets the tag identified by the given globally unique identifier.
+            </summary>
+            <param name="id">The globally unique identifier for the tag to be retrieved.</param>
+            <returns>The tag, if defined, or null if the tag is not found.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Tag.GenerateTags(System.Xml.Linq.XDocument)">
+            <summary>
+            Generates a list of tags from the given XML document.
+            </summary>
+            <param name="doc">The XML document containing the tag definitions.</param>
+            <returns>The list of tags as defined by the given XML document.</returns>
+        </member>
+        <member name="M:GSF.PQDIF.Tag.RefreshTags(System.Xml.Linq.XDocument)">
+            <summary>
+            Refreshes the cache of tags used to return
+            tags from the <see cref="M:GSF.PQDIF.Tag.GetTag(System.Guid)"/> method.
+            </summary>
+            <param name="doc">The XML document containing the tag definitions.</param>
         </member>
     </members>
 </doc>

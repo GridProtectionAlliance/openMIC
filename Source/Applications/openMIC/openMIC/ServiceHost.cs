@@ -41,7 +41,7 @@ namespace openMIC
         /// <summary>
         /// Raised when there is a new status message reported to service.
         /// </summary>
-        public event EventHandler<EventArgs<string, UpdateType>> UpdatedStatus;
+        public event EventHandler<EventArgs<Guid, string, UpdateType>> UpdatedStatus;
 
         /// <summary>
         /// Raised when there is a new exception logged to service.
@@ -235,10 +235,10 @@ namespace openMIC
             }
         }
 
-        private void UpdatedStatusHandler(object sender, EventArgs<string, UpdateType> e)
+        private void UpdatedStatusHandler(object sender, EventArgs<Guid, string, UpdateType> e)
         {
             if ((object)UpdatedStatus != null)
-                UpdatedStatus(sender, new EventArgs<string, UpdateType>(e.Argument1, e.Argument2));
+                UpdatedStatus(sender, new EventArgs<Guid, string, UpdateType>(e.Argument1, e.Argument2, e.Argument3));
         }
 
         private void LoggedExceptionHandler(object sender, EventArgs<Exception> e)

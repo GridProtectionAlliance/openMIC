@@ -62,11 +62,11 @@ namespace openMIC
             Program.Host.SendRequest(command);
         }
 
-        private void m_serviceHost_UpdatedStatus(object sender, EventArgs<string, UpdateType> e)
+        private void m_serviceHost_UpdatedStatus(object sender, EventArgs<Guid, string, UpdateType> e)
         {
             string color;
 
-            switch (e.Argument2)
+            switch (e.Argument3)
             {
                 case UpdateType.Alarm:
                     color = "red";
@@ -79,7 +79,7 @@ namespace openMIC
                     break;
             }
 
-            BroadcastMessage(e.Argument1, color);
+            BroadcastMessage(e.Argument2, color);
         }
 
         private void BroadcastMessage(string message, string color)
