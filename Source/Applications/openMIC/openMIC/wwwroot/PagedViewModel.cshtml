@@ -21,6 +21,7 @@
 //
 //*****************************************************************************************************@
 @using System
+@using System.Collections.Generic
 @using System.Text
 @using GSF
 @using openMIC.Model
@@ -33,10 +34,14 @@
     <script src=""Scripts/bootstrap-toolkit.min.js""></script>
     <script src=""Scripts/knockout-3.4.0.js""></script>
     <script src=""Scripts/knockout.mapping.js""></script>
+    <script src=""Scripts/knockout.validation.min.js""></script>
     <script src=""Scripts/ko-reactor.min.js""></script>
     <script src=""Scripts/ko.observableDictionary.js""></script>
     <script src=""Scripts/pagedViewModel.js""></script>
     <script src=""Scripts/js.cookie.js""></script>
+    <script id=""validationMessageTemplate"" type=""text/html""><!--
+        --><em class=""promptMessage"" data-bind=""validationMessage: field""></em>
+    </script>
     <script>
         $(function () {
             $(""#clearSortOrder"").click(function () {
@@ -150,9 +155,10 @@
                     @SingularForm(ViewBag.Title)
                 </h4>
             </div>
-            <div class="modal-body auto-height" data-bind="with: currentRecord">
+            <div class="modal-body auto-height"  data-bind="with: currentRecord, validationOptions: { messageTemplate: 'validationMessageTemplate' }">
                 <form role="form">
                     @Raw(ViewBag.AddNewEditDialog)
+                    <em data-bind="visible: errors().length > 0"><span data-bind="text: errors().length"></span> validation error<span data-bind="visible: errors().length > 1">s</span>...</em>
                 </form>
             </div>
             <div class="modal-footer">
@@ -182,10 +188,21 @@
                 viewModel.cancelPageRecord();
             });
 
-            $(""#addNewEditDialog"").modal({show: false});     
+            $(""#addNewEditDialog"").modal({show: false});
+
+            viewModel.setApplyValidationMessages(function(record) {
+	
+
         });
     ");
-    pageControlScripts.AppendFormat("\r\n        viewModel.modelName = \"{0}\";", RemoveSpaces(ViewBag.Title));
+    pageControlScripts.AppendFormat("\r\n        viewModel.modelName = \"{0}\";\r\n", RemoveSpaces(ViewBag.Title));
+    pageControlScripts.Append("\r\n        viewModel.setApplyValidationMessages(function(record) {");
+
+    foreach (KeyValuePair<string, string> fieldErrorMessage in ViewBag.DataContext.ValidationErrorMessages) {
+        pageControlScripts.AppendFormat("\r\n            record.{0}.extend({{ pattern: {{ message: \"{1}\" }} }});", fieldErrorMessage.Key, fieldErrorMessage.Value);
+    }
+
+    pageControlScripts.Append("\r\n        });");
     pageControlScripts.Append(@"
     </script>");
 }

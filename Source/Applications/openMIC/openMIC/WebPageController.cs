@@ -74,15 +74,11 @@ namespace openMIC
             {
                 case ".cshtml":
                     content = await new RazorView<CSharp>(pageName, Program.Host.Model).ExecuteAsync(Request, postData);
-
-                    if (PublishResponseContent(response, content.GetHashCode()))
-                        response.Content = new StringContent(content, Encoding.UTF8, "text/html");
+                    response.Content = new StringContent(content, Encoding.UTF8, "text/html");
                     break;
                 case ".vbhtml":
                     content = await new RazorView<VisualBasic>(pageName, Program.Host.Model).ExecuteAsync(Request, postData);
-
-                    if (PublishResponseContent(response, content.GetHashCode()))
-                        response.Content = new StringContent(content, Encoding.UTF8, "text/html");
+                    response.Content = new StringContent(content, Encoding.UTF8, "text/html");
                     break;
                 default:
                     string fileName = FilePath.GetAbsolutePath($"{FilePath.AddPathSuffix(Program.Host.WebRootFolder)}{pageName.Replace('/', Path.DirectorySeparatorChar)}");
@@ -264,7 +260,7 @@ namespace openMIC
             s_fileWatcher.Deleted += s_fileWatcher_FileChange;
             s_fileWatcher.Renamed += s_fileWatcher_FileChange;
 
-            // Initialize RazorView for target languages - this invokes static contructors which will pre-compile templates
+            // Initialize RazorView for target languages - this invokes static constructors which will pre-compile templates
             new RazorView<CSharp>();
             new RazorView<VisualBasic>();
         }

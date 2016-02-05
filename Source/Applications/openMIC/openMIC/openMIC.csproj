@@ -260,6 +260,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="PostBuildSetup.bat" />
+    <None Include="wwwroot\Scripts\knockout.validation.min.js.map" />
     <None Include="wwwroot\AddSelectField.cshtml" />
     <None Include="wwwroot\AddInputField.cshtml" />
     <None Include="wwwroot\Content\bootstrap-theme.css.map" />
@@ -283,6 +284,8 @@
     <None Include="wwwroot\Vendors.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="wwwroot\Scripts\knockout.validation.js" />
+    <Content Include="wwwroot\Scripts\knockout.validation.min.js" />
     <Content Include="wwwroot\Content\bootstrap-theme.css" />
     <Content Include="wwwroot\Content\bootstrap-theme.min.css" />
     <Content Include="wwwroot\Content\bootstrap.css" />

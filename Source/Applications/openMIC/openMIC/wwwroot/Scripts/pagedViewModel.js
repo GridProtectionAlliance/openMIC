@@ -146,6 +146,7 @@ function PagedViewModel() {
     self.newRecord = function () { };
     self.addNewRecord = function (/* record */) { };
     self.updateRecord = function (/* record */) { };
+    self.applyValidationMessages = function ( /* record */) { };
 
     // Setters needed to assign delegate properties, 'cause Javascript
     self.setQueryRecordCount = function (queryRecordCountFunction) {
@@ -170,6 +171,10 @@ function PagedViewModel() {
 
     self.setUpdateRecord = function (updateRecordFunction) {
         self.updateRecord = updateRecordFunction;
+    }
+
+    self.setApplyValidationMessages = function (applyValidationMessagesFunction) {
+        self.applyValidationMessages = applyValidationMessagesFunction;
     }
 
     // Methods
@@ -260,6 +265,19 @@ function PagedViewModel() {
         return $("#addNewEditDialog div.form-group.has-error").length;
     }
 
+    self.deriveJSRecord = function () {
+        const currentRecord = self.currentRecord();
+        delete currentRecord.errors;
+        return ko.mapping.toJS(currentRecord);
+    }
+
+    self.deriveObservableRecord = function (record) {
+        const observableRecord = ko.mapping.fromJS(record);
+        observableRecord.errors = ko.validation.group(viewModel);
+        self.applyValidationMessages(record);
+        return observableRecord;
+    }
+
     self.setDirtyFlag = function (value, target) {
         if (value === undefined)
             value = true;
@@ -343,7 +361,7 @@ function PagedViewModel() {
     }
 
     self.saveEditedRecord = function () {
-        self.updateRecord(ko.mapping.toJS(self.currentRecord())).done(function () {
+        self.updateRecord(self.deriveJSRecord()).done(function () {
             self.initialize();
             showInfoMessage("Saved updated record...");
         }).fail(function (error) {
@@ -352,7 +370,7 @@ function PagedViewModel() {
     }
 
     self.saveNewRecord = function () {
-        self.addNewRecord(ko.mapping.toJS(self.currentRecord())).done(function () {
+        self.addNewRecord(self.deriveJSRecord()).done(function () {
             self.initialize();
             showInfoMessage("Saved new record...");
         }).fail(function (error) {
@@ -362,20 +380,20 @@ function PagedViewModel() {
 
     self.viewPageRecord = function (record) {
         self.recordMode(RecordMode.View);
-        self.currentRecord(ko.mapping.fromJS(record));
+        self.currentRecord(self.deriveObservableRecord(record));
         $("#addNewEditDialog").modal("show");
     }
 
     self.editPageRecord = function (record) {
         self.recordMode(RecordMode.Edit);
-        self.currentRecord(ko.mapping.fromJS(record));
+        self.currentRecord(self.deriveObservableRecord(record));
         $("#addNewEditDialog").modal("show");
     }
 
     self.addPageRecord = function () {
         self.recordMode(RecordMode.AddNew);
         self.newRecord().done(function (emptyRecord) {
-            self.currentRecord(ko.mapping.fromJS(emptyRecord));
+            self.currentRecord(self.deriveObservableRecord(emptyRecord));
             $("#addNewEditDialog").modal("show");
         });
     }
@@ -433,6 +451,16 @@ var viewModel = new PagedViewModel();
     }));
 
     viewModel.calculatePageSize();
+
+    ko.validation.rules.pattern.message = "Invalid";
+
+    ko.validation.init({
+        registerExtenders: true,
+        messagesOnModified: true,
+        insertMessages: true,
+        parseInputAttributes: true,
+        messageTemplate: null
+    }, true);
 
     ko.applyBindings(viewModel);
 

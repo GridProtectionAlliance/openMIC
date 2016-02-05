@@ -3,6 +3,14 @@ body {
     padding-top: 30px;
 }
 
+.validationMessage {
+    color: #f00;
+}
+
+.promptMessage {
+    color: #FFA500;
+}
+
 /* Bootstrap defaults table cells to valign top, following styles allow customization */
 .table thead>tr>th.valign-middle,
 .table tbody>tr>td.valign-middle {

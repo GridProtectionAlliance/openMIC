@@ -43,6 +43,7 @@ namespace openMIC.Model
         // Fields
         private AdoDataConnection m_connection;
         private readonly Dictionary<Type, object> m_tableOperations;
+        private readonly Dictionary<string, string> m_validationErrorMessages;
         private readonly string m_settingsCategory;
         private readonly bool m_disposeConnection;
         private string m_addInputFieldTemplate;
@@ -62,6 +63,7 @@ namespace openMIC.Model
         {
             m_connection = connection;
             m_tableOperations = new Dictionary<Type, object>();
+            m_validationErrorMessages = new Dictionary<string, string>();
             m_settingsCategory = "systemSettings";
             m_disposeConnection = disposeConnection || connection == null;
         }
@@ -73,6 +75,7 @@ namespace openMIC.Model
         public DataContext(string settingsCategory)
         {
             m_tableOperations = new Dictionary<Type, object>();
+            m_validationErrorMessages = new Dictionary<string, string>();
             m_settingsCategory = settingsCategory;
             m_disposeConnection = true;
         }
@@ -95,6 +98,11 @@ namespace openMIC.Model
         /// Gets the select field razor template file name.
         /// </summary>
         public string AddSelectFieldTemplate => m_addSelectFieldTemplate ?? (m_addSelectFieldTemplate = FilePath.GetAbsolutePath($"{FilePath.AddPathSuffix(Program.Host.WebRootFolder)}AddSelectField.cshtml"));
+
+        /// <summary>
+        /// Gets validation error messages for rendered fields, if any.
+        /// </summary>
+        public Dictionary<string, string> ValidationErrorMessages => m_validationErrorMessages;
 
         /// <summary>
         /// Gets the table operations for the specified modeled table <typeparamref name="T"/>.
@@ -134,11 +142,17 @@ namespace openMIC.Model
         {
             TableOperations<T> tableOperations = Table<T>();
             StringLengthAttribute stringLengthAttribute;
+            RegularExpressionAttribute regularExpressionAttribute;
 
             tableOperations.TryGetFieldAttribute(fieldName, out stringLengthAttribute);
+            tableOperations.TryGetFieldAttribute(fieldName, out regularExpressionAttribute);
+
+            if (!string.IsNullOrEmpty(regularExpressionAttribute?.ErrorMessage))
+                m_validationErrorMessages.Add(fieldName, regularExpressionAttribute.ErrorMessage);
 
             return AddInputField(fieldName, tableOperations.FieldHasAttribute<RequiredAttribute>(fieldName),
-                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding);
+                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID,
+                regularExpressionAttribute?.Pattern, groupDataBinding);
         }
 
         /// <summary>
@@ -150,9 +164,10 @@ namespace openMIC.Model
         /// <param name="inputType">Input field type, defaults to text.</param>
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
+        /// <param name="validationPattern">Defines the regular expression to use for field validation.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null)
+        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string validationPattern = null, string groupDataBinding = null)
         {
             RazorView<CSharp> addInputFieldTemplate = new RazorView<CSharp>(AddInputFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addInputFieldTemplate.ViewBag;
@@ -163,6 +178,7 @@ namespace openMIC.Model
             viewBag.AddValue("InputType", inputType ?? "text");
             viewBag.AddValue("InputLabel", inputLabel ?? fieldName);
             viewBag.AddValue("FieldID", fieldID ?? $"input{fieldName}");
+            viewBag.AddValue("ValidationPattern", validationPattern);
             viewBag.AddValue("GroupDataBinding", groupDataBinding);
 
             return addInputFieldTemplate.Execute();

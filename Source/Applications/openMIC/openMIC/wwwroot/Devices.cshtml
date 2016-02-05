@@ -69,6 +69,7 @@
     </div>
     <div class="col-md-6">        
         @Raw(ViewBag.DataContext.AddInputField("get('schedule')", true, inputLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString"))
+        @Raw(ViewBag.DataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name", "Vendor Device"))
         <div class="form-group">
             <label for="connectionProfile">Connection Profile:</label>
             <select class="form-control" id="connectionProfile">
@@ -192,16 +193,17 @@
             // Reset observable dictionary to default values on record change
             const keys = viewModel.connectionString.keys();
 
-            for (var i = 0; i < keys.length; i++) {
-                let key = keys[i];
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+
                 if (defaultConnectionString.containsKey(key))
-                    viewModel.connectionString.set(key, defaultConnectionString.get(key))
+                    viewModel.connectionString.set(key, defaultConnectionString.get(key));
                 else
                     viewModel.connectionString.remove(key);
             }
 
             // Update observable dictionary with parsed key/value pairs of current connection string
-            var currentConnectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
+            const currentConnectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
             currentConnectionString.updateObservableDictionary(viewModel.connectionString, true);
 
             viewModel.setDirtyFlag(false);
