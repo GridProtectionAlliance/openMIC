@@ -1949,20 +1949,6 @@ namespace ConfigurationSetupUtility.Screens
                 categorizedSettings.Add(securityProvider);
             }
 
-            if (serviceConfigFile)
-            {
-                configFile.Descendants("runtime").Remove();
-
-                foreach (XElement configuration in configFile.Descendants("configuration"))
-                {
-                    configuration.Add(new XElement("runtime",
-                        new XElement("gcConcurrent",
-                            new XAttribute("enabled", "true")),
-                        new XElement("gcServer",
-                            new XAttribute("enabled", "true"))));
-                }
-            }
-
             configFile.Save(configFileName);
         }
 
