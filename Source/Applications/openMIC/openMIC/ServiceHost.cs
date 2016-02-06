@@ -220,7 +220,7 @@ namespace openMIC
         /// Sends a command request to the service.
         /// </summary>
         /// <param name="userInput">Request string.</param>
-        public void SendRequest(string userInput)
+        public void SendRequest(Guid clientID, string userInput)
         {
             ClientRequest request = ClientRequest.Parse(userInput);
 
@@ -229,10 +229,15 @@ namespace openMIC
                 ClientRequestHandler requestHandler = ServiceHelper.FindClientRequestHandler(request.Command);
 
                 if ((object)requestHandler != null)
-                    requestHandler.HandlerMethod(new ClientRequestInfo(new ClientInfo(), request));
+                    requestHandler.HandlerMethod(new ClientRequestInfo(new ClientInfo() { ClientID = clientID }, request));
                 else
                     DisplayStatusMessage(string.Format("Command \"{0}\" is not supported\r\n\r\n", request.Command), UpdateType.Alarm);
             }
+        }
+
+        public void DisconnectClient(Guid clientID)
+        {
+            ServiceHelper.DisconnectClient(clientID);
         }
 
         private void UpdatedStatusHandler(object sender, EventArgs<Guid, string, UpdateType> e)
