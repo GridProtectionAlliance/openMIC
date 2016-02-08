@@ -25,10 +25,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Linq;
 using GSF;
 using GSF.Collections;
 using GSF.Data;
 using GSF.IO;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using RazorEngine.Templating;
 
 namespace openMIC.Model
@@ -43,7 +45,7 @@ namespace openMIC.Model
         // Fields
         private AdoDataConnection m_connection;
         private readonly Dictionary<Type, object> m_tableOperations;
-        private readonly Dictionary<string, string> m_validationErrorMessages;
+        private readonly Dictionary<string, Tuple<string, string>> m_fieldValidationParameters;
         private readonly string m_settingsCategory;
         private readonly bool m_disposeConnection;
         private string m_addInputFieldTemplate;
@@ -63,7 +65,7 @@ namespace openMIC.Model
         {
             m_connection = connection;
             m_tableOperations = new Dictionary<Type, object>();
-            m_validationErrorMessages = new Dictionary<string, string>();
+            m_fieldValidationParameters = new Dictionary<string, Tuple<string, string>>();
             m_settingsCategory = "systemSettings";
             m_disposeConnection = disposeConnection || connection == null;
         }
@@ -75,7 +77,7 @@ namespace openMIC.Model
         public DataContext(string settingsCategory)
         {
             m_tableOperations = new Dictionary<Type, object>();
-            m_validationErrorMessages = new Dictionary<string, string>();
+            m_fieldValidationParameters = new Dictionary<string, Tuple<string, string>>();
             m_settingsCategory = settingsCategory;
             m_disposeConnection = true;
         }
@@ -100,9 +102,9 @@ namespace openMIC.Model
         public string AddSelectFieldTemplate => m_addSelectFieldTemplate ?? (m_addSelectFieldTemplate = FilePath.GetAbsolutePath($"{FilePath.AddPathSuffix(Program.Host.WebRootFolder)}AddSelectField.cshtml"));
 
         /// <summary>
-        /// Gets validation error messages for rendered fields, if any.
+        /// Gets validation pattern and error message for rendered fields, if any.
         /// </summary>
-        public Dictionary<string, string> ValidationErrorMessages => m_validationErrorMessages;
+        public Dictionary<string, Tuple<string, string>> FieldValidationParameters => m_fieldValidationParameters;
 
         /// <summary>
         /// Gets the table operations for the specified modeled table <typeparamref name="T"/>.
@@ -122,10 +124,27 @@ namespace openMIC.Model
         /// <returns>An enumerable of modeled table row instances for queried records.</returns>
         public IEnumerable<T> QueryRecords<T>(string sqlFormat, params object[] parameters) where T : class, new()
         {
-            TableOperations<T> tableOperations = Table<T>();
+            try
+            {
+                TableOperations<T> tableOperations = Table<T>();
+                return m_connection.RetrieveData(sqlFormat, parameters).AsEnumerable().Select(row => tableOperations.LoadRecord(tableOperations.GetPrimaryKeys(row)));
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Exception during record query for {typeof(T).Name} \"{sqlFormat}\": {ex.Message}", ex));
+                return Enumerable.Empty<T>();
+            }
+        }
 
-            foreach (DataRow row in m_connection.RetrieveData(sqlFormat, parameters).Rows)
-                yield return tableOperations.LoadRecord(tableOperations.GetPrimaryKeys(row));
+        /// <summary>
+        /// Adds a new pattern based validation and option error message to a field.
+        /// </summary>
+        /// <param name="observableFieldReference">Observerable field reference (from JS view model).</param>
+        /// <param name="validationPattern">Regex based validation pattern.</param>
+        /// <param name="errorMessage">Optional error message to display when pattern fails.</param>
+        public void AddFieldValidation(string observableFieldReference, string validationPattern, string errorMessage = null)
+        {
+            m_fieldValidationParameters[observableFieldReference] = new Tuple<string, string>(validationPattern, errorMessage);
         }
 
         /// <summary>
@@ -148,11 +167,19 @@ namespace openMIC.Model
             tableOperations.TryGetFieldAttribute(fieldName, out regularExpressionAttribute);
 
             if (!string.IsNullOrEmpty(regularExpressionAttribute?.ErrorMessage))
-                m_validationErrorMessages.Add(fieldName, regularExpressionAttribute.ErrorMessage);
+            {
+                string observableReference;
+
+                if (string.IsNullOrEmpty(groupDataBinding))
+                    observableReference = $"viewModel.currentRecord().{fieldName}";
+                else // "with: $root.connectionString"
+                    observableReference = $"viewModel.{groupDataBinding.Substring(groupDataBinding.IndexOf('.') + 1)}";
+
+                AddFieldValidation(observableReference, regularExpressionAttribute.Pattern, regularExpressionAttribute.ErrorMessage);
+            }
 
             return AddInputField(fieldName, tableOperations.FieldHasAttribute<RequiredAttribute>(fieldName),
-                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID,
-                regularExpressionAttribute?.Pattern, groupDataBinding);
+                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding);
         }
 
         /// <summary>
@@ -164,10 +191,9 @@ namespace openMIC.Model
         /// <param name="inputType">Input field type, defaults to text.</param>
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
-        /// <param name="validationPattern">Defines the regular expression to use for field validation.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string validationPattern = null, string groupDataBinding = null)
+        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null)
         {
             RazorView<CSharp> addInputFieldTemplate = new RazorView<CSharp>(AddInputFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addInputFieldTemplate.ViewBag;
@@ -178,7 +204,6 @@ namespace openMIC.Model
             viewBag.AddValue("InputType", inputType ?? "text");
             viewBag.AddValue("InputLabel", inputLabel ?? fieldName);
             viewBag.AddValue("FieldID", fieldID ?? $"input{fieldName}");
-            viewBag.AddValue("ValidationPattern", validationPattern);
             viewBag.AddValue("GroupDataBinding", groupDataBinding);
 
             return addInputFieldTemplate.Execute();

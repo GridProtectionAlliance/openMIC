@@ -24,12 +24,14 @@
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
+using System.Web;
 using System.Windows.Forms;
+using GSF;
 using GSF.Console;
 
 namespace openMIC
 {
-    static class Program
+    public static class Program
     {
         /// <summary>
         /// The service host instance for the application.
@@ -102,6 +104,15 @@ namespace openMIC
                     Environment.Exit(1);
                 }
             }
+        }
+
+        /// <summary>
+        /// Performs JavaScript encoding on given string.
+        /// </summary>
+        /// <param name="text">The string to be encoded.</param>
+        public static string JavaScriptEncode(this string text)
+        {
+            return HttpUtility.JavaScriptStringEncode(text.ToNonNullString());
         }
     }
 }

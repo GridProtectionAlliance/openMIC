@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
@@ -31,15 +32,10 @@
     string inputLabel = ViewBag.InputLabel;
     string fieldID = ViewBag.FieldID;
     string groupDataBinding = ViewBag.GroupDataBinding;
-    string validationPattern = ViewBag.ValidationPattern;
     string inputSizeRestriction = maxLength > 0 ? string.Format(" maxlength=\"{0}\" size=\"{0}\"", maxLength) : "";
 
     if (!string.IsNullOrEmpty(groupDataBinding)) {
         groupDataBinding = string.Format(" data-bind=\"{0}\"", groupDataBinding);
-    }
-
-    if (!string.IsNullOrEmpty(validationPattern)) {
-        validationPattern = string.Format(" pattern=\"{0}\"", validationPattern);
     }
 }
 @if (required)
@@ -47,7 +43,7 @@
     @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : string.Format("<div{0}>\r\n", groupDataBinding))
     <div class="form-group" data-bind="css: {'has-error': isEmpty(@(Raw(fieldName))()), 'has-feedback': isEmpty(@(Raw(fieldName))())}">
         <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
-        <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@Raw(fieldID)"@Raw(inputSizeRestriction)@Raw(validationPattern) required>
+        <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@Raw(fieldID)"@Raw(inputSizeRestriction) required>
         <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(Raw(fieldName))())"></span>
     </div>
     @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : "</div>\r\n")
@@ -56,6 +52,6 @@ else
 {
     <div class="form-group" @Raw(groupDataBinding)>
         <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
-        <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@Raw(fieldID)"@Raw(inputSizeRestriction)@Raw(validationPattern)>
+        <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}" id="@Raw(fieldID)"@Raw(inputSizeRestriction)>
     </div>
 }

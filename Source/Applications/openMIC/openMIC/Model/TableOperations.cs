@@ -28,6 +28,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using GSF;
+using GSF.Collections;
 using GSF.Data;
 using GSF.Reflection;
 
@@ -82,13 +83,21 @@ namespace openMIC.Model
         /// <returns>An enumerable of modeled table row instances for queried records.</returns>
         public IEnumerable<T> QueryRecords(string sortField, bool ascending, int page, int pageSize)
         {
-            if ((object)m_primaryKeyCache == null || string.Compare(sortField, m_lastSortField, StringComparison.OrdinalIgnoreCase) != 0)
+            try
             {
-                m_primaryKeyCache = m_connection.RetrieveData(string.Format(s_orderBySql, $"{sortField}{(ascending ? "" : " DESC")}")).AsEnumerable();
-                m_lastSortField = sortField;
-            }
+                if ((object)m_primaryKeyCache == null || string.Compare(sortField, m_lastSortField, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    m_primaryKeyCache = m_connection.RetrieveData(string.Format(s_orderBySql, $"{sortField}{(ascending ? "" : " DESC")}")).AsEnumerable();
+                    m_lastSortField = sortField;
+                }
 
-            return m_primaryKeyCache.ToPagedList(page, pageSize).Select(row => LoadRecord(row.ItemArray)).Where(record => record != null);
+                return m_primaryKeyCache.ToPagedList(page, pageSize).Select(row => LoadRecord(row.ItemArray)).Where(record => record != null);
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Exception during record query for {typeof(T).Name} \"{s_orderBySql}, 0:{sortField}, 1:{ascending}\": {ex.Message}", ex));
+                return Enumerable.Empty<T>();
+            }
         }
 
         /// <summary>
@@ -97,7 +106,15 @@ namespace openMIC.Model
         /// <returns>Total record count for the modeled table.</returns>
         public int QueryRecordCount()
         {
-            return m_connection.ExecuteScalar<int>(s_countSql);
+            try
+            {
+                return m_connection.ExecuteScalar<int>(s_countSql);
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Exception during record count query for {typeof(T).Name} \"{s_countSql}\": {ex.Message}", ex));
+                return -1;
+            }
         }
 
         /// <summary>
@@ -107,17 +124,34 @@ namespace openMIC.Model
         /// <returns>New modeled table record queried from the specified <paramref name="primaryKeys"/>.</returns>
         public T LoadRecord(params object[] primaryKeys)
         {
-            T record = new T();
-            DataRow row = m_connection.RetrieveRow(string.Format(s_selectSql, primaryKeys));
+            try
+            {
+                T record = new T();
+                DataRow row = m_connection.RetrieveRow(string.Format(s_selectSql, primaryKeys));
 
-            // Make sure record exists, return null instead of a blank record
-            if (GetPrimaryKeys(row).All(Common.IsDefaultValue))
+                // Make sure record exists, return null instead of a blank record
+                if (GetPrimaryKeys(row).All(Common.IsDefaultValue))
+                    return null;
+
+                foreach (PropertyInfo property in s_properties.Values)
+                {
+                    try
+                    {
+                        property.SetValue(record, CoreceToType(row[property.Name], property.PropertyType), null);
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.Host.LogException(new InvalidOperationException($"Exception during field assignment for \"{typeof(T).Name}.{property.Name} = {row[property.Name]}\": {ex.Message}", ex));
+                    }
+                }
+
+                return record;
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Exception during record load for {typeof(T).Name} \"{s_selectSql}, {KeyList(primaryKeys)}\": {ex.Message}", ex));
                 return null;
-
-            foreach (PropertyInfo property in s_properties.Values)
-                property.SetValue(record, NotDBNull(row[property.Name]), null);
-
-            return record;
+            }
         }
 
         /// <summary>
@@ -127,12 +161,20 @@ namespace openMIC.Model
         /// <returns>Number of rows affected.</returns>
         public int DeleteRecord(params object[] primaryKeys)
         {
-            int affectedRecords = m_connection.ExecuteNonQuery(s_deleteSql, primaryKeys);
+            try
+            {
+                int affectedRecords = m_connection.ExecuteNonQuery(s_deleteSql, primaryKeys);
 
-            if (affectedRecords > 0)
-                m_primaryKeyCache = null;
+                if (affectedRecords > 0)
+                    m_primaryKeyCache = null;
 
-            return affectedRecords;
+                return affectedRecords;
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Exception during record delete for {typeof(T).Name} \"{s_deleteSql}, {KeyList(primaryKeys)}\": {ex.Message}", ex));
+                return 0;
+            }
         }
 
         /// <summary>
@@ -144,13 +186,21 @@ namespace openMIC.Model
         {
             List<object> values = new List<object>();
 
-            foreach (PropertyInfo property in s_updateProperties)
-                values.Add(property.GetValue(record));
+            try
+            {
+                foreach (PropertyInfo property in s_updateProperties)
+                    values.Add(property.GetValue(record));
 
-            foreach (PropertyInfo property in s_primaryKeyProperties)
-                values.Add(property.GetValue(record));
+                foreach (PropertyInfo property in s_primaryKeyProperties)
+                    values.Add(property.GetValue(record));
 
-            return m_connection.ExecuteNonQuery(s_updateSql, values.ToArray());
+                return m_connection.ExecuteNonQuery(s_updateSql, values.ToArray());
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Exception during record update for {typeof(T).Name} \"{s_updateSql}, {KeyList(values)}\": {ex.Message}", ex));
+                return 0;
+            }
         }
 
         /// <summary>
@@ -162,15 +212,23 @@ namespace openMIC.Model
         {
             List<object> values = new List<object>();
 
-            foreach (PropertyInfo property in s_addNewProperties)
-                values.Add(property.GetValue(record));
+            try
+            {
+                foreach (PropertyInfo property in s_addNewProperties)
+                    values.Add(property.GetValue(record));
 
-            int affectedRecords = m_connection.ExecuteNonQuery(s_addNewSql, values.ToArray());
+                int affectedRecords = m_connection.ExecuteNonQuery(s_addNewSql, values.ToArray());
 
-            if (affectedRecords > 0)
-                m_primaryKeyCache = null;
+                if (affectedRecords > 0)
+                    m_primaryKeyCache = null;
 
-            return affectedRecords;
+                return affectedRecords;
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Exception during record insert for {typeof(T).Name} \"{s_addNewSql}, {KeyList(values)}\": {ex.Message}", ex));
+                return 0;
+            }
         }
 
         /// <summary>
@@ -180,12 +238,20 @@ namespace openMIC.Model
         /// <returns>Primary key values from the specified <paramref name="row"/>.</returns>
         public object[] GetPrimaryKeys(DataRow row)
         {
-            List<object> values = new List<object>();
+            try
+            {
+                List<object> values = new List<object>();
 
-            foreach (PropertyInfo property in s_primaryKeyProperties)
-                values.Add(row[property.Name]);
+                foreach (PropertyInfo property in s_primaryKeyProperties)
+                    values.Add(row[property.Name]);
 
-            return values.ToArray();
+                return values.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Exception loading primary key fields for {typeof(T).Name} \"{s_primaryKeyProperties.Select(property => property.Name).ToDelimitedString(", ")}\": {ex.Message}", ex));
+                return new object[0];
+            }
         }
 
         /// <summary>
@@ -326,12 +392,35 @@ namespace openMIC.Model
         }
 
         // Static Methods
-        private object NotDBNull(object value)
-        {
-            if (value == DBNull.Value)
-                return null;
 
-            return value;
+        // TODO: Drop in-leiu of ConvertField with Type paramter at next GSF update...
+        private object CoreceToType(object value, Type type)
+        {
+            if (value == null || value == DBNull.Value)
+            {
+                if (type.IsValueType)
+                    return Activator.CreateInstance(type);
+
+                return null;
+            }
+ 
+            return Convert.ChangeType(value, Nullable.GetUnderlyingType(type) ?? type);
+        }
+
+        private static string KeyList(IReadOnlyList<object> primaryKeys)
+        {
+            StringBuilder delimitedString = new StringBuilder();
+
+
+            for (int i = 0; i < primaryKeys.Count; i++)
+            {
+                if (delimitedString.Length > 0)
+                    delimitedString.Append(", ");
+
+                delimitedString.AppendFormat("{0}:{1}", i, primaryKeys[i]);
+            }
+
+            return delimitedString.ToString();
         }
 
         #endregion

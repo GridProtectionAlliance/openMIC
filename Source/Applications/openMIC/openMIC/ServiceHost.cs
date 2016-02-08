@@ -214,6 +214,7 @@ namespace openMIC
         public new void LogException(Exception ex)
         {
             base.LogException(ex);
+            DisplayStatusMessage($"{ex.Message}", UpdateType.Alarm);
         }
 
         /// <summary>

@@ -47,6 +47,7 @@ function PagedViewModel() {
     self.sortField = ko.observable(self.defaultSortField);  // Current sort field, persisted per model
     self.sortAscending = ko.observable(true);               // Current sort ascending flag, persisted per model
     self.unassignedFieldCount = ko.observable(0);           // Number of bound fields with missing data
+    self.errors = ko.validation.group([ko.observable(0)]);  // Validation errors array
 
     // Internal fields
     self._currentPageSize = ko.observable(1);
@@ -99,8 +100,9 @@ function PagedViewModel() {
         read: self._currentRecord,
         write: function(value) {
             self._currentRecord(value);
+            self.applyValidationParameters();
             self.setDirtyFlag(false);
-            $(window).trigger("currentRecordChanged");
+            $(self).trigger("currentRecordChanged");
 
             // Watch for changes to fields in current record
             ko.watch(self._currentRecord(), function (parents, child, item) {
@@ -118,7 +120,7 @@ function PagedViewModel() {
 
             if (newMode !== oldMode) {
                 self._recordMode(newMode);
-                $(window).trigger("recordModeChanged", [oldMode, newMode]);
+               $(self).trigger("recordModeChanged", [oldMode, newMode]);
             }
         },
         owner: self
@@ -139,6 +141,11 @@ function PagedViewModel() {
         return self.currentPage() >= self.totalPages();
     });
 
+    // Return validation errors, i.e., non-required field errors
+    self.validationErrors = ko.pureComputed(function() {
+        return self.errors().length - self.unassignedFieldCount();
+    }).extend({ notify: "always" });
+
     // Delegates
     self.queryRecordCount = function () { };
     self.queryRecords = function (/* sortField, ascending, page, pageSize */) { };
@@ -146,7 +153,7 @@ function PagedViewModel() {
     self.newRecord = function () { };
     self.addNewRecord = function (/* record */) { };
     self.updateRecord = function (/* record */) { };
-    self.applyValidationMessages = function ( /* record */) { };
+    self.applyValidationParameters = function () { };
 
     // Setters needed to assign delegate properties, 'cause Javascript
     self.setQueryRecordCount = function (queryRecordCountFunction) {
@@ -173,8 +180,8 @@ function PagedViewModel() {
         self.updateRecord = updateRecordFunction;
     }
 
-    self.setApplyValidationMessages = function (applyValidationMessagesFunction) {
-        self.applyValidationMessages = applyValidationMessagesFunction;
+    self.setApplyValidationParameters = function (applyValidationParametersFunction) {
+        self.applyValidationParameters = applyValidationParametersFunction;
     }
 
     // Methods
@@ -191,7 +198,7 @@ function PagedViewModel() {
         if (lastSortAscending === undefined)
             self.sortAscending(true);
         else
-            self.sortAscending(lastSortAscending == "true");
+            self.sortAscending(lastSortAscending === "true");
 
         if (hubIsConnected) {
             // Query total record count
@@ -260,21 +267,26 @@ function PagedViewModel() {
         }
     }
 
-    self.deriveUnassignedFieldCount = function () {
-        // Deriving unassigned field count based on existence of Bootstrap "has-error" class
-        return $("#addNewEditDialog div.form-group.has-error").length;
+    self.refreshValidationErrors = function () {
+        // Force re-evaluation of validation errors property
+        self.unassignedFieldCount.valueHasMutated();
+
+        // Make sure any initial validation error messages are visible
+        self.errors.showAllMessages();
     }
 
+    // Convert observerable object to a simple Javascript record
     self.deriveJSRecord = function () {
         const currentRecord = self.currentRecord();
-        delete currentRecord.errors;
+        $(self).trigger("derivingJSRecord");
         return ko.mapping.toJS(currentRecord);
     }
 
+    // Convert simple Javascript record to an observable object
     self.deriveObservableRecord = function (record) {
         const observableRecord = ko.mapping.fromJS(record);
-        observableRecord.errors = ko.validation.group(viewModel);
-        self.applyValidationMessages(record);
+        $(self).trigger("derivingObservableRecord", [observableRecord]);
+        self.errors = ko.validation.group(observableRecord);
         return observableRecord;
     }
 
@@ -283,10 +295,12 @@ function PagedViewModel() {
             value = true;
 
         self._isDirty = value;
-        self.unassignedFieldCount(self.deriveUnassignedFieldCount());
+
+        // Derive unassigned field count based on existence of Bootstrap "has-error" class
+        self.unassignedFieldCount($("#addNewEditDialog div.form-group.has-error").length);
 
         if (value)
-            $(window).trigger("currentRecordUpdated", [target]);
+            $(self).trigger("currentRecordUpdated", [target]);
     }
 
     self.setFocusOnInitialField = function () {
@@ -436,13 +450,14 @@ var viewModel = new PagedViewModel();
         viewModel.calculatePageSize();
     });
 
-    $(window).on("recordModeChanged", function (event, oldMode, newMode) {
+    $(viewModel).on("recordModeChanged", function (event, oldMode, newMode) {
         if (oldMode === RecordMode.View && newMode === RecordMode.Edit)
             viewModel.setFocusOnInitialField();
     });
 
     $("#addNewEditDialog").on("shown.bs.modal", function () {
         viewModel.setFocusOnInitialField();
+        viewModel.refreshValidationErrors();
     });
 
     $(window).resize(
@@ -459,7 +474,9 @@ var viewModel = new PagedViewModel();
         messagesOnModified: true,
         insertMessages: true,
         parseInputAttributes: true,
-        messageTemplate: null
+        allowHtmlMessages: true,
+        messageTemplate: null,
+        grouping: { deep: true, observable: true, live: true }
     }, true);
 
     ko.applyBindings(viewModel);

@@ -70,14 +70,14 @@
     <div class="col-md-6">        
         @Raw(ViewBag.DataContext.AddInputField("get('schedule')", true, inputLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name", "Vendor Device"))
-        <div class="form-group">
+        @*<div class="form-group">
             <label for="connectionProfile">Connection Profile:</label>
             <select class="form-control" id="connectionProfile">
                 @foreach (Vendor vendor in ViewBag.DataContext.QueryRecords<Vendor>("SELECT ID, Acronym From Vendor")) {
                     <option value="@vendor.ID">@vendor.Acronym</option>
                 }
             </select>
-        </div>
+        </div>*@
         @Raw(ViewBag.DataContext.AddSelectField<Device, Company>("CompanyID", "ID", "Name", "Company"))
         <div class="checkbox">
             <label><input type="checkbox" data-bind="checked: Enabled, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Enabled</label>
@@ -186,8 +186,17 @@
             return dataHub.updateDevice(record);
         });
 
+        $(viewModel).on("derivingObservableRecord", function (event, observableRecord) {
+            // Add connection string reference to current record so it can participate in the validation group
+            observableRecord._connectionstring = viewModel.connectionString;
+        });
 
-        $(window).on("currentRecordChanged", function (event) {
+        $(viewModel).on("derivingJSRecord", function (event) {
+            // Remove addded connection string reference before serialization
+            delete viewModel.currentRecord()._connectionstring;
+        });
+
+        $(viewModel).on("currentRecordChanged", function (event) {
             viewModel.loadingConnectionString = true;
 
             // Reset observable dictionary to default values on record change

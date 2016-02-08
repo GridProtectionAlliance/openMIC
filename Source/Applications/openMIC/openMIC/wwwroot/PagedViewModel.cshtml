@@ -24,6 +24,7 @@
 @using System.Collections.Generic
 @using System.Text
 @using GSF
+@using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
@@ -40,7 +41,7 @@
     <script src=""Scripts/pagedViewModel.js""></script>
     <script src=""Scripts/js.cookie.js""></script>
     <script id=""validationMessageTemplate"" type=""text/html""><!--
-        --><em class=""promptMessage"" data-bind=""validationMessage: field""></em>
+        --><em class=""validationPrompt"" data-bind=""validationMessage: field""></em>
     </script>
     <script>
         $(function () {
@@ -158,13 +159,17 @@
             <div class="modal-body auto-height"  data-bind="with: currentRecord, validationOptions: { messageTemplate: 'validationMessageTemplate' }">
                 <form role="form">
                     @Raw(ViewBag.AddNewEditDialog)
-                    <em data-bind="visible: errors().length > 0"><span data-bind="text: errors().length"></span> validation error<span data-bind="visible: errors().length > 1">s</span>...</em>
                 </form>
             </div>
             <div class="modal-footer">
-                <em data-bind="visible: unassignedFieldCount() > 0">Missing <span data-bind="text: unassignedFieldCount"></span> required field<span data-bind="visible: unassignedFieldCount() > 1">s</span>...</em>
+                <em data-bind="visible: unassignedFieldCount() > 0 || validationErrors() > 0">
+                    <span data-bind="visible: unassignedFieldCount() > 0">Missing <span data-bind="text: unassignedFieldCount"></span> required field<span data-bind="visible: unassignedFieldCount() > 1">s</span></span>
+                    <span data-bind="visible: unassignedFieldCount() > 0 && validationErrors() > 0"> and </span>
+                    <span data-bind="visible: validationErrors() > 0"><span data-bind="text: validationErrors()"></span> validation error<span data-bind="visible: validationErrors() > 1">s</span></span>
+                    ...
+                </em>
                 <button type="button" class="btn btn-info" data-bind="visible: recordMode()===RecordMode.View" id="editRecordButton">Edit</button>
-                <button type="submit" class="btn btn-primary" data-dismiss="modal" data-bind="visible: recordMode()!==RecordMode.View, css: {'disabled': unassignedFieldCount() > 0 || !hubIsConnected}" id="saveRecordButton" hub-dependent>Save</button>
+                <button type="submit" class="btn btn-primary" data-dismiss="modal" data-bind="visible: recordMode()!==RecordMode.View, css: {'disabled': unassignedFieldCount() > 0 || validationErrors() > 0 || !hubIsConnected}" id="saveRecordButton" hub-dependent>Save</button>
                 <button type="button" class="btn btn-default" id="cancelRecordButton">Cancel</button>
             </div>
         </div>
@@ -189,20 +194,24 @@
             });
 
             $(""#addNewEditDialog"").modal({show: false});
-
-            viewModel.setApplyValidationMessages(function(record) {
-	
-
         });
     ");
     pageControlScripts.AppendFormat("\r\n        viewModel.modelName = \"{0}\";\r\n", RemoveSpaces(ViewBag.Title));
-    pageControlScripts.Append("\r\n        viewModel.setApplyValidationMessages(function(record) {");
 
-    foreach (KeyValuePair<string, string> fieldErrorMessage in ViewBag.DataContext.ValidationErrorMessages) {
-        pageControlScripts.AppendFormat("\r\n            record.{0}.extend({{ pattern: {{ message: \"{1}\" }} }});", fieldErrorMessage.Key, fieldErrorMessage.Value);
+    if (ViewBag.DataContext.FieldValidationParameters.Count > 0) {
+        pageControlScripts.Append("\r\n        viewModel.setApplyValidationParameters(function () {");
+
+        foreach (KeyValuePair<string, Tuple<string, string>> fieldValidation in ViewBag.DataContext.FieldValidationParameters)
+        {
+            pageControlScripts.AppendFormat("\r\n            {0}.extend({{ pattern: {{ message: \"{1}\", params: \"{2}\" }} }});", 
+                fieldValidation.Key, 
+                fieldValidation.Value.Item2.JavaScriptEncode(), 
+                fieldValidation.Value.Item1.JavaScriptEncode());
+        }
+
+        pageControlScripts.Append("\r\n        });");
     }
 
-    pageControlScripts.Append("\r\n        });");
     pageControlScripts.Append(@"
     </script>");
 }
