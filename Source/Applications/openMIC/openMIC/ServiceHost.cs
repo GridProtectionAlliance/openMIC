@@ -153,6 +153,10 @@ namespace openMIC
             systemSettings.Add("ClientCacheEnabled", "true", "Determines if cache control is enabled for browser clients.");
             systemSettings.Add("DateTimeFormat", "yyyy-MM-dd HH:mm.ss.fff", "The date/time format to use when rendering timestamps.");
             systemSettings.Add("BootstrapTheme", "Content/bootstrap.min.css", "Path to Bootstrap CSS to use for rendering styles.");
+            systemSettings.Add("DefaultDialUpRetries", 3, "Default dial-up connection retries.");
+            systemSettings.Add("DefaultDialUpTimeout", 90, "Default dial-up connection timeout.");
+            systemSettings.Add("DefaultFTPUserName", "anonymous", "Default FTP user name to use for device connections.");
+            systemSettings.Add("DefaultFTPPassword", "anonymous", "Default FTP password to use for device connections.");
 
             // Get configured web settings
             WebRootFolder = FilePath.GetAbsolutePath(systemSettings["WebRootFolder"].Value);
@@ -168,7 +172,11 @@ namespace openMIC
                 ApplicationDescription = "open Meter Information Collection System",
                 ApplicationKeywords = "open source, utility, software, meter, interrogation",
                 DateTimeFormat = systemSettings["DateTimeFormat"].Value,
-                BootstrapTheme = systemSettings["BootstrapTheme"].Value
+                BootstrapTheme = systemSettings["BootstrapTheme"].Value,
+                DefaultDialUpRetries = int.Parse(systemSettings["DefaultDialUpRetries"].Value),
+                DefaultDialUpTimeout = int.Parse(systemSettings["DefaultDialUpTimeout"].Value),
+                DefaultFTPUserName = systemSettings["DefaultFTPUserName"].Value,
+                DefaultFTPPassword = systemSettings["DefaultFTPPassword"].Value
             };
 
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;

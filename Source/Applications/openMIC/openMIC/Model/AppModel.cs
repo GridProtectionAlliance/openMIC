@@ -77,6 +77,30 @@ namespace openMIC.Model
             set;
         }
 
+        public int DefaultDialUpRetries
+        {
+            get;
+            set;
+        }
+
+        public int DefaultDialUpTimeout
+        {
+            get;
+            set;
+        }
+
+        public string DefaultFTPUserName
+        {
+            get;
+            set;
+        }
+
+        public string DefaultFTPPassword
+        {
+            get;
+            set;
+        }
+
         #endregion
     }
 }

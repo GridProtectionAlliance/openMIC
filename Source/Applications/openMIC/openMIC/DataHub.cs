@@ -95,6 +95,11 @@ namespace openMIC
 
         #region [ Device Table Operations ]
 
+        /// <summary>
+        /// Gets protocol ID for "Downloader" adapter.
+        /// </summary>
+        public int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : (s_downloaderProtocolID = m_dataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'"));
+
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize)
         {
             return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
@@ -118,6 +123,7 @@ namespace openMIC
         public void AddNewDevice(Device device)
         {
             device.NodeID = Program.Host.Model.NodeID;
+            device.ProtocolID = DownloaderProtocolID;
             device.CreatedBy = UserInfo.CurrentUserID;
             device.CreatedOn = DateTime.UtcNow;
             device.UpdatedBy = device.CreatedBy;
@@ -128,6 +134,7 @@ namespace openMIC
 
         public void UpdateDevice(Device device)
         {
+            device.ProtocolID = DownloaderProtocolID;
             m_dataContext.Table<Device>().UpdateRecord(device);
         }
 
@@ -256,6 +263,7 @@ namespace openMIC
 
         // Static Fields
         private static volatile int s_connectCount;
+        private static int s_downloaderProtocolID;
 
         #endregion
     }

@@ -45,10 +45,11 @@
 
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
+    ViewBag.DataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", @"(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|1?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[1-2]?[0-9]|3[0-1]|\*\/[0-9]+)\s+(\*|[0-9]|1[0-2]|\*\/[0-9]+|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\*\/[0-9]+|\*|[0-7]|sun|mon|tue|wed|thu|fri|sat)\s*(\*\/[0-9]+|\*|[0-9]+)?", "Invalid cron syntax - see <a href=\"http://en.wikipedia.org/wiki/Cron\" target=\"_blank\">http://en.wikipedia.org/wiki/Cron</a>");
 }
 @helper BodyRows() {
     <td width="70%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: $parent.viewPageRecord"></button></td>
-    <td width="20%" class="text-center"><button type="button" class="btn btn-link"><u>Undefined</u></button></td>
+    <td width="20%" class="text-center" data-bind="text: ConnectionString.parseKeyValuePairs().get('schedule')"></td>
     <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" /></td>
     <td width="5%" class="text-center valign-middle" nowrap>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord" hub-dependent><span class="glyphicon glyphicon-pencil"></span></button>
@@ -61,13 +62,6 @@
         @Raw(ViewBag.DataContext.AddInputField("get('connectionhostname')", true, inputLabel: "Connection Host Name/IP", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('connectionusername')", true, inputLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('connectionpassword')", true, inputType: "password", inputLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString"))
-        <div class="checkbox" data-bind="with: $root.connectionString">
-            <label><input type="checkbox" id="useDialUp" data-bind="checked: get('usedialup'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
-        </div>
-        @Raw(ViewBag.DataContext.AddInputField("get('dialupnumber')", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString"))
-        @Raw(ViewBag.DataContext.AddInputField("get('maxconnectionretries')", false, inputType: "number", inputLabel: "Maximum Connection Retries", fieldID: "inputMaxConnectionRetries", groupDataBinding: "with: $root.connectionString"))
-    </div>
-    <div class="col-md-6">        
         @Raw(ViewBag.DataContext.AddInputField("get('schedule')", true, inputLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name", "Vendor Device"))
         @*<div class="form-group">
@@ -79,6 +73,16 @@
             </select>
         </div>*@
         @Raw(ViewBag.DataContext.AddSelectField<Device, Company>("CompanyID", "ID", "Name", "Company"))
+    </div>
+    <div class="col-md-6">
+        <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" id="useDialUp" data-bind="checked: get('usedialup'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
+        </div>
+        @Raw(ViewBag.DataContext.AddInputField("get('dialupnumber')", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString", customDataBinding: "enable: get('usedialup')"))
+        @Raw(ViewBag.DataContext.AddInputField("get('dialupusername')", false, inputLabel: "Dial-up User Name", fieldID: "inputDialUpUserName", groupDataBinding: "with: $root.connectionString", customDataBinding: "enable: get('usedialup')"))
+        @Raw(ViewBag.DataContext.AddInputField("get('dialuppassword')", false, inputType: "password", inputLabel: "Dial-up Password", fieldID: "inputDialUpPassword", groupDataBinding: "with: $root.connectionString", customDataBinding: "enable: get('usedialup')"))
+        @Raw(ViewBag.DataContext.AddInputField("get('dialupretries')", false, inputType: "number", inputLabel: "Maximum Dial-up Retries", fieldID: "inputDialUpRetries", groupDataBinding: "with: $root.connectionString", customDataBinding: "enable: get('usedialup')"))
+        @Raw(ViewBag.DataContext.AddInputField("get('dialuptimeout')", false, inputType: "number", inputLabel: "Dial-up Connection Timeout", fieldID: "inputDialUpTimeout", groupDataBinding: "with: $root.connectionString", customDataBinding: "enable: get('usedialup')"))
         <div class="checkbox">
             <label><input type="checkbox" data-bind="checked: Enabled, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Enabled</label>
         </div>
@@ -134,12 +138,15 @@
         const defaultConnectionString = new Dictionary();
 
         defaultConnectionString.set("connectionHostName", "");
-        defaultConnectionString.set("connectionUserName", "");
-        defaultConnectionString.set("connectionPassword", "");
+        defaultConnectionString.set("connectionUserName", "@Model.DefaultFTPUserName");
+        defaultConnectionString.set("connectionPassword", "@Model.DefaultFTPPassword");
         defaultConnectionString.set("useDialUp", false);
         defaultConnectionString.set("dialUpNumber", "");
-        defaultConnectionString.set("maxConnectionRetries", 0);
-        defaultConnectionString.set("schedule", "");
+        defaultConnectionString.set("dialUpUserName", "");
+        defaultConnectionString.set("dialUpPassword", "");
+        defaultConnectionString.set("dialUpRetries", @Model.DefaultDialUpRetries);
+        defaultConnectionString.set("dialUpTimeout", @Model.DefaultDialUpTimeout);
+        defaultConnectionString.set("schedule", "* * * * *");
 
         // Configure view model
         viewModel.defaultSortField = "ID";
@@ -192,7 +199,7 @@
         });
 
         $(viewModel).on("derivingJSRecord", function (event) {
-            // Remove addded connection string reference before serialization
+            // Remove added connection string reference before serialization
             delete viewModel.currentRecord()._connectionstring;
         });
 

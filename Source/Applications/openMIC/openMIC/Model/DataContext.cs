@@ -26,11 +26,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
+using System.Text;
 using GSF;
 using GSF.Collections;
 using GSF.Data;
 using GSF.IO;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using RazorEngine.Templating;
 
 namespace openMIC.Model
@@ -113,7 +113,7 @@ namespace openMIC.Model
         /// <returns>Table operations for the specified modeled table <typeparamref name="T"/>.</returns>
         public TableOperations<T> Table<T>() where T : class, new()
         {
-            return m_tableOperations.GetOrAdd(typeof(T), (type) => new TableOperations<T>(Connection)) as TableOperations<T>;
+            return m_tableOperations.GetOrAdd(typeof(T), type => new TableOperations<T>(Connection)) as TableOperations<T>;
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace openMIC.Model
             }
             catch (Exception ex)
             {
-                Program.Host.LogException(new InvalidOperationException($"Exception during record query for {typeof(T).Name} \"{sqlFormat}\": {ex.Message}", ex));
+                Program.Host.LogException(new InvalidOperationException($"Exception during record query for {typeof(T).Name} \"{sqlFormat}{ParamList(parameters)}\": {ex.Message}", ex));
                 return Enumerable.Empty<T>();
             }
         }
@@ -139,7 +139,7 @@ namespace openMIC.Model
         /// <summary>
         /// Adds a new pattern based validation and option error message to a field.
         /// </summary>
-        /// <param name="observableFieldReference">Observerable field reference (from JS view model).</param>
+        /// <param name="observableFieldReference">Observable field reference (from JS view model).</param>
         /// <param name="validationPattern">Regex based validation pattern.</param>
         /// <param name="errorMessage">Optional error message to display when pattern fails.</param>
         public void AddFieldValidation(string observableFieldReference, string validationPattern, string errorMessage = null)
@@ -156,8 +156,9 @@ namespace openMIC.Model
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
+        /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null) where T : class, new()
+        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string customDataBinding = null) where T : class, new()
         {
             TableOperations<T> tableOperations = Table<T>();
             StringLengthAttribute stringLengthAttribute;
@@ -179,7 +180,7 @@ namespace openMIC.Model
             }
 
             return AddInputField(fieldName, tableOperations.FieldHasAttribute<RequiredAttribute>(fieldName),
-                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding);
+                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding, customDataBinding);
         }
 
         /// <summary>
@@ -192,8 +193,9 @@ namespace openMIC.Model
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
+        /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null)
+        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string customDataBinding = null)
         {
             RazorView<CSharp> addInputFieldTemplate = new RazorView<CSharp>(AddInputFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addInputFieldTemplate.ViewBag;
@@ -205,6 +207,7 @@ namespace openMIC.Model
             viewBag.AddValue("InputLabel", inputLabel ?? fieldName);
             viewBag.AddValue("FieldID", fieldID ?? $"input{fieldName}");
             viewBag.AddValue("GroupDataBinding", groupDataBinding);
+            viewBag.AddValue("CustomDataBinding", customDataBinding);
 
             return addInputFieldTemplate.Execute();
         }
@@ -278,6 +281,16 @@ namespace openMIC.Model
                     m_disposed = true;  // Prevent duplicate dispose.
                 }
             }
+        }
+        private static string ParamList(IReadOnlyList<object> parameters)
+        {
+            StringBuilder delimitedString = new StringBuilder();
+
+
+            for (int i = 0; i < parameters.Count; i++)
+                delimitedString.AppendFormat(", {0}:{1}", i, parameters[i]);
+
+            return delimitedString.ToString();
         }
 
         #endregion

@@ -100,9 +100,9 @@ function PagedViewModel() {
         read: self._currentRecord,
         write: function(value) {
             self._currentRecord(value);
-            self.applyValidationParameters();
             self.setDirtyFlag(false);
             $(self).trigger("currentRecordChanged");
+            self.applyValidationParameters();
 
             // Watch for changes to fields in current record
             ko.watch(self._currentRecord(), function (parents, child, item) {
@@ -210,6 +210,11 @@ function PagedViewModel() {
                 const currentPage = self.currentPage();
                 self._currentPage(0);
                 self.currentPage(currentPage);
+            });            
+
+            // Initialize current record with an empty row
+            self.newRecord().done(function (emptyRecord) {
+                self.currentRecord(self.deriveObservableRecord(emptyRecord));
             });
         }
 
@@ -275,18 +280,27 @@ function PagedViewModel() {
         self.errors.showAllMessages();
     }
 
-    // Convert observerable object to a simple Javascript record
+    // Convert observable object to a simple Javascript record
     self.deriveJSRecord = function () {
         const currentRecord = self.currentRecord();
+
+        // Allow customization of Javascript record
         $(self).trigger("derivingJSRecord");
+
         return ko.mapping.toJS(currentRecord);
     }
 
     // Convert simple Javascript record to an observable object
     self.deriveObservableRecord = function (record) {
         const observableRecord = ko.mapping.fromJS(record);
+
+        // Allow customization of new observable record
         $(self).trigger("derivingObservableRecord", [observableRecord]);
+
+        // Apply validation binding to current observable record
         self.errors = ko.validation.group(observableRecord);
+        self.refreshValidationErrors();
+
         return observableRecord;
     }
 
@@ -457,7 +471,6 @@ var viewModel = new PagedViewModel();
 
     $("#addNewEditDialog").on("shown.bs.modal", function () {
         viewModel.setFocusOnInitialField();
-        viewModel.refreshValidationErrors();
     });
 
     $(window).resize(
@@ -468,7 +481,7 @@ var viewModel = new PagedViewModel();
     viewModel.calculatePageSize();
 
     ko.validation.rules.pattern.message = "Invalid";
-
+    
     ko.validation.init({
         registerExtenders: true,
         messagesOnModified: true,

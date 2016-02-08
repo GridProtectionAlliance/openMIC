@@ -137,11 +137,11 @@ namespace openMIC.Model
                 {
                     try
                     {
-                        property.SetValue(record, CoreceToType(row[property.Name], property.PropertyType), null);
+                        property.SetValue(record, row.ConvertField(property.Name, property.PropertyType), null);
                     }
                     catch (Exception ex)
                     {
-                        Program.Host.LogException(new InvalidOperationException($"Exception during field assignment for \"{typeof(T).Name}.{property.Name} = {row[property.Name]}\": {ex.Message}", ex));
+                        Program.Host.LogException(new InvalidOperationException($"Exception during record load field assignment for \"{typeof(T).Name}.{property.Name} = {row[property.Name]}\": {ex.Message}", ex));
                     }
                 }
 
@@ -392,21 +392,6 @@ namespace openMIC.Model
         }
 
         // Static Methods
-
-        // TODO: Drop in-leiu of ConvertField with Type paramter at next GSF update...
-        private object CoreceToType(object value, Type type)
-        {
-            if (value == null || value == DBNull.Value)
-            {
-                if (type.IsValueType)
-                    return Activator.CreateInstance(type);
-
-                return null;
-            }
- 
-            return Convert.ChangeType(value, Nullable.GetUnderlyingType(type) ?? type);
-        }
-
         private static string KeyList(IReadOnlyList<object> primaryKeys)
         {
             StringBuilder delimitedString = new StringBuilder();

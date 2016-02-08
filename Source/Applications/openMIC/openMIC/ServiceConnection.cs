@@ -55,6 +55,7 @@ namespace openMIC
         /// <summary>
         /// Sends a service command.
         /// </summary>
+        /// <param name="connectionID">Client connection ID.</param>
         /// <param name="command">Command string.</param>
         public void SendCommand(string connectionID, string command)
         {
@@ -122,7 +123,5 @@ namespace openMIC
         public static ServiceConnection Default => s_defaultInstance.Value;
 
         #endregion
-
-
     }
 }
