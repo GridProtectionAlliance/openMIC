@@ -168,8 +168,8 @@
                     <span data-bind="visible: validationErrors() > 0"><span data-bind="text: validationErrors()"></span> validation error<span data-bind="visible: validationErrors() > 1">s</span></span>
                     ...
                 </em>
-                <button type="button" class="btn btn-info" data-bind="visible: recordMode()===RecordMode.View" id="editRecordButton">Edit</button>
-                <button type="submit" class="btn btn-primary" data-dismiss="modal" data-bind="visible: recordMode()!==RecordMode.View, css: {'disabled': unassignedFieldCount() > 0 || validationErrors() > 0 || !hubIsConnected}" id="saveRecordButton" hub-dependent>Save</button>
+                <button type="button" class="btn btn-info" data-bind="visible: recordMode()===RecordMode.View, disable: $($element).hasClass('disabled')" id="editRecordButton" hub-dependent>Edit</button>
+                <button type="submit" class="btn btn-primary" data-dismiss="modal" data-bind="visible: recordMode()!==RecordMode.View, css: {'disabled': unassignedFieldCount() > 0 || validationErrors() > 0}, disable: $($element).hasClass('disabled')" id="saveRecordButton" hub-dependent>Save</button>
                 <button type="button" class="btn btn-default" id="cancelRecordButton">Cancel</button>
             </div>
         </div>
