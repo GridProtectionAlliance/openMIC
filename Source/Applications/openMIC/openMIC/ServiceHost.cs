@@ -41,7 +41,7 @@ namespace openMIC
         /// <summary>
         /// Raised when there is a new status message reported to service.
         /// </summary>
-        public event EventHandler<EventArgs<string, UpdateType>> UpdatedStatus;
+        public event EventHandler<EventArgs<Guid, string, UpdateType>> UpdatedStatus;
 
         /// <summary>
         /// Raised when there is a new exception logged to service.
@@ -221,7 +221,7 @@ namespace openMIC
         /// Sends a command request to the service.
         /// </summary>
         /// <param name="userInput">Request string.</param>
-        public void SendRequest(string userInput)
+        public void SendRequest(Guid clientID, string userInput)
         {
             ClientRequest request = ClientRequest.Parse(userInput);
 
@@ -230,16 +230,21 @@ namespace openMIC
                 ClientRequestHandler requestHandler = ServiceHelper.FindClientRequestHandler(request.Command);
 
                 if ((object)requestHandler != null)
-                    requestHandler.HandlerMethod(new ClientRequestInfo(new ClientInfo(), request));
+                    requestHandler.HandlerMethod(new ClientRequestInfo(new ClientInfo() { ClientID = clientID }, request));
                 else
                     DisplayStatusMessage(string.Format("Command \"{0}\" is not supported\r\n\r\n", request.Command), UpdateType.Alarm);
             }
         }
 
-        private void UpdatedStatusHandler(object sender, EventArgs<string, UpdateType> e)
+        public void DisconnectClient(Guid clientID)
+        {
+            ServiceHelper.DisconnectClient(clientID);
+        }
+
+        private void UpdatedStatusHandler(object sender, EventArgs<Guid, string, UpdateType> e)
         {
             if ((object)UpdatedStatus != null)
-                UpdatedStatus(sender, new EventArgs<string, UpdateType>(e.Argument1, e.Argument2));
+                UpdatedStatus(sender, new EventArgs<Guid, string, UpdateType>(e.Argument1, e.Argument2, e.Argument3));
         }
 
         private void LoggedExceptionHandler(object sender, EventArgs<Exception> e)

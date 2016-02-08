@@ -44,8 +44,8 @@ namespace openMIC
 
         private ServiceConnection(IHubConnectionContext<dynamic> clients)
         {
-            Program.Host.UpdatedStatus += m_serviceHost_UpdatedStatus;
             m_clients = clients;
+            Program.Host.UpdatedStatus += m_serviceHost_UpdatedStatus;
         }
 
         #endregion
@@ -56,17 +56,29 @@ namespace openMIC
         /// Sends a service command.
         /// </summary>
         /// <param name="command">Command string.</param>
-        public void SendCommand(string command)
+        public void SendCommand(string connectionID, string command)
         {
+            Guid clientID;
+
             Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity(UserInfo.CurrentUserID), new[] { "Administrator" });
-            Program.Host.SendRequest(command);
+
+            if (Guid.TryParse(connectionID, out clientID))
+                Program.Host.SendRequest(clientID, command);
         }
 
-        private void m_serviceHost_UpdatedStatus(object sender, EventArgs<string, UpdateType> e)
+        public void Disconnect(string connectionID)
+        {
+            Guid clientID;
+
+            if (Guid.TryParse(connectionID, out clientID))
+                Program.Host.DisconnectClient(clientID);
+        }
+
+        private void m_serviceHost_UpdatedStatus(object sender, EventArgs<Guid, string, UpdateType> e)
         {
             string color;
 
-            switch (e.Argument2)
+            switch (e.Argument3)
             {
                 case UpdateType.Alarm:
                     color = "red";
@@ -79,15 +91,18 @@ namespace openMIC
                     break;
             }
 
-            BroadcastMessage(e.Argument1, color);
+            BroadcastMessage(e.Argument1, e.Argument2, color);
         }
 
-        private void BroadcastMessage(string message, string color)
+        private void BroadcastMessage(Guid clientID, string message, string color)
         {
+            dynamic client;
+
             if (string.IsNullOrEmpty(color))
                 color = "white";
 
-            m_clients.All.broadcastMessage(message, color);
+            client = m_clients.Client(clientID.ToString());
+            client.broadcastMessage(message, color);
         }
 
         #endregion

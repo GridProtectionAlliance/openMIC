@@ -48,8 +48,9 @@ namespace openMIC
         #region [ Methods ]
 
         public override Task OnConnected()
-        {            
+        {
             s_connectCount++;
+            m_serviceConnection.SendCommand(Context.ConnectionId, "Filter -Remove 0");
             Program.Host.LogStatusMessage($"ServiceHub connect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
             return base.OnConnected();
         }
@@ -59,6 +60,7 @@ namespace openMIC
             if (stopCalled)
             {
                 s_connectCount--;
+                m_serviceConnection.Disconnect(Context.ConnectionId);
                 Program.Host.LogStatusMessage($"ServiceHub disconnect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
             }
 
@@ -83,7 +85,7 @@ namespace openMIC
         /// <param name="command">Command string.</param>
         public void SendCommand(string command)
         {
-            m_serviceConnection.SendCommand(command);
+            m_serviceConnection.SendCommand(Context.ConnectionId, command);
         }
 
         #endregion
