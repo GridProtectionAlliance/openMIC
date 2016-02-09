@@ -38,6 +38,7 @@
 
     ViewBag.HeaderColumns = new[]
     {   //    { "Field", "Label", "Classes" }
+        new[] { null, "Status", "text-center valign-middle" },
         new[] { "Acronym", "Acronym", "text-left" },
         new[] { null, "Schedule", "text-center valign-middle" },
         new[] { "Enabled", "Enabled", "text-center" }
@@ -45,15 +46,16 @@
 
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
-    ViewBag.DataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", @"(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|1?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[1-2]?[0-9]|3[0-1]|\*\/[0-9]+)\s+(\*|[0-9]|1[0-2]|\*\/[0-9]+|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\*\/[0-9]+|\*|[0-7]|sun|mon|tue|wed|thu|fri|sat)\s*(\*\/[0-9]+|\*|[0-9]+)?", "Invalid cron syntax - see <a href=\"http://en.wikipedia.org/wiki/Cron\" target=\"_blank\">http://en.wikipedia.org/wiki/Cron</a>");
+    ViewBag.DataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", @"(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|1?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[1-2]?[0-9]|3[0-1]|\*\/[0-9]+)\s+(\*|[0-9]|1[0-2]|\*\/[0-9]+)\s+(\*\/[0-9]+|\*|[0-7])\s*(\*\/[0-9]+|\*|[0-9]+)?", "Invalid cron syntax.");
 }
 @helper BodyRows() {
-    <td width="70%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: $parent.viewPageRecord"></button></td>
+    <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/greenlight.png" alt="OK" data-bind="visible: Enabled"><img src="Images/StatusLights/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
+    <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: $parent.viewPageRecord"></button></td>
     <td width="20%" class="text-center" data-bind="text: ConnectionString.parseKeyValuePairs().get('schedule')"></td>
-    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" /></td>
+    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" disabled/></td>
     <td width="5%" class="text-center valign-middle" nowrap>
-        <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord" hub-dependent><span class="glyphicon glyphicon-pencil"></span></button>
-        <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord" hub-dependent><span class="glyphicon glyphicon-remove"></span></button>
+        <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
+        <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
     </td>
 }
 @helper AddNewEditDialog() {
@@ -106,7 +108,7 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="center-block" style="width: 380px">
-<pre>
+                            <pre>
  # ┌───────────── min (0 - 59)
  # │ ┌────────────── hour (0 - 23)
  # │ │ ┌─────────────── day of month (1 - 31)
@@ -116,9 +118,29 @@
  # │ │ │ │ │        or 7 is Sunday, the same as 0
  # * * * * *
 </pre>
-                            <div class="text-center">
-                                <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">https://en.wikipedia.org/wiki/Cron</a>
-                            </div>
+                        </div>
+                        <table class="small table-striped table-condensed table-center">
+                            <tr>
+                                <td style="text-align: right" nowrap>Every five minutes:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('*/5 * * * *')"><code>*/5 * * * *</code></button></td>
+                                <td style="text-align: right" nowrap>Every hour:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 * * * *')"><code>0 * * * *</code></button></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right" nowrap>Every half-hour:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('30 * * * *')"><code>30 * * * *</code></button></td>
+                                <td style="text-align: right" nowrap>Every four hours:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 */4 * * *')"><code>0 */4 * * *</code></button></td>
+                            <tr>
+                                <td style="text-align: right" nowrap>Every day:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 * * *')"><code>0 0 * * *</code></button></td>
+                                <td style="text-align: right" nowrap>Every month:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 1 * *')"><code>0 0 1 * *</code></button></td>
+                            </tr>
+                        </table>
+                        <br />
+                        <div class="text-center">
+                            <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">https://en.wikipedia.org/wiki/Cron</a>
                         </div>
                     </div>
                 </div>
@@ -134,40 +156,11 @@
     <script>
         "use strict";
 
-        // Define default connection string keys needed for binding
-        const defaultConnectionString = new Dictionary();
-
-        defaultConnectionString.set("connectionHostName", "");
-        defaultConnectionString.set("connectionUserName", "@Model.DefaultFTPUserName");
-        defaultConnectionString.set("connectionPassword", "@Model.DefaultFTPPassword");
-        defaultConnectionString.set("useDialUp", false);
-        defaultConnectionString.set("dialUpNumber", "");
-        defaultConnectionString.set("dialUpUserName", "");
-        defaultConnectionString.set("dialUpPassword", "");
-        defaultConnectionString.set("dialUpRetries", @Model.DefaultDialUpRetries);
-        defaultConnectionString.set("dialUpTimeout", @Model.DefaultDialUpTimeout);
-        defaultConnectionString.set("schedule", "* * * * *");
-
         // Configure view model
         viewModel.defaultSortField = "ID";
         viewModel.labelField = "Acronym";
         viewModel.primaryKeyFields = ["ID"];
         viewModel.initialFocusField = "inputAcronym";
-
-        // Create an observable key/value pair connection string dictionary
-        viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);
-        viewModel.loadingConnectionString = false;
-
-        // Watch the connection string dictionary for changes independent of current record
-        ko.watch(viewModel.connectionString, { depth: -1 }, function () {
-            if (viewModel.loadingConnectionString)
-                return;
-
-            // Update connection string applying camel-case key names as defined in default connection string
-            const updates = new Dictionary(defaultConnectionString);
-            updates.pushAll(viewModel.connectionString.toJSON());
-            viewModel.currentRecord().ConnectionString(updates.joinKeyValuePairs());
-        });
 
         viewModel.setQueryRecordCount(function() {
             return dataHub.queryDeviceCount();
@@ -193,17 +186,46 @@
             return dataHub.updateDevice(record);
         });
 
-        $(viewModel).on("derivingObservableRecord", function (event, observableRecord) {
+        // Define default connection string keys needed for binding
+        const defaultConnectionString = new Dictionary();
+
+        defaultConnectionString.set("connectionHostName", "");
+        defaultConnectionString.set("connectionUserName", "@Model.DefaultFTPUserName");
+        defaultConnectionString.set("connectionPassword", "@Model.DefaultFTPPassword");
+        defaultConnectionString.set("useDialUp", false);
+        defaultConnectionString.set("dialUpNumber", "");
+        defaultConnectionString.set("dialUpUserName", "");
+        defaultConnectionString.set("dialUpPassword", "");
+        defaultConnectionString.set("dialUpRetries", @Model.DefaultDialUpRetries);
+        defaultConnectionString.set("dialUpTimeout", @Model.DefaultDialUpTimeout);
+        defaultConnectionString.set("schedule", "* * * * *");
+
+        // Create an observable key/value pair connection string dictionary
+        viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);
+        viewModel.loadingConnectionString = false;
+
+        // Watch the connection string dictionary for changes independent of current record
+        ko.watch(viewModel.connectionString, { depth: -1 }, function() {
+            if (viewModel.loadingConnectionString)
+                return;
+
+            // Update connection string applying camel-case key names as defined in default connection string
+            const updates = new Dictionary(defaultConnectionString);
+            updates.pushAll(viewModel.connectionString.toJSON());
+            viewModel.currentRecord().ConnectionString(updates.joinKeyValuePairs());
+        });
+
+        $(viewModel).on("derivingObservableRecord", function(event, observableRecord) {
             // Add connection string reference to current record so it can participate in the validation group
             observableRecord._connectionstring = viewModel.connectionString;
         });
 
-        $(viewModel).on("derivingJSRecord", function (event) {
+        $(viewModel).on("derivingJSRecord", function(event) {
             // Remove added connection string reference before serialization
             delete viewModel.currentRecord()._connectionstring;
         });
 
-        $(viewModel).on("currentRecordChanged", function (event) {
+        $(viewModel).on("currentRecordChanged", function(event) {
             viewModel.loadingConnectionString = true;
 
             // Reset observable dictionary to default values on record change
@@ -225,5 +247,28 @@
             viewModel.setDirtyFlag(false);
             viewModel.loadingConnectionString = false;
         });
+
+
+        $(viewModel).on("recordDeleted", function(event, record) {
+            if (hubIsConnected)
+                serviceHub.sendCommand("reloadconfig");
+        });
+
+        $(viewModel).on("recordSaved", function(event, record, isNew) {
+            if (!hubIsConnected)
+                return;
+
+            if (record.Enabled)
+                serviceHub.sendCommand("initialize " + record.Acronym);
+            else
+                serviceHub.sendCommand("reloadconfig");
+        });
+
+        function updateSchedule(schedule) {
+            if (viewModel.recordMode() === RecordMode.View)
+                alert("Cannot update schedule while in view mode...");
+            else
+                viewModel.connectionString.get("schedule")(schedule);
+        }
     </script>
 }

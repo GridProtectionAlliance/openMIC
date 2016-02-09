@@ -106,6 +106,7 @@ function hubConnected() {
 }
 
 function updateHubDependentControlState(enabled) {
+    // This only controls style - not enabled element state
     if (enabled)
         $("[hub-dependent]").removeClass("disabled");
     else
@@ -156,6 +157,9 @@ $(function () {
 
         // Disable hub dependent controls
         updateHubDependentControlState(false);
+
+        // Raise "hubDisconnected" event
+        $(window).trigger("hubDisconnected");
     });
 
     $.connection.hub.reconnected(function () {

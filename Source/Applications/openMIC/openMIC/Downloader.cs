@@ -31,7 +31,7 @@ namespace openMIC
 {
     [Description("Downloader: Implements remote file download capabilities")]
     [EditorBrowsable(EditorBrowsableState.Advanced)] // Normally defined as an input device protocol
-    public class Downloader : FacileActionAdapterBase
+    public class Downloader : InputAdapterBase
     {
         #region [ Members ]
 
@@ -175,6 +175,14 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Gets flag that determines if the data input connects asynchronously.
+        /// </summary>
+        /// <remarks>
+        /// Derived classes should return true when data input source is connects asynchronously, otherwise return false.
+        /// </remarks>
+        protected override bool UseAsyncConnect => false;
+
+        /// <summary>
         /// Gets the flag indicating if this adapter supports temporal processing.
         /// </summary>
         public override bool SupportsTemporalProcessing => false;
@@ -218,6 +226,22 @@ namespace openMIC
             base.Initialize();
             ConnectionStringParser<ConnectionStringParameterAttribute> parser = new ConnectionStringParser<ConnectionStringParameterAttribute>();
             parser.ParseConnectionString(ConnectionString, this);
+        }
+
+        /// <summary>
+        /// Attempts to connect to data input source.
+        /// </summary>
+        protected override void AttemptConnection()
+        {            
+            // This class only connects based on schedule and is not always connected, nothing to do
+        }
+
+        /// <summary>
+        /// Attempts to disconnect from data input source.
+        /// </summary>
+        protected override void AttemptDisconnection()
+        {
+            // This class only connects based on schedule and is not always connected, nothing to do
         }
 
         /// <summary>

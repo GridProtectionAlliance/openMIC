@@ -47,6 +47,7 @@ function PagedViewModel() {
     self.sortField = ko.observable(self.defaultSortField);  // Current sort field, persisted per model
     self.sortAscending = ko.observable(true);               // Current sort ascending flag, persisted per model
     self.unassignedFieldCount = ko.observable(0);           // Number of bound fields with missing data
+    self.dataHubIsConnected = ko.observable(false);         // Data hub connected observable flag - externally managed
     self.errors = ko.validation.group([ko.observable(0)]);  // Validation errors array
 
     // Internal fields
@@ -120,7 +121,11 @@ function PagedViewModel() {
 
             if (newMode !== oldMode) {
                 self._recordMode(newMode);
-               $(self).trigger("recordModeChanged", [oldMode, newMode]);
+
+                if (oldMode === RecordMode.View && newMode === RecordMode.Edit)
+                    self.setFocusOnInitialField();
+
+                $(self).trigger("recordModeChanged", [oldMode, newMode]);
             }
         },
         owner: self
@@ -131,12 +136,12 @@ function PagedViewModel() {
         return Math.max(Math.ceil(self.recordCount() / self.currentPageSize()), 1);
     });
 
-    // Gets flag for if on first page
+    // Gets flag that determines if current page is first page
     self.onFirstPage = ko.pureComputed(function () {
         return self.currentPage() <= 1;
     });
 
-    // Gets flag for if on last page
+    // Gets flag that determines if current page is last page
     self.onLastPage = ko.pureComputed(function () {
         return self.currentPage() >= self.totalPages();
     });
@@ -200,7 +205,7 @@ function PagedViewModel() {
         else
             self.sortAscending(lastSortAscending === "true");
 
-        if (hubIsConnected) {
+        if (self.dataHubIsConnected()) {
             // Query total record count
             self.queryRecordCount().done(function (total) {
                 // Update record count observable
@@ -216,6 +221,9 @@ function PagedViewModel() {
             self.newRecord().done(function (emptyRecord) {
                 self.currentRecord(self.deriveObservableRecord(emptyRecord));
             });
+
+            // Recalculate page size after initialize
+            setTimeout(viewModel.calculatePageSize, 150);
         }
 
         // Initialize column widths array
@@ -347,7 +355,7 @@ function PagedViewModel() {
     }
 
     self.queryPageRecords = function () {
-        if (hubIsConnected)
+        if (self.dataHubIsConnected())
             self.queryRecords(self.sortField(), self.sortAscending(), self.currentPage(), self.currentPageSize()).done(function (records) {
                 self.pageRecords.removeAll();
                 self.pageRecords(records);
@@ -360,7 +368,7 @@ function PagedViewModel() {
     }
 
     self.removePageRecord = function (record) {
-        if (hubIsConnected && confirm("Are you sure you want to delete \"" + record[self.labelField] + "\"?")) {
+        if (self.dataHubIsConnected() && confirm("Are you sure you want to delete \"" + record[self.labelField] + "\"?")) {
             const keyValues = [];
 
             for (var i = 0; i < self.primaryKeyFields.length; i++) {
@@ -370,6 +378,7 @@ function PagedViewModel() {
             self.deleteRecord(keyValues).done(function () {
                 self.pageRecords.remove(record);
                 self.initialize();
+                $(self).trigger("recordDeleted", [record]);
                 showInfoMessage("Deleted record...");
             }).fail(function (error) {
                 showErrorMessage(error);
@@ -389,21 +398,31 @@ function PagedViewModel() {
     }
 
     self.saveEditedRecord = function () {
-        self.updateRecord(self.deriveJSRecord()).done(function () {
-            self.initialize();
-            showInfoMessage("Saved updated record...");
-        }).fail(function (error) {
-            showErrorMessage(error);
-        });
+        if (self.dataHubIsConnected()) {
+            const record = self.deriveJSRecord();
+
+            self.updateRecord(record).done(function () {
+                self.initialize();
+                $(self).trigger("recordSaved", [record, false]);
+                showInfoMessage("Saved updated record...");
+            }).fail(function (error) {
+                showErrorMessage(error);
+            });
+        }
     }
 
     self.saveNewRecord = function () {
-        self.addNewRecord(self.deriveJSRecord()).done(function () {
-            self.initialize();
-            showInfoMessage("Saved new record...");
-        }).fail(function (error) {
-            showErrorMessage(error);
-        });
+        if (self.dataHubIsConnected()) { 
+            const record = self.deriveJSRecord();
+
+            self.addNewRecord(record).done(function () {
+                self.initialize();
+                $(self).trigger("recordSaved", [record, true]);
+                showInfoMessage("Saved new record...");
+            }).fail(function (error) {
+                showErrorMessage(error);
+            });
+        }
     }
 
     self.viewPageRecord = function (record) {
@@ -419,11 +438,13 @@ function PagedViewModel() {
     }
 
     self.addPageRecord = function () {
-        self.recordMode(RecordMode.AddNew);
-        self.newRecord().done(function (emptyRecord) {
-            self.currentRecord(self.deriveObservableRecord(emptyRecord));
-            $("#addNewEditDialog").modal("show");
-        });
+        if (self.dataHubIsConnected()) {
+            self.recordMode(RecordMode.AddNew);
+            self.newRecord().done(function (emptyRecord) {
+                self.currentRecord(self.deriveObservableRecord(emptyRecord));
+                $("#addNewEditDialog").modal("show");
+            });
+        }
     }
 
     self.cancelPageRecord = function () {
@@ -457,16 +478,16 @@ var viewModel = new PagedViewModel();
     });
 
     $(window).on("hubConnected", function (event) {
+        viewModel.dataHubIsConnected(true);
         viewModel.initialize();
+    });
+
+    $(window).on("hubDisconnected", function (event) {
+        viewModel.dataHubIsConnected(false);
     });
 
     $(window).on("messageVisibiltyChanged", function (event) {
         viewModel.calculatePageSize();
-    });
-
-    $(viewModel).on("recordModeChanged", function (event, oldMode, newMode) {
-        if (oldMode === RecordMode.View && newMode === RecordMode.Edit)
-            viewModel.setFocusOnInitialField();
     });
 
     $("#addNewEditDialog").on("shown.bs.modal", function () {
