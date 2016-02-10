@@ -53,6 +53,11 @@ body {
     pointer-events:all;
 }
 
+/* Define read-only background color for modal dialogs */
+.modal-readonly {
+   background: #dcdcdc;
+}
+
 /* Table column sorting button style */
 .btn-group-sort > .btn {
     padding: 0px 1px;

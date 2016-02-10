@@ -147,7 +147,7 @@
 <div id="addNewEditDialog" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header" data-bind="css: {'modal-readonly': recordMode()===RecordMode.View}">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">
                     <span data-bind="visible: recordMode()===RecordMode.View">View</span>
@@ -156,12 +156,12 @@
                     @SingularForm(ViewBag.Title)
                 </h4>
             </div>
-            <div class="modal-body auto-height"  data-bind="with: currentRecord, validationOptions: { messageTemplate: 'validationMessageTemplate' }">
+            <div class="modal-body auto-height"  data-bind="with: currentRecord, validationOptions: {messageTemplate: 'validationMessageTemplate'}, css: {'modal-readonly': recordMode()===RecordMode.View}">
                 <form role="form">
                     @Raw(ViewBag.AddNewEditDialog)
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" data-bind="css: {'modal-readonly': recordMode()===RecordMode.View}">
                 <em data-bind="visible: unassignedFieldCount() > 0 || validationErrors() > 0">
                     <span data-bind="visible: unassignedFieldCount() > 0">Missing <span data-bind="text: unassignedFieldCount"></span> required field<span data-bind="visible: unassignedFieldCount() > 1">s</span></span>
                     <span data-bind="visible: unassignedFieldCount() > 0 && validationErrors() > 0"> and </span>

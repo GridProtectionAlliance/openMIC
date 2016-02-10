@@ -221,9 +221,6 @@ function PagedViewModel() {
             self.newRecord().done(function (emptyRecord) {
                 self.currentRecord(self.deriveObservableRecord(emptyRecord));
             });
-
-            // Recalculate page size after initialize
-            setTimeout(viewModel.calculatePageSize, 150);
         }
 
         // Initialize column widths array
@@ -362,6 +359,9 @@ function PagedViewModel() {
                 refreshHubDependentControlState();
                 $("[id='recordRow']").css("visibility", "visible");
                 $("#loadingDataLabel").hide();
+
+                // Validate proper page size after any record refresh
+                setTimeout(self.calculatePageSize, 150);
             }).fail(function (error) {
                 showErrorMessage(error);
             });
