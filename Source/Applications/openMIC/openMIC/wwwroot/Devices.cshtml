@@ -46,10 +46,12 @@
 
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
+
+    // Add cron pattern validation to schedule connection string field
     ViewBag.DataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", @"(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|1?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[1-2]?[0-9]|3[0-1]|\*\/[0-9]+)\s+(\*|[0-9]|1[0-2]|\*\/[0-9]+)\s+(\*\/[0-9]+|\*|[0-7])\s*(\*\/[0-9]+|\*|[0-9]+)?", "Invalid cron syntax.");
 }
 @helper BodyRows() {
-    <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/greenlight.png" alt="OK" data-bind="visible: Enabled"><img src="Images/StatusLights/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
+    <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="Images/StatusLights/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
     <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: $parent.viewPageRecord"></button></td>
     <td width="20%" class="text-center" data-bind="text: ConnectionString.parseKeyValuePairs().get('schedule')"></td>
     <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" disabled/></td>
@@ -64,7 +66,7 @@
         @Raw(ViewBag.DataContext.AddInputField("get('connectionhostname')", true, inputLabel: "Connection Host Name/IP", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('connectionusername')", true, inputLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('connectionpassword')", true, inputType: "password", inputLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString"))
-        @Raw(ViewBag.DataContext.AddInputField("get('schedule')", true, inputLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString"))
+        @Raw(ViewBag.DataContext.AddInputField("get('schedule')", true, inputLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name", "Vendor Device"))
         @*<div class="form-group">
             <label for="connectionProfile">Connection Profile:</label>
@@ -119,23 +121,23 @@
  # * * * * *
 </pre>
                         </div>
-                        <table class="small table-striped table-condensed table-center">
+                        <table class="small table-condensed table-center">
                             <tr>
                                 <td style="text-align: right" nowrap>Every five minutes:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('*/5 * * * *')"><code>*/5 * * * *</code></button></td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0px" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('*/5 * * * *')"><code>*/5 * * * *</code></button></td>
                                 <td style="text-align: right" nowrap>Every hour:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 * * * *')"><code>0 * * * *</code></button></td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0px" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 * * * *')"><code>&nbsp;0 * * * *&nbsp;</code></button></td>
                             </tr>
                             <tr>
                                 <td style="text-align: right" nowrap>Every half-hour:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('30 * * * *')"><code>30 * * * *</code></button></td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0px" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('30 * * * *')"><code>&nbsp;30 * * * *</code></button></td>
                                 <td style="text-align: right" nowrap>Every four hours:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 */4 * * *')"><code>0 */4 * * *</code></button></td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0px" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 */4 * * *')"><code>0 */4 * * *</code></button></td>
                             <tr>
                                 <td style="text-align: right" nowrap>Every day:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 * * *')"><code>0 0 * * *</code></button></td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0px" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 * * *')"><code>&nbsp;0 0 * * *&nbsp;</code></button></td>
                                 <td style="text-align: right" nowrap>Every month:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 1 * *')"><code>0 0 1 * *</code></button></td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0px" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 1 * *')"><code>&nbsp;0 0 1 * *&nbsp;</code></button></td>
                             </tr>
                         </table>
                         <br />
@@ -265,9 +267,7 @@
         });
 
         function updateSchedule(schedule) {
-            if (viewModel.recordMode() === RecordMode.View)
-                alert("Cannot update schedule while in view mode...");
-            else
+            if (viewModel.recordMode() !== RecordMode.View)
                 viewModel.connectionString.get("schedule")(schedule);
         }
     </script>
