@@ -193,7 +193,7 @@
                 viewModel.cancelPageRecord();
             });
 
-            $(""#addNewEditDialog"").modal({show: false, backdrop: ""static""});
+            $(""#addNewEditDialog"").modal({show: false, backdrop: ""static"", keyboard: false});
         });
     ");
     pageControlScripts.AppendFormat("\r\n        viewModel.modelName = \"{0}\";\r\n", RemoveSpaces(ViewBag.Title));

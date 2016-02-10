@@ -23,18 +23,17 @@ body {
 }
 
 /* Whole table centering */
-.table-center
-{
+.table-center {
   margin: 0 auto !important;
   float: none !important;
 }
 
 /* Modal dialog vertical alignment classes */
 .modal-vertical-align-container {
-    display:table;
+    display: table;
     height: 100%;
     width: 100%;
-    pointer-events:none;
+    pointer-events: none;
 }
 
 .modal-vertical-align-center {
