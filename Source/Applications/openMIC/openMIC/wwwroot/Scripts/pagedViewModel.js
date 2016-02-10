@@ -207,9 +207,9 @@ function PagedViewModel() {
 
         if (self.dataHubIsConnected()) {
             // Query total record count
-            self.queryRecordCount().done(function (total) {
+            self.queryRecordCount().done(function (count) {
                 // Update record count observable
-                self.recordCount(total);
+                self.recordCount(count);
 
                 // Force page refresh when record count has been updated
                 const currentPage = self.currentPage();
@@ -359,6 +359,7 @@ function PagedViewModel() {
                 refreshHubDependentControlState();
                 $("[id='recordRow']").css("visibility", "visible");
                 $("#loadingDataLabel").hide();
+                $(self).trigger("pageRecordsQueried");
 
                 // Validate proper page size after any record refresh
                 setTimeout(self.calculatePageSize, 150);
@@ -442,6 +443,7 @@ function PagedViewModel() {
             self.recordMode(RecordMode.AddNew);
             self.newRecord().done(function (emptyRecord) {
                 self.currentRecord(self.deriveObservableRecord(emptyRecord));
+                $(self).trigger("newRecord");
                 $("#addNewEditDialog").modal("show");
             });
         }
@@ -492,6 +494,7 @@ var viewModel = new PagedViewModel();
 
     $("#addNewEditDialog").on("shown.bs.modal", function () {
         viewModel.setFocusOnInitialField();
+        $("[data-toggle='tooltip']").tooltip();
     });
 
     $(window).resize(

@@ -157,6 +157,8 @@ namespace openMIC
             systemSettings.Add("DefaultDialUpTimeout", 90, "Default dial-up connection timeout.");
             systemSettings.Add("DefaultFTPUserName", "anonymous", "Default FTP user name to use for device connections.");
             systemSettings.Add("DefaultFTPPassword", "anonymous", "Default FTP password to use for device connections.");
+            systemSettings.Add("DefaultRemotePath", "/", "Default remote FTP path to use for device connections.");
+            systemSettings.Add("DefaultLocalPath", "", "Default local path to use for file downloads.");
 
             // Get configured web settings
             WebRootFolder = FilePath.GetAbsolutePath(systemSettings["WebRootFolder"].Value);
@@ -176,7 +178,9 @@ namespace openMIC
                 DefaultDialUpRetries = int.Parse(systemSettings["DefaultDialUpRetries"].Value),
                 DefaultDialUpTimeout = int.Parse(systemSettings["DefaultDialUpTimeout"].Value),
                 DefaultFTPUserName = systemSettings["DefaultFTPUserName"].Value,
-                DefaultFTPPassword = systemSettings["DefaultFTPPassword"].Value
+                DefaultFTPPassword = systemSettings["DefaultFTPPassword"].Value,
+                DefaultRemotePath = systemSettings["DefaultRemotePath"].Value,
+                DefaultLocalPath = FilePath.GetAbsolutePath(systemSettings["DefaultLocalPath"].Value)
             };
 
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;

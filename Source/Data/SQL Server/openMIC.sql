@@ -249,6 +249,49 @@ CREATE TABLE [dbo].[Vendor](
 ) ON [PRIMARY]
 
 GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ConnectionProfile](
+    [ID] [int] IDENTITY(1,1) NOT NULL,
+    [Name] [varchar](200) NOT NULL,
+    [Description] [varchar](max) NULL,
+    [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_Profile_CreatedOn]  DEFAULT (getutcdate()),
+    [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_Profile_CreatedBy]  DEFAULT (suser_name()),
+    [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_Profile_UpdatedOn]  DEFAULT (getutcdate()),
+    [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_Profile_UpdatedBy]  DEFAULT (suser_name()),
+ CONSTRAINT [PK_ConnectionProfile] PRIMARY KEY CLUSTERED 
+(
+    [ID] ASC
+)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ConnectionProfileTask](
+    [ID] [int] IDENTITY(1,1) NOT NULL,
+    [ConnectionProfileID] [int] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_ConnectionProfileID] DEFAULT (1),
+    [Name] [varchar](200) NOT NULL,
+    [Settings] [varchar](max) NULL,
+    [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_CreatedOn]  DEFAULT (getutcdate()),
+    [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_CreatedBy]  DEFAULT (suser_name()),
+    [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedOn]  DEFAULT (getutcdate()),
+    [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedBy]  DEFAULT (suser_name()),
+ CONSTRAINT [PK_ConnectionProfileTask] PRIMARY KEY CLUSTERED 
+(
+    [ID] ASC
+)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2173,8 +2216,8 @@ FROM
             Log1.Timestamp,
             Log1.Value
         FROM
-			AlarmLog AS Log1 LEFT OUTER JOIN
-			AlarmLog AS Log2 ON Log1.SignalID = Log2.SignalID AND Log1.Ticks < Log2.Ticks
+            AlarmLog AS Log1 LEFT OUTER JOIN
+            AlarmLog AS Log2 ON Log1.SignalID = Log2.SignalID AND Log1.Ticks < Log2.Ticks
         WHERE
             Log2.ID IS NULL
     ) AS CurrentState
@@ -2395,6 +2438,9 @@ REFERENCES [dbo].[VendorDevice] ([ID])
 GO
 ALTER TABLE [dbo].[VendorDevice]  WITH CHECK ADD  CONSTRAINT [FK_VendorDevice_Vendor] FOREIGN KEY([VendorID])
 REFERENCES [dbo].[Vendor] ([ID])
+GO
+ALTER TABLE [dbo].[ConnectionProfileTask]  WITH CHECK ADD  CONSTRAINT [FK_ConnectionProfileTask_ConnectionProfile] FOREIGN KEY([ConnectionProfileID])
+REFERENCES [dbo].[ConnectionProfile] ([ID])
 GO
 ALTER TABLE [dbo].[OutputStreamDeviceDigital]  WITH CHECK ADD  CONSTRAINT [FK_OutputStreamDeviceDigital_Node] FOREIGN KEY([NodeID])
 REFERENCES [dbo].[Node] ([ID])

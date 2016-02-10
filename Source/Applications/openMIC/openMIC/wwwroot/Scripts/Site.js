@@ -199,4 +199,9 @@ $(function () {
 
     // Enable tool-tips on the page
     $("[data-toggle='tooltip']").tooltip();
+
+    // Keep body vertical scroll bars after nested Bootstrap modal dialogs are closed
+    $(document).on('hidden.bs.modal', '.modal', function () {
+        $('.modal:visible').length && $(document.body).addClass('modal-open');
+    });
 });

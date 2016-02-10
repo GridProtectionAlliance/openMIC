@@ -140,6 +140,89 @@ namespace openMIC
 
         #endregion
 
+        #region [ ConnectionProfile Table Operations ]
+
+        public IEnumerable<ConnectionProfile> QueryConnectionProfiles(string sortField, bool ascending, int page, int pageSize)
+        {
+            return m_dataContext.Table<ConnectionProfile>().QueryRecords(sortField, ascending, page, pageSize);
+        }
+
+        public int QueryConnectionProfileCount()
+        {
+            return m_dataContext.Table<ConnectionProfile>().QueryRecordCount();
+        }
+
+        public void DeleteConnectionProfile(int id)
+        {
+            m_dataContext.Table<ConnectionProfile>().DeleteRecord(id);
+        }
+
+        public ConnectionProfile NewConnectionProfile()
+        {
+            return new ConnectionProfile();
+        }
+
+        public void AddNewConnectionProfile(ConnectionProfile connectionProfile)
+        {
+            connectionProfile.CreatedBy = UserInfo.CurrentUserID;
+            connectionProfile.CreatedOn = DateTime.UtcNow;
+            connectionProfile.UpdatedBy = connectionProfile.CreatedBy;
+            connectionProfile.UpdatedOn = connectionProfile.CreatedOn;
+
+            m_dataContext.Table<ConnectionProfile>().AddNewRecord(connectionProfile);
+        }
+
+        public void UpdateConnectionProfile(ConnectionProfile connectionProfile)
+        {
+            m_dataContext.Table<ConnectionProfile>().UpdateRecord(connectionProfile);
+        }
+
+        public int QueryConnectionProfileTaskCount(int id)
+        {
+            return m_dataContext.Connection.ExecuteScalar<int>("SELECT COUNT(*) FROM ConnectionProfileTask WHERE ConnectionProfileID = {0}", id);
+        }
+
+        #endregion
+
+        #region [ ConnectionProfileTask Table Operations ]
+
+        public IEnumerable<ConnectionProfileTask> QueryConnectionProfileTasks(string sortField, bool ascending, int page, int pageSize)
+        {
+            return m_dataContext.Table<ConnectionProfileTask>().QueryRecords(sortField, ascending, page, pageSize);
+        }
+
+        public int QueryConnectionProfileTaskCount()
+        {
+            return m_dataContext.Table<ConnectionProfileTask>().QueryRecordCount();
+        }
+
+        public void DeleteConnectionProfileTask(int id)
+        {
+            m_dataContext.Table<ConnectionProfileTask>().DeleteRecord(id);
+        }
+
+        public ConnectionProfileTask NewConnectionProfileTask()
+        {
+            return new ConnectionProfileTask();
+        }
+
+        public void AddNewConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
+        {
+            connectionProfileTask.CreatedBy = UserInfo.CurrentUserID;
+            connectionProfileTask.CreatedOn = DateTime.UtcNow;
+            connectionProfileTask.UpdatedBy = connectionProfileTask.CreatedBy;
+            connectionProfileTask.UpdatedOn = connectionProfileTask.CreatedOn;
+
+            m_dataContext.Table<ConnectionProfileTask>().AddNewRecord(connectionProfileTask);
+        }
+
+        public void UpdateConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
+        {
+            m_dataContext.Table<ConnectionProfileTask>().UpdateRecord(connectionProfileTask);
+        }
+
+        #endregion
+
         #region [ Company Table Operations ]
 
         public int QueryCompanyCount()

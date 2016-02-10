@@ -20,8 +20,6 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
-@using System.Collections.Generic
-@using GSF
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
@@ -34,6 +32,7 @@
     string fieldID = ViewBag.FieldID;
     string groupDataBinding = ViewBag.GroupDataBinding;
     string customDataBinding = ViewBag.CustomDataBinding;
+    string toolTip = ViewBag.ToolTip;
     string inputSizeRestriction = maxLength > 0 ? string.Format(" maxlength=\"{0}\" size=\"{0}\"", maxLength) : "";
 
     if (!string.IsNullOrEmpty(groupDataBinding)) {
@@ -43,11 +42,15 @@
     if (!string.IsNullOrEmpty(customDataBinding)) {
         customDataBinding = string.Format(", {0}", customDataBinding);
     }
+
+    if (!string.IsNullOrEmpty(toolTip)) {
+        toolTip = string.Format(" data-toggle=\"tooltip\" data-trigger=\"focus\" data-placement=\"auto bottom\" title=\"{0}\"", toolTip);
+    }
 }
 @if (required)
 {
     @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : string.Format("<div{0}>\r\n", groupDataBinding))
-    <div class="form-group" data-bind="css: {'has-error': isEmpty(@(Raw(fieldName))()), 'has-feedback': isEmpty(@(Raw(fieldName))())}">
+    <div class="form-group" data-bind="css: {'has-error': isEmpty(@(Raw(fieldName))()), 'has-feedback': isEmpty(@(Raw(fieldName))())}"@Raw(toolTip)>
         <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
         <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)" id="@Raw(fieldID)"@Raw(inputSizeRestriction) required>
         <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(Raw(fieldName))())"></span>
@@ -56,7 +59,7 @@
 }
 else
 {
-    <div class="form-group"@Raw(groupDataBinding)>
+    <div class="form-group"@Raw(groupDataBinding)@Raw(toolTip)>
         <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
         <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)" id="@Raw(fieldID)"@Raw(inputSizeRestriction)>
     </div>

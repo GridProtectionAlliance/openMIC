@@ -116,6 +116,29 @@ CREATE TABLE Vendor(
     CONSTRAINT PK_Vendor PRIMARY KEY (ID ASC)
 );
 
+CREATE TABLE ConnectionProfile(
+    ID INT AUTO_INCREMENT NOT NULL,
+    Name VARCHAR(200) NOT NULL,
+    Description TEXT NULL,
+    CreatedOn DATETIME NOT NULL,
+    CreatedBy VARCHAR(200) NOT NULL,
+    UpdatedOn DATETIME NOT NULL,
+    UpdatedBy VARCHAR(200) NOT NULL,
+    CONSTRAINT PK_ConnectionProfile PRIMARY KEY (ID ASC)
+);
+
+CREATE TABLE ConnectionProfileTask(
+    ID INT AUTO_INCREMENT NOT NULL,
+    ConnectionProfileID INT NOT NULL DEFAULT 1,
+    Name VARCHAR(200) NOT NULL,
+    Settings TEXT NULL,
+    CreatedOn DATETIME NULL,
+    CreatedBy VARCHAR(200) NULL,
+    UpdatedOn DATETIME NULL,
+    UpdatedBy VARCHAR(200) NULL,
+    CONSTRAINT PK_ConnectionProfileTask PRIMARY KEY (ID ASC)
+);
+
 CREATE TABLE Protocol(
     ID INT AUTO_INCREMENT NOT NULL,
     Acronym VARCHAR(200) NOT NULL,
@@ -777,6 +800,8 @@ ALTER TABLE Device ADD CONSTRAINT FK_Device_Protocol FOREIGN KEY(ProtocolID) REF
 ALTER TABLE Device ADD CONSTRAINT FK_Device_VendorDevice FOREIGN KEY(VendorDeviceID) REFERENCES VendorDevice (ID);
 
 ALTER TABLE VendorDevice ADD CONSTRAINT FK_VendorDevice_Vendor FOREIGN KEY(VendorID) REFERENCES Vendor (ID);
+
+ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
 
 ALTER TABLE OutputStreamDeviceDigital ADD CONSTRAINT FK_OutputStreamDeviceDigital_Node FOREIGN KEY(NodeID) REFERENCES Node (ID);
 
@@ -1450,6 +1475,12 @@ CREATE TRIGGER Vendor_InsertDefault BEFORE INSERT ON Vendor
 FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
 
 CREATE TRIGGER VendorDevice_InsertDefault BEFORE INSERT ON VendorDevice
+FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
+
+CREATE TRIGGER ConnectionProfile_InsertDefault BEFORE INSERT ON ConnectionProfile
+FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
+
+CREATE TRIGGER ConnectionProfileTask_InsertDefault BEFORE INSERT ON ConnectionProfileTask
 FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
 
 CREATE TRIGGER ErrorLog_InsertDefault BEFORE INSERT ON ErrorLog FOR EACH ROW

@@ -72,6 +72,7 @@
     </script>
 </head>
 <body role="document">
+@if (ViewBag.ShowMenu ?? true) {
     <div class="navbar navbar-inverse navbar-fixed-top" id="menuBar">
         <div class="container">
             <div class="navbar-header">
@@ -98,16 +99,12 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Meta-data <span class="caret"></span></a>
                         <ul class="dropdown-menu">
+                            <li><a href="ConnectionProfiles.cshtml">Connection Profiles</a></li>
+                            <li role="separator" class="divider"></li>
                             <li><a href="Companies.cshtml">Companies</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a href="Vendors.cshtml">Vendors</a></li>
                             <li><a href="VendorDevices.cshtml">Vendor Devices</a></li>
-                            @*
-                                <li role="separator" class="divider"></li>
-                                <li class="dropdown-header">Nav header</li>
-                                <li><a href="#">Separated link</a></li>
-                                <li><a href="#">One more separated link</a></li>
-                            *@
                         </ul>
                     </li>
                 </ul>
@@ -120,7 +117,10 @@
             </div>
         </div>
     </div><!--/.navbar -->
-
+}
+else {
+    <div id="menuBar"></div>
+}
     <div class="container theme-showcase" role="main" id="bodyContainer">
         <div class="page-header" id="pageHeader">
             <span class="glyphicon glyphicon-refresh pre-cache"></span>
@@ -138,15 +138,17 @@
                 <span class="sr-only">Error</span>
                 <span id="error-msg-text"></span>
             </div>
-            <h3>@ViewBag.Title <small class="pull-right" id="titleText" style="margin-top: 8px"></small></h3>
-        </div>
-        <!-- Page Body for @ViewBag.Request.RequestUri.AbsolutePath -->
-        @RenderBody()
+            <h3>
+                @ViewBag.Title <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
+        </h3>
+    </div>
+    <!-- Page Body for @ViewBag.Request.RequestUri.AbsolutePath -->
+    @RenderBody()
 
     </div><!--/.container -->
 
     <script src="Scripts/jquery-2.1.4.min.js"></script>
-    <script src="Scripts/bootstrap.min.js"></script>    
+    <script src="Scripts/bootstrap.min.js"></script>
     <script src="Scripts/ie10-viewport-bug-workaround.js"></script>
     <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
     <script src="Scripts/gsf.web.client.js"></script>

@@ -29,11 +29,26 @@
     bool required = ViewBag.Required;
     string selectLabel = ViewBag.SelectLabel;
     string fieldID = ViewBag.FieldID;
+    string groupDataBinding = ViewBag.GroupDataBinding;
+    string customDataBinding = ViewBag.CustomDataBinding;
+    string toolTip = ViewBag.ToolTip;
     Dictionary<string, string> options = ViewBag.Options;
+
+    if (!string.IsNullOrEmpty(groupDataBinding)) {
+        groupDataBinding = string.Format(" data-bind=\"{0}\"", groupDataBinding);
+    }
+
+    if (!string.IsNullOrEmpty(customDataBinding)) {
+        customDataBinding = string.Format(", {0}", customDataBinding);
+    }
+
+    if (!string.IsNullOrEmpty(toolTip)) {
+        toolTip = string.Format(" data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"{0}\"", toolTip);
+    }
 }
-<div class="form-group">
+<div class="form-group"@Raw(groupDataBinding)@Raw(toolTip)>
     <label for="@Raw(fieldID)">@Raw(selectLabel):</label>
-    <select class="form-control" id="@Raw(fieldID)" data-bind="value: @Raw(fieldName), optionsCaption: 'Select @Raw(selectLabel)...', valueAllowUnset: @(required.ToString().ToLower()), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}">
+    <select class="form-control" id="@Raw(fieldID)" data-bind="value: @Raw(fieldName), optionsCaption: 'Select @Raw(selectLabel)...', valueAllowUnset: @(required.ToString().ToLower()), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)">
         @foreach (KeyValuePair<string, string> item in options) {
             <option value="@item.Key">@item.Value</option>
         }

@@ -24,6 +24,7 @@
 using System.ComponentModel;
 using System.IO;
 using DotRas;
+using GSF;
 using GSF.Configuration;
 using GSF.TimeSeries.Adapters;
 
@@ -45,6 +46,11 @@ namespace openMIC
 
         // Fields
         private readonly RasDialer m_rasDialer;
+        private long m_attemptedConnections;
+        private long m_totalErrors;
+        private long m_filesDownloaded;
+        private long m_bytesDownloaded;
+        private long m_totalConnectedTime;
         private bool m_disposed;
 
         #endregion
@@ -76,7 +82,8 @@ namespace openMIC
         /// Gets or sets connection host user name for transport.
         /// </summary>
         [ConnectionStringParameter,
-        Description("Defines connection host user name for transport.")]
+        Description("Defines connection host user name for transport."),
+        DefaultValue("anonymous")]
         public string ConnectionUserName
         {
             get;
@@ -87,8 +94,33 @@ namespace openMIC
         /// Gets or sets connection password for transport.
         /// </summary>
         [ConnectionStringParameter,
-        Description("Defines connection password for transport.")]
+        Description("Defines connection password for transport."),
+        DefaultValue("anonymous")]
         public string ConnectionPassword
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets connection profile record ID.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Defines connection profile record ID."),
+        DefaultValue(0)]
+        public int ConnectionProfile
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets download schedule.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Defines download schedule."),
+        DefaultValue("* * * * *")]
+        public string Schedule
         {
             get;
             set;
@@ -98,8 +130,21 @@ namespace openMIC
         /// Gets or sets flag that determines if this connection will use dial-up.
         /// </summary>
         [ConnectionStringParameter,
-        Description("Determines if this connection will use dial-up.")]
+        Description("Determines if this connection will use dial-up."),
+        DefaultValue(false)]
         public bool useDialUp
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets dial-up entry name.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Defines dial-up entry name."),
+        DefaultValue("")]
+        public string DialUpEntryName
         {
             get;
             set;
@@ -109,7 +154,8 @@ namespace openMIC
         /// Gets or sets dial-up phone number.
         /// </summary>
         [ConnectionStringParameter,
-        Description("Defines dial-up phone number.")]
+        Description("Defines dial-up phone number."),
+        DefaultValue("")]
         public string DialUpNumber
         {
             get;
@@ -120,7 +166,8 @@ namespace openMIC
         /// Gets or sets dial-up user name.
         /// </summary>
         [ConnectionStringParameter,
-        Description("Defines dial-up user name.")]
+        Description("Defines dial-up user name."),
+        DefaultValue("")]
         public string DialUpUserName
         {
             get;
@@ -131,7 +178,8 @@ namespace openMIC
         /// Gets or sets dial-up password.
         /// </summary>
         [ConnectionStringParameter,
-        Description("Defines dial-up password.")]
+        Description("Defines dial-up password."),
+        DefaultValue("")]
         public string DialUpPassword
         {
             get;
@@ -142,8 +190,8 @@ namespace openMIC
         /// Gets or sets maximum retries for a dial-up connection.
         /// </summary>
         [ConnectionStringParameter,
-        DefaultValue(3),
-        Description("Defines maximum retries for a dial-up connection.")]
+        Description("Defines maximum retries for a dial-up connection."),
+        DefaultValue(3)]
         public int DialUpRetries
         {
             get;
@@ -154,21 +202,9 @@ namespace openMIC
         /// Gets or sets timeout for a dial-up connection.
         /// </summary>
         [ConnectionStringParameter,
-        DefaultValue(90),
-        Description("Defines timeout for a dial-up connection.")]
+        Description("Defines timeout for a dial-up connection."),
+        DefaultValue(90)]
         public int DialUpTimeout
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets download schedule.
-        /// </summary>
-        [ConnectionStringParameter,
-        DefaultValue("* * * * *"),
-        Description("Defines download schedule.")]
-        public string Schedule
         {
             get;
             set;
@@ -254,9 +290,9 @@ namespace openMIC
         public override string GetShortStatus(int maxLength)
         {
             if (!Enabled)
-                return "Downloading for is paused...";
+                return "Downloading for is paused...".CenterText(maxLength);
 
-            return "Downloading is enabled...";
+            return $"Downloading on schedule \"{Schedule}\"".CenterText(maxLength);
         }
 
         private void m_rasDialer_Error(object sender, ErrorEventArgs e)

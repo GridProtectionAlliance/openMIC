@@ -1,0 +1,189 @@
+﻿@*******************************************************************************************************
+//  ConnectionProfileTasks.cshtml - Gbtc
+//
+//  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
+//  not use this file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  01/15/2016 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System
+@using System.Collections.Generic
+@using System.Collections.Specialized
+@using System.Text
+@using System.Web
+@using openMIC
+@using openMIC.Model
+@using RazorEngine.Templating
+@inherits TemplateBase<AppModel>
+@section StyleSheets {
+    <style>
+        html, body {
+            height: 100%;
+        }
+        body {
+            padding-top: 0;
+        }
+    </style>
+}
+@{
+    NameValueCollection parameters = HttpUtility.ParseQueryString(ViewBag.Request.RequestUri.Query);
+
+    Layout = "Layout.cshtml";
+    ViewBag.ShowMenu = false;
+    ViewBag.Title = "Connection Profile Tasks [" + parameters["ID"] + "]";
+    ViewBag.PageControlScripts = new StringBuilder();
+
+    ViewBag.HeaderColumns = new[]
+    {   //    { "Field", "Label", "Classes" }
+        new[] { "Name", "Name", "text-left" },
+        new[] { null, "File Extensions", "text-center valign-middle" },
+    };
+
+    ViewBag.BodyRows = BodyRows().ToString();
+    ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
+
+}
+@helper BodyRows() {
+    <td width="35%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Name, click: $parent.viewPageRecord"></button></td>
+    <td width="60%" class="text-center"><div data-bind="text: $($element.parentElement).truncateToWidth(Settings.parseKeyValuePairs().get('fileextensions'), 2)"></div></td>
+    <td width="5%" class="text-center valign-middle" nowrap>
+        <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
+        <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
+    </td>
+}
+@helper AddNewEditDialog() {
+    <div class="col-md-12">
+        @Raw(ViewBag.DataContext.AddInputField<ConnectionProfileTask>("Name"))
+        @Raw(ViewBag.DataContext.AddInputField("get('fileextensions')", true, inputLabel: "File Extensions", fieldID: "inputFileExtensions", groupDataBinding: "with: $root.connectionString"))
+        @Raw(ViewBag.DataContext.AddInputField("get('remotepath')", true, inputLabel: "Remote Path", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString"))
+        @Raw(ViewBag.DataContext.AddInputField("get('localpath')", true, inputLabel: "Local Path", fieldID: "inputLocalPath", groupDataBinding: "with: $root.connectionString"))
+        <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" id="limitFilesByAge" data-bind="checked: get('limitfilesbyage'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Limit files by age</label>
+        </div>
+        <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" id="deleteOldFiles" data-bind="checked: get('deleteoldfiles'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Delete old files</label>
+        </div>
+        <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" id="overwriteExisting" data-bind="checked: get('overwriteexisting'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Overwrite existing files</label>
+        </div>
+        <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" id="archiveBeforeOverwrite" data-bind="checked: get('archivebeforeoverwrite'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Archive before overwrite</label>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="form-group">
+            <label for="textConnectionString">Task Settings:</label>
+            <textarea class="form-control" rows="2" data-bind="text: Settings" id="textConnectionString" readonly></textarea>
+        </div>
+    </div>
+}
+@Include("PagedViewModel.cshtml")
+@section Scripts {
+    @Raw(ViewBag.PageControlScripts.ToString())
+    <script>
+        "use strict";
+
+        // Configure view model
+        viewModel.defaultSortField = "ID";
+        viewModel.labelField = "Name";
+        viewModel.primaryKeyFields = ["ID"];
+        viewModel.initialFocusField = "inputName";
+
+        viewModel.setQueryRecordCount(function() {
+            return dataHub.queryConnectionProfileTaskCount();
+        });
+
+        viewModel.setQueryRecords(function(sortField, ascending, page, pageSize) {
+            return dataHub.queryConnectionProfileTasks(sortField, ascending, page, pageSize);
+        });
+
+        viewModel.setDeleteRecord(function(keyValues) {
+            return dataHub.deleteConnectionProfileTask(keyValues[0]);
+        });
+
+        viewModel.setNewRecord(function() {
+            return dataHub.newConnectionProfileTask();
+        });
+
+        viewModel.setAddNewRecord(function(record) {
+            return dataHub.addNewConnectionProfileTask(record);
+        });
+
+        viewModel.setUpdateRecord(function(record) {
+            return dataHub.updateConnectionProfileTask(record);
+        });
+
+        // Define default connection string keys needed for binding
+        const defaultConnectionString = new Dictionary();
+
+        defaultConnectionString.set("fileExtensions", "");
+        defaultConnectionString.set("remotepath", "@Model.DefaultRemotePath.JavaScriptEncode()");
+        defaultConnectionString.set("localpath", "@Model.DefaultLocalPath.JavaScriptEncode()");
+        defaultConnectionString.set("limitFilesByAge", false);
+        defaultConnectionString.set("deleteOldFiles", false);
+        defaultConnectionString.set("overwriteExisting", false);
+        defaultConnectionString.set("archiveBeforeOverwrite", false);
+
+        // Create an observable key/value pair connection string dictionary
+        viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);
+        viewModel.loadingConnectionString = false;
+
+        // Watch the connection string dictionary for changes independent of current record
+        ko.watch(viewModel.connectionString, { depth: -1 }, function() {
+            if (viewModel.loadingConnectionString)
+                return;
+
+            // Update connection string applying camel-case key names as defined in default connection string
+            const updates = new Dictionary(defaultConnectionString);
+            updates.pushAll(viewModel.connectionString.toJSON());
+            viewModel.currentRecord().Settings(updates.joinKeyValuePairs());
+        });
+
+        $(viewModel).on("derivingObservableRecord", function(event, observableRecord) {
+            // Add connection string reference to current record so it can participate in the validation group
+            observableRecord._connectionstring = viewModel.connectionString;
+        });
+
+        $(viewModel).on("derivingJSRecord", function(event) {
+            // Remove added connection string reference before serialization
+            delete viewModel.currentRecord()._connectionstring;
+        });
+
+        $(viewModel).on("currentRecordChanged", function(event) {
+            viewModel.loadingConnectionString = true;
+
+            // Reset observable dictionary to default values on record change
+            const keys = viewModel.connectionString.keys();
+
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+
+                if (defaultConnectionString.containsKey(key))
+                    viewModel.connectionString.set(key, defaultConnectionString.get(key));
+                else
+                    viewModel.connectionString.remove(key);
+            }
+
+            // Update observable dictionary with parsed key/value pairs of current connection string
+            const currentConnectionString = notNull(viewModel.currentRecord().Settings()).parseKeyValuePairs();
+            currentConnectionString.updateObservableDictionary(viewModel.connectionString, true);
+
+            viewModel.setDirtyFlag(false);
+            viewModel.loadingConnectionString = false;
+        });
+    </script>
+}

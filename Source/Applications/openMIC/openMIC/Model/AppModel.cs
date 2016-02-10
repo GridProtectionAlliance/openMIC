@@ -101,6 +101,18 @@ namespace openMIC.Model
             set;
         }
 
+        public string DefaultRemotePath
+        {
+            get;
+            set;
+        }
+
+        public string DefaultLocalPath
+        {
+            get;
+            set;
+        }
+
         #endregion
     }
 }
