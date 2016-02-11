@@ -138,12 +138,10 @@ else {
                 <span class="sr-only">Error</span>
                 <span id="error-msg-text"></span>
             </div>
-            <h3>
-                @ViewBag.Title <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
-        </h3>
-    </div>
-    <!-- Page Body for @ViewBag.Request.RequestUri.AbsolutePath -->
-    @RenderBody()
+            <h3>@ViewBag.Title <small class="pull-right" id="titleText" style="margin-top: 8px"></small></h3>
+        </div>
+        <!-- Page Body for @ViewBag.Request.RequestUri.AbsolutePath -->
+        @RenderBody()
 
     </div><!--/.container -->
 

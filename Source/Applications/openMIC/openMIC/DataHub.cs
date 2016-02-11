@@ -177,23 +177,26 @@ namespace openMIC
             m_dataContext.Table<ConnectionProfile>().UpdateRecord(connectionProfile);
         }
 
-        public int QueryConnectionProfileTaskCount(int id)
-        {
-            return m_dataContext.Connection.ExecuteScalar<int>("SELECT COUNT(*) FROM ConnectionProfileTask WHERE ConnectionProfileID = {0}", id);
-        }
-
         #endregion
 
         #region [ ConnectionProfileTask Table Operations ]
 
-        public IEnumerable<ConnectionProfileTask> QueryConnectionProfileTasks(string sortField, bool ascending, int page, int pageSize)
+        public IEnumerable<ConnectionProfileTask> QueryConnectionProfileTasks(int parentID, string sortField, bool ascending, int page, int pageSize)
         {
-            return m_dataContext.Table<ConnectionProfileTask>().QueryRecords(sortField, ascending, page, pageSize);
+            return m_dataContext.Table<ConnectionProfileTask>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction
+            {
+                FilterExpression = "ConnectionProfileID = {0}",
+                Parameters = new object[] { parentID }
+            });
         }
 
-        public int QueryConnectionProfileTaskCount()
+        public int QueryConnectionProfileTaskCount(int parentID)
         {
-            return m_dataContext.Table<ConnectionProfileTask>().QueryRecordCount();
+            return m_dataContext.Table<ConnectionProfileTask>().QueryRecordCount(new RecordRestriction
+            {
+                FilterExpression = "ConnectionProfileID = {0}",
+                Parameters = new object[] { parentID }
+            });
         }
 
         public void DeleteConnectionProfileTask(int id)

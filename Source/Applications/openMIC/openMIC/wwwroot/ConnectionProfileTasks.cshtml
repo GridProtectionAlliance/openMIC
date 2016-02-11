@@ -35,11 +35,15 @@
         body {
             padding-top: 0;
         }
+        h3, .page-header {
+            margin: 5px;
+        }
     </style>
 }
 @{
     HttpRequestMessage request = ViewBag.Request;
     Dictionary<string, string> parameters = request.QueryParameters();
+    int parentID = int.Parse(parameters["ID"]);
 
     Layout = "Layout.cshtml";
     ViewBag.ShowMenu = false;
@@ -102,11 +106,11 @@
         viewModel.initialFocusField = "inputName";
 
         viewModel.setQueryRecordCount(function() {
-            return dataHub.queryConnectionProfileTaskCount();
+            return dataHub.queryConnectionProfileTaskCount(@parentID);
         });
 
         viewModel.setQueryRecords(function(sortField, ascending, page, pageSize) {
-            return dataHub.queryConnectionProfileTasks(sortField, ascending, page, pageSize);
+            return dataHub.queryConnectionProfileTasks(@parentID, sortField, ascending, page, pageSize);
         });
 
         viewModel.setDeleteRecord(function(keyValues) {
@@ -129,8 +133,8 @@
         const defaultConnectionString = new Dictionary();
 
         defaultConnectionString.set("fileExtensions", "");
-        defaultConnectionString.set("remotepath", "@Model.DefaultRemotePath.JavaScriptEncode()");
-        defaultConnectionString.set("localpath", "@Model.DefaultLocalPath.JavaScriptEncode()");
+        defaultConnectionString.set("remotepath", "@Raw(Model.DefaultRemotePath.JavaScriptEncode())");
+        defaultConnectionString.set("localpath", "@Raw(Model.DefaultLocalPath.JavaScriptEncode())");
         defaultConnectionString.set("limitFilesByAge", false);
         defaultConnectionString.set("deleteOldFiles", false);
         defaultConnectionString.set("overwriteExisting", false);
@@ -156,7 +160,7 @@
             observableRecord._connectionstring = viewModel.connectionString;
 
             // Initialize selected connection profile ID
-            observableRecord.ConnectionProfileID(@parameters["ID"]);
+            observableRecord.ConnectionProfileID(@parentID);
         });
 
         $(viewModel).on("derivingJSRecord", function(event) {

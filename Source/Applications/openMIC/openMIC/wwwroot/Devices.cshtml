@@ -196,8 +196,8 @@
         const defaultConnectionString = new Dictionary();
 
         defaultConnectionString.set("connectionHostName", "");
-        defaultConnectionString.set("connectionUserName", "@Model.DefaultFTPUserName.JavaScriptEncode()");
-        defaultConnectionString.set("connectionPassword", "@Model.DefaultFTPPassword.JavaScriptEncode()");
+        defaultConnectionString.set("connectionUserName", "@Raw(Model.DefaultFTPUserName.JavaScriptEncode())");
+        defaultConnectionString.set("connectionPassword", "@Raw(Model.DefaultFTPPassword.JavaScriptEncode())");
         defaultConnectionString.set("connectionProfile", 0);
         defaultConnectionString.set("schedule", "* * * * *");
         defaultConnectionString.set("useDialUp", false);

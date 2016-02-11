@@ -36,6 +36,22 @@ using GSF.Reflection;
 namespace openMIC.Model
 {
     /// <summary>
+    /// Defines a record restriction that can be applied to queries.
+    /// </summary>
+    public class RecordRestriction
+    {
+        /// <summary>
+        /// Defines filter SQL expression for restriction - does not include WHERE.
+        /// </summary>
+        public string FilterExpression;
+
+        /// <summary>
+        /// Defines restriction parameter values.
+        /// </summary>
+        public object[] Parameters;
+    }
+
+    /// <summary>
     /// Defines database operations for a modeled table.
     /// </summary>
     /// <typeparam name="T">Modeled table.</typeparam>
@@ -46,6 +62,7 @@ namespace openMIC.Model
         // Constants
         private const string CountSqlFormat = "SELECT COUNT(*) FROM {0}";
         private const string OrderBySqlFormat = "SELECT {0} FROM {1} ORDER BY {{0}}";
+        private const string OrderByWhereSqlFormat = "SELECT {0} FROM {1} WHERE {{0}} ORDER BY {{1}}";
         private const string SelectSqlFormat = "SELECT * FROM {0} WHERE {1}";
         private const string AddNewSqlFormat = "INSERT INTO {0}({1}) VALUES ({2})";
         private const string UpdateSqlFormat = "UPDATE {0} SET {1} WHERE {2}";
@@ -80,14 +97,21 @@ namespace openMIC.Model
         /// <param name="ascending">Sort ascending flag; set to <c>false</c> for descending.</param>
         /// <param name="page">Page number of records to return.</param>
         /// <param name="pageSize">Current page size.</param>
+        /// <param name="restriction">Record restriction to apply, if any.</param>
         /// <returns>An enumerable of modeled table row instances for queried records.</returns>
-        public IEnumerable<T> QueryRecords(string sortField, bool ascending, int page, int pageSize)
+        public IEnumerable<T> QueryRecords(string sortField, bool ascending, int page, int pageSize, RecordRestriction restriction = null)
         {
             try
             {
                 if ((object)m_primaryKeyCache == null || string.Compare(sortField, m_lastSortField, StringComparison.OrdinalIgnoreCase) != 0)
                 {
-                    m_primaryKeyCache = m_connection.RetrieveData(string.Format(s_orderBySql, $"{sortField}{(ascending ? "" : " DESC")}")).AsEnumerable();
+                    string orderByExpression = $"{sortField}{(ascending ? "" : " DESC")}";
+
+                    if ((object)restriction == null)
+                        m_primaryKeyCache = m_connection.RetrieveData(string.Format(s_orderBySql, orderByExpression)).AsEnumerable();
+                    else
+                        m_primaryKeyCache = m_connection.RetrieveData(string.Format(s_orderByWhereSql, restriction.FilterExpression, orderByExpression), restriction.Parameters).AsEnumerable();
+
                     m_lastSortField = sortField;
                 }
 
@@ -103,12 +127,16 @@ namespace openMIC.Model
         /// <summary>
         /// Gets the total record count for the modeled table.
         /// </summary>
+        /// <param name="restriction">Record restriction to apply, if any.</param>
         /// <returns>Total record count for the modeled table.</returns>
-        public int QueryRecordCount()
+        public int QueryRecordCount(RecordRestriction restriction = null)
         {
             try
             {
-                return m_connection.ExecuteScalar<int>(s_countSql);
+                if ((object)restriction == null)
+                    return m_connection.ExecuteScalar<int>(s_countSql);
+
+                return m_connection.ExecuteScalar<int>($"{s_countSql} WHERE {restriction.FilterExpression}", restriction.Parameters);
             }
             catch (Exception ex)
             {
@@ -317,6 +345,7 @@ namespace openMIC.Model
         private static readonly PropertyInfo[] s_primaryKeyProperties;
         private static readonly string s_countSql;
         private static readonly string s_orderBySql;
+        private static readonly string s_orderByWhereSql;
         private static readonly string s_selectSql;
         private static readonly string s_addNewSql;
         private static readonly string s_updateSql;
@@ -381,6 +410,7 @@ namespace openMIC.Model
 
             s_countSql = string.Format(CountSqlFormat, tableName);
             s_orderBySql = string.Format(OrderBySqlFormat, primaryKeyFields, tableName);
+            s_orderByWhereSql = string.Format(OrderByWhereSqlFormat, primaryKeyFields, tableName);
             s_selectSql = string.Format(SelectSqlFormat, tableName, whereFormat);
             s_addNewSql = string.Format(AddNewSqlFormat, tableName, addNewFields, addNewFormat);
             s_updateSql = string.Format(UpdateSqlFormat, tableName, updateFormat, string.Format(whereFormat.ToString(), updateWhereOffsets.ToArray()));
