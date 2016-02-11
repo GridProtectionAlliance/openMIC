@@ -20,6 +20,9 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using System.Collections.Generic
+@using System.Net.Http
+@using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
@@ -95,6 +98,15 @@
         }
     </style>
 }
+@{
+    HttpRequestMessage request = ViewBag.Request;
+    Dictionary<string, string> parameters = request.QueryParameters();
+    string filter;
+
+    if (!parameters.TryGetValue("filter", out filter)) {
+        filter = "Filter -Remove 0";
+    }
+}
 @section Scripts {
     <script src="Scripts/js.cookie.js"></script>
     <script>
@@ -169,6 +181,12 @@
                 if (!overRemoteConsole)
                     scrollRemoteConsoleToBottom();
             }
+
+            // Set the client filter to the value of the
+            // filter parameter that came from the URL
+            $(window).on("hubConnected", function (event) {
+                serviceHub.sendCommand("@Raw(filter.JavaScriptEncode())");
+            });
 
             $("#remoteConsoleWindow").mouseenter(function () {
                 $("#remoteConsolePausedLabel").show();

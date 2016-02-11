@@ -50,7 +50,6 @@ namespace openMIC
         public override Task OnConnected()
         {
             s_connectCount++;
-            m_serviceConnection.SendCommand(Context.ConnectionId, "Filter -Remove 0");
             Program.Host.LogStatusMessage($"ServiceHub connect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
             return base.OnConnected();
         }
