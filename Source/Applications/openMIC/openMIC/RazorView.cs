@@ -22,8 +22,12 @@
 //******************************************************************************************************
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using GSF.IO;
 using openMIC.Model;
 using RazorEngine;
@@ -57,6 +61,7 @@ namespace openMIC
 
         // Fields
         private readonly DynamicViewBag m_viewBag = new DynamicViewBag();
+        private Dictionary<string, string> m_parameters;
 
         #endregion
 
@@ -91,6 +96,22 @@ namespace openMIC
         }
 
         public dynamic ViewBag => m_viewBag;
+
+        public string this[string key] => Parameters[key];
+
+        public Dictionary<string, string> Parameters
+        {
+            get
+            {
+                if ((object)m_parameters == null)
+                {
+                    HttpRequestMessage request = ViewBag.Request;
+                    m_parameters = HttpUtility.ParseQueryString(request.RequestUri.Query).ToDictionary();
+                }
+
+                return m_parameters;
+            }
+        }
 
         #endregion
 

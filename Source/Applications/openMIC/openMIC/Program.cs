@@ -22,7 +22,11 @@
 //******************************************************************************************************
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
+using System.Net.Http;
 using System.ServiceProcess;
 using System.Web;
 using System.Windows.Forms;
@@ -114,5 +118,25 @@ namespace openMIC
         {
             return HttpUtility.JavaScriptStringEncode(text.ToNonNullString());
         }
+
+        /// <summary>
+        /// Converts a name/value collection to a dictionary.
+        /// </summary>
+        /// <param name="collection">Name/value collection.</param>
+        /// <returns>Dictionary converted from a name/value collection.</returns>
+        public static Dictionary<string, string> ToDictionary(this NameValueCollection collection)
+        {
+            return collection.AllKeys.ToDictionary(key => key, key => collection[key]);
+        }
+
+        /// <summary>
+        /// Gets query parameters for current request message
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static Dictionary<string, string> QueryParameters(this HttpRequestMessage request)
+        {
+            return request.GetQueryNameValuePairs().ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        } 
     }
 }

@@ -20,11 +20,9 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
-@using System
 @using System.Collections.Generic
-@using System.Collections.Specialized
+@using System.Net.Http
 @using System.Text
-@using System.Web
 @using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
@@ -40,11 +38,12 @@
     </style>
 }
 @{
-    NameValueCollection parameters = HttpUtility.ParseQueryString(ViewBag.Request.RequestUri.Query);
+    HttpRequestMessage request = ViewBag.Request;
+    Dictionary<string, string> parameters = request.QueryParameters();
 
     Layout = "Layout.cshtml";
     ViewBag.ShowMenu = false;
-    ViewBag.Title = "Connection Profile Tasks [" + parameters["ID"] + "]";
+    ViewBag.Title = parameters["Name"] + " Tasks";
     ViewBag.PageControlScripts = new StringBuilder();
 
     ViewBag.HeaderColumns = new[]
@@ -55,7 +54,6 @@
 
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
-
 }
 @helper BodyRows() {
     <td width="35%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Name, click: $parent.viewPageRecord"></button></td>
@@ -156,6 +154,9 @@
         $(viewModel).on("derivingObservableRecord", function(event, observableRecord) {
             // Add connection string reference to current record so it can participate in the validation group
             observableRecord._connectionstring = viewModel.connectionString;
+
+            // Initialize selected connection profile ID
+            observableRecord.ConnectionProfileID(@parameters["ID"]);
         });
 
         $(viewModel).on("derivingJSRecord", function(event) {
