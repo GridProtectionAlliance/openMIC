@@ -28,17 +28,7 @@
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
 @section StyleSheets {
-    <style>
-        html, body {
-            height: 100%;
-        }
-        body {
-            padding-top: 0;
-        }
-        h3, .page-header {
-            margin: 5px;
-        }
-    </style>
+    <link href="Content/Popup.css" rel="stylesheet">
 }
 @{
     HttpRequestMessage request = ViewBag.Request;
@@ -190,5 +180,17 @@
             viewModel.setDirtyFlag(false);
             viewModel.loadingConnectionString = false;
         });
+
+        $(function() {
+            $("#addNewEditDialog").on("shown.bs.modal", function () {
+                // On popup window shown, hide data-dismiss buttons
+                $("#editTasksDialog", window.parent.document).find("button[data-dismiss]").prop("disabled", true);
+            });
+
+            $("#addNewEditDialog").on("hidden.bs.modal", function () {
+                // On popup window hidden, display data-dismiss buttons
+                $("#editTasksDialog", window.parent.document).find("button[data-dismiss]").prop("disabled", false);
+            });
+        }); 
     </script>
 }

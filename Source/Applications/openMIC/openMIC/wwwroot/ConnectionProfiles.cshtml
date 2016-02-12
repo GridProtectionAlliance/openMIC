@@ -1,25 +1,25 @@
 ﻿@*******************************************************************************************************
-    //  ConnectionProfiles.cshtml - Gbtc
-    //
-    //  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
-    //
-    //  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
-    //  the NOTICE file distributed with this work for additional information regarding copyright ownership.
-    //  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
-    //  not use this file except in compliance with the License. You may obtain a copy of the License at:
-    //
-    //      http://opensource.org/licenses/MIT
-    //
-    //  Unless agreed to in writing, the subject software distributed under the License is distributed on an
-    //  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
-    //  License for the specific language governing permissions and limitations.
-    //
-    //  Code Modification History:
-    //  ----------------------------------------------------------------------------------------------------
-    //  01/15/2016 - J. Ritchie Carroll
-    //       Generated original version of source code.
-    //
-    //*****************************************************************************************************@
+//  ConnectionProfiles.cshtml - Gbtc
+//
+//  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
+//  not use this file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  01/15/2016 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
 @using System.Text
 @using openMIC.Model
 @using RazorEngine.Templating
@@ -28,6 +28,14 @@
     <style>
         html, body {
             height: 100%;
+        }
+        .popup-ok-button {
+            position: absolute;
+            right: 8px;
+            top: calc(100% - 43px);
+            top: -o-calc(100% - 43px);
+            top: -webkit-calc(100% - 43px);
+            top: -moz-calc(100% - 43px);
         }
     </style>
 }
@@ -68,7 +76,7 @@
             <div class="modal-body">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <iframe style="border: none" id="editTasksFrame"></iframe>
-                <button type="button" class="btn btn-default pull-right" data-dismiss="modal" style="position: absolute; top: calc(100% - 43px); right: 8px">OK</button>
+                <button type="button" class="btn btn-default pull-right popup-ok-button" data-dismiss="modal">OK</button>
             </div>
         </div>
     </div>
@@ -116,7 +124,7 @@
 
             return "0";
         }
-
+        
         $(window).resize(function() {
             $("#editTasksFrame").attr("height", $("#contentWell").outerHeight(true) + "px");
         });

@@ -298,6 +298,7 @@
     <Content Include="wwwroot\Content\bootstrap-theme.min.css" />
     <Content Include="wwwroot\Content\bootstrap.css" />
     <Content Include="wwwroot\Content\bootstrap.min.css" />
+    <Content Include="wwwroot\Content\Popup.css" />
     <Content Include="wwwroot\Content\Site.css" />
     <Content Include="wwwroot\Content\bootstrap-theme-cerulean.css" />
     <Content Include="wwwroot\Content\bootstrap-theme-cosmo.css" />
