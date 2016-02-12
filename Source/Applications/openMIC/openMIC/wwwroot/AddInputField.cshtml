@@ -51,8 +51,8 @@
 {
     @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : string.Format("<div{0}>\r\n", groupDataBinding))
     <div class="form-group" data-bind="css: {'has-error': isEmpty(@(Raw(fieldName))()), 'has-feedback': isEmpty(@(Raw(fieldName))())}"@Raw(toolTip)>
-        <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
         <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)" id="@Raw(fieldID)"@Raw(inputSizeRestriction) required>
+        <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
         <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(Raw(fieldName))())"></span>
     </div>
     @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : "</div>\r\n")
@@ -60,7 +60,7 @@
 else
 {
     <div class="form-group"@Raw(groupDataBinding)@Raw(toolTip)>
-        <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
         <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)" id="@Raw(fieldID)"@Raw(inputSizeRestriction)>
+        <label for="@Raw(fieldID)" data-bind="enable: $('#@Raw(fieldID)').is(':enabled')">@Raw(inputLabel):</label>
     </div>
 }

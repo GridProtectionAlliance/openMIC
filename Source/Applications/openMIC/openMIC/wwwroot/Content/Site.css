@@ -52,6 +52,15 @@ body {
     pointer-events:all;
 }
 
+/* Define styles for an extra wide modal dialog */
+.modal.modal-wide .modal-dialog {
+  width: 95%;
+}
+
+.modal-wide .modal-body {
+  overflow-y: auto;
+}
+
 /* Define read-only background color for modal dialogs */
 .modal-readonly {
    background: #dcdcdc;
@@ -159,6 +168,24 @@ hr.full-break {
     left: -999em;
     visibility: hidden
 }
+
+/* Disabled input label styles */
+input:disabled + label {
+    color:#ccc;
+}
+
+select:disabled + label {
+    color:#ccc;
+}
+
+input:not([type='checkbox']) + label {    
+    float: left;
+}
+
+select + label {
+    float: left;
+}
+
 
 /* Glyphicon animations and rotations */
 .glyphicon-spin {

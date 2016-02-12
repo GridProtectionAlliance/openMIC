@@ -42,30 +42,47 @@ function notNull(value, nonNullValue) {
 
 function detectIE() {
     const ua = window.navigator.userAgent;
-    const msie = ua.indexOf('MSIE ');
+    const msie = ua.indexOf("MSIE ");
 
     if (msie > 0) {
         // IE 10 or older => return version number
-        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
+        return parseInt(ua.substring(msie + 5, ua.indexOf(".", msie)), 10);
     }
 
-    const trident = ua.indexOf('Trident/');
+    const trident = ua.indexOf("Trident/");
 
     if (trident > 0) {
         // IE 11 => return version number
-        const rv = ua.indexOf('rv:');
-        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
+        const rv = ua.indexOf("rv:");
+        return parseInt(ua.substring(rv + 3, ua.indexOf(".", rv)), 10);
     }
 
-    const edge = ua.indexOf('Edge/');
+    const edge = ua.indexOf("Edge/");
 
     if (edge > 0) {
         // Edge (IE 12+) => return version number
-        return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
+        return parseInt(ua.substring(edge + 5, ua.indexOf(".", edge)), 10);
     }
 
     // Other browser
     return false;
+}
+
+function isNumber(val) {
+    return !isNaN(parseFloat(val)) && isFinite(val);
+}
+
+function isBool(val) {
+    if (typeof value === "boolean")
+        return true;
+
+    const lval = val.toString().toLowerCase();
+    return lval === "true" || lval === "false";
+}
+
+function getBool(val) {
+    const num = +val;
+    return !isNaN(num) ? !!num : !!String(val).toLowerCase().replace(false, "");
 }
 
 // Number functions
@@ -108,8 +125,8 @@ function joinKeyValuePairs (source, parameterDelimiter, keyValueDelimiter, start
         if (source.hasOwnProperty(key)) {
             let value = source[key];
 
-            if (typeof value === "boolean")
-                value = value.toString();
+            if (isBool(value))
+                value = value.toString().toLowerCase();
             else
                 value = value ? value.toString() : "";
 
@@ -180,7 +197,10 @@ function Dictionary(source) {
         if (!self._keys[lkey] || self._keys[lkey].toLowerCase() !== key)
             self._keys[lkey] = key;
 
-        self._values[lkey] = value;
+        if (isBool(value))
+            self._values[lkey] = getBool(value);
+        else
+            self._values[lkey] = value;
     }
 
     self.remove = function (key) {
@@ -463,7 +483,7 @@ Date.prototype.formatDate = function (format, utc) {
 };
 
 function formatDate(date, format, utc) {
-    if (typeof date === 'string')
+    if (typeof date === "string")
         return formatDate(date.toDate(), format, utc);
 
     if (format === undefined && DateTimeFormat != undefined)
@@ -588,4 +608,12 @@ $.fn.truncateToWidth = function (text, rows) {
     }
 
     return text;
+}
+
+$.fn.visible = function () {
+    return this.css("visibility", "visible");
+}
+
+$.fn.invisible = function () {
+    return this.css("visibility", "hidden");
 }

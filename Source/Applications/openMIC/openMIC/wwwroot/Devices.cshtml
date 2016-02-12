@@ -76,14 +76,14 @@
         @Raw(ViewBag.DataContext.AddInputField("get('connectionhostname')", true, inputLabel: "Connection Host Name/IP", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('connectionusername')", true, inputLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('connectionpassword')", true, inputType: "password", inputLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString"))
-        @Raw(ViewBag.DataContext.AddSelectField<ConnectionProfile>("get('connectionprofile')", true, "ID", "Name", "Connection Profile", "selectConnectionProfile", "with: $root.connectionString"))
+        @Raw(ViewBag.DataContext.AddSelectField<ConnectionProfile>("get('connectionprofile')", true, "ID", "Name", "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", "selectConnectionProfile", "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('schedule')", true, inputLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name", "Vendor Device"))
         @Raw(ViewBag.DataContext.AddSelectField<Device, Company>("CompanyID", "ID", "Name", "Company"))
     </div>
     <div class="col-md-6">
         <div class="checkbox" data-bind="with: $root.connectionString">
-            <label><input type="checkbox" id="useDialUp" data-bind="checked: get('usedialup'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
+            <label><input type="checkbox" data-bind="checked: get('usedialup'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
         </div>
         @Raw(ViewBag.DataContext.AddInputField("get('dialupentryname')", false, inputLabel: "Dial-up RAS Connection Entry Name", fieldID: "inputDialUpRASEntry", groupDataBinding: "with: $root.connectionString", customDataBinding: "enable: get('usedialup')", toolTip: "Devices using same connection entries with overlapping schedules will be queued serially"))
         @Raw(ViewBag.DataContext.AddInputField("get('dialupnumber')", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString", customDataBinding: "enable: get('usedialup')"))
@@ -224,18 +224,18 @@
         });
 
         $(viewModel).on("derivingObservableRecord", function(event, observableRecord) {
-            // Add connection string reference to current record so it can participate in the validation group
+            // Add connection string reference to current observable record so it can participate in the validation group
             observableRecord._connectionstring = viewModel.connectionString;
         });
 
-        $(viewModel).on("derivingJSRecord", function(event) {
+        $(viewModel).on("derivingJSRecord", function(event, observableRecord) {
             // Remove added connection string reference before serialization
-            delete viewModel.currentRecord()._connectionstring;
+            delete observableRecord._connectionstring;
         });
 
-        $(viewModel).on("newRecord", function(event) {
+        $(viewModel).on("newRecord", function(event, record) {
             // Initialize default values for new record
-            viewModel.currentRecord().CompanyID(@ViewBag.DefaultCompanyID);
+            record.CompanyID = @ViewBag.DefaultCompanyID;
         });
 
         $(viewModel).on("currentRecordChanged", function(event) {
@@ -257,7 +257,7 @@
             const currentConnectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
             currentConnectionString.updateObservableDictionary(viewModel.connectionString, true);
 
-            viewModel.setDirtyFlag(false);
+            viewModel.isDirty(false);
             viewModel.loadingConnectionString = false;
         });
 

@@ -148,7 +148,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header" data-bind="css: {'modal-readonly': recordMode()===RecordMode.View}">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close" id="dismissDialogButton">&times;</button>
                 <h4 class="modal-title">
                     <span data-bind="visible: recordMode()===RecordMode.View">View</span>
                     <span data-bind="visible: recordMode()===RecordMode.Edit">Edit</span>
@@ -176,7 +176,7 @@
     </div>
 </div>
 @{
-    pageControlScripts.Append(@"
+        pageControlScripts.Append(@"
             $(""#addRecordButton"").click(function () {
                 viewModel.addPageRecord();
             });
@@ -193,7 +193,18 @@
                 viewModel.cancelPageRecord();
             });
 
+            $(""#dismissDialogButton"").click(function () {
+                viewModel.cancelPageRecord();
+            });
+
             $(""#addNewEditDialog"").modal({show: false, backdrop: ""static"", keyboard: false});
+
+            $(window).on(""beforeunload"", function () {
+                if ($(""#addNewEditDialog"").hasClass(""in"") && viewModel.isDirty())
+                    return ""There are unsaved changes to this record."";
+
+                return undefined;
+            });
         });
     ");
     pageControlScripts.AppendFormat("\r\n        viewModel.modelName = \"{0}\";\r\n", RemoveSpaces(ViewBag.Title));

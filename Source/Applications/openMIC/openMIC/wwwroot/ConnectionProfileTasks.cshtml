@@ -49,7 +49,8 @@
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
 }
-@helper BodyRows() {
+@helper BodyRows()
+{
     <td width="35%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Name, click: $parent.viewPageRecord"></button></td>
     <td width="60%" class="text-center"><div data-bind="text: $($element.parentElement).truncateToWidth(Settings.parseKeyValuePairs().get('fileextensions'), 2)"></div></td>
     <td width="5%" class="text-center valign-middle" nowrap>
@@ -57,24 +58,45 @@
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
     </td>
 }
-@helper AddNewEditDialog() {
-    <div class="col-md-12">
+@helper AddNewEditDialog()
+{
+    <div class="col-md-6">
         @Raw(ViewBag.DataContext.AddInputField<ConnectionProfileTask>("Name"))
         @Raw(ViewBag.DataContext.AddInputField("get('fileextensions')", true, inputLabel: "File Extensions", fieldID: "inputFileExtensions", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('remotepath')", true, inputLabel: "Remote Path", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString"))
         @Raw(ViewBag.DataContext.AddInputField("get('localpath')", true, inputLabel: "Local Path", fieldID: "inputLocalPath", groupDataBinding: "with: $root.connectionString"))
         <div class="checkbox" data-bind="with: $root.connectionString">
-            <label><input type="checkbox" id="limitFilesByAge" data-bind="checked: get('limitfilesbyage'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Limit files by age</label>
+            <label><input type="checkbox" data-bind="checked: get('deleteremotefilesafterdownload'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Delete remote files after download</label>
         </div>
         <div class="checkbox" data-bind="with: $root.connectionString">
-            <label><input type="checkbox" id="deleteOldFiles" data-bind="checked: get('deleteoldfiles'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Delete old files</label>
+            <label><input type="checkbox" data-bind="checked: get('limitremotefiledownloadbyage'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Limit remote file download by age</label>
         </div>
         <div class="checkbox" data-bind="with: $root.connectionString">
-            <label><input type="checkbox" id="overwriteExisting" data-bind="checked: get('overwriteexisting'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Overwrite existing files</label>
+            <label><input type="checkbox" data-bind="checked: get('deleteoldlocalfiles'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Delete old local files</label>
         </div>
         <div class="checkbox" data-bind="with: $root.connectionString">
-            <label><input type="checkbox" id="archiveBeforeOverwrite" data-bind="checked: get('archivebeforeoverwrite'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Archive before overwrite</label>
+            <label><input type="checkbox" data-bind="checked: get('overwriteexistinglocalfiles'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Overwrite existing local files</label>
         </div>
+        <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" data-bind="checked: get('archivelocalfilesbeforeoverwrite'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Archive local files before overwrite</label>
+        </div>
+    </div>
+    <div class="col-md-6">
+        @Raw(ViewBag.DataContext.AddInputField("get('maximumfilesize')", false, inputType: "number", inputLabel: "Maximum File Size to Download (MB)", fieldID: "inputMaximumFileSize", groupDataBinding: "with: $root.connectionString"))
+        @Raw(ViewBag.DataContext.AddInputField("get('maximumfilecount')", false, inputType: "number", inputLabel: "Maximum Files to Download (-1 = no limit)", fieldID: "inputMaximumFileCount", groupDataBinding: "with: $root.connectionString"))
+        <div data-bind="with: $root.connectionString">
+            <div class="form-group">
+                <label for="selectDirectoryNamingConvention">Directory Naming Convention:</label>
+                <select class="form-control" id="selectDirectoryNamingConvention" data-bind="value: get('directorynamingconvention'), valueAllowUnset: false, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}">
+                    <option value="root">Top Folder</option>
+                    <option value="year">Year Sub-folder</option>
+                    <option value="yearMonth">YYYYMM Sub-folder</option>
+                    <option value="yearThenMonth">Year/Month Sub-folders</option>
+                </select>
+            </div>
+        </div>
+        @Raw(ViewBag.DataContext.AddInputField("get('directoryauthusername')", false, inputLabel: "Local Path Authentication User Name", fieldID: "inputDirectoryAuthUserName", groupDataBinding: "with: $root.connectionString"))
+        @Raw(ViewBag.DataContext.AddInputField("get('directoryauthpassword')", false, inputType: "password", inputLabel: "Local Path Authentication Password", fieldID: "inputDirectoryAuthPassword", groupDataBinding: "with: $root.connectionString"))
     </div>
     <div class="col-md-12">
         <div class="form-group">
@@ -123,12 +145,18 @@
         const defaultConnectionString = new Dictionary();
 
         defaultConnectionString.set("fileExtensions", "");
-        defaultConnectionString.set("remotepath", "@Raw(Model.DefaultRemotePath.JavaScriptEncode())");
-        defaultConnectionString.set("localpath", "@Raw(Model.DefaultLocalPath.JavaScriptEncode())");
-        defaultConnectionString.set("limitFilesByAge", false);
-        defaultConnectionString.set("deleteOldFiles", false);
-        defaultConnectionString.set("overwriteExisting", false);
-        defaultConnectionString.set("archiveBeforeOverwrite", false);
+        defaultConnectionString.set("remotePath", "@Raw(Model.DefaultRemotePath.JavaScriptEncode())");
+        defaultConnectionString.set("localPath", "@Raw(Model.DefaultLocalPath.JavaScriptEncode())");
+        defaultConnectionString.set("deleteRemoteFilesAfterDownload", false);
+        defaultConnectionString.set("limitRemoteFileDownloadByAge", false);
+        defaultConnectionString.set("deleteOldLocalFiles", false);
+        defaultConnectionString.set("overwriteExistingLocalFiles", false);
+        defaultConnectionString.set("archiveLocalFilesBeforeOverwrite", false);
+        defaultConnectionString.set("maximumFileSize", 1000);
+        defaultConnectionString.set("maximumFileCount", -1);
+        defaultConnectionString.set("directoryNamingConvention", "root");
+        defaultConnectionString.set("directoryAuthUserName", "");
+        defaultConnectionString.set("directoryAuthPassword", "");
 
         // Create an observable key/value pair connection string dictionary
         viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);
@@ -146,16 +174,16 @@
         });
 
         $(viewModel).on("derivingObservableRecord", function(event, observableRecord) {
-            // Add connection string reference to current record so it can participate in the validation group
+            // Add connection string reference to current observable record so it can participate in the validation group
             observableRecord._connectionstring = viewModel.connectionString;
 
             // Initialize selected connection profile ID
             observableRecord.ConnectionProfileID(@parentID);
         });
 
-        $(viewModel).on("derivingJSRecord", function(event) {
+        $(viewModel).on("derivingJSRecord", function(event, observableRecord) {
             // Remove added connection string reference before serialization
-            delete viewModel.currentRecord()._connectionstring;
+            delete observableRecord._connectionstring;
         });
 
         $(viewModel).on("currentRecordChanged", function(event) {
@@ -177,20 +205,22 @@
             const currentConnectionString = notNull(viewModel.currentRecord().Settings()).parseKeyValuePairs();
             currentConnectionString.updateObservableDictionary(viewModel.connectionString, true);
 
-            viewModel.setDirtyFlag(false);
+            viewModel.isDirty(false);
             viewModel.loadingConnectionString = false;
         });
 
         $(function() {
             $("#addNewEditDialog").on("shown.bs.modal", function () {
-                // On popup window shown, hide data-dismiss buttons
+                // On add/edit dialog shown, disable data-dismiss buttons on parent pop-up
                 $("#editTasksDialog", window.parent.document).find("button[data-dismiss]").prop("disabled", true);
+                $("#editTasksDialog", window.parent.document).find("button[data-dismiss]").invisible();
             });
 
             $("#addNewEditDialog").on("hidden.bs.modal", function () {
-                // On popup window hidden, display data-dismiss buttons
+                // On add/edit dialog hidden, re-enable data-dismiss buttons on parent pop-up
+                $("#editTasksDialog", window.parent.document).find("button[data-dismiss]").visible();
                 $("#editTasksDialog", window.parent.document).find("button[data-dismiss]").prop("disabled", false);
             });
-        }); 
+        });
     </script>
 }

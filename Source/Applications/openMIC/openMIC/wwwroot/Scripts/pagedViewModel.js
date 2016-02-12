@@ -55,7 +55,7 @@ function PagedViewModel() {
     self._currentPage = ko.observable(0);
     self._currentRecord = ko.observable();
     self._recordMode = ko.observable(RecordMode.View);
-    self._isDirty = false;
+    self._isDirty = ko.observable(false);
     self._columnWidths = [];
 
     // Properties
@@ -101,13 +101,14 @@ function PagedViewModel() {
         read: self._currentRecord,
         write: function(value) {
             self._currentRecord(value);
-            self.setDirtyFlag(false);
+            self.isDirty(false);
             $(self).trigger("currentRecordChanged");
             self.applyValidationParameters();
 
             // Watch for changes to fields in current record
             ko.watch(self._currentRecord(), function (parents, child, item) {
-                self.setDirtyFlag(true, child);
+                self.isDirty(true);
+                $(self).trigger("currentRecordUpdated", [child]);
             });
         },
         owner: self
@@ -127,6 +128,21 @@ function PagedViewModel() {
 
                 $(self).trigger("recordModeChanged", [oldMode, newMode]);
             }
+        },
+        owner: self
+    });
+
+    // Gets or sets current record changed flag
+    self.isDirty = ko.pureComputed({
+        read: self._isDirty,
+        write: function (value) {
+            if (value === undefined)
+                value = true;
+
+            self._isDirty(value);
+
+            // Derive unassigned field count based on existence of Bootstrap "has-error" class
+            self.unassignedFieldCount($("#addNewEditDialog div.form-group.has-error").length);
         },
         owner: self
     });
@@ -287,12 +303,12 @@ function PagedViewModel() {
 
     // Convert observable object to a simple Javascript record
     self.deriveJSRecord = function () {
-        const currentRecord = self.currentRecord();
+        const observableRecord = self.currentRecord();
 
-        // Allow customization of Javascript record
-        $(self).trigger("derivingJSRecord");
+        // Allow customization of observable record before conversion
+        $(self).trigger("derivingJSRecord", [observableRecord]);
 
-        return ko.mapping.toJS(currentRecord);
+        return ko.mapping.toJS(observableRecord);
     }
 
     // Convert simple Javascript record to an observable object
@@ -307,19 +323,6 @@ function PagedViewModel() {
         self.refreshValidationErrors();
 
         return observableRecord;
-    }
-
-    self.setDirtyFlag = function (value, target) {
-        if (value === undefined)
-            value = true;
-
-        self._isDirty = value;
-
-        // Derive unassigned field count based on existence of Bootstrap "has-error" class
-        self.unassignedFieldCount($("#addNewEditDialog div.form-group.has-error").length);
-
-        if (value)
-            $(self).trigger("currentRecordUpdated", [target]);
     }
 
     self.setFocusOnInitialField = function () {
@@ -442,15 +445,15 @@ function PagedViewModel() {
         if (self.dataHubIsConnected()) {
             self.recordMode(RecordMode.AddNew);
             self.newRecord().done(function (emptyRecord) {
+                $(self).trigger("newRecord", [emptyRecord]);
                 self.currentRecord(self.deriveObservableRecord(emptyRecord));
-                $(self).trigger("newRecord");
                 $("#addNewEditDialog").modal("show");
             });
         }
     }
 
     self.cancelPageRecord = function () {
-        if (!self._isDirty || confirm("Are you sure you want to discard unsaved changes?"))
+        if (!self.isDirty() || confirm("Are you sure you want to discard unsaved changes?"))
             $("#addNewEditDialog").modal("hide");
     }
 };

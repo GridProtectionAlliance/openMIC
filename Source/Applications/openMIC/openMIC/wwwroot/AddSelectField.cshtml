@@ -47,10 +47,10 @@
     }
 }
 <div class="form-group"@Raw(groupDataBinding)@Raw(toolTip)>
-    <label for="@Raw(fieldID)">@Raw(selectLabel):</label>
-    <select class="form-control" id="@Raw(fieldID)" data-bind="value: @Raw(fieldName), optionsCaption: 'Select @Raw(selectLabel)...', valueAllowUnset: @(required.ToString().ToLower()), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)">
+    <select class="form-control" id="@Raw(fieldID)" data-bind="value: @Raw(fieldName), valueAllowUnset: @(required.ToString().ToLower()), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)">
         @foreach (KeyValuePair<string, string> item in options) {
             <option value="@item.Key">@item.Value</option>
         }
     </select>
+    <label for="@Raw(fieldID)">@Raw(selectLabel):</label>
 </div>
