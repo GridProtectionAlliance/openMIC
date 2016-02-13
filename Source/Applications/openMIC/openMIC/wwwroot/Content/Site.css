@@ -11,21 +11,14 @@ body {
     color: #FFA500;
 }
 
-/* Bootstrap defaults table cells to valign top, following styles allow customization */
-.table thead>tr>th.valign-middle,
-.table tbody>tr>td.valign-middle {
-    vertical-align: middle;
+/* Disabled input label style */
+label.disabled {
+    color: #ccc;
 }
 
-.table thead>tr>th.valign-bottom,
-.table tbody>tr>td.valign-bottom {
-    vertical-align: bottom;
-}
-
-/* Whole table centering */
-.table-center {
-  margin: 0 auto !important;
-  float: none !important;
+/* Define read-only background color for modal dialogs */
+.modal-readonly {
+   background: #dcdcdc;
 }
 
 /* Modal dialog vertical alignment classes */
@@ -61,9 +54,21 @@ body {
   overflow-y: auto;
 }
 
-/* Define read-only background color for modal dialogs */
-.modal-readonly {
-   background: #dcdcdc;
+/* Bootstrap defaults table cells to valign top, following styles allow customization */
+.table thead>tr>th.valign-middle,
+.table tbody>tr>td.valign-middle {
+    vertical-align: middle;
+}
+
+.table thead>tr>th.valign-bottom,
+.table tbody>tr>td.valign-bottom {
+    vertical-align: bottom;
+}
+
+/* Whole table centering */
+.table-center {
+  margin: 0 auto !important;
+  float: none !important;
 }
 
 /* Table column sorting button style */
@@ -79,8 +84,7 @@ body {
 .table-cell-wrap {
     overflow-wrap: normal;
     word-wrap: break-word;
-    -ms-word-break: break-all;
-    word-break: break-word;
+    word-break: normal;
     height: 100%;
 }
 
@@ -168,24 +172,6 @@ hr.full-break {
     left: -999em;
     visibility: hidden
 }
-
-/* Disabled input label styles */
-input:disabled + label {
-    color:#ccc;
-}
-
-select:disabled + label {
-    color:#ccc;
-}
-
-input:not([type='checkbox']) + label {    
-    float: left;
-}
-
-select + label {
-    float: left;
-}
-
 
 /* Glyphicon animations and rotations */
 .glyphicon-spin {

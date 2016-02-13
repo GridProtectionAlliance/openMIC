@@ -156,10 +156,11 @@ namespace openMIC.Model
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
+        /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string customDataBinding = null, string toolTip = null) where T : class, new()
+        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string toolTip = null) where T : class, new()
         {
             TableOperations<T> tableOperations = Table<T>();
             StringLengthAttribute stringLengthAttribute;
@@ -181,7 +182,7 @@ namespace openMIC.Model
             }
 
             return AddInputField(fieldName, tableOperations.FieldHasAttribute<RequiredAttribute>(fieldName),
-                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding, customDataBinding, toolTip);
+                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding, labelDataBinding, customDataBinding, toolTip);
         }
 
         /// <summary>
@@ -194,10 +195,11 @@ namespace openMIC.Model
         /// <param name="inputLabel">Label name for input text field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
+        /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string customDataBinding = null, string toolTip = null)
+        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string toolTip = null)
         {
             RazorView<CSharp> addInputFieldTemplate = new RazorView<CSharp>(AddInputFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addInputFieldTemplate.ViewBag;
@@ -209,6 +211,7 @@ namespace openMIC.Model
             viewBag.AddValue("InputLabel", inputLabel ?? fieldName);
             viewBag.AddValue("FieldID", fieldID ?? $"input{fieldName}");
             viewBag.AddValue("GroupDataBinding", groupDataBinding);
+            viewBag.AddValue("LabelDataBinding", labelDataBinding);
             viewBag.AddValue("CustomDataBinding", customDataBinding);
             viewBag.AddValue("ToolTip", toolTip);
 
@@ -226,13 +229,14 @@ namespace openMIC.Model
         /// <param name="selectLabel">Label name for select field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for select field; defaults to select + <paramref name="fieldName"/>.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
+        /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddSelectField<TSelect, TOption>(string fieldName, string optionValueFieldName, string optionLabelFieldName = null, string selectLabel = null, string fieldID = null, string groupDataBinding = null, string customDataBinding = null, string toolTip = null) where TSelect : class, new() where TOption : class, new()
+        public string AddSelectField<TSelect, TOption>(string fieldName, string optionValueFieldName, string optionLabelFieldName = null, string selectLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string toolTip = null) where TSelect : class, new() where TOption : class, new()
         {
             return AddSelectField<TOption>(fieldName, Table<TSelect>().FieldHasAttribute<RequiredAttribute>(fieldName),
-                optionValueFieldName, optionLabelFieldName, selectLabel, fieldID, groupDataBinding, customDataBinding, toolTip);
+                optionValueFieldName, optionLabelFieldName, selectLabel, fieldID, groupDataBinding, labelDataBinding, customDataBinding, toolTip);
         }
 
         /// <summary>
@@ -246,10 +250,11 @@ namespace openMIC.Model
         /// <param name="selectLabel">Label name for select field, defaults to <paramref name="fieldName"/>.</param>
         /// <param name="fieldID">ID to use for select field; defaults to select + <paramref name="fieldName"/>.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
+        /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddSelectField<TOption>(string fieldName, bool required, string optionValueFieldName, string optionLabelFieldName = null, string selectLabel = null, string fieldID = null, string groupDataBinding = null, string customDataBinding = null, string toolTip = null) where TOption : class, new()
+        public string AddSelectField<TOption>(string fieldName, bool required, string optionValueFieldName, string optionLabelFieldName = null, string selectLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string toolTip = null) where TOption : class, new()
         {
             RazorView<CSharp> addSelectFieldTemplate = new RazorView<CSharp>(AddSelectFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addSelectFieldTemplate.ViewBag;
@@ -265,6 +270,7 @@ namespace openMIC.Model
             viewBag.AddValue("SelectLabel", selectLabel);
             viewBag.AddValue("FieldID", fieldID ?? $"select{fieldName}");
             viewBag.AddValue("GroupDataBinding", groupDataBinding);
+            viewBag.AddValue("LabelDataBinding", labelDataBinding);
             viewBag.AddValue("CustomDataBinding", customDataBinding);
             viewBag.AddValue("ToolTip", toolTip);
 

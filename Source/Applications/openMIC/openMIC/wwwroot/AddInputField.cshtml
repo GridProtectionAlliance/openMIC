@@ -31,12 +31,17 @@
     string inputLabel = ViewBag.InputLabel;
     string fieldID = ViewBag.FieldID;
     string groupDataBinding = ViewBag.GroupDataBinding;
+    string labelDataBinding = ViewBag.LabelDataBinding;
     string customDataBinding = ViewBag.CustomDataBinding;
     string toolTip = ViewBag.ToolTip;
     string inputSizeRestriction = maxLength > 0 ? string.Format(" maxlength=\"{0}\" size=\"{0}\"", maxLength) : "";
 
     if (!string.IsNullOrEmpty(groupDataBinding)) {
         groupDataBinding = string.Format(" data-bind=\"{0}\"", groupDataBinding);
+    }
+
+    if (!string.IsNullOrEmpty(labelDataBinding)) {
+        labelDataBinding = string.Format(" data-bind=\"{0}\"", labelDataBinding);
     }
 
     if (!string.IsNullOrEmpty(customDataBinding)) {
@@ -51,8 +56,8 @@
 {
     @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : string.Format("<div{0}>\r\n", groupDataBinding))
     <div class="form-group" data-bind="css: {'has-error': isEmpty(@(Raw(fieldName))()), 'has-feedback': isEmpty(@(Raw(fieldName))())}"@Raw(toolTip)>
+        <label for="@Raw(fieldID)"@Raw(labelDataBinding)>@Raw(inputLabel):</label>
         <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)" id="@Raw(fieldID)"@Raw(inputSizeRestriction) required>
-        <label for="@Raw(fieldID)">@Raw(inputLabel):</label>
         <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(Raw(fieldName))())"></span>
     </div>
     @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : "</div>\r\n")
@@ -60,7 +65,7 @@
 else
 {
     <div class="form-group"@Raw(groupDataBinding)@Raw(toolTip)>
+        <label for="@Raw(fieldID)"@Raw(labelDataBinding)>@Raw(inputLabel):</label>
         <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)" id="@Raw(fieldID)"@Raw(inputSizeRestriction)>
-        <label for="@Raw(fieldID)" data-bind="enable: $('#@Raw(fieldID)').is(':enabled')">@Raw(inputLabel):</label>
     </div>
 }
