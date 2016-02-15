@@ -109,6 +109,7 @@ function PagedViewModel() {
             ko.watch(self._currentRecord(), function (parents, child, item) {
                 self.isDirty(true);
                 $(self).trigger("currentRecordUpdated", [child]);
+                setTimeout(self.calculateUnassignedFieldCount, 10);
             });
         },
         owner: self
@@ -140,9 +141,7 @@ function PagedViewModel() {
                 value = true;
 
             self._isDirty(value);
-
-            // Derive unassigned field count based on existence of Bootstrap "has-error" class
-            self.unassignedFieldCount($("#addNewEditDialog div.form-group.has-error").length);
+            self.calculateUnassignedFieldCount();
         },
         owner: self
     });
@@ -291,6 +290,11 @@ function PagedViewModel() {
             if (currentPage === self.currentPage())
                 self.queryPageRecords();
         }
+    }
+
+    self.calculateUnassignedFieldCount = function () {
+        // Derive unassigned field count based on existence of Bootstrap "has-error" class
+        self.unassignedFieldCount($("#addNewEditDialog div.form-group.has-error").length);
     }
 
     self.refreshValidationErrors = function () {

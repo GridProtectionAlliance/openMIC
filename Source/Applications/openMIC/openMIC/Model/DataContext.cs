@@ -157,10 +157,11 @@ namespace openMIC.Model
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
         /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
+        /// <param name="requiredDataBinding">Boolean data-bind operation to apply to required state, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string toolTip = null) where T : class, new()
+        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string requiredDataBinding = null, string customDataBinding = null, string toolTip = null) where T : class, new()
         {
             TableOperations<T> tableOperations = Table<T>();
             StringLengthAttribute stringLengthAttribute;
@@ -182,7 +183,7 @@ namespace openMIC.Model
             }
 
             return AddInputField(fieldName, tableOperations.FieldHasAttribute<RequiredAttribute>(fieldName),
-                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding, labelDataBinding, customDataBinding, toolTip);
+                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding, labelDataBinding, requiredDataBinding, customDataBinding, toolTip);
         }
 
         /// <summary>
@@ -196,10 +197,11 @@ namespace openMIC.Model
         /// <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
         /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
+        /// <param name="requiredDataBinding">Boolean data-bind operation to apply to required state, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string toolTip = null)
+        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string requiredDataBinding = null, string customDataBinding = null, string toolTip = null)
         {
             RazorView<CSharp> addInputFieldTemplate = new RazorView<CSharp>(AddInputFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addInputFieldTemplate.ViewBag;
@@ -212,6 +214,7 @@ namespace openMIC.Model
             viewBag.AddValue("FieldID", fieldID ?? $"input{fieldName}");
             viewBag.AddValue("GroupDataBinding", groupDataBinding);
             viewBag.AddValue("LabelDataBinding", labelDataBinding);
+            viewBag.AddValue("RequiredDataBinding", requiredDataBinding);
             viewBag.AddValue("CustomDataBinding", customDataBinding);
             viewBag.AddValue("ToolTip", toolTip);
 

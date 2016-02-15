@@ -22,14 +22,18 @@
 //******************************************************************************************************
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using DotRas;
 using GSF;
 using GSF.Configuration;
 using GSF.IO;
+using GSF.Scheduling;
+using GSF.Threading;
 using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
 using openMIC.Model;
@@ -189,6 +193,9 @@ namespace openMIC
         // Fields
         private readonly RasDialer m_rasDialer;
         private ConnectionProfileTaskSettings[] m_connectionProfileTaskSettings;
+        private LogicalThreadOperation m_dialUpOperation;
+        private long m_startConnectionTime;
+        private long m_startDialUpTime;
         private bool m_disposed;
 
         #endregion
@@ -376,7 +383,7 @@ namespace openMIC
         }
 
         /// <summary>
-        /// Gets or sets total measurements received for this <see cref="IDevice"/>.
+        /// Gets or sets total measurements received for this <see cref="IDevice"/> - in local context "successful connections" per day.
         /// </summary>
         public long MeasurementsReceived
         {
@@ -385,18 +392,93 @@ namespace openMIC
         }
 
         /// <summary>
-        /// Gets or sets total measurements expected to have been received for this <see cref="IDevice"/>.
+        /// Gets or sets total measurements expected to have been received for this <see cref="IDevice"/> - in local context "expected connections" per day.
         /// </summary>
         public long MeasurementsExpected
         {
-            get;
-            set;
+            get
+            {
+                Schedule schedule = new GSF.Scheduling.Schedule(Schedule);
+
+                // Check for scheduled days of week
+                if (schedule.DaysOfWeekPart.Values.Contains((int)DateTime.UtcNow.DayOfWeek))
+                {
+                    // Check for scheduled months
+                    if (schedule.MonthPart.Values.Contains(DateTime.UtcNow.Month))
+                    {
+                        // Check for scheduled days of month
+                        if (schedule.DayPart.Values.Contains(DateTime.UtcNow.Day))
+                        {
+                            // Return expected downloads per day
+                            return schedule.HourPart.Values.Count * schedule.MinutePart.Values.Count;
+                        }
+
+                        // Not a matching day of month - no downloads expected for today
+                        return 0;
+                    }
+
+                    // Not a matching month - no downloads expected for today
+                    return 0;
+                }
+
+                // Not a matching day of week - no downloads expected for today
+                return 0;
+            }
+            set
+            {
+                // Ignoring updates
+            }
         }
 
         /// <summary>
         /// Gets or sets total number of attempted connections.
         /// </summary>
         public long AttemptedConnections
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total number of successful connections.
+        /// </summary>
+        public long SuccessfulConnections
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total number of failed connections.
+        /// </summary>
+        public long FailedConnections
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total number of attempted dial-ups.
+        /// </summary>
+        public long AttemptedDialUps
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total number of successful dial-ups.
+        /// </summary>
+        public long SuccessfulDialUps
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total number of failed dial-ups.
+        /// </summary>
+        public long FailedDialUps
         {
             get;
             set;
@@ -430,6 +512,15 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Gets or sets total dial-up time, in ticks.
+        /// </summary>
+        public long TotalDialUpTime
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets flag that determines if the data input connects asynchronously.
         /// </summary>
         /// <remarks>
@@ -443,7 +534,7 @@ namespace openMIC
         public override bool SupportsTemporalProcessing => false;
 
         // Gets RAS connection state
-        private RasConnectionState RasState => RasConnection.GetActiveConnections().FirstOrDefault(ras => ras.EntryName == m_rasDialer?.EntryName)?.GetConnectionStatus()?.ConnectionState ?? RasConnectionState.Disconnected;
+        private RasConnectionState RasState => RasConnection.GetActiveConnections().FirstOrDefault(ras => ras.EntryName == DialUpEntryName)?.GetConnectionStatus()?.ConnectionState ?? RasConnectionState.Disconnected;
 
         #endregion
 
@@ -461,6 +552,8 @@ namespace openMIC
                 {
                     if (disposing)
                     {
+                        DeregisterSchedule(this);
+
                         if ((object)m_rasDialer != null)
                         {
                             m_rasDialer.Error -= m_rasDialer_Error;
@@ -499,6 +592,8 @@ namespace openMIC
 
                 m_connectionProfileTaskSettings = connectionProfileTaskSettings.ToArray();
             }
+
+            RegisterSchedule(this);
         }
 
         /// <summary>
@@ -515,10 +610,17 @@ namespace openMIC
                     string[] userParts = settings.DirectoryAuthUserName.Split('\\');
                     string[] pathParts = localPath.Substring(2).Split('\\');
 
-                    if (userParts.Length == 2 && pathParts.Length > 1)
-                        FilePath.ConnectToNetworkShare($"\\\\{pathParts[0].Trim()}\\{pathParts[1].Trim()}\\", userParts[1].Trim(), settings.DirectoryAuthPassword.Trim(), userParts[0].Trim());
-                    else
-                        throw new InvalidOperationException($"UNC based local path \"{settings.LocalPath}\" or authentication user name \"{settings.DirectoryAuthUserName}\" is not in the correct format.");
+                    try
+                    {
+                        if (userParts.Length == 2 && pathParts.Length > 1)
+                            FilePath.ConnectToNetworkShare($"\\\\{pathParts[0].Trim()}\\{pathParts[1].Trim()}\\", userParts[1].Trim(), settings.DirectoryAuthPassword.Trim(), userParts[0].Trim());
+                        else
+                            throw new InvalidOperationException($"UNC based local path \"{settings.LocalPath}\" or authentication user name \"{settings.DirectoryAuthUserName}\" is not in the correct format.");
+                    }
+                    catch (Exception ex)
+                    {
+                        OnProcessException(new InvalidOperationException($"Exception while authenticating UNC path \"{settings.LocalPath}\": {ex.Message}", ex));
+                    }
                 }
             }
         }
@@ -528,6 +630,8 @@ namespace openMIC
         /// </summary>
         protected override void AttemptDisconnection()
         {
+            // Just leaving UNC paths authenticated for the duration of service run-time since multiple
+            // devices may share the same destination path
         }
 
         /// <summary>
@@ -545,11 +649,139 @@ namespace openMIC
             return $"Downloading on schedule \"{Schedule}\"".CenterText(maxLength);
         }
 
+        private void ExecuteTasks()
+        {
+        }
+
+        private bool ConnectDialUp()
+        {
+            if (!UseDialUp)
+                return false;
+
+            m_startDialUpTime = 0;
+            DisconnectDialUp();
+
+            try
+            {
+                if (RasState == RasConnectionState.Connected)
+                    throw new InvalidOperationException($"Cannot connect to \"{DialUpEntryName}\": already connected.");
+
+                OnStatusMessage("Initiating dial-up for \"{0}\"...", DialUpEntryName);
+                AttemptedDialUps++;
+
+                m_rasDialer.EntryName = DialUpEntryName;
+                m_rasDialer.PhoneNumber = DialUpPassword;
+                m_rasDialer.Timeout = DialUpTimeout;
+                m_rasDialer.Credentials = new NetworkCredential(DialUpUserName, DialUpPassword);
+                m_rasDialer.Dial();
+
+                m_startDialUpTime = DateTime.UtcNow.Ticks;
+                SuccessfulDialUps++;
+                OnStatusMessage("Dial-up connected on \"{0}\"", DialUpEntryName);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FailedDialUps++;
+                OnProcessException(new InvalidOperationException($"Exception while attempting to dial entry \"{DialUpEntryName}\": {ex.Message}", ex));
+                DisconnectDialUp();
+            }
+
+            return false;
+        }
+
+        private void DisconnectDialUp()
+        {
+            if (!UseDialUp)
+                return;
+
+            try
+            {
+                OnStatusMessage("Initiating hang-up for \"{0}\"", DialUpEntryName);
+                RasConnection.GetActiveConnections().FirstOrDefault(ras => ras.EntryName == DialUpEntryName)?.HangUp();
+            }
+            catch (Exception ex)
+            {
+                OnProcessException(new InvalidOperationException($"Exception while attempting to hang-up \"{DialUpEntryName}\": {ex.Message}", ex));
+            }
+
+            if (m_startDialUpTime > 0)
+            {
+                Ticks dialUpConnectedTime = DateTime.UtcNow.Ticks - m_startDialUpTime;
+                OnStatusMessage("Dial-up connected for {0}", dialUpConnectedTime.ToElapsedTimeString(2));
+                m_startDialUpTime = 0;
+                TotalDialUpTime += dialUpConnectedTime;
+            }
+        }
+
         private void m_rasDialer_Error(object sender, ErrorEventArgs e)
         {
             OnProcessException(e.GetException());
         }
 
         #endregion
+
+        #region [ Static ]
+
+        // Static Fields
+        private static readonly ScheduleManager s_scheduleManager;
+        private static readonly ConcurrentDictionary<string, Downloader> s_instances;
+        private static readonly ConcurrentDictionary<string, LogicalThread> s_dialupScheduler;
+
+        // Static Constructor
+        static Downloader()
+        {
+            s_instances = new ConcurrentDictionary<string, Downloader>();
+            s_dialupScheduler = new ConcurrentDictionary<string, LogicalThread>();
+            s_scheduleManager = new ScheduleManager();
+            s_scheduleManager.ScheduleDue += s_scheduleManager_ScheduleDue;
+            s_scheduleManager.Start();
+        }
+
+        private static void s_scheduleManager_ScheduleDue(object sender, EventArgs<Schedule> e)
+        {
+            Schedule schedule = e.Argument;
+            Downloader instance;
+
+            if (s_instances.TryGetValue(schedule.Name, out instance))
+            {
+                if (instance.UseDialUp)
+                    instance.m_dialUpOperation.RunOnceAsync();
+                else
+                    instance.ExecuteTasks();
+            }
+        }
+
+        // Static Properties
+
+        // Static Methods
+        private static void RegisterSchedule(Downloader instance)
+        {
+            s_instances.TryAdd(instance.Name, instance);
+
+            if (instance.UseDialUp)
+            {
+                // Make sure dial-up's using the same resource (i.e., modem) are executed synchronously
+                LogicalThread thread = s_dialupScheduler.GetOrAdd(instance.DialUpEntryName, entryName => new LogicalThread());
+
+                instance.m_dialUpOperation = new LogicalThreadOperation(thread, () => {
+                    if (instance.ConnectDialUp())
+                    {
+                        instance.ExecuteTasks();
+                        instance.DisconnectDialUp();
+                    }
+                });
+            }
+
+            s_scheduleManager.AddSchedule(instance.Name, instance.Schedule, $"Download schedule for \"{instance.Name}\"", true);
+        }
+        private static void DeregisterSchedule(Downloader instance)
+        {
+            s_scheduleManager.RemoveSchedule(instance.Name);
+            s_instances.TryRemove(instance.Name, out instance);
+        }
+
+        #endregion
+
     }
 }

@@ -32,6 +32,7 @@
     string fieldID = ViewBag.FieldID;
     string groupDataBinding = ViewBag.GroupDataBinding;
     string labelDataBinding = ViewBag.LabelDataBinding;
+    string requiredDataBinding = ViewBag.RequiredDataBinding;
     string customDataBinding = ViewBag.CustomDataBinding;
     string toolTip = ViewBag.ToolTip;
     string inputSizeRestriction = maxLength > 0 ? string.Format(" maxlength=\"{0}\" size=\"{0}\"", maxLength) : "";
@@ -42,6 +43,10 @@
 
     if (!string.IsNullOrEmpty(labelDataBinding)) {
         labelDataBinding = string.Format(" data-bind=\"{0}\"", labelDataBinding);
+    }
+
+    if (!string.IsNullOrEmpty(requiredDataBinding)) {
+        requiredDataBinding = string.Format(" && {0}", requiredDataBinding);
     }
 
     if (!string.IsNullOrEmpty(customDataBinding)) {
@@ -55,10 +60,10 @@
 @if (required)
 {
     @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : string.Format("<div{0}>\r\n", groupDataBinding))
-    <div class="form-group" data-bind="css: {'has-error': isEmpty(@(Raw(fieldName))()), 'has-feedback': isEmpty(@(Raw(fieldName))())}"@Raw(toolTip)>
+    <div class="form-group" data-bind="css: {'has-error': isEmpty(@(Raw(fieldName))())@(Raw(requiredDataBinding)), 'has-feedback': isEmpty(@(Raw(fieldName))())@(Raw(requiredDataBinding))}"@Raw(toolTip)>
         <label for="@Raw(fieldID)"@Raw(labelDataBinding)>@Raw(inputLabel):</label>
-        <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)" id="@Raw(fieldID)"@Raw(inputSizeRestriction) required>
-        <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(Raw(fieldName))())"></span>
+        <input type="@Raw(inputType)" class="form-control" data-bind="textInput: @Raw(fieldName), attr: {'readonly': ($root.recordMode()===RecordMode.View ? true : undefined)}@Raw(customDataBinding)" id="@Raw(fieldID)"@Raw(inputSizeRestriction)@(string.IsNullOrEmpty(requiredDataBinding) ? " required" : "")>
+        <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(@(Raw(fieldName))())@(Raw(requiredDataBinding))"></span>
     </div>
     @Raw(string.IsNullOrEmpty(groupDataBinding) ? "" : "</div>\r\n")
 }

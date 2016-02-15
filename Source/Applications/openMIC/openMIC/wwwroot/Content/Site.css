@@ -17,7 +17,7 @@ label.disabled {
 }
 
 /* Define read-only background color for modal dialogs */
-.modal-readonly {
+.modal-readonly, .panel-readonly {
    background: #dcdcdc;
 }
 
@@ -129,7 +129,7 @@ label.disabled {
     height: -moz-calc(100% - 200px);
 }
 
-/* Style for content wells with dyanmic content, e.g., variable rows */
+/* Style for content wells with dynamic content, e.g., variable rows */
 .well-dynamic-content {
     overflow: auto;
     padding-bottom: 0px

@@ -20,7 +20,6 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
-@using System
 @using System.Text
 @using openMIC
 @using openMIC.Model
@@ -82,15 +81,21 @@
         @Raw(ViewBag.DataContext.AddSelectField<Device, Company>("CompanyID", "ID", "Name", "Company"))
     </div>
     <div class="col-md-6">
-        <div class="checkbox" data-bind="with: $root.connectionString">
-            <label><input type="checkbox" data-bind="checked: get('usedialup'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
+        <div class="panel panel-default" data-bind="css: {'panel-readonly': $root.recordMode()===RecordMode.View, 'panel-primary': $root.connectionString.get('usedialup')}">
+            <div class="panel-heading">
+                <div class="checkbox" data-bind="with: $root.connectionString" style="margin: 0">
+                    <label><input type="checkbox" id="checkBoxUseDialUp" data-bind="click: setRequiredStates(['dialupentryname', 'dialupnumber'], get('usedialup')), checked: get('usedialup'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
+                </div>
+            </div>
+            <div class="panel-body">
+                @Raw(ViewBag.DataContext.AddInputField("get('dialupentryname')", true, inputLabel: "Dial-up RAS Connection Entry Name", fieldID: "inputDialUpRASEntry", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", requiredDataBinding: "get('usedialup')()", customDataBinding: "enable: get('usedialup')", toolTip: "Devices using same connection entries with overlapping schedules will be queued serially"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialupnumber')", true, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", requiredDataBinding: "get('usedialup')()", customDataBinding: "enable: get('usedialup')"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialupusername')", false, inputLabel: "Dial-up User Name", fieldID: "inputDialUpUserName", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialuppassword')", false, inputType: "password", inputLabel: "Dial-up Password", fieldID: "inputDialUpPassword", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialupretries')", false, inputType: "number", inputLabel: "Maximum Dial-up Retries", fieldID: "inputDialUpRetries", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialuptimeout')", false, inputType: "number", inputLabel: "Dial-up Connection Timeout", fieldID: "inputDialUpTimeout", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
+            </div>
         </div>
-        @Raw(ViewBag.DataContext.AddInputField("get('dialupentryname')", false, inputLabel: "Dial-up RAS Connection Entry Name", fieldID: "inputDialUpRASEntry", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')", toolTip: "Devices using same connection entries with overlapping schedules will be queued serially"))
-        @Raw(ViewBag.DataContext.AddInputField("get('dialupnumber')", false, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
-        @Raw(ViewBag.DataContext.AddInputField("get('dialupusername')", false, inputLabel: "Dial-up User Name", fieldID: "inputDialUpUserName", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
-        @Raw(ViewBag.DataContext.AddInputField("get('dialuppassword')", false, inputType: "password", inputLabel: "Dial-up Password", fieldID: "inputDialUpPassword", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
-        @Raw(ViewBag.DataContext.AddInputField("get('dialupretries')", false, inputType: "number", inputLabel: "Maximum Dial-up Retries", fieldID: "inputDialUpRetries", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
-        @Raw(ViewBag.DataContext.AddInputField("get('dialuptimeout')", false, inputType: "number", inputLabel: "Dial-up Connection Timeout", fieldID: "inputDialUpTimeout", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
         <div class="checkbox">
             <label><input type="checkbox" data-bind="checked: Enabled, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Enabled</label>
         </div>
@@ -134,7 +139,7 @@
                             </tr>
                             <tr>
                                 <td style="text-align: right" nowrap>Every half-hour:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('30 * * * *')"><code>&nbsp;30 * * * *</code></button></td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0,30 * * * *')"><code>0,30 * * * *</code></button></td>
                                 <td style="text-align: right" nowrap>Every four hours:</td>
                                 <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 */4 * * *')"><code>0 */4 * * *</code></button></td>
                             <tr>
@@ -257,6 +262,7 @@
             const currentConnectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
             currentConnectionString.updateObservableDictionary(viewModel.connectionString, true);
 
+            $("#checkBoxUseDialUp").click();
             viewModel.isDirty(false);
             viewModel.loadingConnectionString = false;
         });
@@ -279,6 +285,12 @@
         function updateSchedule(schedule) {
             if (viewModel.recordMode() !== RecordMode.View)
                 viewModel.connectionString.get("schedule")(schedule);
+        }
+
+        function setRequiredStates(valueFieldNames, state) {
+            for (var i = 0; i < valueFieldNames.length; i++) {
+                viewModel.connectionString.get(valueFieldNames[i]).extend({ required: state });
+            }
         }
     </script>
 }
