@@ -21,40 +21,178 @@
 //
 //******************************************************************************************************
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using DotRas;
 using GSF;
 using GSF.Configuration;
+using GSF.IO;
+using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
+using openMIC.Model;
 
 namespace openMIC
 {
+    public enum DirectoryNamingConvention
+    {
+        [Description("Top Folder")]
+        Root,
+        [Description("Year Sub-folder")]
+        Year,
+        [Description("YYYYMM Sub-folder")]
+        YearMonth,
+        [Description("Year/Month Sub-folders")]
+        YearThenMonth
+    }
+
     [Description("Downloader: Implements remote file download capabilities")]
     [EditorBrowsable(EditorBrowsableState.Advanced)] // Normally defined as an input device protocol
-    public class Downloader : InputAdapterBase
+    public class Downloader : InputAdapterBase, IDevice
     {
         #region [ Members ]
 
         // Nested Types
 
-        // Constants
+        // Defines connection profile task settings
+        public class ConnectionProfileTaskSettings
+        {
+            [ConnectionStringParameter,
+            Description("Defines file names or patterns to download."),
+            DefaultValue("*.*")]
+            public string FileExtensions
+            {
+                get;
+                set;
+            }
 
-        // Delegates
+            [ConnectionStringParameter,
+            Description("Defines remote path to download files from ."),
+            DefaultValue("/")]
+            public string RemotePath
+            {
+                get;
+                set;
+            }
 
-        // Events
+            [ConnectionStringParameter,
+            Description("Defines local path to download files to."),
+            DefaultValue("")]
+            public string LocalPath
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Determines if remote files should be deleted after download."),
+            DefaultValue(false)]
+            public bool DeleteRemoteFilesAfterDownload
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Determines if total remote files to download should be limited by age."),
+            DefaultValue(false)]
+            public bool LimitRemoteFileDownloadByAge
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Determines if old local files should be deleted."),
+            DefaultValue(false)]
+            public bool DeleteOldLocalFiles
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Determines if existing local files should be overwritten."),
+            DefaultValue(false)]
+            public bool OverwriteExistingLocalFiles
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Determines if existing local files should be archived before they are overwritten."),
+            DefaultValue(false)]
+            public bool ArchiveLocalFilesBeforeOverwrite
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Defines external operation application."),
+            DefaultValue("")]
+            public string ExternalOperation
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Defines maximum file size to download."),
+            DefaultValue(1000)]
+            public int MaximumFileSize
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Defines maximum file count to download."),
+            DefaultValue(-1)]
+            public int MaximumFileCount
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Defines directory naming convention."),
+            DefaultValue("Root")]
+            public string DirectoryNamingConvention
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Defines directory authentication user name."),
+            DefaultValue("")]
+            public string DirectoryAuthUserName
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Defines directory authentication password."),
+            DefaultValue("")]
+            public string DirectoryAuthPassword
+            {
+                get;
+                set;
+            }
+        }
 
         // Fields
         private readonly RasDialer m_rasDialer;
-        private long m_attemptedConnections;
-        private long m_totalErrors;
-        private long m_filesDownloaded;
-        private long m_bytesDownloaded;
-        private long m_totalConnectedTime;
+        private ConnectionProfileTaskSettings[] m_connectionProfileTaskSettings;
         private bool m_disposed;
 
         #endregion
-
+        
         #region [ Constructors ]
 
         public Downloader()
@@ -132,7 +270,7 @@ namespace openMIC
         [ConnectionStringParameter,
         Description("Determines if this connection will use dial-up."),
         DefaultValue(false)]
-        public bool useDialUp
+        public bool UseDialUp
         {
             get;
             set;
@@ -211,6 +349,87 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Gets or sets total data quality errors of this <see cref="IDevice"/>.
+        /// </summary>
+        public long DataQualityErrors
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total time quality errors of this <see cref="IDevice"/>.
+        /// </summary>
+        public long TimeQualityErrors
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total device errors of this <see cref="IDevice"/>.
+        /// </summary>
+        public long DeviceErrors
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total measurements received for this <see cref="IDevice"/>.
+        /// </summary>
+        public long MeasurementsReceived
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total measurements expected to have been received for this <see cref="IDevice"/>.
+        /// </summary>
+        public long MeasurementsExpected
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total number of attempted connections.
+        /// </summary>
+        public long AttemptedConnections
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total number of files downloaded.
+        /// </summary>
+        public long FilesDownloaded
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total number of bytes downloaded.
+        /// </summary>
+        public long BytesDownloaded
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total connected time, in ticks.
+        /// </summary>
+        public long TotalConnectedTime
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets flag that determines if the data input connects asynchronously.
         /// </summary>
         /// <remarks>
@@ -222,6 +441,9 @@ namespace openMIC
         /// Gets the flag indicating if this adapter supports temporal processing.
         /// </summary>
         public override bool SupportsTemporalProcessing => false;
+
+        // Gets RAS connection state
+        private RasConnectionState RasState => RasConnection.GetActiveConnections().FirstOrDefault(ras => ras.EntryName == m_rasDialer?.EntryName)?.GetConnectionStatus()?.ConnectionState ?? RasConnectionState.Disconnected;
 
         #endregion
 
@@ -262,14 +484,43 @@ namespace openMIC
             base.Initialize();
             ConnectionStringParser<ConnectionStringParameterAttribute> parser = new ConnectionStringParser<ConnectionStringParameterAttribute>();
             parser.ParseConnectionString(ConnectionString, this);
+
+            using (DataContext context = new DataContext())
+            {
+                IEnumerable<ConnectionProfileTask> tasks = context.QueryRecords<ConnectionProfileTask>("SELECT * FROM ConnectionProfileTask WHERE ConnectionProfileID={0}", ConnectionProfile);
+                List<ConnectionProfileTaskSettings> connectionProfileTaskSettings = new List<ConnectionProfileTaskSettings>();
+
+                foreach (ConnectionProfileTask task in tasks)
+                {
+                    ConnectionProfileTaskSettings settings = new ConnectionProfileTaskSettings();
+                    parser.ParseConnectionString(task.Settings, settings);
+                    connectionProfileTaskSettings.Add(settings);
+                }
+
+                m_connectionProfileTaskSettings = connectionProfileTaskSettings.ToArray();
+            }
         }
 
         /// <summary>
         /// Attempts to connect to data input source.
         /// </summary>
         protected override void AttemptConnection()
-        {            
-            // This class only connects based on schedule and is not always connected, nothing to do
+        {
+            foreach (ConnectionProfileTaskSettings settings in m_connectionProfileTaskSettings)
+            {
+                string localPath = settings.LocalPath.ToNonNullString().Trim();
+
+                if (localPath.StartsWith(@"\\") && !string.IsNullOrEmpty(settings.DirectoryAuthUserName) && !string.IsNullOrEmpty(settings.DirectoryAuthPassword))
+                {
+                    string[] userParts = settings.DirectoryAuthUserName.Split('\\');
+                    string[] pathParts = localPath.Substring(2).Split('\\');
+
+                    if (userParts.Length == 2 && pathParts.Length > 1)
+                        FilePath.ConnectToNetworkShare($"\\\\{pathParts[0].Trim()}\\{pathParts[1].Trim()}\\", userParts[1].Trim(), settings.DirectoryAuthPassword.Trim(), userParts[0].Trim());
+                    else
+                        throw new InvalidOperationException($"UNC based local path \"{settings.LocalPath}\" or authentication user name \"{settings.DirectoryAuthUserName}\" is not in the correct format.");
+                }
+            }
         }
 
         /// <summary>
@@ -277,7 +528,6 @@ namespace openMIC
         /// </summary>
         protected override void AttemptDisconnection()
         {
-            // This class only connects based on schedule and is not always connected, nothing to do
         }
 
         /// <summary>

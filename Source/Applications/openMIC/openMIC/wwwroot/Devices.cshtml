@@ -63,7 +63,7 @@
 @helper BodyRows() {
     <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="Images/StatusLights/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
     <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: $parent.viewPageRecord"></button></td>
-    <td width="20%" class="text-center" data-bind="text: ConnectionString.parseKeyValuePairs().get('schedule')"></td>
+    <td width="20%" class="text-center" data-bind="text: notNull(ConnectionString).parseKeyValuePairs().get('schedule')"></td>
     <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" disabled/></td>
     <td width="5%" class="text-center valign-middle" nowrap>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>

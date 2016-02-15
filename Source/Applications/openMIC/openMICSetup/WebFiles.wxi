@@ -9,6 +9,12 @@
   <Component Id="Companies_cshtml">
     <File Id="Companies.cshtml" Name="Companies.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Companies.cshtml" />
   </Component>
+  <Component Id="ConnectionProfiles_cshtml">
+    <File Id="ConnectionProfiles.cshtml" Name="ConnectionProfiles.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfiles.cshtml" />
+  </Component>
+  <Component Id="ConnectionProfileTasks_cshtml">
+    <File Id="ConnectionProfileTasks.cshtml" Name="ConnectionProfileTasks.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfileTasks.cshtml" />
+  </Component>
   <Component Id="Devices_cshtml">
     <File Id="Devices.cshtml" Name="Devices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Devices.cshtml" />
   </Component>
@@ -32,9 +38,6 @@
   </Component>
   <Component Id="Test_cshtml">
     <File Id="Test.cshtml" Name="Test.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Test.cshtml" />
-  </Component>
-  <Component Id="TestModel_cshtml">
-    <File Id="TestModel.cshtml" Name="TestModel.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\TestModel.cshtml" />
   </Component>
   <Component Id="VendorDevices_cshtml">
     <File Id="VendorDevices.cshtml" Name="VendorDevices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\VendorDevices.cshtml" />
@@ -88,6 +91,9 @@
   </Component>
   <Component Id="Content__bootstrap_min_css_map">
     <File Id="Content__bootstrap.min.css.map" Name="bootstrap.min.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.min.css.map" />
+  </Component>
+  <Component Id="Content__Popup_css">
+    <File Id="Content__Popup.css" Name="Popup.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Popup.css" />
   </Component>
   <Component Id="Content__Site_css">
     <File Id="Content__Site.css" Name="Site.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Site.css" />
@@ -254,6 +260,15 @@
   </Component>
   <Component Id="Scripts__knockout_mapping_js">
     <File Id="Scripts__knockout.mapping.js" Name="knockout.mapping.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.mapping.js" />
+  </Component>
+  <Component Id="Scripts__knockout_validation_js">
+    <File Id="Scripts__knockout.validation.js" Name="knockout.validation.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.js" />
+  </Component>
+  <Component Id="Scripts__knockout_validation_min_js">
+    <File Id="Scripts__knockout.validation.min.js" Name="knockout.validation.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.min.js" />
+  </Component>
+  <Component Id="Scripts__knockout_validation_min_js_map">
+    <File Id="Scripts__knockout.validation.min.js.map" Name="knockout.validation.min.js.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.min.js.map" />
   </Component>
   <Component Id="Scripts__ko_reactor_js">
     <File Id="Scripts__ko_reactor.js" Name="ko-reactor.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ko-reactor.js" />

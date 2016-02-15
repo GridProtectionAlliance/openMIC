@@ -120,6 +120,10 @@
     <Reference Include="GSF.Core">
       <HintPath>..\..\..\Dependencies\GSF\GSF.Core.dll</HintPath>
     </Reference>
+    <Reference Include="GSF.Net, Version=2.1.180.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Dependencies\GSF\GSF.Net.dll</HintPath>
+    </Reference>
     <Reference Include="GSF.ServiceProcess">
       <HintPath>..\..\..\Dependencies\GSF\GSF.ServiceProcess.dll</HintPath>
     </Reference>

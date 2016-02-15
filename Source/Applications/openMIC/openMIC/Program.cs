@@ -120,6 +120,24 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Performs HTML encoding on the given string.
+        /// </summary>
+        /// <param name="text">The string to be encoded.</param>
+        public static string HtmlEncode(this string text)
+        {
+            return HttpUtility.HtmlEncode(text.ToNonNullString());
+        }
+
+        /// <summary>
+        /// Performs URL encoding on the given string.
+        /// </summary>
+        /// <param name="text">The string to be encoded.</param>
+        public static string UrlEncode(this string text)
+        {
+            return HttpUtility.UrlEncode(text.ToNonNullString());
+        }
+
+        /// <summary>
         /// Converts a name/value collection to a dictionary.
         /// </summary>
         /// <param name="collection">Name/value collection.</param>

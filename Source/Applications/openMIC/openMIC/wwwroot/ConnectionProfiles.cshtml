@@ -58,7 +58,7 @@
 {
     <td width="30%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Name, click: $parent.viewPageRecord"></button></td>
     <td width="60%" class="text-left table-cell-hard-wrap"><div data-bind="text: $($element.parentElement).truncateToWidth(Description, 2), attr: {title: Description}"></div></td>
-    <td width="5%" class="text-center valign-middle"><button type="button" class="btn btn-default btn-sm" data-bind="click: openTaskEditor.bind($data)"><span data-bind="attr: {id: 'taskMode' + ID}">Add</span>&nbsp;&nbsp;<span class="badge" data-bind="text: getTaskCount(ID), attr: {id: 'taskCount' + ID}">0</span></button></td>
+    <td width="5%" class="text-center valign-middle"><button type="button" class="btn btn-default btn-sm" data-bind="click: openTaskEditor.bind($data)" hub-dependent><span data-bind="attr: {id: 'taskMode' + ID}">Add</span>&nbsp;&nbsp;<span class="badge" data-bind="text: getTaskCount(ID), attr: {id: 'taskCount' + ID}">0</span></button></td>
     <td width="5%" class="text-center valign-middle" nowrap>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
@@ -136,8 +136,7 @@
                 "width": "100%"
             });
 
-            $("#editTasksDialog").modal("show");
-        
+            $("#editTasksDialog").modal("show");        
         }
 
         $("#editTasksDialog").on("hidden.bs.modal", function () {
