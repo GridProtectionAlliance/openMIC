@@ -159,9 +159,10 @@ namespace openMIC.Model
         /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
         /// <param name="requiredDataBinding">Boolean data-bind operation to apply to required state, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
+        /// <param name="dependencyFieldName">Defines default "enabled" subordinate data-bindings based a single boolean field, e.g., a check-box.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string requiredDataBinding = null, string customDataBinding = null, string toolTip = null) where T : class, new()
+        public string AddInputField<T>(string fieldName, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string requiredDataBinding = null, string customDataBinding = null, string dependencyFieldName = null, string toolTip = null) where T : class, new()
         {
             TableOperations<T> tableOperations = Table<T>();
             StringLengthAttribute stringLengthAttribute;
@@ -183,7 +184,7 @@ namespace openMIC.Model
             }
 
             return AddInputField(fieldName, tableOperations.FieldHasAttribute<RequiredAttribute>(fieldName),
-                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding, labelDataBinding, requiredDataBinding, customDataBinding, toolTip);
+                stringLengthAttribute?.MaximumLength ?? 0, inputType, inputLabel, fieldID, groupDataBinding, labelDataBinding, requiredDataBinding, customDataBinding, dependencyFieldName, toolTip);
         }
 
         /// <summary>
@@ -199,9 +200,10 @@ namespace openMIC.Model
         /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
         /// <param name="requiredDataBinding">Boolean data-bind operation to apply to required state, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
+        /// <param name="dependencyFieldName">Defines default "enabled" subordinate data-bindings based a single boolean field, e.g., a check-box.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string requiredDataBinding = null, string customDataBinding = null, string toolTip = null)
+        public string AddInputField(string fieldName, bool required, int maxLength = 0, string inputType = null, string inputLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string requiredDataBinding = null, string customDataBinding = null, string dependencyFieldName = null, string toolTip = null)
         {
             RazorView<CSharp> addInputFieldTemplate = new RazorView<CSharp>(AddInputFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addInputFieldTemplate.ViewBag;
@@ -216,6 +218,7 @@ namespace openMIC.Model
             viewBag.AddValue("LabelDataBinding", labelDataBinding);
             viewBag.AddValue("RequiredDataBinding", requiredDataBinding);
             viewBag.AddValue("CustomDataBinding", customDataBinding);
+            viewBag.AddValue("DependencyFieldName", dependencyFieldName);
             viewBag.AddValue("ToolTip", toolTip);
 
             return addInputFieldTemplate.Execute();
@@ -234,12 +237,14 @@ namespace openMIC.Model
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
         /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
+        /// <param name="dependencyFieldName">Defines default "enabled" subordinate data-bindings based a single boolean field, e.g., a check-box.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
+        /// <param name="restriction">Record restriction to apply, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddSelectField<TSelect, TOption>(string fieldName, string optionValueFieldName, string optionLabelFieldName = null, string selectLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string toolTip = null) where TSelect : class, new() where TOption : class, new()
+        public string AddSelectField<TSelect, TOption>(string fieldName, string optionValueFieldName, string optionLabelFieldName = null, string selectLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string dependencyFieldName = null, string toolTip = null, RecordRestriction restriction = null) where TSelect : class, new() where TOption : class, new()
         {
             return AddSelectField<TOption>(fieldName, Table<TSelect>().FieldHasAttribute<RequiredAttribute>(fieldName),
-                optionValueFieldName, optionLabelFieldName, selectLabel, fieldID, groupDataBinding, labelDataBinding, customDataBinding, toolTip);
+                optionValueFieldName, optionLabelFieldName, selectLabel, fieldID, groupDataBinding, labelDataBinding, customDataBinding, dependencyFieldName, toolTip, restriction);
         }
 
         /// <summary>
@@ -255,9 +260,11 @@ namespace openMIC.Model
         /// <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
         /// <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
         /// <param name="customDataBinding">Extra custom data-binding operations to apply to field, if any.</param>
+        /// <param name="dependencyFieldName">Defines default "enabled" subordinate data-bindings based a single boolean field, e.g., a check-box.</param>
         /// <param name="toolTip">Tool tip text to apply to field, if any.</param>
+        /// <param name="restriction">Record restriction to apply, if any.</param>
         /// <returns>Generated HTML for new text field based on modeled table field attributes.</returns>
-        public string AddSelectField<TOption>(string fieldName, bool required, string optionValueFieldName, string optionLabelFieldName = null, string selectLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string toolTip = null) where TOption : class, new()
+        public string AddSelectField<TOption>(string fieldName, bool required, string optionValueFieldName, string optionLabelFieldName = null, string selectLabel = null, string fieldID = null, string groupDataBinding = null, string labelDataBinding = null, string customDataBinding = null, string dependencyFieldName = null, string toolTip = null, RecordRestriction restriction = null) where TOption : class, new()
         {
             RazorView<CSharp> addSelectFieldTemplate = new RazorView<CSharp>(AddSelectFieldTemplate, Program.Host.Model);
             DynamicViewBag viewBag = addSelectFieldTemplate.ViewBag;
@@ -275,10 +282,15 @@ namespace openMIC.Model
             viewBag.AddValue("GroupDataBinding", groupDataBinding);
             viewBag.AddValue("LabelDataBinding", labelDataBinding);
             viewBag.AddValue("CustomDataBinding", customDataBinding);
+            viewBag.AddValue("DependencyFieldName", dependencyFieldName);
             viewBag.AddValue("ToolTip", toolTip);
 
-            foreach (TOption record in QueryRecords<TOption>($"SELECT {optionValueFieldName} FROM {optionTableName} ORDER BY {optionLabelFieldName}"))
-                options.Add(optionTableOperations.GetFieldValue(record, optionValueFieldName).ToString(), optionTableOperations.GetFieldValue(record, optionLabelFieldName).ToNonNullString(selectLabel));
+            if (restriction == null)
+                foreach (TOption record in QueryRecords<TOption>($"SELECT {optionValueFieldName} FROM {optionTableName} ORDER BY {optionLabelFieldName}"))
+                    options.Add(optionTableOperations.GetFieldValue(record, optionValueFieldName).ToString(), optionTableOperations.GetFieldValue(record, optionLabelFieldName).ToNonNullString(selectLabel));
+            else
+                foreach (TOption record in QueryRecords<TOption>($"SELECT {optionValueFieldName} FROM {optionTableName} WHERE {restriction.FilterExpression} ORDER BY {optionLabelFieldName}", restriction.Parameters))
+                    options.Add(optionTableOperations.GetFieldValue(record, optionValueFieldName).ToString(), optionTableOperations.GetFieldValue(record, optionLabelFieldName).ToNonNullString(selectLabel));
 
             viewBag.AddValue("Options", options);
 

@@ -88,12 +88,12 @@
                 </div>
             </div>
             <div class="panel-body">
-                @Raw(ViewBag.DataContext.AddInputField("get('dialupentryname')", true, inputLabel: "Dial-up RAS Connection Entry Name", fieldID: "inputDialUpRASEntry", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", requiredDataBinding: "get('usedialup')()", customDataBinding: "enable: get('usedialup')", toolTip: "Devices using same connection entries with overlapping schedules will be queued serially"))
-                @Raw(ViewBag.DataContext.AddInputField("get('dialupnumber')", true, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", requiredDataBinding: "get('usedialup')()", customDataBinding: "enable: get('usedialup')"))
-                @Raw(ViewBag.DataContext.AddInputField("get('dialupusername')", false, inputLabel: "Dial-up User Name", fieldID: "inputDialUpUserName", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
-                @Raw(ViewBag.DataContext.AddInputField("get('dialuppassword')", false, inputType: "password", inputLabel: "Dial-up Password", fieldID: "inputDialUpPassword", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
-                @Raw(ViewBag.DataContext.AddInputField("get('dialupretries')", false, inputType: "number", inputLabel: "Maximum Dial-up Retries", fieldID: "inputDialUpRetries", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
-                @Raw(ViewBag.DataContext.AddInputField("get('dialuptimeout')", false, inputType: "number", inputLabel: "Dial-up Connection Timeout", fieldID: "inputDialUpTimeout", groupDataBinding: "with: $root.connectionString", labelDataBinding: "css: {disabled: !get('usedialup')()}", customDataBinding: "enable: get('usedialup')"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialupentryname')", true, inputLabel: "Dial-up RAS Connection Entry Name", fieldID: "inputDialUpRASEntry", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", toolTip: "Devices using same connection entries with overlapping schedules will be queued serially"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialupnumber')", true, inputType: "tel", inputLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialupusername')", false, inputLabel: "Dial-up User Name", fieldID: "inputDialUpUserName", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialuppassword')", false, inputType: "password", inputLabel: "Dial-up Password", fieldID: "inputDialUpPassword", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialupretries')", false, inputType: "number", inputLabel: "Maximum Dial-up Retries", fieldID: "inputDialUpRetries", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')"))
+                @Raw(ViewBag.DataContext.AddInputField("get('dialuptimeout')", false, inputType: "number", inputLabel: "Dial-up Connection Timeout", fieldID: "inputDialUpTimeout", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')"))
             </div>
         </div>
         <div class="checkbox">
@@ -262,7 +262,6 @@
             const currentConnectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
             currentConnectionString.updateObservableDictionary(viewModel.connectionString, true);
 
-            $("#checkBoxUseDialUp").click();
             viewModel.isDirty(false);
             viewModel.loadingConnectionString = false;
         });

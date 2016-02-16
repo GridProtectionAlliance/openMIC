@@ -32,8 +32,19 @@
     string groupDataBinding = ViewBag.GroupDataBinding;
     string labelDataBinding = ViewBag.LabelDataBinding;
     string customDataBinding = ViewBag.CustomDataBinding;
+    string dependencyFieldName = ViewBag.DependencyFieldName;
     string toolTip = ViewBag.ToolTip;
     Dictionary<string, string> options = ViewBag.Options;
+
+    if (!string.IsNullOrEmpty(dependencyFieldName)) {
+        if (string.IsNullOrEmpty(customDataBinding)) {
+            customDataBinding = string.Format("enable: {0}", dependencyFieldName);
+        }
+
+        if (string.IsNullOrEmpty(labelDataBinding)) {
+            labelDataBinding = string.Format("css: {{disabled: !{0}()}}", dependencyFieldName);
+        }
+    }
 
     if (!string.IsNullOrEmpty(groupDataBinding)) {
         groupDataBinding = string.Format(" data-bind=\"{0}\"", groupDataBinding);

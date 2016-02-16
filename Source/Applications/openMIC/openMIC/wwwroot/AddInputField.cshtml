@@ -34,8 +34,23 @@
     string labelDataBinding = ViewBag.LabelDataBinding;
     string requiredDataBinding = ViewBag.RequiredDataBinding;
     string customDataBinding = ViewBag.CustomDataBinding;
+    string dependencyFieldName = ViewBag.DependencyFieldName;
     string toolTip = ViewBag.ToolTip;
     string inputSizeRestriction = maxLength > 0 ? string.Format(" maxlength=\"{0}\" size=\"{0}\"", maxLength) : "";
+
+    if (!string.IsNullOrEmpty(dependencyFieldName)) {
+        if (string.IsNullOrEmpty(customDataBinding)) {
+            customDataBinding = string.Format("enable: {0}", dependencyFieldName);
+        }
+
+        if (string.IsNullOrEmpty(labelDataBinding)) {
+            labelDataBinding = string.Format("css: {{disabled: !{0}()}}", dependencyFieldName);
+        }
+
+        if (required && string.IsNullOrEmpty(requiredDataBinding)) {
+            requiredDataBinding = string.Format("{0}()", dependencyFieldName);
+        }
+    }
 
     if (!string.IsNullOrEmpty(groupDataBinding)) {
         groupDataBinding = string.Format(" data-bind=\"{0}\"", groupDataBinding);
