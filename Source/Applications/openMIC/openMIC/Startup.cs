@@ -21,8 +21,14 @@
 //
 //******************************************************************************************************
 
+using System.Net;
 using System.Web.Http;
+using GSF.Web.Hosting;
+using GSF.Web.Security;
 using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Json;
+using Newtonsoft.Json;
+using openMIC.Model;
 using Owin;
 
 namespace openMIC
@@ -31,10 +37,27 @@ namespace openMIC
     {
         public void Configuration(IAppBuilder app)
         {
+            // Modify the JSON serializer to serialize dates as UTC - otherwise, timezone will not be appended
+            // to date strings and browsers will select whatever timezone suits them
+            JsonSerializerSettings settings = JsonUtility.CreateDefaultSerializerSettings();
+            settings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+            JsonSerializer serializer = JsonSerializer.Create(settings);
+            GlobalHost.DependencyResolver.Register(typeof(JsonSerializer), () => serializer);
+
+            // Load security hub in application domain before establishing SignalR hub configuration
+            using (new SecurityHub()) { }
+
+            // Configuration Windows Authentication for self-hosted web service
+            HttpListener listener = (HttpListener)app.Properties["System.Net.HttpListener"];
+            listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
+
             HubConfiguration hubConfig = new HubConfiguration();
             HttpConfiguration httpConfig = new HttpConfiguration();
+
+            // Setup resolver for web page controller instances
+            httpConfig.DependencyResolver = WebPageController.GetDependencyResolver(WebServer.Default, Program.Host.DefaultWebPage, Program.Host.Model, typeof(AppModel));
 #if DEBUG
-            // Enabled deailed client errors
+            // Enabled detailed client errors
             hubConfig.EnableDetailedErrors = true;
 #endif
             // Load ServiceHub SignalR class

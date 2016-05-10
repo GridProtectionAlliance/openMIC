@@ -31,11 +31,13 @@ using System.Net;
 using DotRas;
 using GSF;
 using GSF.Configuration;
+using GSF.Data.Model;
 using GSF.IO;
 using GSF.Scheduling;
 using GSF.Threading;
 using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
+using GSF.Web.Model;
 using openMIC.Model;
 
 namespace openMIC
@@ -253,7 +255,7 @@ namespace openMIC
         [ConnectionStringParameter,
         Description("Defines connection profile record ID."),
         DefaultValue(0)]
-        public int ConnectionProfile
+        public int ConnectionProfileID
         {
             get;
             set;
@@ -398,7 +400,7 @@ namespace openMIC
         {
             get
             {
-                Schedule schedule = new GSF.Scheduling.Schedule(Schedule);
+                Schedule schedule = new Schedule(Schedule);
 
                 // Check for scheduled days of week
                 if (schedule.DaysOfWeekPart.Values.Contains((int)DateTime.UtcNow.DayOfWeek))
@@ -580,7 +582,7 @@ namespace openMIC
 
             using (DataContext context = new DataContext())
             {
-                IEnumerable<ConnectionProfileTask> tasks = context.QueryRecords<ConnectionProfileTask>("SELECT * FROM ConnectionProfileTask WHERE ConnectionProfileID={0}", ConnectionProfile);
+                IEnumerable<ConnectionProfileTask> tasks = context.Table<ConnectionProfileTask>().QueryRecords(null, new RecordRestriction("ConnectionProfileID={0}", ConnectionProfileID));
                 List<ConnectionProfileTaskSettings> connectionProfileTaskSettings = new List<ConnectionProfileTaskSettings>();
 
                 foreach (ConnectionProfileTask task in tasks)
@@ -646,7 +648,7 @@ namespace openMIC
             if (!Enabled)
                 return "Downloading for is paused...".CenterText(maxLength);
 
-            return $"Downloading on schedule \"{Schedule}\"".CenterText(maxLength);
+            return $"Downloading enabled for schedule: {Schedule}".CenterText(maxLength);
         }
 
         private void ExecuteTasks()
@@ -775,6 +777,7 @@ namespace openMIC
 
             s_scheduleManager.AddSchedule(instance.Name, instance.Schedule, $"Download schedule for \"{instance.Name}\"", true);
         }
+
         private static void DeregisterSchedule(Downloader instance)
         {
             s_scheduleManager.RemoveSchedule(instance.Name);
@@ -782,6 +785,5 @@ namespace openMIC
         }
 
         #endregion
-
     }
 }

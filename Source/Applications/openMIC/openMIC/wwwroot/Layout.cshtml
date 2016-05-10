@@ -23,6 +23,10 @@
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
+@{
+    // Define ViewBag.CustomTitle in page code for custom page titles
+    string pageTitle = ViewBag.CustomTitle ?? ViewBag.Title;
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +34,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @* The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags *@
-    <title>@Model.ApplicationName - @ViewBag.Title</title>
+    <title>@Model.ApplicationName - @pageTitle</title>
     <meta name="application-name" content="@Model.ApplicationName" />
     <meta name="description" content="@Model.ApplicationDescription" />
     <meta name="keywords" content="@Model.ApplicationKeywords" />
@@ -89,10 +93,11 @@
                 <ul class="nav navbar-nav">
                     <li @Raw(ViewBag.Title == "Home" ? "class=\"active\"" : "")><a href="Index.cshtml">Home</a></li>
                     <li @Raw(ViewBag.Title == "Devices" ? "class=\"active\"" : "")><a href="Devices.cshtml">Devices</a></li>
-                    <li @Raw(ViewBag.Title == "Status" ? "class=\"active\"" : "")><a href="Status.cshtml">Status</a></li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Monitoring <span class="caret"></span></a>
                         <ul class="dropdown-menu">
+                            <li><a href="Status.cshtml">Current Device Status</a></li>
+                            <li role="separator" class="divider"></li>
                             <li><a href="RemoteConsole.cshtml">Remote Service Console</a></li>
                         </ul>
                     </li>
@@ -105,6 +110,14 @@
                             <li role="separator" class="divider"></li>
                             <li><a href="Vendors.cshtml">Vendors</a></li>
                             <li><a href="VendorDevices.cshtml">Vendor Devices</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="Security.cshtml">Security</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="SelectTheme.cshtml">Select Theme</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -127,13 +140,13 @@ else {
             <span class="glyphicon glyphicon-info-sign pre-cache"></span>
             <span class="glyphicon glyphicon-exclamation-sign pre-cache"></span>
             <div class="alert alert-info fade in" role="alert" id="info-msg-block" style="display: none">
-                <a href="#" class="close" data-dismiss="alert" aria-label="close" id="dismissInfoMsg">&times;</a>
+                <a href="#" class="close" aria-label="close" id="dismissInfoMsg">&times;</a>
                 <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>&nbsp;
                 <span class="sr-only">Info</span>
                 <span id="info-msg-text"></span>
             </div>
             <div class="alert alert-danger fade in" role="alert" id="error-msg-block" style="display: none">
-                <a href="#" class="close" data-dismiss="alert" aria-label="close" id="dismissErrorMsg">&times;</a>
+                <a href="#" class="close" aria-label="close" id="dismissErrorMsg">&times;</a>
                 <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>&nbsp;
                 <span class="sr-only">Error</span>
                 <span id="error-msg-text"></span>
@@ -145,7 +158,7 @@ else {
 
     </div><!--/.container -->
 
-    <script src="Scripts/jquery-2.1.4.min.js"></script>
+    <script src="Scripts/jquery-2.2.1.min.js"></script>
     <script src="Scripts/bootstrap.min.js"></script>
     <script src="Scripts/ie10-viewport-bug-workaround.js"></script>
     <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>

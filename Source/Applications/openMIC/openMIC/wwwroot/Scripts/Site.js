@@ -25,7 +25,9 @@
 "use strict";
 
 // Declare page scoped SignalR variables
-var dataHub, dataHubClient, serviceHub, serviceHubClient;
+var dataHub, dataHubClient;
+var securityHub, securityHubClient;
+var serviceHub, serviceHubClient;
 var hubIsConnecting = false;
 var hubIsConnected = false;
 
@@ -148,6 +150,8 @@ $(function () {
     // Initialize proxy references to the SignalR hubs
     dataHub = $.connection.dataHub.server;
     dataHubClient = $.connection.dataHub.client;
+    securityHub = $.connection.securityHub.server;
+    securityHubClient = $.connection.securityHub.client;
     serviceHub = $.connection.serviceHub.server;
     serviceHubClient = $.connection.serviceHub.client;
 
@@ -189,6 +193,19 @@ $(function () {
     $.connection.hub.start().done(function () {
         hubConnected();
     });
+
+    // Create hub client functions for message control
+    dataHubClient.sendInfoMessage = function (message, timeout) {
+        // Html encode message
+        const encodedMessage = $("<div />").text(message).html();
+        showInfoMessage(encodedMessage, timeout);
+    }
+
+    dataHubClient.sendErrorMessage = function (message, timeout) {
+        // Html encode message
+        const encodedMessage = $("<div />").text(message).html();
+        showErrorMessage(encodedMessage, timeout);
+    }
 
     $(window).on("beforeunload", function () {
         if (!hubIsConnected || hubIsConnecting)

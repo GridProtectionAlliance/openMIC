@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        "CSampleAdapters"
+    </assembly>
+    <members>
+        <member name="M:CSampleAdapters.COutputAdapter.ProcessMeasurements(GSF.TimeSeries.IMeasurement[])">
+            <summary>
+Serializes measurements to data output stream.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.COutputAdapter.AttemptDisconnection">
+            <summary>
+Attempts to disconnect this <see cref="T:CSampleAdapters.COutputAdapter" />.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.COutputAdapter.AttemptConnection">
+            <summary>
+Attempts to connect this <see cref="T:CSampleAdapters.COutputAdapter" />.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.COutputAdapter.GetShortStatus(System.Int32)">
+            <summary>
+Gets a short one-line status of this <see cref="T:CSampleAdapters.COutputAdapter" />.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.COutputAdapter.Initialize">
+            <summary>
+Initializes <see cref="T:CSampleAdapters.COutputAdapter" />.
+</summary>
+        </member>
+        <member name="P:CSampleAdapters.COutputAdapter.UseAsyncConnect">
+            <summary>
+Gets flag that determines if this <see cref="T:CSampleAdapters.COutputAdapter" /> uses an asynchronous connection.
+</summary>
+        </member>
+        <member name="P:CSampleAdapters.COutputAdapter.SupportsTemporalProcessing">
+            <summary>
+Gets the flag indicating if this <see cref="T:CSampleAdapters.COutputAdapter" /> supports temporal processing.
+</summary>
+        </member>
+        <member name="P:CSampleAdapters.COutputAdapter.OutputIsForArchive">
+            <summary>
+Returns a flag that determines if measurements sent to this <see cref="T:CSampleAdapters.COutputAdapter" /> are destined for archival.
+</summary>
+        </member>
+        <member name="T:CSampleAdapters.COutputAdapter">
+            <summary>
+Represents a C++ output adapter implementation sample.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.CActionAdapter.PublishFrame(GSF.TimeSeries.IFrame,System.Int32)">
+            <summary>
+Publish <see cref="T:GSF.TimeSeries.IFrame" /> of time-aligned collection of <see cref="T:GSF.TimeSeries.IMeasurement" /> values that arrived within the
+concentrator's defined <see cref="P:GSF.TimeSeries.Adapters.ActionAdapterBase.LagTime" />.
+</summary>
+            <param name="frame">
+                <see cref="T:GSF.TimeSeries.IFrame" /> of measurements with the same timestamp that arrived within <see cref="P:GSF.TimeSeries.Adapters.ActionAdapterBase.LagTime" /> that are ready for processing.</param>
+            <param name="index">Index of <see cref="T:GSF.TimeSeries.IFrame" /> within a second ranging from zero to <c><see cref="P:GSF.TimeSeries.Adapters.ActionAdapterBase.FramesPerSecond" /> - 1</c>.</param>
+            <remarks>
+If user implemented publication function consistently exceeds available publishing time (i.e., <c>1 / <see cref="P:GSF.TimeSeries.Adapters.ActionAdapterBase.FramesPerSecond" /></c> seconds),
+concentration will fall behind. A small amount of this time is required by the <see cref="T:GSF.TimeSeries.ConcentratorBase" /> for processing overhead, so actual total time
+available for user function process will always be slightly less than <c>1 / <see cref="P:GSF.TimeSeries.Adapters.ActionAdapterBase.FramesPerSecond" /></c> seconds.
+</remarks>
+        </member>
+        <member name="M:CSampleAdapters.CActionAdapter.GetShortStatus(System.Int32)">
+            <summary>
+Gets a short one-line status of this <see cref="T:CSampleAdapters.CActionAdapter" />.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.CActionAdapter.Initialize">
+            <summary>
+Initializes <see cref="T:CSampleAdapters.CActionAdapter" />.
+</summary>
+        </member>
+        <member name="P:CSampleAdapters.CActionAdapter.SupportsTemporalProcessing">
+            <summary>
+Gets the flag indicating if this <see cref="T:CSampleAdapters.CActionAdapter" /> supports temporal processing.
+</summary>
+        </member>
+        <member name="T:CSampleAdapters.CActionAdapter">
+            <summary>
+Represents a C++ action adapter implementation sample.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.CInputAdapter.AttemptDisconnection">
+            <summary>
+Attempts to disconnect this <see cref="T:CSampleAdapters.CInputAdapter" />.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.CInputAdapter.AttemptConnection">
+            <summary>
+Attempts to connect this <see cref="T:CSampleAdapters.CInputAdapter" />.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.CInputAdapter.GetShortStatus(System.Int32)">
+            <summary>
+Gets a short one-line status of this <see cref="T:CSampleAdapters.CInputAdapter" />.
+</summary>
+        </member>
+        <member name="M:CSampleAdapters.CInputAdapter.Initialize">
+            <summary>
+Initializes <see cref="T:CSampleAdapters.CInputAdapter" />.
+</summary>
+        </member>
+        <member name="P:CSampleAdapters.CInputAdapter.UseAsyncConnect">
+            <summary>
+Gets flag that determines if this <see cref="T:CSampleAdapters.CInputAdapter" /> uses an asynchronous connection.
+</summary>
+        </member>
+        <member name="P:CSampleAdapters.CInputAdapter.SupportsTemporalProcessing">
+            <summary>
+Gets the flag indicating if this <see cref="T:CSampleAdapters.CInputAdapter" /> supports temporal processing.
+</summary>
+        </member>
+        <member name="T:CSampleAdapters.CInputAdapter">
+            <summary>
+Represents a C++ input adapter implementation sample.
+</summary>
+        </member>
+    </members>
+</doc>

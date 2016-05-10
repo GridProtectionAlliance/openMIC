@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
+// ReSharper disable NativeTypePrototypeExtending
 
 // Grid Solutions Framework Core Web Client Script Functions
 "use strict";
@@ -121,9 +122,9 @@ function joinKeyValuePairs (source, parameterDelimiter, keyValueDelimiter, start
 
     const values = [];
 
-    for (let key in source) {
+    for (var key in source) {
         if (source.hasOwnProperty(key)) {
-            let value = source[key];
+            var value = source[key];
 
             if (isBool(value))
                 value = value.toString().toLowerCase();
@@ -157,7 +158,7 @@ function Dictionary(source) {
     self.count = function () {
         var size = 0;
 
-        for (let property in self._values) {
+        for (var property in self._values) {
             if (self._values.hasOwnProperty(property))
                 size++;
         }
@@ -168,7 +169,7 @@ function Dictionary(source) {
     self.keys = function () {
         const keys = [];
 
-        for (let property in self._keys) {
+        for (var property in self._keys) {
             if (self._keys.hasOwnProperty(property))
                 keys.push(self._keys[property]);
         }
@@ -179,7 +180,7 @@ function Dictionary(source) {
     self.values = function () {
         const values = [];
 
-        for (let property in self._values) {
+        for (var property in self._values) {
             if (self._keys.hasOwnProperty(property))
                 values.push(self._values[property]);
         }
@@ -212,7 +213,7 @@ function Dictionary(source) {
     self.containsKey = function (key) {
         const lkey = String(key).toLowerCase();
 
-        for (let property in self._values) {
+        for (var property in self._values) {
             if (self._values.hasOwnProperty(property) && property === lkey)
                 return true;
         }
@@ -221,7 +222,7 @@ function Dictionary(source) {
     }
 
     self.containsValue = function (value) {
-        for (let property in self._values) {
+        for (var property in self._values) {
             if (self._values.hasOwnProperty(property) && self._values[property] === value)
                 return true;
         }
@@ -237,7 +238,7 @@ function Dictionary(source) {
     self.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter) {
         const keyValuePairs = [];
 
-        for (let property in self._values) {
+        for (var property in self._values) {
             if (self._values.hasOwnProperty(property))
                 keyValuePairs[self._keys[property]] = self._values[property];
         }
@@ -246,7 +247,7 @@ function Dictionary(source) {
     }
 
     self.pushAll = function (source) {
-        for (let property in source)
+        for (var property in source)
             if (source.hasOwnProperty(property))
                 self.set(property, source[property]);
     }
@@ -255,7 +256,7 @@ function Dictionary(source) {
         // See ko.observableDictionary.js
         const observableDictionary = new ko.observableDictionary();
 
-        for (let property in self._values) {
+        for (var property in self._values) {
             if (self._values.hasOwnProperty(property))
                 observableDictionary.push(useLowerKeys ? property : self._keys[property], self._values[property]);
         }
@@ -264,7 +265,7 @@ function Dictionary(source) {
     }
 
     self.updateObservableDictionary = function (observableDictionary, useLowerKeys) {
-        for (let property in self._values) {
+        for (var property in self._values) {
             if (self._values.hasOwnProperty(property))
                 observableDictionary.set(useLowerKeys ? property : self._keys[property], self._values[property]);
         }
@@ -272,12 +273,12 @@ function Dictionary(source) {
 
     // Construction
     if (source instanceof Dictionary) {
-        for (let property in source._values)
+        for (var property in source._values)
             if (source._values.hasOwnProperty(property))
                 self.set(source._keys[property], source._values[property]);
     }
     else {
-        for (let property in source) {
+        for (var property in source) {
             if (source.hasOwnProperty(property))
                 self.set(property, source[property]);
         }
@@ -322,6 +323,17 @@ String.prototype.padRight = function (totalWidth, paddingChar) {
         return this + Array(totalWidth - this.length + 1).join(paddingChar || " ");
 
     return this;
+}
+
+String.prototype.countOccurrences = function (searchString) {
+    return (this.split(searchString).length - 1);
+}
+
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    }
 }
 
 String.prototype.regexEncode = function () {
@@ -370,8 +382,8 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
     //          "normalKVP=-1; nestedKVP={p1=true; p2=false}")
     //      would be encoded as:
     //          "normalKVP=-1; nestedKVP=p1\\u003dtrue\\u003b p2\\u003dfalse")
-    for (let i = 0; i < this.length; i++) {
-        let character = this[i];
+    for (var i = 0; i < this.length; i++) {
+        var character = this[i];
 
         if (character === startValueDelimiter) {
             if (!valueEscaped) {
@@ -433,18 +445,18 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
     }
 
     // Parse key/value pairs from escaped value
-    let pairs = escapedValue.join("").split(parameterDelimiter);
+    var pairs = escapedValue.join("").split(parameterDelimiter);
 
-    for (let i = 0; i < pairs.length; i++) {
+    for (var i = 0; i < pairs.length; i++) {
         // Separate key from value
-        let elements = pairs[i].split(keyValueDelimiter);
+        var elements = pairs[i].split(keyValueDelimiter);
 
         if (elements.length === 2) {
             // Get key
-            let key = elements[0].trim();
+            var key = elements[0].trim();
 
             // Get unescaped value
-            let unescapedValue = elements[1].trim().
+            var unescapedValue = elements[1].trim().
                 replaceAll(escapedParameterDelimiter, parameterDelimiter).
                 replaceAll(escapedKeyValueDelimiter, keyValueDelimiter).
                 replaceAll(escapedStartValueDelimiter, startValueDelimiter).
@@ -469,7 +481,45 @@ String.prototype.parseKeyValuePairs = function (parameterDelimiter, keyValueDeli
     return keyValuePairs;
 }
 
+// Renders URLs and e-mail addresses as clickable links
+function renderHotLinks(sourceText, target) {
+    if (target === undefined)
+        target = "_blank";
+
+    sourceText = sourceText.toString();
+
+    var replacedText;    
+
+    // URLs starting with http://, https://, or ftp://
+    const replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+    replacedText = sourceText.replace(replacePattern1, "<a href=\"$1\" target=\"" + target + "\">$1</a>");
+
+    // URLs starting with "www." without // before it
+    const replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+    replacedText = replacedText.replace(replacePattern2, "$1<a href=\"http://$2\" target=\"" + target + "\">$2</a>");
+
+    // Change e-mail addresses to mailto: links
+    const replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+    replacedText = replacedText.replace(replacePattern3, "<a href=\"mailto:$1\">$1</a>");
+
+    return replacedText;
+}
+
 // Date Functions
+Date.prototype.addDays = function (days) {
+    return new Date(this.setDate(this.getDate() + days));
+}
+
+Date.prototype.toUTC = function () {
+    this.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+    return this;
+}
+
+Date.prototype.daysBetween = function (startDate) {
+    const millisecondsPerDay = 24 * 60 * 60 * 1000;
+    return (this.toUTC() - startDate.toUTC()) / millisecondsPerDay;
+}
+
 String.prototype.toDate = function () {
     return new Date(Date.parse(this));
 };
@@ -584,6 +634,7 @@ $.fn.paddingWidth = function () {
     return this.outerWidth(true) - this.width();
 }
 
+// Cell truncations should only be used with .table-cell-hard-wrap style
 $.fn.truncateToWidth = function (text, rows) {
     if (isEmpty(text))
         return "";
@@ -597,7 +648,7 @@ $.fn.truncateToWidth = function (text, rows) {
     var textWidth = textMetrics.measureText(text).width;
 
     if (rows > 1)
-        targetWidth *= ((isIE ? 0.65 : 0.90) * rows);
+        targetWidth *= ((isIE ? 0.45 : 0.75) * rows);
 
     var limit = Math.min(text.length, Math.ceil(targetWidth / (textWidth / text.length)));
 
@@ -616,4 +667,25 @@ $.fn.visible = function () {
 
 $.fn.invisible = function () {
     return this.css("visibility", "hidden");
+}
+
+// The following target arrays of promises
+$.fn.whenAny = function () {
+    var finish = $.Deferred();
+
+    if (this.length === 0)
+        finish.resolve();
+    else
+        $.each(this, function (index, deferred) {
+            deferred.done(finish.resolve);
+        });
+
+    return finish.promise();
+}
+
+$.fn.whenAll = function () {
+    if (this.length > 0)
+        return $.when.apply($, this);
+
+    return $.Deferred().resolve().promise();
 }

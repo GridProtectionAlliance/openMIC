@@ -26,8 +26,11 @@ using GSF.TimeSeries;
 using GSF;
 using GSF.Configuration;
 using GSF.IO;
+using GSF.Reflection;
 using Microsoft.Owin.Hosting;
 using GSF.ServiceProcess;
+using GSF.Web.Hosting;
+using GSF.Web.Model;
 using openMIC.Model;
 
 namespace openMIC
@@ -69,27 +72,9 @@ namespace openMIC
         #region [ Properties ]
 
         /// <summary>
-        /// Gets configured web root folder for the application.
-        /// </summary>
-        public string WebRootFolder
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets configured default web page for the application.
+        /// Gets the configured default web page for the application.
         /// </summary>
         public string DefaultWebPage
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets flags that determines if cache control is enabled for browser clients.
-        /// </summary>
-        public bool ClientCacheEnabled
         {
             get;
             private set;
@@ -105,7 +90,7 @@ namespace openMIC
         }
 
         /// <summary>
-        /// Gets current performance statistics
+        /// Gets current performance statistics.
         /// </summary>
         public string PerformanceStatistics => ServiceHelper?.PerformanceMonitor?.Status;
 
@@ -125,8 +110,7 @@ namespace openMIC
                 {
                     if (disposing)
                     {
-                        if ((object)m_webAppHost != null)
-                            m_webAppHost.Dispose();
+                        m_webAppHost?.Dispose();
                     }
                 }
                 finally
@@ -148,9 +132,6 @@ namespace openMIC
             systemSettings.Add("CompanyName", "Grid Protection Alliance", "The name of the company who owns this instance of the openMIC.");
             systemSettings.Add("CompanyAcronym", "GPA", "The acronym representing the company who owns this instance of the openMIC.");
             systemSettings.Add("WebHostURL", "http://localhost:8080", "The web hosting URL for remote system management.");
-            systemSettings.Add("WebRootFolder", "wwwroot", "The default root for the hosted web server files. Location will be relative to install folder if full path is not specified.");
-            systemSettings.Add("DefaultWebPage", "Index.cshtml", "The default web page for the hosted web server.");
-            systemSettings.Add("ClientCacheEnabled", "true", "Determines if cache control is enabled for browser clients.");
             systemSettings.Add("DateTimeFormat", "yyyy-MM-dd HH:mm.ss.fff", "The date/time format to use when rendering timestamps.");
             systemSettings.Add("BootstrapTheme", "Content/bootstrap.min.css", "Path to Bootstrap CSS to use for rendering styles.");
             systemSettings.Add("DefaultDialUpRetries", 3, "Default dial-up connection retries.");
@@ -160,10 +141,7 @@ namespace openMIC
             systemSettings.Add("DefaultRemotePath", "/", "Default remote FTP path to use for device connections.");
             systemSettings.Add("DefaultLocalPath", "", "Default local path to use for file downloads.");
 
-            // Get configured web settings
-            WebRootFolder = FilePath.GetAbsolutePath(systemSettings["WebRootFolder"].Value);
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
-            ClientCacheEnabled = systemSettings["ClientCacheEnabled"].Value.ParseBoolean();
 
             Model = new AppModel
             {
@@ -188,17 +166,35 @@ namespace openMIC
 
             try
             {
+                // Attach to default web server events
+                WebServer webServer = WebServer.Default;
+                webServer.StatusMessage += WebServer_StatusMessage;
+                webServer.ExecutionException += LoggedExceptionHandler;
+
+                // Initiate pre-compile of base templates
+                if (AssemblyInfo.EntryAssembly.Debuggable)
+                {
+                    RazorEngine<CSharpDebug>.Default.PreCompile(LogException);
+                    RazorEngine<VisualBasicDebug>.Default.PreCompile(LogException);
+                }
+                else
+                {
+                    RazorEngine<CSharp>.Default.PreCompile(LogException);
+                    RazorEngine<VisualBasic>.Default.PreCompile(LogException);
+                }
+
                 // Create new web application hosting environment
                 m_webAppHost = WebApp.Start<Startup>(systemSettings["WebHostURL"].Value);
-
-                // Initialize web page controller
-                // ReSharper disable once ObjectCreationAsStatement
-                new WebPageController();
             }
             catch (Exception ex)
             {
                 LogException(new InvalidOperationException($"Failed to initialize web hosting: {ex.Message}", ex));
             }
+        }
+
+        private void WebServer_StatusMessage(object sender, EventArgs<string> e)
+        {
+            DisplayStatusMessage(e.Argument, UpdateType.Information);
         }
 
         protected override void ServiceStoppingHandler(object sender, EventArgs e)
@@ -222,7 +218,7 @@ namespace openMIC
         /// <summary>
         /// Logs an exception to the service.
         /// </summary>
-        /// <param name="ex">Excpetion to log.</param>
+        /// <param name="ex">Exception to log.</param>
         public new void LogException(Exception ex)
         {
             base.LogException(ex);
@@ -232,6 +228,7 @@ namespace openMIC
         /// <summary>
         /// Sends a command request to the service.
         /// </summary>
+        /// <param name="clientID">Client ID of sender.</param>
         /// <param name="userInput">Request string.</param>
         public void SendRequest(Guid clientID, string userInput)
         {
@@ -244,7 +241,7 @@ namespace openMIC
                 if ((object)requestHandler != null)
                     requestHandler.HandlerMethod(new ClientRequestInfo(new ClientInfo() { ClientID = clientID }, request));
                 else
-                    DisplayStatusMessage(string.Format("Command \"{0}\" is not supported\r\n\r\n", request.Command), UpdateType.Alarm);
+                    DisplayStatusMessage($"Command \"{request.Command}\" is not supported\r\n\r\n", UpdateType.Alarm);
             }
         }
 

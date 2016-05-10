@@ -35,20 +35,24 @@ function PagedViewModel() {
     const self = this;
 
     // Configuration fields
-    self.labelField = "{name}";                             // Field name that best represents row for delete confirmation
-    self.primaryKeyFields = ["{id}"];                       // Primary key field names array
-    self.defaultSortField = "{id}";                         // Default sort field
-    self.initialFocusField = "";                            // Initial add/edit field with focus
-    self.modelName = "{name}";                              // Name of model used for cookie names, defaults to page title
+    self.labelField = "{name}";                                     // Field name that best represents row for delete confirmation
+    self.primaryKeyFields = ["{id}"];                               // Primary key field names array
+    self.defaultSortField = "{id}";                                 // Default sort field
+    self.defaultSortAscending = true;                               // Default sort ascending flag
+    self.initialFocusField = "";                                    // Initial add/edit field with focus
+    self.modelName = "{name}";                                      // Name of model used for cookie names, defaults to page title
 
     // Observable fields
-    self.pageRecords = ko.observableArray();                // Records queried for current page
-    self.recordCount = ko.observable(0);                    // Queried record count
-    self.sortField = ko.observable(self.defaultSortField);  // Current sort field, persisted per model
-    self.sortAscending = ko.observable(true);               // Current sort ascending flag, persisted per model
-    self.unassignedFieldCount = ko.observable(0);           // Number of bound fields with missing data
-    self.dataHubIsConnected = ko.observable(false);         // Data hub connected observable flag - externally managed
-    self.errors = ko.validation.group([ko.observable(0)]);  // Validation errors array
+    self.pageRecords = ko.observableArray();                        // Records queried for current page
+    self.recordCount = ko.observable(0);                            // Queried record count
+    self.sortField = ko.observable(self.defaultSortField);          // Current sort field, persisted per model
+    self.sortAscending = ko.observable(self.defaultSortAscending);  // Current sort ascending flag, persisted per model
+    self.unassignedFieldCount = ko.observable(0);                   // Number of bound fields with missing data
+    self.dataHubIsConnected = ko.observable(false);                 // Data hub connected observable flag - externally managed
+    self.errors = ko.validation.group([ko.observable(0)]);          // Validation errors array
+    self.canEdit = ko.observable(true);                             // Can edit flag - normally controlled by external roles
+    self.canAddNew = ko.observable(true);                           // Can add new flag - normally controlled by external roles
+    self.canDelete = ko.observable(true);                           // Can delete flag - normally controlled by external roles
 
     // Internal fields
     self._currentPageSize = ko.observable(1);
@@ -109,6 +113,8 @@ function PagedViewModel() {
             ko.watch(self._currentRecord(), function (parents, child, item) {
                 self.isDirty(true);
                 $(self).trigger("currentRecordUpdated", [child]);
+
+                // Recalculate unassigned field count after bindings may have been updated by field change
                 setTimeout(self.calculateUnassignedFieldCount, 10);
             });
         },
@@ -216,7 +222,7 @@ function PagedViewModel() {
             self.sortField(lastSortField);
 
         if (lastSortAscending === undefined)
-            self.sortAscending(true);
+            self.sortAscending(self.defaultSortAscending);
         else
             self.sortAscending(lastSortAscending === "true");
 
@@ -234,7 +240,9 @@ function PagedViewModel() {
 
             // Initialize current record with an empty row
             self.newRecord().done(function (emptyRecord) {
-                self.currentRecord(self.deriveObservableRecord(emptyRecord));
+                self.deriveObservableRecord(emptyRecord).done(function (observableRecord) {
+                    self.currentRecord(observableRecord);
+                });
             });
         }
 
@@ -307,26 +315,35 @@ function PagedViewModel() {
 
     // Convert observable object to a simple Javascript record
     self.deriveJSRecord = function () {
-        const observableRecord = self.currentRecord();
+        return $.Deferred(function (deferred) {
+            const observableRecord = self.currentRecord();
+            const promises = [];
 
-        // Allow customization of observable record before conversion
-        $(self).trigger("derivingJSRecord", [observableRecord]);
+            // Allow customization of observable record before conversion
+            $(self).trigger("beforeSave", [observableRecord, promises]);
 
-        return ko.mapping.toJS(observableRecord);
+            $(promises).whenAll().done(function () {
+                deferred.resolve(ko.mapping.toJS(observableRecord));
+            });
+        }).promise();
     }
 
     // Convert simple Javascript record to an observable object
     self.deriveObservableRecord = function (record) {
-        const observableRecord = ko.mapping.fromJS(record);
+        return $.Deferred(function (deferred) {
+            const observableRecord = ko.mapping.fromJS(record);
+            const promises = [];
 
-        // Allow customization of new observable record
-        $(self).trigger("derivingObservableRecord", [observableRecord]);
+            // Allow customization of new observable record
+            $(self).trigger("beforeEdit", [observableRecord, promises]);
 
-        // Apply validation binding to current observable record
-        self.errors = ko.validation.group(observableRecord);
-        self.refreshValidationErrors();
-
-        return observableRecord;
+            $(promises).whenAll().done(function () {
+                // Apply validation binding to current observable record
+                self.errors = ko.validation.group(observableRecord);
+                self.refreshValidationErrors();
+                deferred.resolve(observableRecord);
+            });
+        }).promise();
     }
 
     self.setFocusOnInitialField = function () {
@@ -361,12 +378,12 @@ function PagedViewModel() {
     self.queryPageRecords = function () {
         if (self.dataHubIsConnected())
             self.queryRecords(self.sortField(), self.sortAscending(), self.currentPage(), self.currentPageSize()).done(function (records) {
+                $(self).trigger("pageRecordsQueried", [records]);
                 self.pageRecords.removeAll();
                 self.pageRecords(records);
                 refreshHubDependentControlState();
                 $("[id='recordRow']").css("visibility", "visible");
                 $("#loadingDataLabel").hide();
-                $(self).trigger("pageRecordsQueried");
 
                 // Validate proper page size after any record refresh
                 setTimeout(self.calculatePageSize, 150);
@@ -376,6 +393,9 @@ function PagedViewModel() {
     }
 
     self.removePageRecord = function (record) {
+        if (!self.canDelete())
+            return;
+
         if (self.dataHubIsConnected() && confirm("Are you sure you want to delete \"" + record[self.labelField] + "\"?")) {
             const keyValues = [];
 
@@ -406,52 +426,72 @@ function PagedViewModel() {
     }
 
     self.saveEditedRecord = function () {
-        if (self.dataHubIsConnected()) {
-            const record = self.deriveJSRecord();
+        if (!self.canEdit())
+            return;
 
-            self.updateRecord(record).done(function () {
-                self.initialize();
-                $(self).trigger("recordSaved", [record, false]);
-                showInfoMessage("Saved updated record...");
-            }).fail(function (error) {
-                showErrorMessage(error);
+        if (self.dataHubIsConnected()) {
+            self.deriveJSRecord().done(function (record) {
+                self.updateRecord(record).done(function () {
+                    self.initialize();
+                    $(self).trigger("recordSaved", [record, false]);
+                    showInfoMessage("Saved updated record...");
+                }).fail(function (error) {
+                    showErrorMessage(error);
+                });
             });
         }
     }
 
     self.saveNewRecord = function () {
-        if (self.dataHubIsConnected()) { 
-            const record = self.deriveJSRecord();
+        if (!self.canAddNew())
+            return;
 
-            self.addNewRecord(record).done(function () {
-                self.initialize();
-                $(self).trigger("recordSaved", [record, true]);
-                showInfoMessage("Saved new record...");
-            }).fail(function (error) {
-                showErrorMessage(error);
+        if (self.dataHubIsConnected()) {
+            self.deriveJSRecord().done(function (record) {
+                self.addNewRecord(record).done(function () {
+                    self.initialize();
+                    $(self).trigger("recordSaved", [record, true]);
+                    showInfoMessage("Saved new record...");
+                }).fail(function (error) {
+                    showErrorMessage(error);
+                });
             });
         }
     }
 
     self.viewPageRecord = function (record) {
-        self.recordMode(RecordMode.View);
-        self.currentRecord(self.deriveObservableRecord(record));
-        $("#addNewEditDialog").modal("show");
+        self.deriveObservableRecord(record).done(function (observableRecord) {
+            self.recordMode(RecordMode.View);
+            self.currentRecord(observableRecord);
+            $("#addNewEditDialog").modal("show");
+        });
     }
 
     self.editPageRecord = function (record) {
-        self.recordMode(RecordMode.Edit);
-        self.currentRecord(self.deriveObservableRecord(record));
-        $("#addNewEditDialog").modal("show");
+        if (!self.canEdit())
+            return;
+
+        self.deriveObservableRecord(record).done(function (observableRecord) {
+            self.recordMode(RecordMode.Edit);
+            self.currentRecord(observableRecord);
+            $("#addNewEditDialog").modal("show");
+        });
     }
 
     self.addPageRecord = function () {
+        if (!self.canAddNew())
+            return;
+
         if (self.dataHubIsConnected()) {
-            self.recordMode(RecordMode.AddNew);
             self.newRecord().done(function (emptyRecord) {
+                // Raise event to allow any new record initialization
                 $(self).trigger("newRecord", [emptyRecord]);
-                self.currentRecord(self.deriveObservableRecord(emptyRecord));
-                $("#addNewEditDialog").modal("show");
+
+                self.deriveObservableRecord(emptyRecord).done(function (observableRecord) {
+                    self.recordMode(RecordMode.AddNew);
+                    self.currentRecord(observableRecord);
+                    $("#addNewEditDialog").modal("show");
+                });
             });
         }
     }

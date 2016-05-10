@@ -1,0 +1,44 @@
+ImageRuntimeVersion: v4.0.30319
+Assembly CSampleAdapters, Version=1.1.*, Culture=Invariant Language (Invariant Country): 
+	hash=SHA1, flags=PublicKey
+Assembly mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Assembly GSF.Core, Version=2.1.*, Culture=Invariant Language (Invariant Country): 
+	hash=None, flags=None
+Assembly GSF.TimeSeries, Version=2.1.*, Culture=Invariant Language (Invariant Country): 
+	hash=None, flags=None
+Assembly System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Assembly System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Assembly System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Class CSampleAdapters.CActionAdapter: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :GSF.TimeSeries.Adapters.ActionAdapterBase
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Properties:
+    Boolean SupportsTemporalProcessing 'get ' : 
+  Methods:
+    get_SupportsTemporalProcessing(): PrivateScope, Public, Virtual, HideBySig, SpecialName
+    Initialize(): PrivateScope, Public, Virtual, HideBySig
+    GetShortStatus(Int32): PrivateScope, Public, Virtual, HideBySig
+Class CSampleAdapters.CInputAdapter: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :GSF.TimeSeries.Adapters.InputAdapterBase
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Properties:
+    Boolean SupportsTemporalProcessing 'get ' : 
+  Methods:
+    get_SupportsTemporalProcessing(): PrivateScope, Public, Virtual, HideBySig, SpecialName
+    Initialize(): PrivateScope, Public, Virtual, HideBySig
+    GetShortStatus(Int32): PrivateScope, Public, Virtual, HideBySig
+Class CSampleAdapters.COutputAdapter: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :GSF.TimeSeries.Adapters.OutputAdapterBase
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Properties:
+    Boolean SupportsTemporalProcessing 'get ' : 
+    Boolean OutputIsForArchive 'get ' : 
+  Methods:
+    get_OutputIsForArchive(): PrivateScope, Public, Virtual, HideBySig, SpecialName
+    get_SupportsTemporalProcessing(): PrivateScope, Public, Virtual, HideBySig, SpecialName
+    Initialize(): PrivateScope, Public, Virtual, HideBySig
+    GetShortStatus(Int32): PrivateScope, Public, Virtual, HideBySig

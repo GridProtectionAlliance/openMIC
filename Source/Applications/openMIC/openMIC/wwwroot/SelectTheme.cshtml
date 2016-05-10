@@ -20,15 +20,62 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using System.Net.Http
+@using GSF
+@using GSF.Configuration
+@using GSF.IO
+@using GSF.Web
+@using GSF.Web.Hosting
+@using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
     ViewBag.Title = "Select Theme";
+
+    HttpRequestMessage request = ViewBag.Request;
+    Dictionary<string, string> parameters = request.QueryParameters();
+
+    string selectedTheme = "None";
+
+    if (ViewBag.IsPost)
+    {
+        CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
+        try {
+            selectedTheme = ViewBag.PostData.selectedTheme;
+        }
+        catch (Exception ex) {
+            selectedTheme = ex.Message;
+        }
+    }
+
+    string currentTheme = FilePath.GetFileName(Model.BootstrapTheme);
+    string[] fileList = FilePath.GetFileList(string.Format("{0}Content/bootstrap-theme-*.css", FilePath.AddPathSuffix(WebServer.Default.WebRootPath))).Select(FilePath.GetFileName).ToArray();
 }
+@foreach (KeyValuePair<string, string> kvp in parameters) {
+    <em>Key[@kvp.Key]=@kvp.Value</em><br />
+}
+Selected Theme = @selectedTheme<br/>
+@ViewBag.PostData.GetType().Name
 <div class="well">
-    
+    <form role="form" method="post">
+        <div class="form-group">
+            <label for="selectBootstrapTheme">Selected Bootstrap Theme:</label>
+            <select class="form-control" id="selectBootstrapTheme" name="selectedTheme">
+                <option value="bootstrap-theme.css"@(string.Compare(currentTheme, "bootstrap-theme.css", StringComparison.OrdinalIgnoreCase) == 0 ? " selected" : "")>Default Bootstrap Theme</option>
+                @foreach (string theme in fileList) {
+                    <option value="@theme"@(string.Compare(currentTheme, theme, StringComparison.OrdinalIgnoreCase) == 0 ? " selected" : "")>@(FilePath.GetFileNameWithoutExtension(theme).Substring(16).ToTitleCase())</option>
+                }
+            </select>
+            <br />
+            <button type="submit" class="btn btn-primary pull-right">Apply</button>
+            <br />
+        </div>
+    </form>
 </div>
 <h3><em>Selected Theme Element Rendering Preview:</em></h3>
 <div class="navbar navbar-static-top">

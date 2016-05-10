@@ -23,15 +23,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using GSF.Data;
+using System.Web;
+using GSF;
+using GSF.Data.Model;
 using GSF.Identity;
+using GSF.Web.Model;
+using GSF.Web.Security;
 using Microsoft.AspNet.SignalR;
 using openMIC.Model;
+using RecordRestriction = GSF.Data.Model.RecordRestriction;
 
 namespace openMIC
 {
-    public class DataHub : Hub
+    [AuthorizeHubRole]
+    public class DataHub : Hub, IRecordOperationsHub
     {
         #region [ Members ]
 
@@ -47,6 +55,15 @@ namespace openMIC
         {
             m_dataContext = new DataContext();
         }
+
+        #endregion
+
+        #region [ Properties ]
+
+        /// <summary>
+        /// Gets <see cref="IRecordOperationsHub.RecordOperationsCache"/> for SignalR hub.
+        /// </summary>
+        public RecordOperationsCache RecordOperationsCache => s_recordOperationsCache;
 
         #endregion
 
@@ -92,6 +109,42 @@ namespace openMIC
 
             return base.OnDisconnected(stopCalled);
         }
+
+        #endregion
+
+        #region [ Static ]
+
+        // Static Properties
+
+        /// <summary>
+        /// Gets the hub connection ID for the current thread.
+        /// </summary>
+        public static string CurrentConnectionID => s_connectionID.Value;
+
+        // Static Fields
+        private static volatile int s_connectCount;
+        private static int s_downloaderProtocolID;
+        private static readonly ThreadLocal<string> s_connectionID = new ThreadLocal<string>();
+        private static readonly RecordOperationsCache s_recordOperationsCache;
+
+        // Static Methods
+
+        /// <summary>
+        /// Gets statically cached instance of <see cref="RecordOperationsCache"/> for <see cref="DataHub"/> instances.
+        /// </summary>
+        /// <returns>Statically cached instance of <see cref="RecordOperationsCache"/> for <see cref="DataHub"/> instances.</returns>
+        public static RecordOperationsCache GetRecordOperationsCache() => s_recordOperationsCache;
+
+        // Static Constructor
+        static DataHub()
+        {
+            // Analyze and cache record operations of security hub
+            s_recordOperationsCache = new RecordOperationsCache(typeof(DataHub));
+        }
+
+        #endregion
+
+        // Client-side script functionality
 
         #region [ Device Table Operations ]
 
@@ -340,16 +393,6 @@ namespace openMIC
         {
             m_dataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
         }
-
-        #endregion
-
-        #endregion
-
-        #region [ Static ]
-
-        // Static Fields
-        private static volatile int s_connectCount;
-        private static int s_downloaderProtocolID;
 
         #endregion
     }
