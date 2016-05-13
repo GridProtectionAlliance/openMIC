@@ -22,6 +22,7 @@
 //*****************************************************************************************************@
 @using System.Text
 @using GSF.Web
+@using GSF.Web.Model
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
@@ -33,9 +34,9 @@
     </style>
 }
 @{
+    DataContext dataContext = ViewBag.DataContext;
     Layout = "Layout.cshtml";
     ViewBag.Title = "Devices";
-    ViewBag.PageControlScripts = new StringBuilder();
 
     ViewBag.HeaderColumns = new[]
     {   //    { "Field", "Label", "Classes" }
@@ -47,14 +48,14 @@
 
     // Lookup default company ID
     try {
-        ViewBag.DefaultCompanyID = ViewBag.DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Company WHERE Acronym={0}", Model.CompanyAcronym);
+        ViewBag.DefaultCompanyID = ViewBag.DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Company WHERE Acronym={0}", Model.Global.CompanyAcronym);
     }
     catch {
         ViewBag.DefaultCompanyID = 0;
     }
 
     ViewBag.BodyRows = BodyRows().ToString();
-    ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
+    ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext).ToString();
 
     // Add cron pattern validation to schedule connection string field
     ViewBag.DataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", @"(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|1?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[1-2]?[0-9]|3[0-1]|\*\/[0-9]+)\s+(\*|[0-9]|1[0-2]|\*\/[0-9]+)\s+(\*\/[0-9]+|\*|[0-7])\s*(\*\/[0-9]+|\*|[0-9]+)?", "Invalid cron syntax.");
@@ -69,7 +70,7 @@
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
     </td>
 }
-@helper AddNewEditDialog() {
+@helper AddNewEditDialog(DataContext dataContext) {
     <div class="col-md-6">
         @Raw(ViewBag.DataContext.AddInputField<Device>("Acronym"))
         @Raw(ViewBag.DataContext.AddInputField("get('connectionhostname')", true, inputLabel: "Connection Host Name/IP", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString"))

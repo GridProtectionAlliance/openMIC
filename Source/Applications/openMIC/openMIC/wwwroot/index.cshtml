@@ -210,9 +210,9 @@
         </div>
         <ul class="list-group">
             <li class="list-group-item">
-                <span class="badge badge-fixed" id="serverTime">@DateTime.UtcNow.ToString(Model.DateTimeFormat)</span>Server&nbsp;Time
-                <hr class="quarter-break" />
-                <span class="badge badge-fixed" id="localTime">@DateTime.UtcNow.ToString(Model.DateTimeFormat)</span>Local&nbsp;Time
+                <span class="badge badge-fixed" id="serverTime">@DateTime.UtcNow.ToString(Model.Global.DateTimeFormat)</span>Server&nbsp;Time
+                <hr class="quarter-break"/>
+                <span class="badge badge-fixed" id="localTime">@DateTime.UtcNow.ToString(Model.Global.DateTimeFormat)</span>Local&nbsp;Time
                 <hr class="quarter-break" />
                 <span class="badge badge-fixed" id="currentUser">@UserInfo.CurrentUserID</span> Current User
             </li>

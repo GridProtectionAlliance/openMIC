@@ -124,6 +124,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Dependencies\GSF\GSF.Net.dll</HintPath>
     </Reference>
+    <Reference Include="GSF.Security, Version=2.1.241.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Dependencies\GSF\GSF.Security.dll</HintPath>
+    </Reference>
     <Reference Include="GSF.ServiceProcess">
       <HintPath>..\..\..\Dependencies\GSF\GSF.ServiceProcess.dll</HintPath>
     </Reference>
@@ -215,6 +219,7 @@
   <ItemGroup>
     <Compile Include="DataHub.cs" />
     <Compile Include="Downloader.cs" />
+    <Compile Include="GlobalSettings.cs" />
     <Compile Include="IOrderedQueryableExtensions.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Model\AlarmLog.cs" />
@@ -276,9 +281,12 @@
     <None Include="wwwroot\fonts\fontawesome-webfont.woff" />
     <None Include="wwwroot\fonts\fontawesome-webfont.woff2" />
     <None Include="wwwroot\fonts\FontAwesome.otf" />
+    <None Include="wwwroot\Help.cshtml" />
     <None Include="wwwroot\PagedViewModel.cshtml" />
     <None Include="wwwroot\Scripts\jquery-2.2.1.min.map" />
     <None Include="wwwroot\Scripts\knockout.validation.min.js.map" />
+    <None Include="wwwroot\Groups.cshtml" />
+    <None Include="wwwroot\Users.cshtml" />
     <None Include="wwwroot\SelectTheme.cshtml" />
     <None Include="wwwroot\Status.cshtml" />
     <None Include="wwwroot\Devices.cshtml" />

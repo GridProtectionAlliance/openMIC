@@ -22,21 +22,39 @@
 //*****************************************************************************************************@
 @using System
 @using System.Collections.Generic
+@using System.Net.Http
 @using System.Text
 @using GSF
 @using GSF.Web
+@using GSF.Web.Model
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
 @{
+    if (ViewBag.PageControlScripts == null) {
+        ViewBag.PageControlScripts = new StringBuilder();
+    }
+
+    // Setup page control scripts
     StringBuilder pageControlScripts = ViewBag.PageControlScripts;
 
+#if DEBUG
     pageControlScripts.Append(@"
-    <script src=""Scripts/bootstrap-toolkit.min.js""></script>
+    <script src=""Scripts/knockout-3.4.0.debug.js""></script>
+    <script src=""Scripts/knockout.mapping-latest.debug.js""></script>
+    <script src=""Scripts/knockout.validation.js""></script>
+    <script src=""Scripts/ko-reactor.js""></script>
+    ");
+#else
+    pageControlScripts.Append(@"
     <script src=""Scripts/knockout-3.4.0.js""></script>
-    <script src=""Scripts/knockout.mapping.js""></script>
+    <script src=""Scripts/knockout.mapping-latest.js""></script>
     <script src=""Scripts/knockout.validation.min.js""></script>
     <script src=""Scripts/ko-reactor.min.js""></script>
+    ");
+#endif
+
+    pageControlScripts.Append(@"
     <script src=""Scripts/ko.observableDictionary.js""></script>
     <script src=""Scripts/js.cookie.js""></script>
     <script src=""Scripts/pagedViewModel.js""></script>
@@ -46,9 +64,39 @@
     <script>
         $(function () {
             $(""#clearSortOrder"").click(function () {
-                viewModel.updateSortOrder(viewModel.defaultSortField, true);
+                viewModel.updateSortOrder(viewModel.defaultSortField, viewModel.defaultSortAscending);
             });
     ");
+
+    // Check for optional page behaviors
+
+    // Hide the add new button
+    bool hideAddNewButton = ViewBag.HideAddNewButton ?? false;
+
+    // Hide unauthorized controls as disallowed by Edit/AddNew/Delete roles - otherwise unauthorized controls will be disabled
+    bool hideUnauthorizedControls = ViewBag.HideUnauthorizedControls ?? false;
+
+    HttpRequestMessage request = ViewBag.Request;
+    string baseURL = request.RequestUri.AbsolutePath;
+
+    // Auto pop-up add new dialog
+    string routeID = ViewBag.RouteID;
+    bool autoShowAddNew = routeID.ToNonNullString().Equals("AddNew", StringComparison.OrdinalIgnoreCase);
+    bool showIsDeletedToggleLink = false;
+    bool showingDeletedRecords = false;
+
+    // Check for existence of ShowDeleted property to control toggle link visibility
+    if (ViewBag.ShowDeleted != null) {
+        showIsDeletedToggleLink = true;
+        showingDeletedRecords = Convert.ToBoolean(ViewBag.ShowDeleted);
+    }
+
+    // Get current allowed create / update / delete states for user - default to none.
+    // Note that overriding view bag settings will only affect UI, back end security
+    // will still be applicable
+    bool canEdit = ViewBag.CanEdit ?? false;
+    bool canAddNew = ViewBag.CanAddNew ?? false;
+    bool canDelete = ViewBag.CanDelete ?? false;
 }
 @functions
 {
@@ -60,6 +108,12 @@
         if (value.EndsWith("IES", StringComparison.Ordinal))
             return value.Substring(0, value.Length - 3) + "Y";
 
+        if (value.EndsWith("ces", StringComparison.OrdinalIgnoreCase))
+            return value.Substring(0, value.Length - 1);
+
+        if (value.EndsWith("es", StringComparison.OrdinalIgnoreCase))
+            return value.Substring(0, value.Length - 2);
+
         if (value.EndsWith("s", StringComparison.OrdinalIgnoreCase))
             return value.Substring(0, value.Length - 1);
 
@@ -68,7 +122,7 @@
 
     string RemoveSpaces(string value)
     {
-        return value.RemoveWhiteSpace();
+        return value.RemoveWhiteSpace().RemoveInvalidFileNameCharacters();
     }
 
     string RenderSortScript(string fieldName, bool ascending)
@@ -115,7 +169,7 @@
                 </tr>
             </thead>
             <tbody data-bind="foreach: pageRecords">
-                <tr style="visibility: hidden" id="recordRow">
+                <tr style="visibility: hidden" id="recordRow"@Raw(ViewBag.ShowDeleted ?? false ? string.Format(" data-bind=\"css: {{'danger': {0}}}\"", ViewBag.IsDeletedField) : "")>
                     @Raw(ViewBag.BodyRows)
                 </tr>
             </tbody>
@@ -125,11 +179,13 @@
         </div>
     </div>
     <div class="pull-right" id="pageControlsRow">
-        <button type="button" class="btn btn-sm btn-primary pull-right" id="addRecordButton" data-bind="enable: dataHubIsConnected">
-            <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New
-        </button>
-        <br />
-        <hr class="half-break" />
+        @if (!hideAddNewButton && (canAddNew || !hideUnauthorizedControls)) {
+            <button type="button" class="btn btn-sm btn-primary pull-right" id="addRecordButton" @Raw(canAddNew ? "data-bind=\"enable: dataHubIsConnected\"" : "disabled")>
+                <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New
+            </button>
+            <br />
+            <hr class="half-break" />
+        }
         <div class="btn-group btn-group-sm">
             <button type="button" class="btn btn-default" id="firstPageButton" data-bind="css: {'disabled': onFirstPage()}, enable: dataHubIsConnected() && !onFirstPage()"><span class="glyphicon glyphicon-backward"></span></button>
             <button type="button" class="btn btn-default" id="previousPageButton" data-bind="css: {'disabled': onFirstPage()}, enable: dataHubIsConnected() && !onFirstPage()"><span class="glyphicon glyphicon-triangle-left"></span></button>
@@ -153,10 +209,10 @@
                     <span data-bind="visible: recordMode()===RecordMode.View">View</span>
                     <span data-bind="visible: recordMode()===RecordMode.Edit">Edit</span>
                     <span data-bind="visible: recordMode()===RecordMode.AddNew">Add New</span>
-                    @SingularForm(ViewBag.Title)
+                    @(ViewBag.AddNewEditTitle ?? SingularForm(ViewBag.Title ?? ""))
                 </h4>
             </div>
-            <div class="modal-body auto-height"  data-bind="with: currentRecord, validationOptions: {messageTemplate: 'validationMessageTemplate'}, css: {'modal-readonly': recordMode()===RecordMode.View}">
+            <div class="modal-body auto-height" data-bind="with: currentRecord, validationOptions: {messageTemplate: 'validationMessageTemplate'}, css: {'modal-readonly': recordMode()===RecordMode.View}">
                 <form role="form">
                     @Raw(ViewBag.AddNewEditDialog)
                 </form>
@@ -168,15 +224,41 @@
                     <span data-bind="visible: validationErrors() > 0"><span data-bind="text: validationErrors()"></span> validation error<span data-bind="visible: validationErrors() > 1">s</span></span>
                     ...
                 </em>
-                <button type="button" class="btn btn-info" data-bind="visible: recordMode()===RecordMode.View, enable: dataHubIsConnected" id="editRecordButton">Edit</button>
-                <button type="submit" class="btn btn-primary" data-dismiss="modal" data-bind="visible: recordMode()!==RecordMode.View, disable: unassignedFieldCount() > 0 || validationErrors() > 0 || !dataHubIsConnected()" id="saveRecordButton">Save</button>
+                @if (canEdit || !hideUnauthorizedControls) {
+                    <button type="button" class="btn btn-info" data-bind="visible: recordMode()===RecordMode.View@(Raw(canEdit ? ", enable: dataHubIsConnected" : ""))" id="editRecordButton"@Raw(canEdit ? "" : " disabled")>Edit</button>
+                }
+                @if (canEdit || canAddNew || !hideUnauthorizedControls) {
+                    <button type="submit" class="btn btn-primary" data-dismiss="modal" data-bind="visible: recordMode()!==RecordMode.View@(Raw(canEdit || canAddNew ? ", disable: unassignedFieldCount() > 0 || validationErrors() > 0 || !dataHubIsConnected()" : ""))" id="saveRecordButton"@Raw(canEdit || canAddNew ? "" : " disabled")>Save</button>
+                }
                 <button type="button" class="btn btn-default" id="cancelRecordButton">Cancel</button>
             </div>
         </div>
     </div>
 </div>
 @{
+    DataContext dataContext = ViewBag.DataContext;
+
+    if (autoShowAddNew) {
         pageControlScripts.Append(@"
+            // Add new pop-up requested via URL parameter
+            setTimeout(viewModel.addPageRecord, 500);
+        ");
+    }
+
+    if (showIsDeletedToggleLink) {
+        if (showingDeletedRecords) {
+            pageControlScripts.AppendFormat(@"
+            $(""#titleText"").append(""<br/><div style='margin-top: 3px' class='small text-center'><a href='{0}'>Hide Deleted</a></div>"");
+        ", baseURL);
+        }
+        else {
+            pageControlScripts.AppendFormat(@"
+                $(""#titleText"").append(""<br/><div style='margin-top: 3px' class='small text-center'><a href='{0}?ShowDeleted'>Show Deleted</a></div>"");
+        ", baseURL);
+        }
+    }
+
+    pageControlScripts.Append(@"
             $(""#addRecordButton"").click(function () {
                 viewModel.addPageRecord();
             });
@@ -207,21 +289,101 @@
             });
         });
     ");
-    pageControlScripts.AppendFormat("\r\n        viewModel.modelName = \"{0}\";\r\n", RemoveSpaces(ViewBag.Title));
 
-    if (ViewBag.DataContext.FieldValidationParameters.Count > 0) {
-        pageControlScripts.Append("\r\n        viewModel.setApplyValidationParameters(function () {");
+    pageControlScripts.AppendFormat(@"
+        viewModel.canEdit({0});
+        viewModel.canAddNew({1});
+        viewModel.canDelete({2});
 
-        foreach (KeyValuePair<string, Tuple<string, string>> fieldValidation in ViewBag.DataContext.FieldValidationParameters)
-        {
-            pageControlScripts.AppendFormat("\r\n            {0}.extend({{ pattern: {{ message: \"{1}\", params: \"{2}\" }} }});", 
-                fieldValidation.Key, 
-                fieldValidation.Value.Item2.JavaScriptEncode(), 
+        viewModel.initialFocusField = ""{3}"";
+        viewModel.modelName = ""{4}"";",
+        canEdit.ToString().ToLower(),
+        canAddNew.ToString().ToLower(),
+        canDelete.ToString().ToLower(),
+        dataContext.InitialFocusField,
+        RemoveSpaces(ViewBag.Title));
+
+    if (dataContext.FieldValueInitializers.Count > 0) {
+        pageControlScripts.AppendFormat(@"
+
+        $(viewModel).on(""newRecord"", function(event, newRecord) {{
+            // Set initial field values");
+
+        foreach (Tuple<string, string> initialValue in dataContext.FieldValueInitializers) {
+            pageControlScripts.AppendFormat("\r\n            newRecord.{0} = {1};",
+                initialValue.Item1, initialValue.Item2);
+        }
+
+        pageControlScripts.Append("\r\n        });");
+    }
+
+    if (dataContext.DefinedDateFields.Count > 0) {
+        pageControlScripts.AppendFormat(@"
+
+        $(viewModel).on(""beforeEdit"", function(event, observableRecord) {{
+            // Convert date objects to strings");
+
+        foreach (string dateField in dataContext.DefinedDateFields) {
+            pageControlScripts.AppendFormat("\r\n            observableRecord.{0}(notNull(observableRecord.{0}()).formatDate(DateFormat));", dateField);
+        }
+
+        pageControlScripts.Append("\r\n        });");
+
+        pageControlScripts.AppendFormat(@"
+
+        $(viewModel).on(""beforeSave"", function(event, observableRecord) {{
+            // Convert date strings back to date objects before serialization");
+
+        foreach (string dateField in dataContext.DefinedDateFields) {
+            pageControlScripts.AppendFormat("\r\n            observableRecord.{0}(observableRecord.{0}().toDate());", dateField);
+        }
+
+        pageControlScripts.Append("\r\n        });");
+    }
+
+    if (dataContext.FieldValidationParameters.Count > 0) {
+        pageControlScripts.Append("\r\n\r\n        viewModel.setApplyValidationParameters(function () {");
+
+        foreach (KeyValuePair<string, Tuple<string, string>> fieldValidation in dataContext.FieldValidationParameters) {
+            pageControlScripts.AppendFormat("\r\n            {0}.extend({{ pattern: {{ message: \"{1}\", params: \"{2}\" }} }});",
+                fieldValidation.Key,
+                fieldValidation.Value.Item2.JavaScriptEncode(),
                 fieldValidation.Value.Item1.JavaScriptEncode());
         }
 
         pageControlScripts.Append("\r\n        });");
     }
+
+    pageControlScripts.Append(@"
+
+        $(""#addNewEditDialog"").on(""shown.bs.modal"", function () {
+            $(""#addNewEditDialog .input-group.date"").datepicker({
+                todayBtn: ""linked"",
+                enableOnReadonly: false,
+                autoclose: true
+            });");
+
+    if (dataContext.ReadonlyHotLinkFields.Count > 0) {
+        foreach (Tuple<string, string, string, bool> readonlyHotLinkField in dataContext.ReadonlyHotLinkFields) {
+            pageControlScripts.AppendLine();
+
+            if (readonlyHotLinkField.Item4) {
+                pageControlScripts.AppendFormat("\r\n            $(\"#{0}\").after(\"<div id=\\\"{1}\\\" tabindex=\\\"0\\\" class=\\\"form-control readonly textarea\\\" data-bind=\\\"html: renderHotLinks(notNull({2}())), visible: viewModel.recordMode()===RecordMode.View\\\"></div>\");",
+                    readonlyHotLinkField.Item1, readonlyHotLinkField.Item2, readonlyHotLinkField.Item3);
+                pageControlScripts.AppendFormat("\r\n            $(\"#{0}\").height($(\"#{1}\").height());",
+                    readonlyHotLinkField.Item2, readonlyHotLinkField.Item1);
+            }
+            else {
+                pageControlScripts.AppendFormat("\r\n            $(\"#{0}\").after(\"<div id=\\\"{1}\\\" tabindex=\\\"0\\\" class=\\\"form-control readonly inputtext\\\" data-bind=\\\"html: renderHotLinks(notNull({2}())), visible: viewModel.recordMode()===RecordMode.View\\\"></div>\");",
+                    readonlyHotLinkField.Item1, readonlyHotLinkField.Item2, readonlyHotLinkField.Item3);
+            }
+
+            pageControlScripts.AppendFormat("\r\n            ko.applyBindings(viewModel.currentRecord, $(\"#{0}\")[0]);",
+                readonlyHotLinkField.Item2);
+        }
+    }
+
+    pageControlScripts.Append("\r\n        });");
 
     pageControlScripts.Append(@"
     </script>");

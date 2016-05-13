@@ -1,6 +1,8 @@
 ﻿/* Move down content because we have a fixed navbar that is around 30px tall */
 body {
     padding-top: 30px;
+}
+
 /* Define read-only style for disabled div areas */
 div.readonly {
     background-color: #eee;

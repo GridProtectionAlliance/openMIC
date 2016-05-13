@@ -55,7 +55,7 @@ namespace openMIC
             HttpConfiguration httpConfig = new HttpConfiguration();
 
             // Setup resolver for web page controller instances
-            httpConfig.DependencyResolver = WebPageController.GetDependencyResolver(WebServer.Default, Program.Host.DefaultWebPage, Program.Host.Model, typeof(AppModel));
+            httpConfig.DependencyResolver = WebPageController.GetDependencyResolver(WebServer.Default, Program.Host.DefaultWebPage, new AppModel(), typeof(AppModel));
 #if DEBUG
             // Enabled detailed client errors
             hubConfig.EnableDetailedErrors = true;

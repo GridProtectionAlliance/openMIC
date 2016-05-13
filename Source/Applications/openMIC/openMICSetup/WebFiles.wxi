@@ -1,11 +1,5 @@
 <Include>
 <ComponentGroup Id="wwwroot_Components" Directory="WWWROOTFOLDER">
-  <Component Id="AddInputField_cshtml">
-    <File Id="AddInputField.cshtml" Name="AddInputField.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\AddInputField.cshtml" />
-  </Component>
-  <Component Id="AddSelectField_cshtml">
-    <File Id="AddSelectField.cshtml" Name="AddSelectField.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\AddSelectField.cshtml" />
-  </Component>
   <Component Id="Companies_cshtml">
     <File Id="Companies.cshtml" Name="Companies.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Companies.cshtml" />
   </Component>
@@ -18,8 +12,8 @@
   <Component Id="Devices_cshtml">
     <File Id="Devices.cshtml" Name="Devices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Devices.cshtml" />
   </Component>
-  <Component Id="Index_cshtml">
-    <File Id="Index.cshtml" Name="Index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Index.cshtml" />
+  <Component Id="index_cshtml">
+    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
   </Component>
   <Component Id="Layout_cshtml">
     <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
@@ -47,6 +41,15 @@
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Content_Components" Directory="CONTENTFOLDER">
+  <Component Id="Content__bootstrap_datepicker3_css">
+    <File Id="Content__bootstrap_datepicker3.css" Name="bootstrap-datepicker3.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-datepicker3.css" />
+  </Component>
+  <Component Id="Content__bootstrap_datepicker3_min_css">
+    <File Id="Content__bootstrap_datepicker3.min.css" Name="bootstrap-datepicker3.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-datepicker3.min.css" />
+  </Component>
+  <Component Id="Content__bootstrap_sidebar_css">
+    <File Id="Content__bootstrap_sidebar.css" Name="bootstrap-sidebar.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-sidebar.css" />
+  </Component>
   <Component Id="Content__bootstrap_theme_cerulean_css">
     <File Id="Content__bootstrap_theme_cerulean.css" Name="bootstrap-theme-cerulean.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cerulean.css" />
   </Component>
@@ -65,6 +68,9 @@
   <Component Id="Content__bootstrap_theme_slate_css">
     <File Id="Content__bootstrap_theme_slate.css" Name="bootstrap-theme-slate.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-slate.css" />
   </Component>
+  <Component Id="Content__bootstrap_theme_united_css">
+    <File Id="Content__bootstrap_theme_united.css" Name="bootstrap-theme-united.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-united.css" />
+  </Component>
   <Component Id="Content__bootstrap_theme_css">
     <File Id="Content__bootstrap_theme.css" Name="bootstrap-theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.css" />
   </Component>
@@ -76,9 +82,6 @@
   </Component>
   <Component Id="Content__bootstrap_theme_min_css_map">
     <File Id="Content__bootstrap_theme.min.css.map" Name="bootstrap-theme.min.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.min.css.map" />
-  </Component>
-  <Component Id="Content__bootstrap_united_css">
-    <File Id="Content__bootstrap_united.css" Name="bootstrap-united.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-united.css" />
   </Component>
   <Component Id="Content__bootstrap_css">
     <File Id="Content__bootstrap.css" Name="bootstrap.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.css" />
@@ -92,14 +95,115 @@
   <Component Id="Content__bootstrap_min_css_map">
     <File Id="Content__bootstrap.min.css.map" Name="bootstrap.min.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.min.css.map" />
   </Component>
+  <Component Id="Content__fileinput_css">
+    <File Id="Content__fileinput.css" Name="fileinput.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\fileinput.css" />
+  </Component>
+  <Component Id="Content__font_awesome_css">
+    <File Id="Content__font_awesome.css" Name="font-awesome.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\font-awesome.css" />
+  </Component>
+  <Component Id="Content__font_awesome_min_css">
+    <File Id="Content__font_awesome.min.css" Name="font-awesome.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\font-awesome.min.css" />
+  </Component>
+  <Component Id="Content__jquery_ui_css">
+    <File Id="Content__jquery_ui.css" Name="jquery-ui.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.css" />
+  </Component>
+  <Component Id="Content__jquery_ui_min_css">
+    <File Id="Content__jquery_ui.min.css" Name="jquery-ui.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.min.css" />
+  </Component>
+  <Component Id="Content__jquery_ui_structure_css">
+    <File Id="Content__jquery_ui.structure.css" Name="jquery-ui.structure.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.structure.css" />
+  </Component>
+  <Component Id="Content__jquery_ui_structure_min_css">
+    <File Id="Content__jquery_ui.structure.min.css" Name="jquery-ui.structure.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.structure.min.css" />
+  </Component>
+  <Component Id="Content__jquery_ui_theme_css">
+    <File Id="Content__jquery_ui.theme.css" Name="jquery-ui.theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.theme.css" />
+  </Component>
+  <Component Id="Content__jquery_ui_theme_min_css">
+    <File Id="Content__jquery_ui.theme.min.css" Name="jquery-ui.theme.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.theme.min.css" />
+  </Component>
   <Component Id="Content__Popup_css">
     <File Id="Content__Popup.css" Name="Popup.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Popup.css" />
+  </Component>
+  <Component Id="Content__primeui_theme_css">
+    <File Id="Content__primeui_theme.css" Name="primeui-theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\primeui-theme.css" />
+  </Component>
+  <Component Id="Content__primeui_css">
+    <File Id="Content__primeui.css" Name="primeui.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\primeui.css" />
+  </Component>
+  <Component Id="Content__primeui_min_css">
+    <File Id="Content__primeui.min.css" Name="primeui.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\primeui.min.css" />
   </Component>
   <Component Id="Content__Site_css">
     <File Id="Content__Site.css" Name="Site.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Site.css" />
   </Component>
 </ComponentGroup>
+<ComponentGroup Id="wwwroot_Content_images_Components" Directory="CONTENTIMAGESFOLDER">
+  <Component Id="Content_images__loading_sm_gif">
+    <File Id="Content_images__loading_sm.gif" Name="loading-sm.gif" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\loading-sm.gif" />
+  </Component>
+  <Component Id="Content_images__loading_gif">
+    <File Id="Content_images__loading.gif" Name="loading.gif" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\loading.gif" />
+  </Component>
+  <Component Id="Content_images__ui_bg_glass_55_fbf9ee_1x400_png">
+    <File Id="Content_images__ui_bg_glass_55_fbf9ee_1x400.png" Name="ui-bg_glass_55_fbf9ee_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+  </Component>
+  <Component Id="Content_images__ui_bg_glass_65_ffffff_1x400_png">
+    <File Id="Content_images__ui_bg_glass_65_ffffff_1x400.png" Name="ui-bg_glass_65_ffffff_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_65_ffffff_1x400.png" />
+  </Component>
+  <Component Id="Content_images__ui_bg_glass_75_dadada_1x400_png">
+    <File Id="Content_images__ui_bg_glass_75_dadada_1x400.png" Name="ui-bg_glass_75_dadada_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_75_dadada_1x400.png" />
+  </Component>
+  <Component Id="Content_images__ui_bg_glass_75_e6e6e6_1x400_png">
+    <File Id="Content_images__ui_bg_glass_75_e6e6e6_1x400.png" Name="ui-bg_glass_75_e6e6e6_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+  </Component>
+  <Component Id="Content_images__ui_bg_glass_95_fef1ec_1x400_png">
+    <File Id="Content_images__ui_bg_glass_95_fef1ec_1x400.png" Name="ui-bg_glass_95_fef1ec_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_95_fef1ec_1x400.png" />
+  </Component>
+  <Component Id="Content_images__ui_bg_highlight_soft_75_cccccc_1x100_png">
+    <File Id="Content_images__ui_bg_highlight_soft_75_cccccc_1x100.png" Name="ui-bg_highlight-soft_75_cccccc_1x100.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+  </Component>
+  <Component Id="Content_images__ui_icons_222222_256x240_png">
+    <File Id="Content_images__ui_icons_222222_256x240.png" Name="ui-icons_222222_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_222222_256x240.png" />
+  </Component>
+  <Component Id="Content_images__ui_icons_2e83ff_256x240_png">
+    <File Id="Content_images__ui_icons_2e83ff_256x240.png" Name="ui-icons_2e83ff_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_2e83ff_256x240.png" />
+  </Component>
+  <Component Id="Content_images__ui_icons_333333_256x240_png">
+    <File Id="Content_images__ui_icons_333333_256x240.png" Name="ui-icons_333333_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_333333_256x240.png" />
+  </Component>
+  <Component Id="Content_images__ui_icons_454545_256x240_png">
+    <File Id="Content_images__ui_icons_454545_256x240.png" Name="ui-icons_454545_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_454545_256x240.png" />
+  </Component>
+  <Component Id="Content_images__ui_icons_888888_256x240_png">
+    <File Id="Content_images__ui_icons_888888_256x240.png" Name="ui-icons_888888_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_888888_256x240.png" />
+  </Component>
+  <Component Id="Content_images__ui_icons_cd0a0a_256x240_png">
+    <File Id="Content_images__ui_icons_cd0a0a_256x240.png" Name="ui-icons_cd0a0a_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_cd0a0a_256x240.png" />
+  </Component>
+  <Component Id="Content_images__ui_icons_ffffff_256x240_png">
+    <File Id="Content_images__ui_icons_ffffff_256x240.png" Name="ui-icons_ffffff_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_ffffff_256x240.png" />
+  </Component>
+</ComponentGroup>
 <ComponentGroup Id="wwwroot_fonts_Components" Directory="FONTSFOLDER">
+  <Component Id="fonts__fontawesome_webfont_eot">
+    <File Id="fonts__fontawesome_webfont.eot" Name="fontawesome-webfont.eot" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.eot" />
+  </Component>
+  <Component Id="fonts__fontawesome_webfont_svg">
+    <File Id="fonts__fontawesome_webfont.svg" Name="fontawesome-webfont.svg" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.svg" />
+  </Component>
+  <Component Id="fonts__fontawesome_webfont_ttf">
+    <File Id="fonts__fontawesome_webfont.ttf" Name="fontawesome-webfont.ttf" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.ttf" />
+  </Component>
+  <Component Id="fonts__fontawesome_webfont_woff">
+    <File Id="fonts__fontawesome_webfont.woff" Name="fontawesome-webfont.woff" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.woff" />
+  </Component>
+  <Component Id="fonts__fontawesome_webfont_woff2">
+    <File Id="fonts__fontawesome_webfont.woff2" Name="fontawesome-webfont.woff2" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.woff2" />
+  </Component>
+  <Component Id="fonts__FontAwesome_otf">
+    <File Id="fonts__FontAwesome.otf" Name="FontAwesome.otf" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\FontAwesome.otf" />
+  </Component>
   <Component Id="fonts__glyphicons_halflings_regular_eot">
     <File Id="fonts__glyphicons_halflings_regular.eot" Name="glyphicons-halflings-regular.eot" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.eot" />
   </Component>
@@ -190,32 +294,72 @@
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_StatusLights_Components" Directory="IMAGESSTATUSLIGHTSFOLDER">
-  <Component Id="Images_StatusLights__amberlight_png">
-    <File Id="Images_StatusLights__amberlight.png" Name="amberlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\amberlight.png" />
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_Images_StatusLights_Large_Components" Directory="IMAGESSTATUSLIGHTSLARGEFOLDER">
+  <Component Id="Images_StatusLights_Large__amberlight_png">
+    <File Id="Images_StatusLights_Large__amberlight.png" Name="amberlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\amberlight.png" />
   </Component>
-  <Component Id="Images_StatusLights__bluelight_png">
-    <File Id="Images_StatusLights__bluelight.png" Name="bluelight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\bluelight.png" />
+  <Component Id="Images_StatusLights_Large__blacklight_png">
+    <File Id="Images_StatusLights_Large__blacklight.png" Name="blacklight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\blacklight.png" />
   </Component>
-  <Component Id="Images_StatusLights__disabledlight_png">
-    <File Id="Images_StatusLights__disabledlight.png" Name="disabledlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\disabledlight.png" />
+  <Component Id="Images_StatusLights_Large__bluelight_png">
+    <File Id="Images_StatusLights_Large__bluelight.png" Name="bluelight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\bluelight.png" />
   </Component>
-  <Component Id="Images_StatusLights__greenlight_png">
-    <File Id="Images_StatusLights__greenlight.png" Name="greenlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\greenlight.png" />
+  <Component Id="Images_StatusLights_Large__disabledlight_png">
+    <File Id="Images_StatusLights_Large__disabledlight.png" Name="disabledlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\disabledlight.png" />
   </Component>
-  <Component Id="Images_StatusLights__greylight_png">
-    <File Id="Images_StatusLights__greylight.png" Name="greylight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\greylight.png" />
+  <Component Id="Images_StatusLights_Large__greenlight_png">
+    <File Id="Images_StatusLights_Large__greenlight.png" Name="greenlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\greenlight.png" />
   </Component>
-  <Component Id="Images_StatusLights__magentalight_png">
-    <File Id="Images_StatusLights__magentalight.png" Name="magentalight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\magentalight.png" />
+  <Component Id="Images_StatusLights_Large__greylight_png">
+    <File Id="Images_StatusLights_Large__greylight.png" Name="greylight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\greylight.png" />
   </Component>
-  <Component Id="Images_StatusLights__redlight_png">
-    <File Id="Images_StatusLights__redlight.png" Name="redlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\redlight.png" />
+  <Component Id="Images_StatusLights_Large__magentalight_png">
+    <File Id="Images_StatusLights_Large__magentalight.png" Name="magentalight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\magentalight.png" />
   </Component>
-  <Component Id="Images_StatusLights__yellowlight_png">
-    <File Id="Images_StatusLights__yellowlight.png" Name="yellowlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\yellowlight.png" />
+  <Component Id="Images_StatusLights_Large__redlight_png">
+    <File Id="Images_StatusLights_Large__redlight.png" Name="redlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\redlight.png" />
+  </Component>
+  <Component Id="Images_StatusLights_Large__yellowlight_png">
+    <File Id="Images_StatusLights_Large__yellowlight.png" Name="yellowlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\yellowlight.png" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_Images_StatusLights_Small_Components" Directory="IMAGESSTATUSLIGHTSSMALLFOLDER">
+  <Component Id="Images_StatusLights_Small__amberlight_png">
+    <File Id="Images_StatusLights_Small__amberlight.png" Name="amberlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\amberlight.png" />
+  </Component>
+  <Component Id="Images_StatusLights_Small__blacklight_png">
+    <File Id="Images_StatusLights_Small__blacklight.png" Name="blacklight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\blacklight.png" />
+  </Component>
+  <Component Id="Images_StatusLights_Small__bluelight_png">
+    <File Id="Images_StatusLights_Small__bluelight.png" Name="bluelight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\bluelight.png" />
+  </Component>
+  <Component Id="Images_StatusLights_Small__disabledlight_png">
+    <File Id="Images_StatusLights_Small__disabledlight.png" Name="disabledlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\disabledlight.png" />
+  </Component>
+  <Component Id="Images_StatusLights_Small__greenlight_png">
+    <File Id="Images_StatusLights_Small__greenlight.png" Name="greenlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\greenlight.png" />
+  </Component>
+  <Component Id="Images_StatusLights_Small__greylight_png">
+    <File Id="Images_StatusLights_Small__greylight.png" Name="greylight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\greylight.png" />
+  </Component>
+  <Component Id="Images_StatusLights_Small__magentalight_png">
+    <File Id="Images_StatusLights_Small__magentalight.png" Name="magentalight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\magentalight.png" />
+  </Component>
+  <Component Id="Images_StatusLights_Small__redlight_png">
+    <File Id="Images_StatusLights_Small__redlight.png" Name="redlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\redlight.png" />
+  </Component>
+  <Component Id="Images_StatusLights_Small__yellowlight_png">
+    <File Id="Images_StatusLights_Small__yellowlight.png" Name="yellowlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\yellowlight.png" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Scripts_Components" Directory="SCRIPTSFOLDER">
+  <Component Id="Scripts__bootstrap_datepicker_js">
+    <File Id="Scripts__bootstrap_datepicker.js" Name="bootstrap-datepicker.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-datepicker.js" />
+  </Component>
+  <Component Id="Scripts__bootstrap_datepicker_min_js">
+    <File Id="Scripts__bootstrap_datepicker.min.js" Name="bootstrap-datepicker.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-datepicker.min.js" />
+  </Component>
   <Component Id="Scripts__bootstrap_toolkit_js">
     <File Id="Scripts__bootstrap_toolkit.js" Name="bootstrap-toolkit.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-toolkit.js" />
   </Component>
@@ -228,23 +372,38 @@
   <Component Id="Scripts__bootstrap_min_js">
     <File Id="Scripts__bootstrap.min.js" Name="bootstrap.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap.min.js" />
   </Component>
+  <Component Id="Scripts__fileinput_js">
+    <File Id="Scripts__fileinput.js" Name="fileinput.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\fileinput.js" />
+  </Component>
+  <Component Id="Scripts__fileinput_min_js">
+    <File Id="Scripts__fileinput.min.js" Name="fileinput.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\fileinput.min.js" />
+  </Component>
   <Component Id="Scripts__gsf_web_client_js">
     <File Id="Scripts__gsf.web.client.js" Name="gsf.web.client.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\gsf.web.client.js" />
+  </Component>
+  <Component Id="Scripts__gsf_web_primeui_js">
+    <File Id="Scripts__gsf.web.primeui.js" Name="gsf.web.primeui.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\gsf.web.primeui.js" />
   </Component>
   <Component Id="Scripts__ie10_viewport_bug_workaround_js">
     <File Id="Scripts__ie10_viewport_bug_workaround.js" Name="ie10-viewport-bug-workaround.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ie10-viewport-bug-workaround.js" />
   </Component>
-  <Component Id="Scripts__jquery_2_1_4_intellisense_js">
-    <File Id="Scripts__jquery_2.1.4.intellisense.js" Name="jquery-2.1.4.intellisense.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.1.4.intellisense.js" />
+  <Component Id="Scripts__jquery_2_2_1_js">
+    <File Id="Scripts__jquery_2.2.1.js" Name="jquery-2.2.1.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.1.js" />
   </Component>
-  <Component Id="Scripts__jquery_2_1_4_js">
-    <File Id="Scripts__jquery_2.1.4.js" Name="jquery-2.1.4.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.1.4.js" />
+  <Component Id="Scripts__jquery_2_2_1_min_js">
+    <File Id="Scripts__jquery_2.2.1.min.js" Name="jquery-2.2.1.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.1.min.js" />
   </Component>
-  <Component Id="Scripts__jquery_2_1_4_min_js">
-    <File Id="Scripts__jquery_2.1.4.min.js" Name="jquery-2.1.4.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.1.4.min.js" />
+  <Component Id="Scripts__jquery_2_2_1_min_map">
+    <File Id="Scripts__jquery_2.2.1.min.map" Name="jquery-2.2.1.min.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.1.min.map" />
   </Component>
-  <Component Id="Scripts__jquery_2_1_4_min_map">
-    <File Id="Scripts__jquery_2.1.4.min.map" Name="jquery-2.1.4.min.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.1.4.min.map" />
+  <Component Id="Scripts__jquery_2_2_2_intellisense_js">
+    <File Id="Scripts__jquery_2.2.2.intellisense.js" Name="jquery-2.2.2.intellisense.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.2.intellisense.js" />
+  </Component>
+  <Component Id="Scripts__jquery_ui_js">
+    <File Id="Scripts__jquery_ui.js" Name="jquery-ui.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-ui.js" />
+  </Component>
+  <Component Id="Scripts__jquery_ui_min_js">
+    <File Id="Scripts__jquery_ui.min.js" Name="jquery-ui.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-ui.min.js" />
   </Component>
   <Component Id="Scripts__jquery_signalR_2_2_0_js">
     <File Id="Scripts__jquery.signalR_2.2.0.js" Name="jquery.signalR-2.2.0.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.signalR-2.2.0.js" />
@@ -252,14 +411,35 @@
   <Component Id="Scripts__jquery_signalR_2_2_0_min_js">
     <File Id="Scripts__jquery.signalR_2.2.0.min.js" Name="jquery.signalR-2.2.0.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.signalR-2.2.0.min.js" />
   </Component>
+  <Component Id="Scripts__jquery_validate_vsdoc_js">
+    <File Id="Scripts__jquery.validate_vsdoc.js" Name="jquery.validate-vsdoc.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate-vsdoc.js" />
+  </Component>
+  <Component Id="Scripts__jquery_validate_js">
+    <File Id="Scripts__jquery.validate.js" Name="jquery.validate.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.js" />
+  </Component>
+  <Component Id="Scripts__jquery_validate_min_js">
+    <File Id="Scripts__jquery.validate.min.js" Name="jquery.validate.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.min.js" />
+  </Component>
+  <Component Id="Scripts__jquery_validate_unobtrusive_js">
+    <File Id="Scripts__jquery.validate.unobtrusive.js" Name="jquery.validate.unobtrusive.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.unobtrusive.js" />
+  </Component>
+  <Component Id="Scripts__jquery_validate_unobtrusive_min_js">
+    <File Id="Scripts__jquery.validate.unobtrusive.min.js" Name="jquery.validate.unobtrusive.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
+  </Component>
   <Component Id="Scripts__js_cookie_js">
     <File Id="Scripts__js.cookie.js" Name="js.cookie.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\js.cookie.js" />
+  </Component>
+  <Component Id="Scripts__knockout_3_4_0_debug_js">
+    <File Id="Scripts__knockout_3.4.0.debug.js" Name="knockout-3.4.0.debug.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout-3.4.0.debug.js" />
   </Component>
   <Component Id="Scripts__knockout_3_4_0_js">
     <File Id="Scripts__knockout_3.4.0.js" Name="knockout-3.4.0.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout-3.4.0.js" />
   </Component>
-  <Component Id="Scripts__knockout_mapping_js">
-    <File Id="Scripts__knockout.mapping.js" Name="knockout.mapping.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.mapping.js" />
+  <Component Id="Scripts__knockout_mapping_latest_debug_js">
+    <File Id="Scripts__knockout.mapping_latest.debug.js" Name="knockout.mapping-latest.debug.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.mapping-latest.debug.js" />
+  </Component>
+  <Component Id="Scripts__knockout_mapping_latest_js">
+    <File Id="Scripts__knockout.mapping_latest.js" Name="knockout.mapping-latest.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.mapping-latest.js" />
   </Component>
   <Component Id="Scripts__knockout_validation_js">
     <File Id="Scripts__knockout.validation.js" Name="knockout.validation.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.js" />
@@ -279,8 +459,35 @@
   <Component Id="Scripts__ko_observableDictionary_js">
     <File Id="Scripts__ko.observableDictionary.js" Name="ko.observableDictionary.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ko.observableDictionary.js" />
   </Component>
+  <Component Id="Scripts__modernizr_2_8_3_js">
+    <File Id="Scripts__modernizr_2.8.3.js" Name="modernizr-2.8.3.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\modernizr-2.8.3.js" />
+  </Component>
+  <Component Id="Scripts__mustache_min_js">
+    <File Id="Scripts__mustache.min.js" Name="mustache.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\mustache.min.js" />
+  </Component>
   <Component Id="Scripts__pagedViewModel_js">
     <File Id="Scripts__pagedViewModel.js" Name="pagedViewModel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\pagedViewModel.js" />
+  </Component>
+  <Component Id="Scripts__plugins_all_js">
+    <File Id="Scripts__plugins_all.js" Name="plugins-all.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\plugins-all.js" />
+  </Component>
+  <Component Id="Scripts__primeui_js">
+    <File Id="Scripts__primeui.js" Name="primeui.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\primeui.js" />
+  </Component>
+  <Component Id="Scripts__primeui_min_js">
+    <File Id="Scripts__primeui.min.js" Name="primeui.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\primeui.min.js" />
+  </Component>
+  <Component Id="Scripts__respond_js">
+    <File Id="Scripts__respond.js" Name="respond.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.js" />
+  </Component>
+  <Component Id="Scripts__respond_matchmedia_addListener_js">
+    <File Id="Scripts__respond.matchmedia.addListener.js" Name="respond.matchmedia.addListener.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.matchmedia.addListener.js" />
+  </Component>
+  <Component Id="Scripts__respond_matchmedia_addListener_min_js">
+    <File Id="Scripts__respond.matchmedia.addListener.min.js" Name="respond.matchmedia.addListener.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.matchmedia.addListener.min.js" />
+  </Component>
+  <Component Id="Scripts__respond_min_js">
+    <File Id="Scripts__respond.min.js" Name="respond.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.min.js" />
   </Component>
   <Component Id="Scripts__Site_js">
     <File Id="Scripts__Site.js" Name="Site.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\Site.js" />

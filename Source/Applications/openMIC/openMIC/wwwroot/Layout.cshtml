@@ -24,6 +24,12 @@
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
 @{
+#if DEBUG
+    const string min = "";
+#else
+    const string min = ".min";
+#endif
+    
     // Define ViewBag.CustomTitle in page code for custom page titles
     string pageTitle = ViewBag.CustomTitle ?? ViewBag.Title;
 }
@@ -34,15 +40,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @* The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags *@
-    <title>@Model.ApplicationName - @pageTitle</title>
-    <meta name="application-name" content="@Model.ApplicationName" />
-    <meta name="description" content="@Model.ApplicationDescription" />
-    <meta name="keywords" content="@Model.ApplicationKeywords" />
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <link href="@Model.BootstrapTheme" rel="stylesheet">
-    @if (Model.BootstrapTheme.EndsWith("bootstrap.min.css")) {
-    <link href="Content/bootstrap-theme.min.css" rel="stylesheet">
-    }
+    <title>@Model.Global.ApplicationName - @pageTitle</title>
+    <meta name="application-name" content="@Model.Global.ApplicationName" />
+    <meta name="description" content="@Model.Global.ApplicationDescription" />
+    <meta name="keywords" content="@Model.Global.ApplicationKeywords" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <link href="Content/bootstrap@(min).css" rel="stylesheet">
+    <link href="@Model.Global.BootstrapTheme" rel="stylesheet">
+    <link href="Content/bootstrap-datepicker3@(min).css" rel="stylesheet">
+    <link href="Content/jquery-ui@(min).css" rel="stylesheet">
+    <link href="Content/primeui-theme.css" rel="stylesheet">
+    <link href="Content/font-awesome@(min).css" rel="stylesheet">
+    <link href="Content/primeui@(min).css" rel="stylesheet">
     <link href="Content/Site.css" rel="stylesheet">
     @RenderSection("StyleSheets", false)
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -70,9 +79,12 @@
     <meta name="msapplication-square70x70logo" content="Images/Icons/mstile-70x70.png" />
     <meta name="msapplication-square150x150logo" content="Images/Icons/mstile-150x150.png" />
     <meta name="msapplication-wide310x150logo" content="Images/Icons/mstile-310x150.png" />
-    <meta name="msapplication-square310x310logo" content="Images/Icons/mstile-310x310.png" />
+    <meta name="msapplication-square310x310logo" content="Images/Icons/mstile-310x310.png"/>
+    <script src="Scripts/modernizr-2.8.3.js"></script>
     <script>
-        const DateTimeFormat = "@Model.DateTimeFormat";
+        const DateFormat = "@Model.Global.DateFormat";
+        const TimeFormat = "@Model.Global.TimeFormat";
+        const DateTimeFormat = "@Model.Global.DateTimeFormat";
     </script>
 </head>
 <body role="document">
@@ -80,8 +92,8 @@
     <div class="navbar navbar-inverse navbar-fixed-top" id="menuBar">
         <div class="container">
             <div class="navbar-header">
-                <img class="pull-left" style="padding: 10px" alt="@Model.ApplicationName" src="Images/@(Model.ApplicationName).png">
-                <a href="Index.cshtml" class="navbar-brand" style="font-size: larger; color: white" data-toggle="tooltip" data-placement="bottom" title="@Model.ApplicationDescription">@Model.ApplicationName</a>
+                <img class="pull-left" style="padding: 10px" alt="@Model.Global.ApplicationName" src="Images/@(Model.Global.ApplicationName).png">
+                <a href="Index.cshtml" class="navbar-brand" style="font-size: larger; color: white" data-toggle="tooltip" data-placement="bottom" title="@Model.Global.ApplicationDescription">@Model.Global.ApplicationName</a>
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
@@ -115,7 +127,8 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="Security.cshtml">Security</a></li>
+                            <li><a href="Users.cshtml">Users</a></li>
+                            <li><a href="Groups.cshtml">Groups</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a href="SelectTheme.cshtml">Select Theme</a></li>
                         </ul>
@@ -151,19 +164,26 @@ else {
                 <span class="sr-only">Error</span>
                 <span id="error-msg-text"></span>
             </div>
-            <h3>@ViewBag.Title <small class="pull-right" id="titleText" style="margin-top: 8px"></small></h3>
+                <h3>
+                    @pageTitle <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
+                </h3>
         </div>
         <!-- Page Body for @ViewBag.Request.RequestUri.AbsolutePath -->
         @RenderBody()
 
     </div><!--/.container -->
-
-    <script src="Scripts/jquery-2.2.1.min.js"></script>
-    <script src="Scripts/bootstrap.min.js"></script>
+    <script src="Scripts/jquery-2.2.1@(min).js"></script>
+    <script src="Scripts/jquery-ui@(min).js"></script>
+    <script src="Scripts/bootstrap@(min).js"></script>
     <script src="Scripts/ie10-viewport-bug-workaround.js"></script>
-    <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
+    <script src="Scripts/respond@(min).js"></script>
+    <script src="Scripts/bootstrap-datepicker@(min).js"></script>
+    <script src="Scripts/bootstrap-toolkit@(min).js"></script>
+    <script src="Scripts/jquery.signalR-2.2.0@(min).js"></script>
     <script src="Scripts/gsf.web.client.js"></script>
     <script src="signalr/hubs"></script>
+    <script src="Scripts/plugins-all.js"></script>
+    <script src="Scripts/primeui@(min).js"></script>
     <script src="Scripts/Site.js"></script>
     @RenderSection("Scripts", false)
 </body>

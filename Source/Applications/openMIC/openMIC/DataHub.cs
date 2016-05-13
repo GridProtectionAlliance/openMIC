@@ -138,7 +138,7 @@ namespace openMIC
         // Static Constructor
         static DataHub()
         {
-            // Analyze and cache record operations of security hub
+            // Analyze and cache record operations of data hub
             s_recordOperationsCache = new RecordOperationsCache(typeof(DataHub));
         }
 
@@ -153,29 +153,36 @@ namespace openMIC
         /// </summary>
         public int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : (s_downloaderProtocolID = m_dataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'"));
 
-        public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize)
-        {
-            return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
-        }
-
-        public int QueryDeviceCount()
+        [RecordOperation(typeof(Device), RecordOperation.QueryRecordCount)]
+        public int QueryDeviceCount(string filterText)
         {
             return m_dataContext.Table<Device>().QueryRecordCount();
         }
 
+        [RecordOperation(typeof(Device), RecordOperation.QueryRecords)]
+        public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
+        {
+            return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Device), RecordOperation.DeleteRecord)]
         public void DeleteDevice(int id)
         {
             m_dataContext.Table<Device>().DeleteRecord(id);
         }
 
+        [RecordOperation(typeof(Device), RecordOperation.CreateNewRecord)]
         public Device NewDevice()
         {
             return new Device();
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Device), RecordOperation.AddNewRecord)]
         public void AddNewDevice(Device device)
         {
-            device.NodeID = Program.Host.Model.NodeID;
+            device.NodeID = Program.Host.Model.Global.NodeID;
             device.ProtocolID = DownloaderProtocolID;
             device.CreatedBy = UserInfo.CurrentUserID;
             device.CreatedOn = DateTime.UtcNow;
@@ -185,6 +192,8 @@ namespace openMIC
             m_dataContext.Table<Device>().AddNewRecord(device);
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Device), RecordOperation.UpdateRecord)]
         public void UpdateDevice(Device device)
         {
             device.ProtocolID = DownloaderProtocolID;
@@ -320,26 +329,33 @@ namespace openMIC
 
         #region [ Vendor Table Operations ]
 
-        public int QueryVendorCount()
+        [RecordOperation(typeof(Vendor), RecordOperation.QueryRecordCount)]
+        public int QueryVendorCount(string filterText)
         {
             return m_dataContext.Table<Vendor>().QueryRecordCount();
         }
 
-        public IEnumerable<Vendor> QueryVendors(string sortField, bool ascending, int page, int pageSize)
+        [RecordOperation(typeof(Vendor), RecordOperation.QueryRecords)]
+        public IEnumerable<Vendor> QueryVendors(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
             return m_dataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize);
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Vendor), RecordOperation.DeleteRecord)]
         public void DeleteVendor(int id)
         {
             m_dataContext.Table<Vendor>().DeleteRecord(id);
         }
 
+        [RecordOperation(typeof(Vendor), RecordOperation.CreateNewRecord)]
         public Vendor NewVendor()
         {
             return new Vendor();
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Vendor), RecordOperation.AddNewRecord)]
         public void AddNewVendor(Vendor vendor)
         {
             vendor.CreatedBy = UserInfo.CurrentUserID;
@@ -350,6 +366,8 @@ namespace openMIC
             m_dataContext.Table<Vendor>().AddNewRecord(vendor);
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Vendor), RecordOperation.UpdateRecord)]
         public void UpdateVendor(Vendor vendor)
         {
             m_dataContext.Table<Vendor>().UpdateRecord(vendor);

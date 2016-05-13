@@ -21,96 +21,36 @@
 //
 //******************************************************************************************************
 
-using System;
-
 namespace openMIC.Model
 {
+    /// <summary>
+    /// Defines a base application model with convenient global settings and functions.
+    /// </summary>
+    /// <remarks>
+    /// Custom view models should inherit from AppModel because the "Global" property is used by Layout.cshtml.
+    /// </remarks>
     public class AppModel
     {
+        #region [ Constructors ]
+
+        /// <summary>
+        /// Creates a new <see cref="AppModel"/>.
+        /// </summary>
+        public AppModel()
+        {
+            Global = (object)Program.Host.Model != null ? Program.Host.Model.Global : new GlobalSettings();
+        }
+
+        #endregion
+        
         #region [ Properties ]
 
-        public string CompanyName
+        /// <summary>
+        /// Gets global settings for application.
+        /// </summary>
+        public GlobalSettings Global
         {
             get;
-            set;
-        }
-
-        public string CompanyAcronym
-        {
-            get;
-            set;
-        }
-
-        public Guid NodeID
-        {
-            get;
-            set;
-        }
-
-        public string ApplicationName
-        {
-            get;
-            set;
-        }
-
-        public string ApplicationDescription
-        {
-            get;
-            set;
-        }
-
-        public string ApplicationKeywords
-        {
-            get;
-            set;
-        }
-
-        public string DateTimeFormat
-        {
-            get;
-            set;
-        }
-
-        public string BootstrapTheme
-        {
-            get;
-            set;
-        }
-
-        public int DefaultDialUpRetries
-        {
-            get;
-            set;
-        }
-
-        public int DefaultDialUpTimeout
-        {
-            get;
-            set;
-        }
-
-        public string DefaultFTPUserName
-        {
-            get;
-            set;
-        }
-
-        public string DefaultFTPPassword
-        {
-            get;
-            set;
-        }
-
-        public string DefaultRemotePath
-        {
-            get;
-            set;
-        }
-
-        public string DefaultLocalPath
-        {
-            get;
-            set;
         }
 
         #endregion

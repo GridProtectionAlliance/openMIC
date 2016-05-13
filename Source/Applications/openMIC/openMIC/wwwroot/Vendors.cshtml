@@ -5,8 +5,8 @@
 //
 //  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
 //  the NOTICE file distributed with this work for additional information regarding copyright ownership.
-//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
-//  not use this file except in compliance with the License. You may obtain a copy of the License at:
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
 //
 //      http://opensource.org/licenses/MIT
 //
@@ -21,6 +21,8 @@
 //
 //*****************************************************************************************************@
 @using System.Text
+@using GSF.Web.Model
+@using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
@@ -32,6 +34,8 @@
     </style>
 }
 @{
+    DataContext dataContext = ViewBag.DataContext;
+
     Layout = "Layout.cshtml";
     ViewBag.Title = "Vendors";
     ViewBag.PageControlScripts = new StringBuilder();
@@ -44,7 +48,7 @@
     };
 
     ViewBag.BodyRows = BodyRows().ToString();
-    ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
+    ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext).ToString();
 }
 @helper BodyRows()
 {
@@ -56,46 +60,18 @@
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
     </td>
 }
-@helper AddNewEditDialog()
+@helper AddNewEditDialog(DataContext dataContext)
 {
-    @Raw(ViewBag.DataContext.AddInputField<Vendor>("Acronym"))
-    @Raw(ViewBag.DataContext.AddInputField<Vendor>("Name"))
-    @Raw(ViewBag.DataContext.AddInputField<Vendor>("PhoneNumber", "tel", "Phone Number"))
-    @Raw(ViewBag.DataContext.AddInputField<Vendor>("ContactEmail", "email", "E-Mail"))
-    @Raw(ViewBag.DataContext.AddInputField<Vendor>("URL", "url", "Web Page"))
+    @Raw(dataContext.AddInputField<Vendor>("Acronym"))
+    @Raw(dataContext.AddInputField<Vendor>("Name"))
+    @Raw(dataContext.AddInputField<Vendor>("PhoneNumber", "tel", "Phone Number"))
+    @Raw(dataContext.AddInputField<Vendor>("ContactEmail", "email", "E-Mail"))
+    @Raw(dataContext.AddInputField<Vendor>("URL", "url", "Web Page"))
 }
 @Include("PagedViewModel.cshtml")
 @section Scripts {
     @Raw(ViewBag.PageControlScripts.ToString())
     <script>
-        // Configure view model
-        viewModel.defaultSortField = "ID";
-        viewModel.labelField = "Acronym";
-        viewModel.primaryKeyFields = ["ID"];
-        viewModel.initialFocusField = "inputAcronym";
-
-        viewModel.setQueryRecordCount(function () {
-            return dataHub.queryVendorCount();
-        });
-
-        viewModel.setQueryRecords(function (sortField, ascending, page, pageSize) {
-            return dataHub.queryVendors(sortField, ascending, page, pageSize);
-        });
-
-        viewModel.setDeleteRecord(function (keyValues) {
-            return dataHub.deleteVendor(keyValues[0]);
-        });
-
-        viewModel.setNewRecord(function () {
-            return dataHub.newVendor();
-        });
-
-        viewModel.setAddNewRecord(function (record) {
-            return dataHub.addNewVendor(record);
-        });
-
-        viewModel.setUpdateRecord(function (record) {
-            return dataHub.updateVendor(record);
-        });
+        @Raw(dataContext.RenderViewModelConfiguration<Vendor, DataHub>(ViewBag, "Acronym"))
     </script>
 }

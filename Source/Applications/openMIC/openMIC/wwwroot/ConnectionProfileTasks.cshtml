@@ -149,8 +149,8 @@
         const defaultConnectionString = new Dictionary();
 
         defaultConnectionString.set("fileExtensions", "*.*");
-        defaultConnectionString.set("remotePath", "@Raw(Model.DefaultRemotePath.JavaScriptEncode())");
-        defaultConnectionString.set("localPath", "@Raw(Model.DefaultLocalPath.JavaScriptEncode())");
+        defaultConnectionString.set("remotePath", "@Raw(Model.Global.DefaultRemotePath.JavaScriptEncode())");
+        defaultConnectionString.set("localPath", "@Raw(Model.Global.DefaultLocalPath.JavaScriptEncode())");
         defaultConnectionString.set("deleteRemoteFilesAfterDownload", false);
         defaultConnectionString.set("limitRemoteFileDownloadByAge", false);
         defaultConnectionString.set("deleteOldLocalFiles", false);

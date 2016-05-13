@@ -22,6 +22,7 @@
 //*****************************************************************************************************@
 @using System
 @using System.Collections.Generic
+@using System.Collections.Specialized
 @using System.Linq
 @using System.Net.Http
 @using GSF
@@ -40,39 +41,34 @@
     HttpRequestMessage request = ViewBag.Request;
     Dictionary<string, string> parameters = request.QueryParameters();
 
-    string selectedTheme = "None";
+    string selectedTheme;
+    parameters.TryGetValue("selectedTheme", out selectedTheme);
 
-    if (ViewBag.IsPost)
-    {
-        CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
-        try {
-            selectedTheme = ViewBag.PostData.selectedTheme;
-        }
-        catch (Exception ex) {
-            selectedTheme = ex.Message;
-        }
+    string currentTheme = FilePath.GetFileName(Model.Global.BootstrapTheme).Trim();
+    string[] fileList = FilePath.GetFileList(string.Format("{0}Content/bootstrap-theme-*.css", FilePath.AddPathSuffix(WebServer.Default.WebRootPath))).Select(fileName => FilePath.GetFileName(fileName).Trim()).ToArray();
+
+    if (selectedTheme == null) {
+        selectedTheme = currentTheme;
     }
-
-    string currentTheme = FilePath.GetFileName(Model.BootstrapTheme);
-    string[] fileList = FilePath.GetFileList(string.Format("{0}Content/bootstrap-theme-*.css", FilePath.AddPathSuffix(WebServer.Default.WebRootPath))).Select(FilePath.GetFileName).ToArray();
+    else {
+        CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
+        systemSettings["BootstrapTheme"].Value = "Content/" + selectedTheme;
+        Model.Global.BootstrapTheme = systemSettings["BootstrapTheme"].Value;
+        ConfigurationFile.Current.Save();
+    }
 }
-@foreach (KeyValuePair<string, string> kvp in parameters) {
-    <em>Key[@kvp.Key]=@kvp.Value</em><br />
-}
-Selected Theme = @selectedTheme<br/>
-@ViewBag.PostData.GetType().Name
 <div class="well">
-    <form role="form" method="post">
+    <form role="form">
         <div class="form-group">
             <label for="selectBootstrapTheme">Selected Bootstrap Theme:</label>
             <select class="form-control" id="selectBootstrapTheme" name="selectedTheme">
-                <option value="bootstrap-theme.css"@(string.Compare(currentTheme, "bootstrap-theme.css", StringComparison.OrdinalIgnoreCase) == 0 ? " selected" : "")>Default Bootstrap Theme</option>
+                <option value="bootstrap-theme.css"@(string.Compare(selectedTheme, "bootstrap-theme.css", StringComparison.OrdinalIgnoreCase) == 0 ? " selected" : "")>Default Bootstrap Theme</option>
                 @foreach (string theme in fileList) {
-                    <option value="@theme"@(string.Compare(currentTheme, theme, StringComparison.OrdinalIgnoreCase) == 0 ? " selected" : "")>@(FilePath.GetFileNameWithoutExtension(theme).Substring(16).ToTitleCase())</option>
+                    <option value="@theme"@(string.Compare(selectedTheme, theme, StringComparison.OrdinalIgnoreCase) == 0 ? " selected" : "")>@(FilePath.GetFileNameWithoutExtension(theme).Substring(16).ToTitleCase())</option>
                 }
             </select>
             <br />
-            <button type="submit" class="btn btn-primary pull-right">Apply</button>
+            <button class="btn btn-primary pull-right" onclick="$.post('@ViewBag.Request.RequestUri.AbsolutePath', { 'selectedTheme': $('#selectBootstrapTheme option:selected').text() });">Apply</button>
             <br />
         </div>
     </form>

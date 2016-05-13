@@ -27,10 +27,12 @@ using GSF;
 using GSF.Configuration;
 using GSF.IO;
 using GSF.Reflection;
+using GSF.Security.Model;
 using Microsoft.Owin.Hosting;
 using GSF.ServiceProcess;
 using GSF.Web.Hosting;
 using GSF.Web.Model;
+using GSF.Web.Security;
 using openMIC.Model;
 
 namespace openMIC
@@ -128,11 +130,13 @@ namespace openMIC
 
             // Make sure openMIC specific default service settings exist
             CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
+            CategorizedSettingsElementCollection securityProvider = ConfigurationFile.Current.Settings["securityProvider"];
 
             systemSettings.Add("CompanyName", "Grid Protection Alliance", "The name of the company who owns this instance of the openMIC.");
             systemSettings.Add("CompanyAcronym", "GPA", "The acronym representing the company who owns this instance of the openMIC.");
             systemSettings.Add("WebHostURL", "http://localhost:8080", "The web hosting URL for remote system management.");
-            systemSettings.Add("DateTimeFormat", "yyyy-MM-dd HH:mm.ss.fff", "The date/time format to use when rendering timestamps.");
+            systemSettings.Add("DateFormat", "MM/dd/yyyy", "The default date format to use when rendering timestamps.");
+            systemSettings.Add("TimeFormat", "HH:mm.ss.fff", "The default time format to use when rendering timestamps.");
             systemSettings.Add("BootstrapTheme", "Content/bootstrap.min.css", "Path to Bootstrap CSS to use for rendering styles.");
             systemSettings.Add("DefaultDialUpRetries", 3, "Default dial-up connection retries.");
             systemSettings.Add("DefaultDialUpTimeout", 90, "Default dial-up connection timeout.");
@@ -143,23 +147,27 @@ namespace openMIC
 
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
-            Model = new AppModel
-            {
-                CompanyName = systemSettings["CompanyName"].Value,
-                CompanyAcronym = systemSettings["CompanyAcronym"].Value,
-                NodeID = Guid.Parse(systemSettings["NodeID"].Value),
-                ApplicationName = "openMIC",
-                ApplicationDescription = "open Meter Information Collection System",
-                ApplicationKeywords = "open source, utility, software, meter, interrogation",
-                DateTimeFormat = systemSettings["DateTimeFormat"].Value,
-                BootstrapTheme = systemSettings["BootstrapTheme"].Value,
-                DefaultDialUpRetries = int.Parse(systemSettings["DefaultDialUpRetries"].Value),
-                DefaultDialUpTimeout = int.Parse(systemSettings["DefaultDialUpTimeout"].Value),
-                DefaultFTPUserName = systemSettings["DefaultFTPUserName"].Value,
-                DefaultFTPPassword = systemSettings["DefaultFTPPassword"].Value,
-                DefaultRemotePath = systemSettings["DefaultRemotePath"].Value,
-                DefaultLocalPath = FilePath.GetAbsolutePath(systemSettings["DefaultLocalPath"].Value)
-            };
+            Model = new AppModel();
+            Model.Global.CompanyName = systemSettings["CompanyName"].Value;
+            Model.Global.CompanyAcronym = systemSettings["CompanyAcronym"].Value;
+            Model.Global.NodeID = Guid.Parse(systemSettings["NodeID"].Value);
+            Model.Global.ApplicationName = "openMIC";
+            Model.Global.ApplicationDescription = "open Meter Information Collection System";
+            Model.Global.ApplicationKeywords = "open source, utility, software, meter, interrogation";
+            Model.Global.DateFormat = systemSettings["DateFormat"].Value;
+            Model.Global.TimeFormat = systemSettings["TimeFormat"].Value;
+            Model.Global.DateTimeFormat = $"{Model.Global.DateFormat} {Model.Global.TimeFormat}";
+            Model.Global.PasswordRequirementsRegex = securityProvider["PasswordRequirementsRegex"].Value;
+            Model.Global.PasswordRequirementsError = securityProvider["PasswordRequirementsError"].Value;
+            Model.Global.BootstrapTheme = systemSettings["BootstrapTheme"].Value;
+            Model.Global.PasswordRequirementsRegex = securityProvider["PasswordRequirementsRegex"].Value;
+            Model.Global.PasswordRequirementsError = securityProvider["PasswordRequirementsError"].Value;
+            Model.Global.DefaultDialUpRetries = int.Parse(systemSettings["DefaultDialUpRetries"].Value);
+            Model.Global.DefaultDialUpTimeout = int.Parse(systemSettings["DefaultDialUpTimeout"].Value);
+            Model.Global.DefaultFTPUserName = systemSettings["DefaultFTPUserName"].Value;
+            Model.Global.DefaultFTPPassword = systemSettings["DefaultFTPPassword"].Value;
+            Model.Global.DefaultRemotePath = systemSettings["DefaultRemotePath"].Value;
+            Model.Global.DefaultLocalPath = FilePath.GetAbsolutePath(systemSettings["DefaultLocalPath"].Value);
 
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
             ServiceHelper.LoggedException += LoggedExceptionHandler;
@@ -170,6 +178,12 @@ namespace openMIC
                 WebServer webServer = WebServer.Default;
                 webServer.StatusMessage += WebServer_StatusMessage;
                 webServer.ExecutionException += LoggedExceptionHandler;
+
+                // Define types foe Razor pages - self-hosted web service does not have a separate controller,
+                // so we must define configuration types for all page-view model based views here:
+                webServer.PagedViewModelTypes.TryAdd("Vendors.cshtml", new Tuple<Type, Type>(typeof(Vendor), typeof(DataHub)));
+                webServer.PagedViewModelTypes.TryAdd("Users.cshtml", new Tuple<Type, Type>(typeof(UserAccount), typeof(SecurityHub)));
+                webServer.PagedViewModelTypes.TryAdd("Groups.cshtml", new Tuple<Type, Type>(typeof(SecurityGroup), typeof(SecurityHub)));
 
                 // Initiate pre-compile of base templates
                 if (AssemblyInfo.EntryAssembly.Debuggable)
