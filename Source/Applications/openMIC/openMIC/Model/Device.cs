@@ -63,6 +63,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Company")]
         public int? CompanyID
         {
             get;
@@ -81,6 +82,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Vendor Device")]
         public int? VendorDeviceID
         {
             get;
