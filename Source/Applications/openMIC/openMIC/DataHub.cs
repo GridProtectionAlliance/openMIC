@@ -184,7 +184,7 @@ namespace openMIC
         {
             device.NodeID = Program.Host.Model.Global.NodeID;
             device.ProtocolID = DownloaderProtocolID;
-            device.CreatedBy = UserInfo.CurrentUserID;
+            device.CreatedBy = GetCurrentUserID();
             device.CreatedOn = DateTime.UtcNow;
             device.UpdatedBy = device.CreatedBy;
             device.UpdatedOn = device.CreatedOn;
@@ -226,7 +226,7 @@ namespace openMIC
 
         public void AddNewConnectionProfile(ConnectionProfile connectionProfile)
         {
-            connectionProfile.CreatedBy = UserInfo.CurrentUserID;
+            connectionProfile.CreatedBy = GetCurrentUserID();
             connectionProfile.CreatedOn = DateTime.UtcNow;
             connectionProfile.UpdatedBy = connectionProfile.CreatedBy;
             connectionProfile.UpdatedOn = connectionProfile.CreatedOn;
@@ -273,7 +273,7 @@ namespace openMIC
 
         public void AddNewConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
         {
-            connectionProfileTask.CreatedBy = UserInfo.CurrentUserID;
+            connectionProfileTask.CreatedBy = GetCurrentUserID();
             connectionProfileTask.CreatedOn = DateTime.UtcNow;
             connectionProfileTask.UpdatedBy = connectionProfileTask.CreatedBy;
             connectionProfileTask.UpdatedOn = connectionProfileTask.CreatedOn;
@@ -312,7 +312,7 @@ namespace openMIC
 
         public void AddNewCompany(Company company)
         {
-            company.CreatedBy = UserInfo.CurrentUserID;
+            company.CreatedBy = GetCurrentUserID();
             company.CreatedOn = DateTime.UtcNow;
             company.UpdatedBy = company.CreatedBy;
             company.UpdatedOn = company.CreatedOn;
@@ -358,7 +358,7 @@ namespace openMIC
         [RecordOperation(typeof(Vendor), RecordOperation.AddNewRecord)]
         public void AddNewVendor(Vendor vendor)
         {
-            vendor.CreatedBy = UserInfo.CurrentUserID;
+            vendor.CreatedBy = GetCurrentUserID();
             vendor.CreatedOn = DateTime.UtcNow;
             vendor.UpdatedBy = vendor.CreatedBy;
             vendor.UpdatedOn = vendor.CreatedOn;
@@ -399,7 +399,7 @@ namespace openMIC
 
         public void AddNewVendorDevice(VendorDevice vendorDevice)
         {
-            vendorDevice.CreatedBy = UserInfo.CurrentUserID;
+            vendorDevice.CreatedBy = GetCurrentUserID();
             vendorDevice.CreatedOn = DateTime.UtcNow;
             vendorDevice.UpdatedBy = vendorDevice.CreatedBy;
             vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
@@ -410,6 +410,15 @@ namespace openMIC
         public void UpdateVendorDevice(VendorDevice vendorDevice)
         {
             m_dataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
+        }
+
+        /// <summary>
+        /// Gets current user ID.
+        /// </summary>
+        /// <returns>Current user ID.</returns>
+        public string GetCurrentUserID()
+        {
+            return Thread.CurrentPrincipal.Identity?.Name ?? UserInfo.CurrentUserID;
         }
 
         #endregion
