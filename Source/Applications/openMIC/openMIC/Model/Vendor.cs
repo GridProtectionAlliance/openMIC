@@ -32,6 +32,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Phone Number")]
         [StringLength(200)]
         public string PhoneNumber
         {
@@ -39,6 +40,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("E-Mail")]
         [StringLength(200)]
         public string ContactEmail
         {
@@ -46,6 +48,8 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Web Page")]
+        [RegularExpression(@"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$", ErrorMessage = "Invalid URL.")]
         public string URL
         {
             get;

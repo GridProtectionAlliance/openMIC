@@ -38,7 +38,6 @@
 
     Layout = "Layout.cshtml";
     ViewBag.Title = "Vendors";
-    ViewBag.PageControlScripts = new StringBuilder();
 
     ViewBag.HeaderColumns = new[]
     {   //    { "Field", "Label", "Classes" }
@@ -64,9 +63,9 @@
 {
     @Raw(dataContext.AddInputField<Vendor>("Acronym"))
     @Raw(dataContext.AddInputField<Vendor>("Name"))
-    @Raw(dataContext.AddInputField<Vendor>("PhoneNumber", "tel", "Phone Number"))
-    @Raw(dataContext.AddInputField<Vendor>("ContactEmail", "email", "E-Mail"))
-    @Raw(dataContext.AddInputField<Vendor>("URL", "url", "Web Page"))
+    @Raw(dataContext.AddInputField<Vendor>("PhoneNumber", "tel"))
+    @Raw(dataContext.AddInputField<Vendor>("ContactEmail", "email"))
+    @Raw(dataContext.AddInputField<Vendor>("URL", "url"))
 }
 @Include("PagedViewModel.cshtml")
 @section Scripts {
