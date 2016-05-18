@@ -1,11 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using GSF.Data.Model;
 
 namespace openMIC.Model
 {
-    [Table("VendorDevice")]
     public class VendorDevice
     {
         [PrimaryKey(true)]

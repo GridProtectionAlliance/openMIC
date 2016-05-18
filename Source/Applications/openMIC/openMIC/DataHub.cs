@@ -204,26 +204,33 @@ namespace openMIC
 
         #region [ ConnectionProfile Table Operations ]
 
-        public IEnumerable<ConnectionProfile> QueryConnectionProfiles(string sortField, bool ascending, int page, int pageSize)
-        {
-            return m_dataContext.Table<ConnectionProfile>().QueryRecords(sortField, ascending, page, pageSize);
-        }
-
-        public int QueryConnectionProfileCount()
+        [RecordOperation(typeof(ConnectionProfile), RecordOperation.QueryRecordCount)]
+        public int QueryConnectionProfileCount(string filterText)
         {
             return m_dataContext.Table<ConnectionProfile>().QueryRecordCount();
         }
 
+        [RecordOperation(typeof(ConnectionProfile), RecordOperation.QueryRecords)]
+        public IEnumerable<ConnectionProfile> QueryConnectionProfiles(string sortField, bool ascending, int page, int pageSize, string filterText)
+        {
+            return m_dataContext.Table<ConnectionProfile>().QueryRecords(sortField, ascending, page, pageSize);
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(ConnectionProfile), RecordOperation.DeleteRecord)]
         public void DeleteConnectionProfile(int id)
         {
             m_dataContext.Table<ConnectionProfile>().DeleteRecord(id);
         }
 
+        [RecordOperation(typeof(ConnectionProfile), RecordOperation.CreateNewRecord)]
         public ConnectionProfile NewConnectionProfile()
         {
             return new ConnectionProfile();
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(ConnectionProfile), RecordOperation.AddNewRecord)]
         public void AddNewConnectionProfile(ConnectionProfile connectionProfile)
         {
             connectionProfile.CreatedBy = GetCurrentUserID();
@@ -234,6 +241,8 @@ namespace openMIC
             m_dataContext.Table<ConnectionProfile>().AddNewRecord(connectionProfile);
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(ConnectionProfile), RecordOperation.UpdateRecord)]
         public void UpdateConnectionProfile(ConnectionProfile connectionProfile)
         {
             m_dataContext.Table<ConnectionProfile>().UpdateRecord(connectionProfile);
@@ -243,16 +252,8 @@ namespace openMIC
 
         #region [ ConnectionProfileTask Table Operations ]
 
-        public IEnumerable<ConnectionProfileTask> QueryConnectionProfileTasks(int parentID, string sortField, bool ascending, int page, int pageSize)
-        {
-            return m_dataContext.Table<ConnectionProfileTask>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction
-            {
-                FilterExpression = "ConnectionProfileID = {0}",
-                Parameters = new object[] { parentID }
-            });
-        }
-
-        public int QueryConnectionProfileTaskCount(int parentID)
+        [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.QueryRecordCount)]
+        public int QueryConnectionProfileTaskCount(int parentID, string filterText)
         {
             return m_dataContext.Table<ConnectionProfileTask>().QueryRecordCount(new RecordRestriction
             {
@@ -261,16 +262,31 @@ namespace openMIC
             });
         }
 
+        [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.QueryRecords)]
+        public IEnumerable<ConnectionProfileTask> QueryConnectionProfileTasks(int parentID, string sortField, bool ascending, int page, int pageSize, string filterText)
+        {
+            return m_dataContext.Table<ConnectionProfileTask>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction
+            {
+                FilterExpression = "ConnectionProfileID = {0}",
+                Parameters = new object[] { parentID }
+            });
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.DeleteRecord)]
         public void DeleteConnectionProfileTask(int id)
         {
             m_dataContext.Table<ConnectionProfileTask>().DeleteRecord(id);
         }
 
+        [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.CreateNewRecord)]
         public ConnectionProfileTask NewConnectionProfileTask()
         {
             return new ConnectionProfileTask();
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.AddNewRecord)]
         public void AddNewConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
         {
             connectionProfileTask.CreatedBy = GetCurrentUserID();
@@ -281,6 +297,8 @@ namespace openMIC
             m_dataContext.Table<ConnectionProfileTask>().AddNewRecord(connectionProfileTask);
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.UpdateRecord)]
         public void UpdateConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
         {
             m_dataContext.Table<ConnectionProfileTask>().UpdateRecord(connectionProfileTask);
@@ -290,26 +308,33 @@ namespace openMIC
 
         #region [ Company Table Operations ]
 
-        public int QueryCompanyCount()
+        [RecordOperation(typeof(Company), RecordOperation.QueryRecordCount)]
+        public int QueryCompanyCount(string filterText)
         {
             return m_dataContext.Table<Company>().QueryRecordCount();
         }
 
-        public IEnumerable<Company> QueryCompanies(string sortField, bool ascending, int page, int pageSize)
+        [RecordOperation(typeof(Company), RecordOperation.QueryRecords)]
+        public IEnumerable<Company> QueryCompanies(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
             return m_dataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize);
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Company), RecordOperation.DeleteRecord)]
         public void DeleteCompany(int id)
         {
             m_dataContext.Table<Company>().DeleteRecord(id);
         }
 
+        [RecordOperation(typeof(Company), RecordOperation.CreateNewRecord)]
         public Company NewCompany()
         {
             return new Company();
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Company), RecordOperation.AddNewRecord)]
         public void AddNewCompany(Company company)
         {
             company.CreatedBy = GetCurrentUserID();
@@ -320,6 +345,8 @@ namespace openMIC
             m_dataContext.Table<Company>().AddNewRecord(company);
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Company), RecordOperation.UpdateRecord)]
         public void UpdateCompany(Company company)
         {
             m_dataContext.Table<Company>().UpdateRecord(company);
@@ -377,26 +404,33 @@ namespace openMIC
 
         #region [ VendorDevice Table Operations ]
 
-        public int QueryVendorDeviceCount()
+        [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecordCount)]
+        public int QueryVendorDeviceCount(string filterText)
         {
             return m_dataContext.Table<VendorDevice>().QueryRecordCount();
         }
 
-        public IEnumerable<VendorDevice> QueryVendorDevices(string sortField, bool ascending, int page, int pageSize)
+        [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecords)]
+        public IEnumerable<VendorDevice> QueryVendorDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
             return m_dataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize);
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(VendorDevice), RecordOperation.DeleteRecord)]
         public void DeleteVendorDevice(int id)
         {
             m_dataContext.Table<VendorDevice>().DeleteRecord(id);
         }
 
+        [RecordOperation(typeof(VendorDevice), RecordOperation.CreateNewRecord)]
         public VendorDevice NewVendorDevice()
         {
             return new VendorDevice();
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(VendorDevice), RecordOperation.AddNewRecord)]
         public void AddNewVendorDevice(VendorDevice vendorDevice)
         {
             vendorDevice.CreatedBy = GetCurrentUserID();
@@ -407,10 +441,16 @@ namespace openMIC
             m_dataContext.Table<VendorDevice>().AddNewRecord(vendorDevice);
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(VendorDevice), RecordOperation.UpdateRecord)]
         public void UpdateVendorDevice(VendorDevice vendorDevice)
         {
             m_dataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
         }
+
+        #endregion
+
+        #region [ Miscellaneous Functions ]
 
         /// <summary>
         /// Gets current user ID.

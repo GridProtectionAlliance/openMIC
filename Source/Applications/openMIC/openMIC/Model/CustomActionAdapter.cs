@@ -1,10 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace openMIC.Model
 {
-    [Table("CustomActionAdapter")]
     public class CustomActionAdapter
     {
         public Guid NodeID

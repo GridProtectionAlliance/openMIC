@@ -1,9 +1,7 @@
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace openMIC.Model
 {
-    [Table("AlarmLog")]
     public class AlarmLog
     {
         public int ID
@@ -36,7 +34,6 @@ namespace openMIC.Model
             set;
         }
 
-        [Column(TypeName = "datetime2")]
         public DateTime Timestamp
         {
             get;

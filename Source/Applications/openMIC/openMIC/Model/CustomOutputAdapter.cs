@@ -1,10 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace openMIC.Model
 {
-    [Table("CustomOutputAdapter")]
     public class CustomOutputAdapter
     {
         public Guid NodeID

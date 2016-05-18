@@ -1,20 +1,18 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using GSF.Data.Model;
 
 namespace openMIC.Model
 {
-    [Table("Measurement")]
     public class Measurement
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [PrimaryKey(true)]
         public int PointID
         {
             get;
             set;
         }
 
-        [Key]
         public Guid SignalID
         {
             get;

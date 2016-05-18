@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using GSF.Data.Model;
 
 namespace openMIC.Model
 {
-    [Table("Protocol")]
     public class Protocol
     {
+        [PrimaryKey(true)]
         public int ID
         {
             get;

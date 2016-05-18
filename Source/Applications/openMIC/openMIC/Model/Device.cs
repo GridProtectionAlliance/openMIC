@@ -1,12 +1,9 @@
 using System;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using GSF.Data.Model;
 
 namespace openMIC.Model
 {
-    [Table("Device")]
     public class Device
     {
         public Guid NodeID
