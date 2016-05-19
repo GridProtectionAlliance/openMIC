@@ -252,6 +252,11 @@ namespace openMIC
 
         #region [ ConnectionProfileTask Table Operations ]
 
+        public int QueryConnectionProfileTaskCount(int parentID)
+        {
+            return QueryConnectionProfileTaskCount(parentID, null);
+        }
+
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.QueryRecordCount)]
         public int QueryConnectionProfileTaskCount(int parentID, string filterText)
         {

@@ -20,7 +20,8 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
-@using System.Text
+@using GSF.Web.Model
+@using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
@@ -32,9 +33,10 @@
     </style>
 }
 @{
+    DataContext dataContext = ViewBag.DataContext;
+
     Layout = "Layout.cshtml";
     ViewBag.Title = "Companies";
-    ViewBag.PageControlScripts = new StringBuilder();
 
     ViewBag.HeaderColumns = new[]
     {   //    { "Field", "Label", "Classes" }
@@ -44,7 +46,7 @@
     };
 
     ViewBag.BodyRows = BodyRows().ToString();
-    ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
+    ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext).ToString();
 }
 @helper BodyRows()
 {
@@ -56,46 +58,18 @@
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
     </td>
 }
-@helper AddNewEditDialog()
+@helper AddNewEditDialog(DataContext dataContext)
 {
-    @Raw(ViewBag.DataContext.AddInputField<Company>("Acronym"))
-    @Raw(ViewBag.DataContext.AddInputField<Company>("Name"))
-    @Raw(ViewBag.DataContext.AddInputField<Company>("MapAcronym"))
-    @Raw(ViewBag.DataContext.AddInputField<Company>("URL", "url"))
-    @Raw(ViewBag.DataContext.AddInputField<Company>("LoadOrder", "number", "Load Order"))
+    @Raw(dataContext.AddInputField<Company>("Acronym"))
+    @Raw(dataContext.AddInputField<Company>("Name"))
+    @Raw(dataContext.AddInputField<Company>("MapAcronym"))
+    @Raw(dataContext.AddInputField<Company>("URL", "url"))
+    @Raw(dataContext.AddInputField<Company>("LoadOrder", "number", "Load Order"))
 }
 @Include("PagedViewModel.cshtml")
 @section Scripts {
     @Raw(ViewBag.PageControlScripts.ToString())
     <script>
-        // Configure view model
-        viewModel.defaultSortField = "LoadOrder";
-        viewModel.labelField = "Acronym";
-        viewModel.primaryKeyFields = ["ID"];
-        viewModel.initialFocusField = "inputAcronym";
-
-        viewModel.setQueryRecordCount(function() {
-            return dataHub.queryCompanyCount();
-        });
-
-        viewModel.setQueryRecords(function(sortField, ascending, page, pageSize) {
-            return dataHub.queryCompanies(sortField, ascending, page, pageSize);
-        });
-
-        viewModel.setDeleteRecord(function (keyValues) {
-            return dataHub.deleteCompany(keyValues[0]);
-        });
-
-        viewModel.setNewRecord(function() {
-            return dataHub.newCompany();
-        });
-
-        viewModel.setAddNewRecord(function(record) {
-            return dataHub.addNewCompany(record);
-        });
-
-        viewModel.setUpdateRecord(function(record) {
-            return dataHub.updateCompany(record);
-        });
+        @Raw(dataContext.RenderViewModelConfiguration<Company, DataHub>(ViewBag, "Acronym"))
     </script>
 }
