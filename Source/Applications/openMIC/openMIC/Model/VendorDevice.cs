@@ -33,6 +33,8 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Web Page")]
+        [RegularExpression(@"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$", ErrorMessage = "Invalid URL.")]
         public string URL
         {
             get;

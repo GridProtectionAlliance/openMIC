@@ -23,11 +23,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-using GSF;
 using GSF.Data.Model;
 using GSF.Identity;
 using GSF.Web.Model;
@@ -156,13 +153,19 @@ namespace openMIC
         [RecordOperation(typeof(Device), RecordOperation.QueryRecordCount)]
         public int QueryDeviceCount(string filterText)
         {
-            return m_dataContext.Table<Device>().QueryRecordCount();
+            if (string.IsNullOrWhiteSpace(filterText))
+                return m_dataContext.Table<Device>().QueryRecordCount();
+
+            return m_dataContext.Table<Device>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0}", $"%{filterText}%"));
         }
 
         [RecordOperation(typeof(Device), RecordOperation.QueryRecords)]
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
+            if (string.IsNullOrWhiteSpace(filterText))
+                return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
+
+            return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0}", $"%{filterText}%"));
         }
 
         [AuthorizeHubRole("Administrator, Editor")]

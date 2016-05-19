@@ -12,8 +12,14 @@
   <Component Id="Devices_cshtml">
     <File Id="Devices.cshtml" Name="Devices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Devices.cshtml" />
   </Component>
-  <Component Id="index_cshtml">
-    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
+  <Component Id="Groups_cshtml">
+    <File Id="Groups.cshtml" Name="Groups.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Groups.cshtml" />
+  </Component>
+  <Component Id="Help_cshtml">
+    <File Id="Help.cshtml" Name="Help.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Help.cshtml" />
+  </Component>
+  <Component Id="Index_cshtml">
+    <File Id="Index.cshtml" Name="Index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Index.cshtml" />
   </Component>
   <Component Id="Layout_cshtml">
     <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
@@ -32,6 +38,9 @@
   </Component>
   <Component Id="Test_cshtml">
     <File Id="Test.cshtml" Name="Test.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Test.cshtml" />
+  </Component>
+  <Component Id="Users_cshtml">
+    <File Id="Users.cshtml" Name="Users.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Users.cshtml" />
   </Component>
   <Component Id="VendorDevices_cshtml">
     <File Id="VendorDevices.cshtml" Name="VendorDevices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\VendorDevices.cshtml" />

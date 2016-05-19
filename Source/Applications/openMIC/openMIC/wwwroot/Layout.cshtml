@@ -54,6 +54,44 @@
     <link href="Content/primeui@(min).css" rel="stylesheet">
     <link href="Content/Site.css" rel="stylesheet">
     @RenderSection("StyleSheets", false)
+    <style>
+        @@media (max-width: 995px) {
+            .navbar-header {
+                float: none;
+            }
+            .navbar-left,.navbar-right {
+                float: none !important;
+            }
+            .navbar-toggle {
+                display: block;
+            }
+            .navbar-collapse {
+                border-top: 1px solid transparent;
+                box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+            }
+            .navbar-fixed-top {
+                top: 0;
+                border-width: 0 0 1px;
+            }
+            .navbar-collapse.collapse {
+                display: none!important;
+            }
+            .navbar-nav {
+                float: none!important;
+                margin-top: 7.5px;
+            }
+            .navbar-nav>li {
+                float: none;
+            }
+            .navbar-nav>li>a {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+            .collapse.in{
+                display:block !important;
+            }
+        }       
+    </style>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -103,8 +141,8 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li @Raw(ViewBag.Title == "Home" ? "class=\"active\"" : "")><a href="Index.cshtml">Home</a></li>
-                    <li @Raw(ViewBag.Title == "Devices" ? "class=\"active\"" : "")><a href="Devices.cshtml">Devices</a></li>
+                    <li @Raw(pageTitle == "Home" ? "class=\"active\"" : "")><a href="Index.cshtml">Home</a></li>
+                    <li @Raw(pageTitle == "Devices" ? "class=\"active\"" : "")><a href="Devices.cshtml">Devices</a></li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Monitoring <span class="caret"></span></a>
                         <ul class="dropdown-menu">
@@ -133,6 +171,7 @@
                             <li><a href="SelectTheme.cshtml">Select Theme</a></li>
                         </ul>
                     </li>
+                    <li @Raw(pageTitle == "Help" ? "class=\"active\"" : "")><a href="Help.cshtml">Help</a></li>
                 </ul>
                 <p class="nav navbar-text navbar-right">
                     <button type="button" class="btn btn-sm btn-info disabled">Log Out</button>
@@ -164,9 +203,9 @@ else {
                 <span class="sr-only">Error</span>
                 <span id="error-msg-text"></span>
             </div>
-                <h3>
-                    @pageTitle <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
-                </h3>
+            <h3>
+                @pageTitle <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
+            </h3>
         </div>
         <!-- Page Body for @ViewBag.Request.RequestUri.AbsolutePath -->
         @RenderBody()

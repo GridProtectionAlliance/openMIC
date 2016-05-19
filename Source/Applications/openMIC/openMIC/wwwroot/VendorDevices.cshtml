@@ -20,7 +20,8 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
-@using System.Text
+@using GSF.Web.Model
+@using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
@@ -32,9 +33,10 @@
     </style>
 }
 @{
+    DataContext dataContext = ViewBag.DataContext;
+
     Layout = "Layout.cshtml";
     ViewBag.Title = "Vendor Devices";
-    ViewBag.PageControlScripts = new StringBuilder();
 
     ViewBag.HeaderColumns = new[]
     {   //    { "Field", "Label", "Classes" }
@@ -44,7 +46,7 @@
     };
 
     ViewBag.BodyRows = BodyRows().ToString();
-    ViewBag.AddNewEditDialog = AddNewEditDialog().ToString();
+    ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext).ToString();
 }
 @helper BodyRows()
 {
@@ -56,45 +58,17 @@
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
     </td>
 }
-@helper AddNewEditDialog()
+@helper AddNewEditDialog(DataContext dataContext)
 {
-    @Raw(ViewBag.DataContext.AddSelectField<VendorDevice, Vendor>("VendorID", "ID", "Acronym"))
-    @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("Name"))
-    @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("Description"))
-    @Raw(ViewBag.DataContext.AddInputField<VendorDevice>("URL", "url", "Web Page"))
+    @Raw(dataContext.AddSelectField<VendorDevice, Vendor>("VendorID", "ID", "Acronym"))
+    @Raw(dataContext.AddInputField<VendorDevice>("Name"))
+    @Raw(dataContext.AddInputField<VendorDevice>("Description"))
+    @Raw(dataContext.AddInputField<VendorDevice>("URL", "url"))
 }
 @Include("PagedViewModel.cshtml")
 @section Scripts {
     @Raw(ViewBag.PageControlScripts.ToString())
     <script>
-        // Configure view model
-        viewModel.defaultSortField = "ID";
-        viewModel.labelField = "Name";
-        viewModel.primaryKeyFields = ["ID"];
-        viewModel.initialFocusField = "inputName";
-
-        viewModel.setQueryRecordCount(function () {
-            return dataHub.queryVendorDeviceCount();
-        });
-
-        viewModel.setQueryRecords(function (sortField, ascending, page, pageSize) {
-            return dataHub.queryVendorDevices(sortField, ascending, page, pageSize);
-        });
-
-        viewModel.setDeleteRecord(function (keyValues) {
-            return dataHub.deleteVendorDevice(keyValues[0]);
-        });
-
-        viewModel.setNewRecord(function () {
-            return dataHub.newVendorDevice();
-        });
-
-        viewModel.setAddNewRecord(function (record) {
-            return dataHub.addNewVendorDevice(record);
-        });
-
-        viewModel.setUpdateRecord(function (record) {
-            return dataHub.updateVendorDevice(record);
-        });
+        @Raw(dataContext.RenderViewModelConfiguration<VendorDevice, DataHub>(ViewBag, "Name"))
     </script>
 }

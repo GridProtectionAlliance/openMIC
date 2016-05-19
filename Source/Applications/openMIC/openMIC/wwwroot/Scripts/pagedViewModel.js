@@ -53,6 +53,7 @@ function PagedViewModel() {
     self.canEdit = ko.observable(true);                             // Can edit flag - normally controlled by external roles
     self.canAddNew = ko.observable(true);                           // Can add new flag - normally controlled by external roles
     self.canDelete = ko.observable(true);                           // Can delete flag - normally controlled by external roles
+    self.filterText = "";                                           // Search filter text
 
     // Internal fields
     self._currentPageSize = ko.observable(1);
@@ -173,8 +174,8 @@ function PagedViewModel() {
     }).extend({ notify: "always" });
 
     // Delegates
-    self.queryRecordCount = function () { };
-    self.queryRecords = function (/* sortField, ascending, page, pageSize */) { };
+    self.queryRecordCount = function (/* filterText */) { };
+    self.queryRecords = function (/* sortField, ascending, page, pageSize, filterText */) { };
     self.deleteRecord = function (/* keyValues[] */) { };
     self.newRecord = function () { };
     self.addNewRecord = function (/* record */) { };
@@ -228,7 +229,7 @@ function PagedViewModel() {
 
         if (self.dataHubIsConnected()) {
             // Query total record count
-            self.queryRecordCount().done(function (count) {
+            self.queryRecordCount(self.filterText).done(function (count) {
                 // Update record count observable
                 self.recordCount(count);
 
@@ -377,7 +378,8 @@ function PagedViewModel() {
 
     self.queryPageRecords = function () {
         if (self.dataHubIsConnected())
-            self.queryRecords(self.sortField(), self.sortAscending(), self.currentPage(), self.currentPageSize()).done(function (records) {
+        {
+            self.queryRecords(self.sortField(), self.sortAscending(), self.currentPage(), self.currentPageSize(), self.filterText).done(function (records) {
                 $(self).trigger("pageRecordsQueried", [records]);
                 self.pageRecords.removeAll();
                 self.pageRecords(records);
@@ -390,6 +392,11 @@ function PagedViewModel() {
             }).fail(function (error) {
                 showErrorMessage(error);
             });
+
+            self.queryRecordCount(self.filterText).done(function (count) {
+                self.recordCount(count);
+            });
+        }
     }
 
     self.removePageRecord = function (record) {

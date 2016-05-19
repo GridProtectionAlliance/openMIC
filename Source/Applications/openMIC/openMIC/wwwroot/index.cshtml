@@ -20,7 +20,7 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
-@using System
+@using System.Threading
 @using GSF
 @using GSF.Data
 @using GSF.Identity
@@ -181,7 +181,7 @@
         });
 
         $("#restartButton").click(function () {
-            if (hubIsConnected)
+            if (hubIsConnected && confirm("Are you sure you want to restart service?"))
                 serviceHub.sendCommand("restart");
         });
 
@@ -195,6 +195,15 @@
         //});
     </script>
 }
+@functions {
+    public string GetCurrentUserID()
+    {
+        if (Thread.CurrentPrincipal.Identity == null)
+            return UserInfo.CurrentUserID;
+
+        return Thread.CurrentPrincipal.Identity.Name;
+    }
+}
 <div class="row">
     <div class="col-lg-4 col-md-4 col-sm-5">
         <div class="panel panel-default">
@@ -202,8 +211,8 @@
             <div class="panel-body">
                 <div class="btn-group-vertical btn-block">
                     <a href="Devices.cshtml" role="button" class="btn btn-primary">Devices</a>
-                    <a href="" role="button" class="btn btn-default">Status</a>
-                    <a href="" role="button" class="btn btn-default">Schedules</a>
+                    <a href="Status.cshtml" role="button" class="btn btn-default">Status</a>
+                    <a href="ConnectionProfiles.cshtml" role="button" class="btn btn-default">Connection Profiles</a>
                     <button type="button" class="btn btn-default" id="restartButton" hub-dependent>Restart Service</button>
                 </div>
             </div>
@@ -214,7 +223,7 @@
                 <hr class="quarter-break"/>
                 <span class="badge badge-fixed" id="localTime">@DateTime.UtcNow.ToString(Model.Global.DateTimeFormat)</span>Local&nbsp;Time
                 <hr class="quarter-break" />
-                <span class="badge badge-fixed" id="currentUser">@UserInfo.CurrentUserID</span> Current User
+                <span class="badge badge-fixed" id="currentUser">@GetCurrentUserID()</span> Current User
             </li>
             <li class="list-group-item">
                 <span class="badge badge-fixed" id="applicationVersion">@applicationVersion</span>App&nbsp;Version

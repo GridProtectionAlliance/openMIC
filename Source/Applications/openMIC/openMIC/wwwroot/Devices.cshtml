@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using GSF
 @using GSF.Web
 @using GSF.Web.Model
 @using openMIC
@@ -60,6 +61,16 @@
 
     // Add cron pattern validation to schedule connection string field
     dataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", @"(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|1?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[1-2]?[0-9]|3[0-1]|\*\/[0-9]+)\s+(\*|[0-9]|1[0-2]|\*\/[0-9]+)\s+(\*\/[0-9]+|\*|[0-7])\s*(\*\/[0-9]+|\*|[0-9]+)?", "Invalid cron syntax.");
+}
+<div style="display: none" search-header></div>
+@helper DeviceFilter()
+{
+    <div class="form-group" style="margin: 0">
+        <div class="right-inner-addon">
+            <i class="glyphicon glyphicon-search"></i>
+            <input class="form-control" type="search" id="deviceFilter" placeholder="Search" />
+        </div>
+    </div>
 }
 @helper BodyRows() {
     <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/Small/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="Images/StatusLights/Small/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
@@ -265,5 +276,19 @@
                 viewModel.connectionString.get(valueFieldNames[i]).extend({ required: state });
             }
         }
+
+        $(function () {
+            $("#pageHeader").append("@Raw(DeviceFilter().ToString().RemoveDuplicateWhiteSpace().Replace("\r\n", "").Replace("\"", "'"))");
+
+            $("#deviceFilter").on("keyup", function (e) {
+                if ($("#deviceFilter").val().length === 0) {
+                    viewModel.filterText = "";
+                    viewModel.queryPageRecords();
+                } else {
+                    viewModel.filterText = $("#deviceFilter").val();
+                    viewModel.queryPageRecords();
+                }
+            });
+        });
     </script>
 }

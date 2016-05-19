@@ -39,6 +39,22 @@ div.readonly:focus {
     padding-bottom: 10px
 }
 
+/* Define floating icon classes */
+.right-inner-addon {
+    position: relative;
+}
+
+.right-inner-addon input {
+    padding-right: 30px;
+}
+
+.right-inner-addon i {
+    position: absolute;
+    right: 0px;
+    padding: 10px 12px;
+    pointer-events: none;
+}
+
 /* Override the default bootstrap behavior where horizontal description lists 
    will truncate terms that are too long to fit in the left column 
 */
@@ -170,6 +186,27 @@ label.disabled {
     height: -o-calc(100% - 200px);
     height: -webkit-calc(100% - 200px);
     height: -moz-calc(100% - 200px);
+}
+
+.fill-height-with-search {
+    height: calc(100% - 89px);
+    height: -o-calc(100% - 89px);
+    height: -webkit-calc(100% - 89px);
+    height: -moz-calc(100% - 89px);
+}
+
+.fill-height-one-message-with-search {
+    height: calc(100% - 162px);
+    height: -o-calc(100% - 162px);
+    height: -webkit-calc(100% - 162px);
+    height: -moz-calc(100% - 162px);
+}
+
+.fill-height-two-messages-with-search {
+    height: calc(100% - 234px);
+    height: -o-calc(100% - 234px);
+    height: -webkit-calc(100% - 234px);
+    height: -moz-calc(100% - 234px);
 }
 
 /* Style for content wells with dynamic content, e.g., variable rows */

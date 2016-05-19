@@ -123,22 +123,38 @@ function refreshHubDependentControlState() {
 $(function () {
     $(".page-header").css("margin-bottom", "-5px");
 
+    const searchHeaders = $("[search-header]");
+
     // Apply initial content-fill-height styles
-    $("[content-fill-height]").addClass("fill-height");
+    if (searchHeaders.length > 0)
+        $("[content-fill-height]").addClass("fill-height-with-search");
+    else
+        $("[content-fill-height]").addClass("fill-height");
 
     $(window).on("messageVisibiltyChanged", function (event) {
         const contentWells = $("[content-fill-height]");
         const errorIsVisble = $("#error-msg-block").is(":visible");
         const infoIsVisible = $("#info-msg-block").is(":visible");
 
-        contentWells.removeClass("fill-height fill-height-one-message fill-height-two-messages");
+        if (searchHeaders.length > 0) {
+            contentWells.removeClass("fill-height-with-search fill-height-one-message-with-search fill-height-two-messages-with-search");
 
-        if (errorIsVisble && infoIsVisible)
-            contentWells.addClass("fill-height-two-messages");
-        else if (errorIsVisble || infoIsVisible)
-            contentWells.addClass("fill-height-one-message");
-        else
-            contentWells.addClass("fill-height");
+            if (errorIsVisble && infoIsVisible)
+                contentWells.addClass("fill-height-two-messages-with-search");
+            else if (errorIsVisble || infoIsVisible)
+                contentWells.addClass("fill-height-one-message-with-search");
+            else
+                contentWells.addClass("fill-height-with-search");
+        } else {
+            contentWells.removeClass("fill-height fill-height-one-message fill-height-two-messages");
+
+            if (errorIsVisble && infoIsVisible)
+                contentWells.addClass("fill-height-two-messages");
+            else if (errorIsVisble || infoIsVisible)
+                contentWells.addClass("fill-height-one-message");
+            else
+                contentWells.addClass("fill-height");
+        }
     });
 
     $("#dismissInfoMsg").click(hideInfoMessage);
