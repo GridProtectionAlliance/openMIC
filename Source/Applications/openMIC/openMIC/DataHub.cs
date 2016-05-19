@@ -186,6 +186,7 @@ namespace openMIC
         public void AddNewDevice(Device device)
         {
             device.NodeID = Program.Host.Model.Global.NodeID;
+            device.UniqueID = Guid.NewGuid();
             device.ProtocolID = DownloaderProtocolID;
             device.CreatedBy = GetCurrentUserID();
             device.CreatedOn = DateTime.UtcNow;

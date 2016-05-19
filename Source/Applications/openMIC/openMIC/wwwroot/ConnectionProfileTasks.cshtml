@@ -152,7 +152,7 @@
             viewModel.currentRecord().Settings(updates.joinKeyValuePairs());
         });
 
-        $(viewModel).on("derivingObservableRecord", function(event, observableRecord) {
+        $(viewModel).on("beforeEdit", function(event, observableRecord) {
             // Add connection string reference to current observable record so it can participate in the validation group
             observableRecord._connectionstring = viewModel.connectionString;
 
@@ -160,7 +160,7 @@
             observableRecord.ConnectionProfileID(@parentID);
         });
 
-        $(viewModel).on("derivingJSRecord", function(event, observableRecord) {
+        $(viewModel).on("beforeSave", function(event, observableRecord) {
             // Remove added connection string reference before serialization
             delete observableRecord._connectionstring;
         });

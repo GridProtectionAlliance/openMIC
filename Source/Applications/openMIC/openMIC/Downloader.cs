@@ -32,6 +32,7 @@ using DotRas;
 using GSF;
 using GSF.Configuration;
 using GSF.Data.Model;
+using GSF.Net.Ftp;
 using GSF.IO;
 using GSF.Scheduling;
 using GSF.Threading;
@@ -653,6 +654,22 @@ namespace openMIC
 
         private void ExecuteTasks()
         {
+            using (FtpClient client = new FtpClient())
+            {
+                client.Server = ConnectionHostName;
+                client.Connect(ConnectionUserName, ConnectionPassword);
+
+                foreach (ConnectionProfileTaskSettings settings in m_connectionProfileTaskSettings)
+                {
+                    client.SetCurrentDirectory(settings.RemotePath);
+
+                    foreach (FtpFile file in client.CurrentDirectory.Files)
+                    {
+                        //if (settings.MaximumFileSize > file.Size)
+                        //    file.GetInputStream()
+                    }
+                }
+            }
         }
 
         private bool ConnectDialUp()

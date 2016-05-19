@@ -86,7 +86,7 @@
 @section Scripts {
     @Raw(ViewBag.PageControlScripts.ToString())
     <script>
-        @Raw(dataContext.RenderViewModelConfiguration<ConnectionProfile, DataHub>(ViewBag, "Acronym"))
+        @Raw(dataContext.RenderViewModelConfiguration<ConnectionProfile, DataHub>(ViewBag, "Name"))
 
         function getTaskCount(connectionProfileID) {
             if (viewModel.dataHubIsConnected()) {
@@ -104,8 +104,13 @@
         });
 
         function openTaskEditor(record) {
+            var routeID = "";
+
+            if (parseInt(notNull($("#taskCount" + record.ID).text(), "-1")) === 0)
+                routeID = "&RouteID=AddNew";
+
             $("#editTasksFrame").attr({
-                "src": "ConnectionProfileTasks.cshtml?ID=" + record.ID + "&Name=" + encodeURIComponent(record.Name),
+                "src": "ConnectionProfileTasks.cshtml?ID=" + record.ID + "&Name=" + encodeURIComponent(record.Name) + routeID,
                 "height": $("#contentWell").outerHeight(true) + "px",
                 "width": "100%"
             });
