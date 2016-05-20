@@ -162,10 +162,14 @@ namespace openMIC
         [RecordOperation(typeof(Device), RecordOperation.QueryRecords)]
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
+            IEnumerable<Device> devices;
 
-            return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0}", $"%{filterText}%"));
+            if (string.IsNullOrWhiteSpace(filterText))
+                devices = m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
+            else
+                devices = m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0}", $"%{filterText}%"));
+
+            return devices;
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
