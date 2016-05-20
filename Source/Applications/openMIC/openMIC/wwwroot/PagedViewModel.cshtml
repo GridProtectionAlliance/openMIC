@@ -31,6 +31,8 @@
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
 @{
+    DataContext dataContext = ViewBag.DataContext;
+
     if (ViewBag.PageControlScripts == null) {
         ViewBag.PageControlScripts = new StringBuilder();
     }
@@ -97,6 +99,9 @@
     bool canEdit = ViewBag.CanEdit ?? false;
     bool canAddNew = ViewBag.CanAddNew ?? false;
     bool canDelete = ViewBag.CanDelete ?? false;
+
+    // Check if search filter should be enabled for page
+    bool showSearchFilter = ViewBag.ShowSearchFilter ?? false;
 }
 @functions
 {
@@ -154,6 +159,19 @@
         pageControlScripts.Append(RenderSortScript(fieldName, true));
         pageControlScripts.Append(RenderSortScript(fieldName, false));
     }
+}
+@helper SearchFilter()
+{
+    @* Make sure to use single quotes in this function: *@
+    <div class='form-group' style='margin: 0'>
+        <div class='right-inner-addon'>
+            <i class='glyphicon glyphicon-search'></i>
+            <input class='form-control' type='search' id='searchFilter' placeholder='Search' />
+        </div>
+    </div>
+}
+@if (showSearchFilter) {
+<div style="display: none" search-header></div>
 }
 <div class="well well-dynamic-content" id="contentWell" content-fill-height>
     <div class="table-responsive" id="responsiveTableDiv">
@@ -236,8 +254,6 @@
     </div>
 </div>
 @{
-    DataContext dataContext = ViewBag.DataContext;
-
     if (autoShowAddNew) {
         pageControlScripts.Append(@"
             // Add new pop-up requested via URL parameter
@@ -256,6 +272,22 @@
                 $(""#titleText"").append(""<br/><div style='margin-top: 3px' class='small text-center'><a href='{0}?ShowDeleted'>Show Deleted</a></div>"");
         ", baseURL);
         }
+    }
+
+    if (showSearchFilter) {
+        pageControlScripts.AppendFormat(@"
+            $(""#pageHeader"").append(""{0}"");
+
+            $(""#searchFilter"").on(""keyup"", function (e) {{
+                if ($(""#searchFilter"").val().length === 0) {{
+                    viewModel.filterText = """";
+                    viewModel.queryPageRecords();
+                }} else {{
+                    viewModel.filterText = $(""#searchFilter"").val();
+                    viewModel.queryPageRecords();
+                }}
+            }});
+        ", Raw(SearchFilter().ToString().RemoveDuplicateWhiteSpace().Replace("\r\n", "")));
     }
 
     pageControlScripts.Append(@"

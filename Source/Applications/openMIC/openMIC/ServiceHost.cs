@@ -190,17 +190,18 @@ namespace openMIC
                 webServer.PagedViewModelTypes.TryAdd("Users.cshtml", new Tuple<Type, Type>(typeof(UserAccount), typeof(SecurityHub)));
                 webServer.PagedViewModelTypes.TryAdd("Groups.cshtml", new Tuple<Type, Type>(typeof(SecurityGroup), typeof(SecurityHub)));
 
-                // Initiate pre-compile of base templates
-                if (AssemblyInfo.EntryAssembly.Debuggable)
-                {
-                    RazorEngine<CSharpDebug>.Default.PreCompile(LogException);
-                    RazorEngine<VisualBasicDebug>.Default.PreCompile(LogException);
-                }
-                else
-                {
-                    RazorEngine<CSharp>.Default.PreCompile(LogException);
-                    RazorEngine<VisualBasic>.Default.PreCompile(LogException);
-                }
+                // TODO: Pre-compiling is interfering with Hub role authorizations - so skipping for now...
+                //// Initiate pre-compile of base templates
+                //if (AssemblyInfo.EntryAssembly.Debuggable)
+                //{
+                //    RazorEngine<CSharpDebug>.Default.PreCompile(LogException);
+                //    RazorEngine<VisualBasicDebug>.Default.PreCompile(LogException);
+                //}
+                //else
+                //{
+                //    RazorEngine<CSharp>.Default.PreCompile(LogException);
+                //    RazorEngine<VisualBasic>.Default.PreCompile(LogException);
+                //}
 
                 // Create new web application hosting environment
                 m_webAppHost = WebApp.Start<Startup>(systemSettings["WebHostURL"].Value);

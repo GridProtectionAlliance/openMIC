@@ -665,6 +665,7 @@ namespace openMIC
 
                     foreach (FtpFile file in client.CurrentDirectory.Files)
                     {
+                        OnStatusMessage("{0} file: {1}", settings.RemotePath, file.Name);
                         //if (settings.MaximumFileSize > file.Size)
                         //    file.GetInputStream()
                     }

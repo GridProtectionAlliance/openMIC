@@ -156,20 +156,16 @@ namespace openMIC
             if (string.IsNullOrWhiteSpace(filterText))
                 return m_dataContext.Table<Device>().QueryRecordCount();
 
-            return m_dataContext.Table<Device>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0}", $"%{filterText}%"));
+            return m_dataContext.Table<Device>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [RecordOperation(typeof(Device), RecordOperation.QueryRecords)]
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            IEnumerable<Device> devices;
-
             if (string.IsNullOrWhiteSpace(filterText))
-                devices = m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
-            else
-                devices = m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0}", $"%{filterText}%"));
+                return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
 
-            return devices;
+            return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -324,13 +320,19 @@ namespace openMIC
         [RecordOperation(typeof(Company), RecordOperation.QueryRecordCount)]
         public int QueryCompanyCount(string filterText)
         {
-            return m_dataContext.Table<Company>().QueryRecordCount();
+            if (string.IsNullOrWhiteSpace(filterText))
+                return m_dataContext.Table<Company>().QueryRecordCount();
+
+            return m_dataContext.Table<Company>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [RecordOperation(typeof(Company), RecordOperation.QueryRecords)]
         public IEnumerable<Company> QueryCompanies(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            return m_dataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize);
+            if (string.IsNullOrWhiteSpace(filterText))
+                return m_dataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize);
+
+            return m_dataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -372,13 +374,19 @@ namespace openMIC
         [RecordOperation(typeof(Vendor), RecordOperation.QueryRecordCount)]
         public int QueryVendorCount(string filterText)
         {
-            return m_dataContext.Table<Vendor>().QueryRecordCount();
+            if (string.IsNullOrWhiteSpace(filterText))
+                return m_dataContext.Table<Vendor>().QueryRecordCount();
+
+            return m_dataContext.Table<Vendor>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [RecordOperation(typeof(Vendor), RecordOperation.QueryRecords)]
         public IEnumerable<Vendor> QueryVendors(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            return m_dataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize);
+            if (string.IsNullOrWhiteSpace(filterText))
+                return m_dataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize);
+
+            return m_dataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -420,13 +428,19 @@ namespace openMIC
         [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecordCount)]
         public int QueryVendorDeviceCount(string filterText)
         {
-            return m_dataContext.Table<VendorDevice>().QueryRecordCount();
+            if (string.IsNullOrWhiteSpace(filterText))
+                return m_dataContext.Table<VendorDevice>().QueryRecordCount();
+
+            return m_dataContext.Table<VendorDevice>().QueryRecordCount(new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
         }
 
         [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecords)]
         public IEnumerable<VendorDevice> QueryVendorDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            return m_dataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize);
+            if (string.IsNullOrWhiteSpace(filterText))
+                return m_dataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize);
+
+            return m_dataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
