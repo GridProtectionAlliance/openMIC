@@ -28,6 +28,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
+using System.Threading;
 using DotRas;
 using GSF;
 using GSF.Configuration;
@@ -38,6 +40,8 @@ using GSF.Scheduling;
 using GSF.Threading;
 using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
+using GSF.TimeSeries.Statistics;
+using GSF.Units;
 using GSF.Web.Model;
 using openMIC.Model;
 
@@ -55,6 +59,8 @@ namespace openMIC
         YearThenMonth
     }
 
+    // ReSharper disable UnusedMember.Local
+    // ReSharper disable UnusedParameter.Local
     [Description("Downloader: Implements remote file download capabilities")]
     [EditorBrowsable(EditorBrowsableState.Advanced)] // Normally defined as an input device protocol
     public class Downloader : InputAdapterBase, IDevice
@@ -193,11 +199,15 @@ namespace openMIC
             }
         }
 
+        // Constants
+        private const int NormalPriorty = 1;
+        private const int HighPriority = 2;
+        private const string DailyCounterResetSchedule = "Downloader!DailyCounterReset";
+
         // Fields
         private readonly RasDialer m_rasDialer;
         private ConnectionProfileTaskSettings[] m_connectionProfileTaskSettings;
         private LogicalThreadOperation m_dialUpOperation;
-        private long m_startConnectionTime;
         private long m_startDialUpTime;
         private bool m_disposed;
 
@@ -245,6 +255,18 @@ namespace openMIC
         Description("Defines connection password for transport."),
         DefaultValue("anonymous")]
         public string ConnectionPassword
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets flag that determines if connection messages should be logged.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Defines flag that determines if connection messages should be logged."),
+        DefaultValue(false)]
+        public bool LogConnectionMessages
         {
             get;
             set;
@@ -536,6 +558,73 @@ namespace openMIC
         /// </summary>
         public override bool SupportsTemporalProcessing => false;
 
+        /// <summary>
+        /// Returns the detailed status of the data input source.
+        /// </summary>
+        public override string Status
+        {
+            get
+            {
+                StringBuilder status = new StringBuilder();
+
+                status.Append(base.Status);
+                status.AppendFormat("      Connection host name: {0}", ConnectionHostName);
+                status.AppendLine();
+                status.AppendFormat("      Connection user name: {0} - with {1} password", ConnectionUserName.ToNonNullNorEmptyString("undefined"), string.IsNullOrEmpty(ConnectionPassword) ? "no" : "a");
+                status.AppendLine();
+                status.AppendFormat("     Connection profile ID: {0}", ConnectionProfileID);
+                status.AppendLine();
+                status.AppendFormat("         Download schedule: {0}", Schedule);
+                status.AppendLine();
+                status.AppendFormat("   Log connection messages: {0}", LogConnectionMessages);
+                status.AppendLine();
+                status.AppendFormat("     Completed connections: {0} - for today only", MeasurementsReceived);
+                status.AppendLine();
+                status.AppendFormat("      Expected connections: {0} - for today only", MeasurementsExpected);
+                status.AppendLine();
+                status.AppendFormat("     Attempted connections: {0}", AttemptedConnections);
+                status.AppendLine();
+                status.AppendFormat("    Successful connections: {0}", SuccessfulConnections);
+                status.AppendLine();
+                status.AppendFormat("        Failed connections: {0}", FailedConnections);
+                status.AppendLine();
+                status.AppendFormat("      Total connected time: {0}", new Ticks(TotalConnectedTime).ToElapsedTimeString(3));
+                status.AppendLine();
+                status.AppendFormat("               Use dial-up: {0}", UseDialUp);
+                status.AppendLine();
+                if (UseDialUp)
+                {
+                    status.AppendFormat("        Dial-up entry name: {0}", DialUpEntryName);
+                    status.AppendLine();
+                    status.AppendFormat("            Dial-up number: {0}", DialUpNumber);
+                    status.AppendLine();
+                    status.AppendFormat("         Dial-up user name: {0} - with {1} password", DialUpUserName.ToNonNullNorEmptyString("undefined"), string.IsNullOrEmpty(DialUpPassword) ? "no" : "a");
+                    status.AppendLine();
+                    status.AppendFormat("           Dial-up retries: {0}", DialUpRetries);
+                    status.AppendLine();
+                    status.AppendFormat("          Dial-up time-out: {0}", DialUpTimeout);
+                    status.AppendLine();
+                    status.AppendFormat("        Attempted dial-ups: {0}", AttemptedDialUps);
+                    status.AppendLine();
+                    status.AppendFormat("       Successful dial-ups: {0}", SuccessfulDialUps);
+                    status.AppendLine();
+                    status.AppendFormat("           Failed dial-ups: {0}", FailedDialUps);
+                    status.AppendLine();
+                    status.AppendFormat("        Total dial-up time: {0}", new Ticks(TotalDialUpTime).ToElapsedTimeString(3));
+                    status.AppendLine();
+                }
+                status.AppendFormat(" Connection profiles tasks: {0}", m_connectionProfileTaskSettings.Length);
+                status.AppendLine();
+                status.AppendFormat("          Files downloaded: {0}", FilesDownloaded);
+                status.AppendLine();
+                status.AppendFormat("          Bytes downloaded: {0} MB", BytesDownloaded / SI.Mega);
+                status.AppendLine();
+
+                return status.ToString();
+            }
+        }
+
+
         // Gets RAS connection state
         private RasConnectionState RasState => RasConnection.GetActiveConnections().FirstOrDefault(ras => ras.EntryName == DialUpEntryName)?.GetConnectionStatus()?.ConnectionState ?? RasConnectionState.Disconnected;
 
@@ -597,6 +686,9 @@ namespace openMIC
             }
 
             RegisterSchedule(this);
+
+            // Register downloader with the statistics engine
+            StatisticsEngine.Register(this, "Downloader", "DLR");
         }
 
         /// <summary>
@@ -652,25 +744,125 @@ namespace openMIC
             return $"Downloading enabled for schedule: {Schedule}".CenterText(maxLength);
         }
 
+        /// <summary>
+        /// Queues scheduled tasks for immediate execution.
+        /// </summary>
+        [AdapterCommand("Queues scheduled tasks for immediate execution.", "Administrator", "Editor")]
+        public void QueueTasks()
+        {
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                if (UseDialUp)
+                {
+                    m_dialUpOperation.Priority = HighPriority;
+                    m_dialUpOperation.RunOnce();
+                    m_dialUpOperation.Priority = NormalPriorty;
+                }
+                else
+                {
+                    ExecuteTasks();
+                }
+            });
+        }
+
         private void ExecuteTasks()
         {
+            AttemptedConnections++;
+
             using (FtpClient client = new FtpClient())
             {
+                client.CommandSent += FtpClient_CommandSent;
+                client.ResponseReceived += FtpClient_ResponseReceived;
+                client.FileTransferProgress += FtpClient_FileTransferProgress;
+                client.FileTransferNotification += FtpClient_FileTransferNotification;
                 client.Server = ConnectionHostName;
-                client.Connect(ConnectionUserName, ConnectionPassword);
 
-                foreach (ConnectionProfileTaskSettings settings in m_connectionProfileTaskSettings)
+                try
                 {
-                    client.SetCurrentDirectory(settings.RemotePath);
+                    OnStatusMessage("Attempting connection to FTP server \"{0}@{1}\"...", ConnectionUserName, ConnectionHostName);
+                    client.Connect(ConnectionUserName, ConnectionPassword);
 
-                    foreach (FtpFile file in client.CurrentDirectory.Files)
+                    Ticks connectionStartTime = DateTime.UtcNow.Ticks;
+                    SuccessfulConnections++;
+                    MeasurementsReceived++;
+                    OnStatusMessage("Connected to FTP server \"{0}@{1}\"", ConnectionUserName, ConnectionHostName);
+
+                    foreach (ConnectionProfileTaskSettings settings in m_connectionProfileTaskSettings)
                     {
-                        OnStatusMessage("{0} file: {1}", settings.RemotePath, file.Name);
-                        //if (settings.MaximumFileSize > file.Size)
-                        //    file.GetInputStream()
+                        OnStatusMessage("Attempting to set remote FTP directory path \"{0}\"...", settings.RemotePath);
+
+                        try
+                        {
+                            client.SetCurrentDirectory(settings.RemotePath);
+
+                            OnStatusMessage("Enumerating files in \"{0}\"...", settings.RemotePath);
+
+                            try
+                            {
+                                foreach (FtpFile file in client.CurrentDirectory.Files)
+                                {
+                                    OnStatusMessage("Processing file \"{0}\"...", file.Name);
+
+                                    try
+                                    {
+                                        //OnStatusMessage("{0} file: {1}", settings.RemotePath, file.Name);
+                                        //if (settings.MaximumFileSize > file.Size)
+                                        //    file.GetInputStream()
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        OnProcessException(new InvalidOperationException($"Failed to process file \"{file.Name ?? "undefined"}\" in \"{settings.RemotePath}\": {ex.Message}", ex));
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                OnProcessException(new InvalidOperationException($"Failed to enumerate files in \"{settings.RemotePath}\": {ex.Message}", ex));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            OnProcessException(new InvalidOperationException($"Failed to set remote FTP directory path \"{settings.RemotePath ?? "undefined"}\": {ex.Message}", ex));
+                        }
                     }
+
+                    Ticks connectedTime = DateTime.UtcNow.Ticks - connectionStartTime;
+                    OnStatusMessage("FTP session connected for {0}", connectedTime.ToElapsedTimeString(2));
+                    TotalConnectedTime += connectedTime;
                 }
+                catch (Exception ex)
+                {
+                    FailedConnections++;
+                    OnProcessException(new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
+                }
+
+                client.CommandSent -= FtpClient_CommandSent;
+                client.ResponseReceived -= FtpClient_ResponseReceived;
+                client.FileTransferProgress -= FtpClient_FileTransferProgress;
+                client.FileTransferNotification -= FtpClient_FileTransferNotification;
             }
+        }
+
+        private void FtpClient_CommandSent(object sender, EventArgs<string> e)
+        {
+            if (LogConnectionMessages)
+                OnStatusMessage("FTP Request: {0}", e.Argument);
+        }
+
+        private void FtpClient_ResponseReceived(object sender, EventArgs<string> e)
+        {
+            if (LogConnectionMessages)
+                OnStatusMessage("FTP Response: {0}", e.Argument);
+        }
+
+        private void FtpClient_FileTransferProgress(object sender, EventArgs<ProcessProgress<long>, TransferDirection> e)
+        {
+            OnFileTransferProgress(this, e.Argument1);
+        }
+
+        private void FtpClient_FileTransferNotification(object sender, EventArgs<FtpAsyncResult> e)
+        {
+            OnStatusMessage("FTP File Transfer: {0}, response code = {1}", e.Argument.Message, e.Argument.ResponseCode);
         }
 
         private bool ConnectDialUp()
@@ -748,6 +940,13 @@ namespace openMIC
         private static readonly ConcurrentDictionary<string, Downloader> s_instances;
         private static readonly ConcurrentDictionary<string, LogicalThread> s_dialupScheduler;
 
+        // Static Events
+
+        /// <summary>
+        /// Raised when there is a file transfer progress notification for any downloader instance.
+        /// </summary>
+        public static event EventHandler<EventArgs<ProcessProgress<long>>> FileTransferProgress;
+
         // Static Constructor
         static Downloader()
         {
@@ -755,12 +954,23 @@ namespace openMIC
             s_dialupScheduler = new ConcurrentDictionary<string, LogicalThread>();
             s_scheduleManager = new ScheduleManager();
             s_scheduleManager.ScheduleDue += s_scheduleManager_ScheduleDue;
+            s_scheduleManager.AddSchedule(DailyCounterResetSchedule, "0 0 * * *", "Resets daily counters", true);
             s_scheduleManager.Start();
         }
 
         private static void s_scheduleManager_ScheduleDue(object sender, EventArgs<Schedule> e)
         {
             Schedule schedule = e.Argument;
+
+            if (schedule.Name.Equals(DailyCounterResetSchedule))
+            {
+                // Reset daily IDevice counter for reporting
+                foreach (Downloader downloader in s_instances.Values)
+                    downloader.MeasurementsReceived = 0;
+
+                return;    
+            }
+
             Downloader instance;
 
             if (s_instances.TryGetValue(schedule.Name, out instance))
@@ -772,8 +982,6 @@ namespace openMIC
             }
         }
 
-        // Static Properties
-
         // Static Methods
         private static void RegisterSchedule(Downloader instance)
         {
@@ -782,7 +990,7 @@ namespace openMIC
             if (instance.UseDialUp)
             {
                 // Make sure dial-up's using the same resource (i.e., modem) are executed synchronously
-                LogicalThread thread = s_dialupScheduler.GetOrAdd(instance.DialUpEntryName, entryName => new LogicalThread());
+                LogicalThread thread = s_dialupScheduler.GetOrAdd(instance.DialUpEntryName, entryName => new LogicalThread(2));
 
                 instance.m_dialUpOperation = new LogicalThreadOperation(thread, () => {
                     if (instance.ConnectDialUp())
@@ -790,7 +998,7 @@ namespace openMIC
                         instance.ExecuteTasks();
                         instance.DisconnectDialUp();
                     }
-                });
+                }, NormalPriorty);
             }
 
             s_scheduleManager.AddSchedule(instance.Name, instance.Schedule, $"Download schedule for \"{instance.Name}\"", true);
@@ -800,6 +1008,132 @@ namespace openMIC
         {
             s_scheduleManager.RemoveSchedule(instance.Name);
             s_instances.TryRemove(instance.Name, out instance);
+        }
+
+        private static void OnFileTransferProgress(Downloader instance, ProcessProgress<long> progress)
+        {
+            FileTransferProgress?.Invoke(instance, new EventArgs<ProcessProgress<long>>(progress));
+        }
+
+        private static double GetDownloaderStatistic_Enabled(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = downloader.IsConnected ? 1.0D : 0.0D;
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_AttemptedConnections(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = downloader.AttemptedConnections;
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_SuccessfulConnections(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = downloader.SuccessfulConnections;
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_FailedConnections(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = downloader.FailedConnections;
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_AttemptedDialUps(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = downloader.AttemptedDialUps;
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_SuccessfulDialUps(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = downloader.SuccessfulDialUps;
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_FailedDialUps(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = downloader.FailedDialUps;
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_FilesDownloaded(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = downloader.FilesDownloaded;
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_MegaBytesDownloaded(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = downloader.BytesDownloaded / SI.Mega;
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_TotalConnectedTime(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = ((Ticks)downloader.TotalConnectedTime).ToSeconds();
+
+            return statistic;
+        }
+
+        private static double GetDownloaderStatistic_TotalDialUpTime(object source, string arguments)
+        {
+            double statistic = 0.0D;
+            Downloader downloader = source as Downloader;
+
+            if ((object)downloader != null)
+                statistic = ((Ticks)downloader.TotalDialUpTime).ToSeconds();
+
+            return statistic;
         }
 
         #endregion

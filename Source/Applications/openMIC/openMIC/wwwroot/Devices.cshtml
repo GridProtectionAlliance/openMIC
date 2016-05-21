@@ -41,7 +41,7 @@
     ViewBag.ShowSearchFilter = true;
 
     ViewBag.HeaderColumns = new[]
-{   //    { "Field", "Label", "Classes" }
+    {   //    { "Field", "Label", "Classes" }
         new[] { null, "Status", "text-center valign-middle" },
         new[] { "Acronym", "Acronym", "text-left" },
         new[] { null, "Schedule", "text-center valign-middle" },
@@ -86,9 +86,7 @@
     <div class="col-md-6">
         <div class="panel panel-default" data-bind="css: {'panel-readonly': $root.recordMode()===RecordMode.View, 'panel-primary': $root.connectionString.get('usedialup')}">
             <div class="panel-heading">
-                <div class="checkbox" data-bind="with: $root.connectionString" style="margin: 0">
-                    <label><input type="checkbox" id="checkBoxUseDialUp" data-bind="click: setRequiredStates(['dialupentryname', 'dialupnumber'], get('usedialup')), checked: get('usedialup'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Use Dial-up Connection</label>
-                </div>
+                @Raw(dataContext.AddCheckBoxField("get('usedialup')", "Use Dial-up Connection", "checkUseDialUp", "with: $root.connectionString", customDataBinding: "click: setRequiredStates(['dialupentryname', 'dialupnumber'], get('usedialup'))"))
             </div>
             <div class="panel-body">
                 @Raw(dataContext.AddInputField("get('dialupentryname')", true, fieldLabel: "Dial-up RAS Connection Entry Name", fieldID: "inputDialUpRASEntry", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", toolTip: "Devices using same connection entries with overlapping schedules will be queued serially", enableHotLinks: false))
@@ -99,9 +97,8 @@
                 @Raw(dataContext.AddInputField("get('dialuptimeout')", false, inputType: "number", fieldLabel: "Dial-up Connection Timeout", fieldID: "inputDialUpTimeout", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
             </div>
         </div>
-        <div class="checkbox">
-            <label><input type="checkbox" data-bind="checked: Enabled, attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Enabled</label>
-        </div>
+        @Raw(dataContext.AddCheckBoxField("get('logconnectionmessages')", "Log Detailed Connection Messages", "checkLogConnectionMessages", "with: $root.connectionString", toolTip: "When enabled, logs detailed connection level messages, e.g.,  FTP commands and responses"))
+        @Raw(dataContext.AddCheckBoxField<Device>("Enabled"))
     </div>
     <div class="col-md-12">
         <div class="form-group">
@@ -187,6 +184,7 @@
         defaultConnectionString.set("dialUpPassword", "");
         defaultConnectionString.set("dialUpRetries", @Model.Global.DefaultDialUpRetries);
         defaultConnectionString.set("dialUpTimeout", @Model.Global.DefaultDialUpTimeout);
+        defaultConnectionString.set("logConnectionMessages", false);
 
         // Create an observable key/value pair connection string dictionary
         viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);
@@ -266,5 +264,9 @@
                 viewModel.connectionString.get(valueFieldNames[i]).extend({ required: state });
             }
         }
+
+        $("#addNewEditDialog").on("show.bs.modal", function () {
+            $("#checkUseDialUp").parent().parent().css("margin", 0);
+        });
     </script>
 }

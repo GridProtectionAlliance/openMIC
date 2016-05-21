@@ -592,6 +592,39 @@ GO
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Publisher', 12, 'Lifetime Average Latency', 'Average latency from output stream, in milliseconds, during the lifetime of the publisher.', 'GSF.TimeSeries.dll', 'GSF.TimeSeries.Statistics.GatewayStatistics', 'GetPublisherStatistic_LifetimeAverageLatency', '', 1, 'System.Int64', '{0:N0} ms', 0, 12)
 GO
 
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 1, 'Downloader Enabled', 'Boolean value representing if the downloader was continually enabled with access to local download path during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_Enabled', '', 1, 'System.Boolean', '{0}', 1, 1)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 2, 'Downloader Attempted Connections', 'Number of attempted FTP connections reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_AttemptedConnections', '', 1, 'System.Int64', '{0:N0}', 0, 2)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 3, 'Downloader Successful Connections', 'Number of successful FTP connections reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_SuccessfulConnections', '', 1, 'System.Int64', '{0:N0}', 0, 3)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 4, 'Downloader Failed Connections', 'Number of failed FTP connections reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_FailedConnections', '', 1, 'System.Int64', '{0:N0}', 0, 4)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 5, 'Downloader Attempted Dial-ups', 'Number of attempted dial-ups reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_AttemptedDialUps', '', 1, 'System.Int64', '{0:N0}', 0, 5)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 6, 'Downloader Successful Dial-ups', 'Number of successful dial-ups reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_SuccessfulDialUps', '', 1, 'System.Int64', '{0:N0}', 0, 6)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 7, 'Downloader Failed Dial-ups', 'Number of failed dial-ups reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_FailedDialUps', '', 1, 'System.Int64', '{0:N0}', 0, 7)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 8, 'Downloader Files Downloaded', 'Number of downloaded files reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_FilesDownloaded', '', 1, 'System.Int64', '{0:N0}', 0, 8)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 9, 'Downloader MegaBytes Downloaded', 'Number of downloaded megabytes reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_MegaBytesDownloaded', '', 1, 'System.Double', '{0:N3} MB', 0, 9)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 10, 'Downloader Connected Time', 'Total FTP connection time reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_TotalConnectedTime', '', 1, 'System.Double', '{0:N3} Seconds', 0, 10)
+GO
+
+INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 11, 'Downloader Dial-up Time', 'Total dial-up time reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_TotalDialUpTime', '', 1, 'System.Double', '{0:N3} Seconds', 0, 11)
+GO
+
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('OTHER', 'Other / Unspecified', '', '', '')
 GO
 
