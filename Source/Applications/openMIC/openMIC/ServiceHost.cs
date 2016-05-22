@@ -144,6 +144,8 @@ namespace openMIC
             systemSettings.Add("DefaultFTPPassword", "anonymous", "Default FTP password to use for device connections.");
             systemSettings.Add("DefaultRemotePath", "/", "Default remote FTP path to use for device connections.");
             systemSettings.Add("DefaultLocalPath", "", "Default local path to use for file downloads.");
+            systemSettings.Add("MaxRemoteFileAge", "30", "Maximum remote file age, in days, to apply for downloads when limit is enabled.");
+            systemSettings.Add("MaxLocalFileAge", "365", "Maximum local file age, in days, to apply for downloads when limit is enabled.");
 
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
@@ -168,6 +170,8 @@ namespace openMIC
             Model.Global.DefaultFTPPassword = systemSettings["DefaultFTPPassword"].Value;
             Model.Global.DefaultRemotePath = systemSettings["DefaultRemotePath"].Value;
             Model.Global.DefaultLocalPath = FilePath.GetAbsolutePath(systemSettings["DefaultLocalPath"].Value);
+            Model.Global.MaxRemoteFileAge = int.Parse(systemSettings["MaxRemoteFileAge"].Value);
+            Model.Global.MaxLocalFileAge = int.Parse(systemSettings["MaxLocalFileAge"].Value);
 
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
             ServiceHelper.LoggedException += LoggedExceptionHandler;

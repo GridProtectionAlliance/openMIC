@@ -134,5 +134,17 @@ namespace openMIC
             get;
             set;
         }
+
+        public int MaxRemoteFileAge
+        {
+            get;
+            set;
+        }
+
+        public int MaxLocalFileAge
+        {
+            get;
+            set;
+        }
     }
 }

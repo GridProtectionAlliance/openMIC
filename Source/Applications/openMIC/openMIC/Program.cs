@@ -22,15 +22,9 @@
 //******************************************************************************************************
 
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
-using System.Net.Http;
 using System.ServiceProcess;
-using System.Web;
 using System.Windows.Forms;
-using GSF;
 using GSF.Console;
 
 namespace openMIC
@@ -109,52 +103,5 @@ namespace openMIC
                 }
             }
         }
-
-        ///// <summary>
-        ///// Performs JavaScript encoding on given string.
-        ///// </summary>
-        ///// <param name="text">The string to be encoded.</param>
-        //public static string JavaScriptEncode(this string text)
-        //{
-        //    return HttpUtility.JavaScriptStringEncode(text.ToNonNullString());
-        //}
-
-        ///// <summary>
-        ///// Performs HTML encoding on the given string.
-        ///// </summary>
-        ///// <param name="text">The string to be encoded.</param>
-        //public static string HtmlEncode(this string text)
-        //{
-        //    return HttpUtility.HtmlEncode(text.ToNonNullString());
-        //}
-
-        ///// <summary>
-        ///// Performs URL encoding on the given string.
-        ///// </summary>
-        ///// <param name="text">The string to be encoded.</param>
-        //public static string UrlEncode(this string text)
-        //{
-        //    return HttpUtility.UrlEncode(text.ToNonNullString());
-        //}
-
-        ///// <summary>
-        ///// Converts a name/value collection to a dictionary.
-        ///// </summary>
-        ///// <param name="collection">Name/value collection.</param>
-        ///// <returns>Dictionary converted from a name/value collection.</returns>
-        //public static Dictionary<string, string> ToDictionary(this NameValueCollection collection)
-        //{
-        //    return collection.AllKeys.ToDictionary(key => key, key => collection[key]);
-        //}
-
-        ///// <summary>
-        ///// Gets query parameters for current request message
-        ///// </summary>
-        ///// <param name="request"></param>
-        ///// <returns></returns>
-        //public static Dictionary<string, string> QueryParameters(this HttpRequestMessage request)
-        //{
-        //    return request.GetQueryNameValuePairs().ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        //} 
     }
 }

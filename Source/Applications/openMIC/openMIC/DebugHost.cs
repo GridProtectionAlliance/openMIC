@@ -30,15 +30,10 @@ namespace openMIC
         public DebugHost(ServiceHost host)
         {
             this.ServiceHost = host;
+            InitializeComponent();
         }
 
-        protected override string ServiceClientName
-        {
-            get
-            {
-                return "openMICConsole.exe";
-            }
-        }
+        protected override string ServiceClientName => "openMICConsole.exe";
 
         private void InitializeComponent()
         {
@@ -52,7 +47,6 @@ namespace openMIC
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "DebugHost";
             this.ResumeLayout(false);
-
         }
     }
 }
