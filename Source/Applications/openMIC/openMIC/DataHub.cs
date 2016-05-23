@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using GSF;
 using GSF.Data.Model;
 using GSF.Identity;
 using GSF.Web.Model;
@@ -137,6 +138,18 @@ namespace openMIC
         {
             // Analyze and cache record operations of data hub
             s_recordOperationsCache = new RecordOperationsCache(typeof(DataHub));
+            Downloader.FileTransferProgress += Downloader_FileTransferProgress;
+        }
+
+        private static void Downloader_FileTransferProgress(object sender, EventArgs<ProcessProgress<long>> e)
+        {
+            Downloader instance = sender as Downloader;
+
+            if ((object)instance != null)
+            {
+                ProcessProgress<long> progress = e.Argument;
+                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.updateFileTransferProgress(instance.Name, instance.TotalProcessedFiles, progress.Complete, progress.Total, progress.ProgressMessage);
+            }
         }
 
         #endregion

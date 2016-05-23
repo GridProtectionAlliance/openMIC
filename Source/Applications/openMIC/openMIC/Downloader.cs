@@ -964,6 +964,7 @@ namespace openMIC
                                 continue;
 
                             OnStatusMessage("Processing remote file \"{0}\"...", file.Name);
+                            OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Starting \"{file.Name}\" download...", file.Size, 0));
 
                             try
                             {
@@ -993,12 +994,14 @@ namespace openMIC
             if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
             {
                 OnStatusMessage("File \"{0}\" skipped, timestamp \"{1:yyyy-MM-dd HH:mm.ss.fff}\" is older than {2} days.", file.Name, file.Timestamp, Program.Host.Model.Global.MaxRemoteFileAge);
+                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed: file \"{file.Name}\" skipped: File is too old.", file.Size, 0));
                 return;
             }
 
             if (file.Size > settings.MaximumFileSize * SI2.Mega)
             {
                 OnStatusMessage("File \"{0}\" skipped, size of {1:N3} MB is larger than {2:N3} MB configured limit.", file.Name, file.Size / SI2.Mega, settings.MaximumFileSize);
+                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed: file \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB).", file.Size, 0));
                 return;
             }
 
@@ -1020,6 +1023,7 @@ namespace openMIC
             if (string.IsNullOrWhiteSpace(settings.LocalPath) || !Directory.Exists(settings.LocalPath))
             {
                 OnProcessException(new InvalidOperationException($"Cannot download file \"{file.Name}\" for connection profile task \"{settings.Name}\": Local path \"{settings.LocalPath ?? ""}\" does not exist."));
+                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed: cannot download file \"{file.Name}\": Local path does not exists", file.Size, 0));
                 return false;
             }
 
@@ -1049,6 +1053,7 @@ namespace openMIC
             if (File.Exists(localFileName) && !settings.OverwriteExistingLocalFiles)
             {
                 OnProcessException(new InvalidOperationException($"Skipping file \"{file.Name}\" download for connection profile task \"{settings.Name}\": Local file already exists and settings do not allow overwrite."));
+                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed: file \"{file.Name}\" skipped: Local file already exists", file.Size, 0));
                 return false;
             }
 
@@ -1056,19 +1061,16 @@ namespace openMIC
 
             try
             {
-                using (FtpInputDataStream remoteFile = file.GetInputStream())
-                using (FileStream localFile = File.Create(localFileName))
-                {
-                    remoteFile.CopyTo(localFile);
-                    FilesDownloaded++;
-                    BytesDownloaded += file.Size;
-                }
-
+                file.Parent.GetFile(localFileName, file.Name);
+                FilesDownloaded++;
+                BytesDownloaded += file.Size;
+                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Download complete for \"{file.Name}\".", file.Size, file.Size));
                 return true;
             }
             catch (Exception ex)
             {
                 OnProcessException(new InvalidOperationException($"Failed to download file \"{file.Name}\" for connection profile task \"{settings.Name}\" to \"{localFileName}\": {ex.Message}", ex));
+                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed to download file \"{file.Name}\": {ex.Message}", file.Size, 0));
             }
 
             return false;
@@ -1090,8 +1092,6 @@ namespace openMIC
                 case DirectoryNamingConvention.YearThenMonth:
                     fileName = Path.Combine(settings.LocalPath, $"{DateTime.Now.Year}\\{DateTime.Now.Month.ToString().PadLeft(2, '0')}\\", fileName);
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
 
             string directoryName = FilePath.GetDirectoryName(fileName);
@@ -1122,6 +1122,7 @@ namespace openMIC
             }
 
             OnStatusMessage("Executing external operation \"{0}\"...", settings.ExternalOperation);
+            OnFileTransferProgress(this, new ProcessProgress<long>(Name, "Starting external action...", 1, 0));
 
             try
             {
@@ -1131,16 +1132,19 @@ namespace openMIC
                 if ((object)externalOperation == null)
                 {
                     OnProcessException(new InvalidOperationException($"Failed to start external operation \"{settings.ExternalOperation}\"."));
+                    OnFileTransferProgress(this, new ProcessProgress<long>(Name, "Failed to start external action.", 1, 0));
                 }
                 else
                 {
                     externalOperation.WaitForExit();
                     OnStatusMessage("External operation \"{0}\" completed with status code {1}.", settings.ExternalOperation, externalOperation.ExitCode);
+                    OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"External action complete: exit code {externalOperation.ExitCode}.", 1, 1));
                 }
             }
             catch (Exception ex)
             {
                 OnProcessException(new InvalidOperationException($"Failed to execute external operation \"{settings.ExternalOperation}\": {ex.Message}", ex));
+                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed to execute external action: {ex.Message}", 1, 0));
             }
         }
 

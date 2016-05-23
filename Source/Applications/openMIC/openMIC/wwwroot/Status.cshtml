@@ -20,12 +20,19 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using System
+@using System.Linq
+@using GSF.Web.Model
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
 @{
+    DataContext dataContext = ViewBag.DataContext;
+
     Layout = "Layout.cshtml";
     ViewBag.Title = "Status";
+
+    Device[] devices = dataContext.Table<Device>().QueryRecords().ToArray();
 }
 @section StyleSheets {
     <style>
@@ -35,17 +42,57 @@
     </style>
 }
 @section Scripts {
-    <script src="Scripts/knockout-3.4.0.js"></script>
-    <script src="Scripts/knockout.mapping-latest.js"></script>
     <script>
-        function onHubConnected() {
-        }
+        $(window).on("updateFileTransferProgress", function (event, deviceName, totalProcessedFiles, progressComplete, progressTotal, progressMessage) {
+            $("#" + deviceName + "Message").text(progressMessage);
+            $("#" + deviceName + "Heading").text(deviceName + ": " + totalProcessedFiles.toString() + " Downloads");
+            const panel = $("#" + deviceName + "Panel");
+            const progressBar = $("#" + deviceName + "Progress");
+            const progress = Math.ceil(progressComplete / progressTotal * 100.0);
 
-        $(function () {
-            $("#bodyContainer").addClass("fill-height");
+            progressBar.text(progress.toString() + "%");
+            progressBar.css("width", progressBar.text());
+            panel.removeClass("panel-default panel-success panel-danger panel-info");
+
+            if (progress <= 0.0) {
+                if (progressMessage.startsWith("Failed"))
+                    panel.addClass("panel-danger");
+                else
+                    panel.addClass("panel-default");
+            }
+            else if (progress >= 100.0) {
+                panel.addClass("panel-success");
+            } else {
+                panel.addClass("panel-info");
+            }
         });
+
+        function queueNow (deviceName) {
+            if (!hubIsConnected)
+                return;
+
+            serviceHub.sendCommand("invoke " + deviceName + " QueueTasks");
+        }
     </script>
 }
-<div class="well fill-height">
+@for (int i = 0; i < devices.Length; i+=4) {
+<div class="row">
+    @for (int j = i; j < Math.Min(4, devices.Length); j++) {
+        string deviceName = devices[j].Acronym;
+    <div class="col-md-3">
+        <div class="panel panel-default" id="@(deviceName)Panel">
+            <div class="panel-heading" id="@(deviceName)Heading">@deviceName</div>
+            <div class="panel-body">
+                <div class="well well-sm table-cell-hard-wrap" style="overflow-y: auto; height: 100px" id="@(deviceName)Message"></div>
+                <div class="progress" style="margin: 0">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%" id="@(deviceName)Progress">0%</div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <button type="button" class="btn btn-primary" onclick="queueNow('@(deviceName)')">Queue Tasks for Processing...</button>
+            </div>
+        </div>
+    </div>
+    }
 </div>
-    
+}    
