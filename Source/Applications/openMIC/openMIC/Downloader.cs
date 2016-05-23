@@ -47,8 +47,15 @@ using GSF.Web.Model;
 using openMIC.Model;
 using System.Data;
 
+// ReSharper disable UnusedMember.Local
+// ReSharper disable UnusedParameter.Local
+// ReSharper disable UnusedAutoPropertyAccessor.Local
+// ReSharper disable MemberCanBePrivate.Local
 namespace openMIC
 {
+    /// <summary>
+    /// Directory naming conventions.
+    /// </summary>
     public enum DirectoryNamingConvention
     {
         [Description("Top Folder")]
@@ -61,16 +68,19 @@ namespace openMIC
         YearThenMonth
     }
 
+    /// <summary>
+    /// Adapter that implements remote file download capabilities.
+    /// </summary>
     [Description("Downloader: Implements remote file download capabilities")]
     [EditorBrowsable(EditorBrowsableState.Advanced)] // Normally defined as an input device protocol
-    public class Downloader : InputAdapterBase, IDevice
+    public class Downloader : InputAdapterBase
     {
         #region [ Members ]
 
         // Nested Types
 
         // Defines connection profile task settings
-        public class ConnectionProfileTaskSettings
+        private class ConnectionProfileTaskSettings
         {
             private string m_fileExtensions;
             private string[] m_fileSpecs;
@@ -243,14 +253,72 @@ namespace openMIC
             }
         }
 
+        // Define a IDevice implementation for to provide daily reports
+        private class DeviceProxy : IDevice
+        {
+            private readonly Downloader m_parent;
+
+            public DeviceProxy(Downloader parent)
+            {
+                m_parent = parent;
+            }
+
+            // Gets or sets total data quality errors of this <see cref="IDevice"/>.
+            public long DataQualityErrors
+            {
+                get;
+                set;
+            }
+
+            // Gets or sets total time quality errors of this <see cref="IDevice"/>.
+            public long TimeQualityErrors
+            {
+                get;
+                set;
+            }
+
+            // Gets or sets total device errors of this <see cref="IDevice"/>.
+            public long DeviceErrors
+            {
+                get;
+                set;
+            }
+
+            // Gets or sets total measurements received for this <see cref="IDevice"/> - in local context "successful connections" per day.
+            public long MeasurementsReceived
+            {
+                get
+                {
+                    return m_parent.SuccessfulConnections;
+                }
+                set
+                {
+                    // Ignoring updates
+                }
+        }
+
+            // Gets or sets total measurements expected to have been received for this <see cref="IDevice"/> - in local context "expected connections" per day.
+            public long MeasurementsExpected
+            {
+                get
+                {
+                    return m_parent.AttemptedConnections;
+                }
+                set
+                {
+                    // Ignoring updates
+                }
+            }
+        }
+
         // Constants
         private const int NormalPriorty = 1;
         private const int HighPriority = 2;
-        private const string DailyCounterResetSchedule = "Downloader!DailyCounterReset";
 
         // Fields
         private readonly RasDialer m_rasDialer;
-        private object m_connectionProfileLock;
+        private readonly DeviceProxy m_deviceProxy;
+        private readonly object m_connectionProfileLock;
         private ConnectionProfile m_connectionProfile;
         private ConnectionProfileTaskSettings[] m_connectionProfileTaskSettings;
         private LogicalThreadOperation m_dialUpOperation;
@@ -266,6 +334,7 @@ namespace openMIC
         {
             m_rasDialer = new RasDialer();
             m_rasDialer.Error += m_rasDialer_Error;
+            m_deviceProxy = new DeviceProxy(this);
             m_connectionProfileLock = new object();
         }
 
@@ -429,81 +498,6 @@ namespace openMIC
         }
 
         /// <summary>
-        /// Gets or sets total data quality errors of this <see cref="IDevice"/>.
-        /// </summary>
-        public long DataQualityErrors
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets total time quality errors of this <see cref="IDevice"/>.
-        /// </summary>
-        public long TimeQualityErrors
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets total device errors of this <see cref="IDevice"/>.
-        /// </summary>
-        public long DeviceErrors
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets total measurements received for this <see cref="IDevice"/> - in local context "successful connections" per day.
-        /// </summary>
-        public long MeasurementsReceived
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets total measurements expected to have been received for this <see cref="IDevice"/> - in local context "expected connections" per day.
-        /// </summary>
-        public long MeasurementsExpected
-        {
-            get
-            {
-                Schedule schedule = new Schedule(Schedule);
-
-                // Check for scheduled days of week
-                if (schedule.DaysOfWeekPart.Values.Contains((int)DateTime.UtcNow.DayOfWeek))
-                {
-                    // Check for scheduled months
-                    if (schedule.MonthPart.Values.Contains(DateTime.UtcNow.Month))
-                    {
-                        // Check for scheduled days of month
-                        if (schedule.DayPart.Values.Contains(DateTime.UtcNow.Day))
-                        {
-                            // Return expected downloads per day
-                            return schedule.HourPart.Values.Count * schedule.MinutePart.Values.Count;
-                        }
-
-                        // Not a matching day of month - no downloads expected for today
-                        return 0;
-                    }
-
-                    // Not a matching month - no downloads expected for today
-                    return 0;
-                }
-
-                // Not a matching day of week - no downloads expected for today
-                return 0;
-            }
-            set
-            {
-                // Ignoring updates
-            }
-        }
-
-        /// <summary>
         /// Gets or sets total number of attempted connections.
         /// </summary>
         public long AttemptedConnections
@@ -664,10 +658,6 @@ namespace openMIC
                 status.AppendLine();
                 status.AppendFormat("   Log connection messages: {0}", LogConnectionMessages);
                 status.AppendLine();
-                status.AppendFormat("     Completed connections: {0} - for today only", MeasurementsReceived);
-                status.AppendLine();
-                status.AppendFormat("      Expected connections: {0} - for today only", MeasurementsExpected);
-                status.AppendLine();
                 status.AppendFormat("     Attempted connections: {0}", AttemptedConnections);
                 status.AppendLine();
                 status.AppendFormat("    Successful connections: {0}", SuccessfulConnections);
@@ -739,6 +729,9 @@ namespace openMIC
                             m_rasDialer.Error -= m_rasDialer_Error;
                             m_rasDialer.Dispose();
                         }
+
+                        StatisticsEngine.Unregister(m_deviceProxy);
+                        StatisticsEngine.Unregister(this);
                     }
                 }
                 finally
@@ -763,6 +756,7 @@ namespace openMIC
 
             // Register downloader with the statistics engine
             StatisticsEngine.Register(this, "Downloader", "DLR");
+            StatisticsEngine.Register(m_deviceProxy, Name, "Device", "PMU");
         }
 
         /// <summary>
@@ -895,7 +889,6 @@ namespace openMIC
 
                     Ticks connectionStartTime = DateTime.UtcNow.Ticks;
                     SuccessfulConnections++;
-                    MeasurementsReceived++;
 
                     ConnectionProfileTaskSettings[] taskSettings;
 
@@ -1341,23 +1334,12 @@ namespace openMIC
             s_dialupScheduler = new ConcurrentDictionary<string, LogicalThread>();
             s_scheduleManager = new ScheduleManager();
             s_scheduleManager.ScheduleDue += s_scheduleManager_ScheduleDue;
-            s_scheduleManager.AddSchedule(DailyCounterResetSchedule, "0 0 * * *", "Resets daily counters", true);
             s_scheduleManager.Start();
         }
 
         private static void s_scheduleManager_ScheduleDue(object sender, EventArgs<Schedule> e)
         {
             Schedule schedule = e.Argument;
-
-            if (schedule.Name.Equals(DailyCounterResetSchedule))
-            {
-                // Reset daily IDevice counter for reporting
-                foreach (Downloader downloader in s_instances.Values)
-                    downloader.MeasurementsReceived = 0;
-
-                return;
-            }
-
             Downloader instance;
 
             if (s_instances.TryGetValue(schedule.Name, out instance))
@@ -1416,9 +1398,6 @@ namespace openMIC
         }
 
         #region [ Statistic Functions ]
-
-        // ReSharper disable UnusedMember.Local
-        // ReSharper disable UnusedParameter.Local
 
         private static double GetDownloaderStatistic_Enabled(object source, string arguments)
         {

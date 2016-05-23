@@ -38,6 +38,8 @@
       <MenuDataItem Icon="" MenuText="" Description="" Roles="*" UserControlAssembly="" UserControlPath="" />
       <MenuDataItem Icon="" MenuText="_Remote System Console" Description="Remote System Console" Roles="*" UserControlAssembly="GSF.TimeSeries.UI.WPF.dll" UserControlPath="GSF.TimeSeries.UI.UserControls.MonitoringUserControl" />
       <MenuDataItem Icon="" MenuText="_Error Log" Description="Error Log" Roles="*" UserControlAssembly="GSF.TimeSeries.UI.WPF.dll" UserControlPath="GSF.TimeSeries.UI.UserControls.ErrorLogUserControl" />
+      <MenuDataItem Icon="" MenuText="" Description="" Roles="*" UserControlAssembly="" UserControlPath="" />
+      <MenuDataItem Icon="" MenuText="Completeness Reports" Description="Configure Completeness Reports" Roles="*" UserControlAssembly="GSF.TimeSeries.UI.WPF.dll" UserControlPath="GSF.TimeSeries.UI.UserControls.CompletenessReportUserControl"/>
     </SubMenuItems>
   </MenuDataItem>
   <MenuDataItem Icon="" MenuText="A_larms" Description="Manage Alarms" Roles="*" UserControlAssembly="" UserControlPath="">
