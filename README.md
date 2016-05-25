@@ -34,7 +34,40 @@ Meter Information Collector
 
 openMIC is a fairly new project and there is currently no documentation.
 
-Check out these screenshots though...
+Check out some [screenshots](#screenshots) below though...
+
+# Deployment
+
+1. Make sure your system meets all the requirements below.
+* Download the [nightly build](#nightly-build) below.
+* Unzip.
+* Run "Setup.exe".
+* Follow the wizard.
+* Enjoy.
+
+## Requirements
+
+* .NET 4.6 or higher.
+* 64-bit Windows 7 or newer.
+* Database management system such as:
+  * SQL Server (Recommended)
+  * MySQL
+  * Oracle
+  * SQLite (Not recommended for production use) - included.
+
+## Nightly Build
+
+Download the nightly build [here](http://www.gridprotectionalliance.org/nightlybuilds/openMIC/Setup.zip).
+
+# Contributing
+If you would like to contribute please:
+
+1. Read our [styleguide](https://www.gridprotectionalliance.org/docs/GPA_Coding_Guidelines_2011_03.pdf).
+* Fork the repository.
+* Code like a boss.
+* Create a pull request.
+
+# Screenshots
 
 ## Main Screen
 
@@ -71,34 +104,3 @@ Check out these screenshots though...
 ## Monitor the Service via Web
 
 ![Monitor the Service via Web](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Monitor%20the%20Service%20via%20Web.png)
-
-# Deployment
-
-1. Make sure your system meets all the requirements below.
-* Download the [nightly build](#nightly-build) below.
-* Unzip.
-* Run "Setup.exe".
-* Follow the wizard.
-* Enjoy.
-
-## Requirements
-
-* .NET 4.6 or higher.
-* 64-bit Windows 7 or newer.
-* Database management system such as:
-  * SQL Server (Recommended)
-  * MySQL
-  * Oracle
-  * SQLite (Not recommended for production use) - included.
-
-## Nightly Build
-
-Download the nightly build [here](http://www.gridprotectionalliance.org/nightlybuilds/openMIC/Setup.zip).
-
-# Contributing
-If you would like to contribute please:
-
-1. Read our [styleguide](https://www.gridprotectionalliance.org/docs/GPA_Coding_Guidelines_2011_03.pdf).
-* Fork the repository.
-* Code like a boss.
-* Create a pull request.
