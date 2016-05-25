@@ -223,12 +223,6 @@ $(function () {
         showErrorMessage(encodedMessage, timeout);
     }
 
-    dataHubClient.updateFileTransferProgress = function (deviceName, totalProcessedFiles, progressComplete, progressTotal, progressMessage) {
-        // Html encode message
-        const encodedMessage = $("<div />").text(progressMessage).html();
-        $(window).trigger("updateFileTransferProgress", [deviceName, totalProcessedFiles, progressComplete, progressTotal, encodedMessage]);
-    }
-
     $(window).on("beforeunload", function () {
         if (!hubIsConnected || hubIsConnecting)
             return "Service is disconnected, web pages are currently unavailable.";

@@ -138,17 +138,24 @@ namespace openMIC
         {
             // Analyze and cache record operations of data hub
             s_recordOperationsCache = new RecordOperationsCache(typeof(DataHub));
-            Downloader.FileTransferProgress += Downloader_FileTransferProgress;
+            Downloader.ProgressUpdated += DownloaderProgressUpdated;
         }
 
-        private static void Downloader_FileTransferProgress(object sender, EventArgs<ProcessProgress<long>> e)
+        private static void DownloaderProgressUpdated(object sender, EventArgs<ProgressUpdate> e)
         {
             Downloader instance = sender as Downloader;
 
             if ((object)instance != null)
             {
-                ProcessProgress<long> progress = e.Argument;
-                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.updateFileTransferProgress(instance.Name, instance.TotalProcessedFiles, progress.Complete, progress.Total, progress.ProgressMessage);
+                ProgressUpdate update = e.Argument;
+
+                update.DeviceName = instance.Name;
+                update.TotalProcessedFiles = instance.TotalProcessedFiles;
+
+                if (!string.IsNullOrEmpty(update.ProgressMessage))
+                    update.ProgressMessage += $"\r\n\r\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}]";
+
+                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(e.Argument);
             }
         }
 

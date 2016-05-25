@@ -22,6 +22,7 @@
 //*****************************************************************************************************@
 @using System
 @using System.Linq
+@using GSF.Data.Model
 @using GSF.Web.Model
 @using openMIC.Model
 @using RazorEngine.Templating
@@ -32,7 +33,7 @@
     Layout = "Layout.cshtml";
     ViewBag.Title = "Status";
 
-    Device[] devices = dataContext.Table<Device>().QueryRecords().ToArray();
+    Device[] devices = dataContext.Table<Device>().QueryRecords(restriction: new RecordRestriction("Enabled <> 0")).ToArray();
 }
 @section StyleSheets {
     <style>
@@ -43,27 +44,70 @@
 }
 @section Scripts {
     <script>
-        $(window).on("updateFileTransferProgress", function (event, deviceName, totalProcessedFiles, progressComplete, progressTotal, progressMessage) {
-            $("#" + deviceName + "Message").text(progressMessage);
-            $("#" + deviceName + "Heading").text(deviceName + ": " + totalProcessedFiles.toString() + " Downloads");
-            const panel = $("#" + deviceName + "Panel");
-            const progressBar = $("#" + deviceName + "Progress");
-            const progress = Math.ceil(progressComplete / progressTotal * 100.0);
+        var ProgressState = {
+            Undefined: 0,
+            Processing: 1,
+            Skipped: 2,
+            Succeeded: 3,
+            Failed: 4
+        };
 
-            progressBar.text(progress.toString() + "%");
-            progressBar.css("width", progressBar.text());
-            panel.removeClass("panel-default panel-success panel-danger panel-info");
+        $(function () {
+            dataHubClient.deviceProgressUpdate = function (update) {
+                const messageWell = $("#" + update.DeviceName + "Message");
 
-            if (progress <= 0.0) {
-                if (progressMessage.startsWith("Failed"))
-                    panel.addClass("panel-danger");
-                else
-                    panel.addClass("panel-default");
-            }
-            else if (progress >= 100.0) {
-                panel.addClass("panel-success");
-            } else {
-                panel.addClass("panel-info");
+                if (notNull(update.ProgressMessage).length > 0)
+                    messageWell.text($("<div />").text(update.ProgressMessage).html());
+
+                $("#" + update.DeviceName + "Heading").text(update.DeviceName + ": " + update.TotalProcessedFiles.toString() + " Downloads");
+
+                const progressBar = $("#" + update.DeviceName + (update.TargetIsOverall ? "Overall" : "Current") + "Progress");
+                const progressValue = Math.ceil(update.ProgressComplete / update.ProgressTotal * 100.0);
+
+                if (isNumber(progressValue)) {
+                    progressBar.text(progressValue.toString() + "%");
+                    progressBar.css("width", progressBar.text());
+                }
+
+                if (update.TargetIsOverall) {
+                    const panel = $("#" + update.DeviceName + "Panel");
+                    panel.removeClass("panel-default panel-info panel-success panel-warning panel-danger");
+
+                    switch (update.State) {
+                        case ProgressState.Undefined:
+                            panel.addClass("panel-default");
+                            break;
+                        case ProgressState.Processing:
+                            panel.addClass("panel-info");
+                            break;
+                        case ProgressState.Skipped:
+                            panel.addClass("panel-warning");
+                            break;
+                        case ProgressState.Succeeded:
+                            panel.addClass("panel-success");
+                            break;
+                        case ProgressState.Failed:
+                            panel.addClass("panel-danger");
+                            break;
+                    }
+                } else {
+                    messageWell.removeClass("bg-success bg-info bg-warning bg-danger");
+
+                    switch (update.State) {
+                        case ProgressState.Processing:
+                            messageWell.addClass("bg-info");
+                            break;
+                        case ProgressState.Skipped:
+                            messageWell.addClass("bg-warning");
+                            break;
+                        case ProgressState.Succeeded:
+                            messageWell.addClass("bg-success");
+                            break;
+                        case ProgressState.Failed:
+                            messageWell.addClass("bg-danger");
+                            break;
+                    }
+                }
             }
         });
 
@@ -85,11 +129,14 @@
             <div class="panel-body">
                 <div class="well well-sm table-cell-hard-wrap" style="overflow-y: auto; height: 100px" id="@(deviceName)Message"></div>
                 <div class="progress" style="margin: 0">
-                    <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%" id="@(deviceName)Progress">0%</div>
+                    <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" id="@(deviceName)CurrentProgress">0%</div>
+                </div>
+                <div class="progress" style="margin-top: 5px; margin-bottom: 0">
+                    <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" id="@(deviceName)OverallProgress">0%</div>
                 </div>
             </div>
             <div class="panel-footer">
-                <button type="button" class="btn btn-primary" onclick="queueNow('@(deviceName)')">Queue Tasks for Processing...</button>
+                <button type="button" class="btn btn-primary" onclick="queueNow('@(deviceName)')">Queue Processing...</button>
             </div>
         </div>
     </div>

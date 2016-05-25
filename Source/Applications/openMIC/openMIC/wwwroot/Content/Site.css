@@ -166,6 +166,14 @@ label.disabled {
     overflow: auto;
 }
 
+.no-transition {
+  transition: none !important;
+  -ms-transition: none !important;
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+}
+
 /* Style for controls to fill page height minus spacing for navbar, header and possible messages */
 .fill-height {
     height: calc(100% - 55px);

@@ -825,6 +825,8 @@ namespace openMIC
         {
             ThreadPool.QueueUserWorkItem(state =>
             {
+                AttemptedConnections++;
+
                 if (UseDialUp)
                 {
                     m_dialUpOperation.Priority = HighPriority;
@@ -864,8 +866,6 @@ namespace openMIC
 
         private void ExecuteTasks()
         {
-            AttemptedConnections++;
-
             using (FtpClient client = new FtpClient())
             {
                 client.CommandSent += FtpClient_CommandSent;
@@ -890,23 +890,38 @@ namespace openMIC
                     Ticks connectionStartTime = DateTime.UtcNow.Ticks;
                     SuccessfulConnections++;
 
+                    string connectionProfileName = m_connectionProfile?.Name ?? "Undefined";
                     ConnectionProfileTaskSettings[] taskSettings;
+                    int settingIndex = 0;
 
                     lock (m_connectionProfileLock)
                         taskSettings = m_connectionProfileTaskSettings;
 
-                    foreach (ConnectionProfileTaskSettings settings in taskSettings)
+                    if (taskSettings.Length > 0)
                     {
-                        OnStatusMessage("Starting \"{0}\" connection profile \"{1}\" task processing:", m_connectionProfile?.Name ?? "Undefined", settings.Name);
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"Starting \"{connectionProfileName}\" connection profile processing...", 0, taskSettings.Length));
 
-                        if (string.IsNullOrWhiteSpace(settings.ExternalOperation))
-                            ProcessFTPTask(settings, client);
-                        else
-                            ProcessExternalOperationTask(settings);
+                        foreach (ConnectionProfileTaskSettings settings in taskSettings)
+                        {
+                            OnStatusMessage("Starting \"{0}\" connection profile \"{1}\" task processing:", connectionProfileName, settings.Name);
 
-                        // Handle local file age limit processing, if enabled
-                        if (settings.DeleteOldLocalFiles)
-                            HandleLocalFileAgeLimitProcessing(settings);
+                            if (string.IsNullOrWhiteSpace(settings.ExternalOperation))
+                                ProcessFTPTask(settings, client);
+                            else
+                                ProcessExternalOperationTask(settings);
+
+                            // Handle local file age limit processing, if enabled
+                            if (settings.DeleteOldLocalFiles)
+                                HandleLocalFileAgeLimitProcessing(settings);
+
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++settingIndex, taskSettings.Length));
+                        }
+
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"Completed \"{connectionProfileName}\" connection profile processing.", taskSettings.Length, taskSettings.Length));
+                    }
+                    else
+                    {
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"Skipped \"{connectionProfileName}\" connection profile processing: No tasks defined.", 0, taskSettings.Length));
                     }
 
                     Ticks connectedTime = DateTime.UtcNow.Ticks - connectionStartTime;
@@ -917,6 +932,7 @@ namespace openMIC
                 {
                     FailedConnections++;
                     OnProcessException(new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", 0, 1));
                 }
 
                 client.CommandSent -= FtpClient_CommandSent;
@@ -964,7 +980,7 @@ namespace openMIC
                                 continue;
 
                             OnStatusMessage("Processing remote file \"{0}\"...", file.Name);
-                            OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Starting \"{file.Name}\" download...", file.Size, 0));
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Starting \"{file.Name}\" download...", 0, file.Size));
 
                             try
                             {
@@ -994,14 +1010,14 @@ namespace openMIC
             if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
             {
                 OnStatusMessage("File \"{0}\" skipped, timestamp \"{1:yyyy-MM-dd HH:mm.ss.fff}\" is older than {2} days.", file.Name, file.Timestamp, Program.Host.Model.Global.MaxRemoteFileAge);
-                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed: file \"{file.Name}\" skipped: File is too old.", file.Size, 0));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: File is too old.", 0, file.Size));
                 return;
             }
 
             if (file.Size > settings.MaximumFileSize * SI2.Mega)
             {
                 OnStatusMessage("File \"{0}\" skipped, size of {1:N3} MB is larger than {2:N3} MB configured limit.", file.Name, file.Size / SI2.Mega, settings.MaximumFileSize);
-                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed: file \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB).", file.Size, 0));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB).", 0, file.Size));
                 return;
             }
 
@@ -1023,7 +1039,7 @@ namespace openMIC
             if (string.IsNullOrWhiteSpace(settings.LocalPath) || !Directory.Exists(settings.LocalPath))
             {
                 OnProcessException(new InvalidOperationException($"Cannot download file \"{file.Name}\" for connection profile task \"{settings.Name}\": Local path \"{settings.LocalPath ?? ""}\" does not exist."));
-                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed: cannot download file \"{file.Name}\": Local path does not exists", file.Size, 0));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, false, $"Cannot download file \"{file.Name}\": Local path does not exists", 0, file.Size));
                 return false;
             }
 
@@ -1053,7 +1069,7 @@ namespace openMIC
             if (File.Exists(localFileName) && !settings.OverwriteExistingLocalFiles)
             {
                 OnProcessException(new InvalidOperationException($"Skipping file \"{file.Name}\" download for connection profile task \"{settings.Name}\": Local file already exists and settings do not allow overwrite."));
-                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed: file \"{file.Name}\" skipped: Local file already exists", file.Size, 0));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: Local file already exists", 0, file.Size));
                 return false;
             }
 
@@ -1064,13 +1080,13 @@ namespace openMIC
                 file.Parent.GetFile(localFileName, file.Name);
                 FilesDownloaded++;
                 BytesDownloaded += file.Size;
-                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Download complete for \"{file.Name}\".", file.Size, file.Size));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, false, $"Download complete for \"{file.Name}\".", file.Size, file.Size));
                 return true;
             }
             catch (Exception ex)
             {
                 OnProcessException(new InvalidOperationException($"Failed to download file \"{file.Name}\" for connection profile task \"{settings.Name}\" to \"{localFileName}\": {ex.Message}", ex));
-                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed to download file \"{file.Name}\": {ex.Message}", file.Size, 0));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, false, $"Failed to download file \"{file.Name}\": {ex.Message}", 0, file.Size));
             }
 
             return false;
@@ -1122,7 +1138,7 @@ namespace openMIC
             }
 
             OnStatusMessage("Executing external operation \"{0}\"...", settings.ExternalOperation);
-            OnFileTransferProgress(this, new ProcessProgress<long>(Name, "Starting external action...", 1, 0));
+            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, "Starting external action...", 1, 0));
 
             try
             {
@@ -1132,19 +1148,20 @@ namespace openMIC
                 if ((object)externalOperation == null)
                 {
                     OnProcessException(new InvalidOperationException($"Failed to start external operation \"{settings.ExternalOperation}\"."));
-                    OnFileTransferProgress(this, new ProcessProgress<long>(Name, "Failed to start external action.", 1, 0));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, false, "Failed to start external action.", 1, 0));
                 }
                 else
                 {
                     externalOperation.WaitForExit();
                     OnStatusMessage("External operation \"{0}\" completed with status code {1}.", settings.ExternalOperation, externalOperation.ExitCode);
-                    OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"External action complete: exit code {externalOperation.ExitCode}.", 1, 1));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Undefined, false, $"External action complete: exit code {externalOperation.ExitCode}.", 1, 1));
+                    FilesDownloaded++;
                 }
             }
             catch (Exception ex)
             {
                 OnProcessException(new InvalidOperationException($"Failed to execute external operation \"{settings.ExternalOperation}\": {ex.Message}", ex));
-                OnFileTransferProgress(this, new ProcessProgress<long>(Name, $"Failed to execute external action: {ex.Message}", 1, 0));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, false, $"Failed to execute external action: {ex.Message}", 1, 0));
             }
         }
 
@@ -1238,7 +1255,8 @@ namespace openMIC
 
         private void FtpClient_FileTransferProgress(object sender, EventArgs<ProcessProgress<long>, TransferDirection> e)
         {
-            OnFileTransferProgress(this, e.Argument1);
+            ProcessProgress<long> progress = e.Argument1;
+            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, progress.ProgressMessage, progress.Complete, progress.Total));
         }
 
         private void FtpClient_FileTransferNotification(object sender, EventArgs<FtpAsyncResult> e)
@@ -1329,7 +1347,7 @@ namespace openMIC
         /// <summary>
         /// Raised when there is a file transfer progress notification for any downloader instance.
         /// </summary>
-        public static event EventHandler<EventArgs<ProcessProgress<long>>> FileTransferProgress;
+        public static event EventHandler<EventArgs<ProgressUpdate>> ProgressUpdated;
 
         // Static Constructor
         static Downloader()
@@ -1348,6 +1366,8 @@ namespace openMIC
 
             if (s_instances.TryGetValue(schedule.Name, out instance))
             {
+                instance.AttemptedConnections++;
+
                 if (instance.UseDialUp)
                     instance.m_dialUpOperation.RunOnceAsync();
                 else
@@ -1396,9 +1416,9 @@ namespace openMIC
             s_instances.TryRemove(instance.Name, out instance);
         }
 
-        private static void OnFileTransferProgress(Downloader instance, ProcessProgress<long> progress)
+        private static void OnProgressUpdated(Downloader instance, ProgressUpdate update)
         {
-            FileTransferProgress?.Invoke(instance, new EventArgs<ProcessProgress<long>>(progress));
+            ProgressUpdated?.Invoke(instance, new EventArgs<ProgressUpdate>(update));
         }
 
         #region [ Statistic Functions ]
