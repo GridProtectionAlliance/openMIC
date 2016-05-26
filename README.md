@@ -32,9 +32,9 @@ Meter Information Collector
 
 # Documentation
 
-openMIC is a fairly new project and there is currently no documentation.
+Documenetation for openMIC can be found [here](https://github.com/GridProtectionAlliance/openMIC/tree/master/Source/Documentation).
 
-Check out some [screenshots](#screenshots) below though...
+Also check out some [screenshots](#screenshots) below.
 
 # Deployment
 
