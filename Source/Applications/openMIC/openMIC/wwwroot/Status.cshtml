@@ -20,20 +20,13 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
-@using System
-@using System.Linq
-@using GSF.Data.Model
-@using GSF.Web.Model
+@using GSF
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits TemplateBase<AppModel>
 @{
-    DataContext dataContext = ViewBag.DataContext;
-
     Layout = "Layout.cshtml";
     ViewBag.Title = "Status";
-
-    Device[] devices = dataContext.Table<Device>().QueryRecords(restriction: new RecordRestriction("Enabled <> 0")).ToArray();
 }
 @section StyleSheets {
     <style>
@@ -42,9 +35,55 @@
         }
     </style>
 }
+@helper SearchFilter()
+{
+    @* Make sure to use single quotes in this function: *@
+    <div class='form-group' style='margin: 0; margin-bottom: 5px'>
+        <div class='right-inner-addon'>
+            <i class='glyphicon glyphicon-search'></i>
+            <input class='form-control' type='search' id='searchFilter' placeholder='Search' />
+        </div>
+    </div>
+}
 @section Scripts {
+    <script src="Scripts/knockout-3.4.0.js"></script>
     <script>
-        var ProgressState = {
+        const viewModel = {
+            items: ko.observableArray(),
+            columnLength: ko.observable(4),
+            filterText : ""
+        };
+
+        viewModel.recordCount = ko.pureComputed({
+            read: function () {
+                return viewModel.items().length;
+            }
+        });
+
+        // Return an array of rows where each row is an array of items
+        viewModel.rows = ko.computed(function() {
+            const result = [];
+            const columns = parseInt(this.columnLength(), 10);
+            var row;
+
+            for (var i = 0, j = this.items().length; i < j; i++) {
+                if (i % columns === 0) {
+                    if (row)
+                        result.push(row);
+                    row = [];
+                }
+                
+                row.push(this.items()[i]);
+            }
+    
+            // Push final row  
+            if (row)
+                result.push(row);
+    
+            return result;
+        }, viewModel);
+
+        const ProgressState = {
             Undefined: 0,
             Processing: 1,
             Skipped: 2,
@@ -52,8 +91,8 @@
             Failed: 4
         };
 
-        $(function () {
-            dataHubClient.deviceProgressUpdate = function (update) {
+        $(function() {
+            dataHubClient.deviceProgressUpdate = function(update) {
                 const messageWell = $("#" + update.DeviceName + "Message");
 
                 if (notNull(update.ProgressMessage).length > 0)
@@ -74,72 +113,99 @@
                     panel.removeClass("panel-default panel-info panel-success panel-warning panel-danger");
 
                     switch (update.State) {
-                        case ProgressState.Undefined:
-                            panel.addClass("panel-default");
-                            break;
-                        case ProgressState.Processing:
-                            panel.addClass("panel-info");
-                            break;
-                        case ProgressState.Skipped:
-                            panel.addClass("panel-warning");
-                            break;
-                        case ProgressState.Succeeded:
-                            panel.addClass("panel-success");
-                            break;
-                        case ProgressState.Failed:
-                            panel.addClass("panel-danger");
-                            break;
+                    case ProgressState.Undefined:
+                        panel.addClass("panel-default");
+                        break;
+                    case ProgressState.Processing:
+                        panel.addClass("panel-info");
+                        break;
+                    case ProgressState.Skipped:
+                        panel.addClass("panel-warning");
+                        break;
+                    case ProgressState.Succeeded:
+                        panel.addClass("panel-success");
+                        break;
+                    case ProgressState.Failed:
+                        panel.addClass("panel-danger");
+                        break;
                     }
                 } else {
                     messageWell.removeClass("bg-success bg-info bg-warning bg-danger");
 
                     switch (update.State) {
-                        case ProgressState.Processing:
-                            messageWell.addClass("bg-info");
-                            break;
-                        case ProgressState.Skipped:
-                            messageWell.addClass("bg-warning");
-                            break;
-                        case ProgressState.Succeeded:
-                            messageWell.addClass("bg-success");
-                            break;
-                        case ProgressState.Failed:
-                            messageWell.addClass("bg-danger");
-                            break;
+                    case ProgressState.Processing:
+                        messageWell.addClass("bg-info");
+                        break;
+                    case ProgressState.Skipped:
+                        messageWell.addClass("bg-warning");
+                        break;
+                    case ProgressState.Succeeded:
+                        messageWell.addClass("bg-success");
+                        break;
+                    case ProgressState.Failed:
+                        messageWell.addClass("bg-danger");
+                        break;
                     }
                 }
             }
+
+            $("#pageHeader").append("@Raw(SearchFilter().ToString().RemoveDuplicateWhiteSpace().Replace("\r\n", ""))");
+
+            $("#titleText").html("Records: <span data-bind='text: recordCount'>calculating...</span>");
+
+            $("#searchFilter").on("keyup", function (event) {
+                if ($("#searchFilter").val().length === 0) {
+                    viewModel.filterText = "";
+                    loadDevices();
+                } else {
+                    viewModel.filterText = $("#searchFilter").val();
+                    loadDevices();
+                }
+            });
+
+            ko.applyBindings(viewModel);
         });
 
-        function queueNow (deviceName) {
+        $(window).on("hubConnected", function (event) {
+            loadDevices();
+        });
+
+        function queueNow(record) {
             if (!hubIsConnected)
                 return;
 
-            serviceHub.sendCommand("invoke " + deviceName + " QueueTasks");
+            serviceHub.sendCommand("invoke " + record.Acronym + " QueueTasks");
+        }
+
+        function loadDevices() {
+            if (!hubIsConnected)
+                return;
+
+            dataHub.queryDevices("Acronym", true, 1, 100, viewModel.filterText).done(function (devices){
+                viewModel.items.removeAll();
+                viewModel.items(devices);
+            });
         }
     </script>
 }
-@for (int i = 0; i < devices.Length; i+=4) {
-<div class="row">
-    @for (int j = i; j < Math.Min(i + 4, devices.Length); j++) {
-        string deviceName = devices[j].Acronym;
-    <div class="col-md-3">
-        <div class="panel panel-default" id="@(deviceName)Panel">
-            <div class="panel-heading" id="@(deviceName)Heading">@deviceName</div>
-            <div class="panel-body">
-                <div class="well well-sm table-cell-hard-wrap" style="overflow-y: auto; height: 100px" id="@(deviceName)Message"></div>
-                <div class="progress" style="margin: 0">
-                    <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" id="@(deviceName)CurrentProgress">0%</div>
+<div data-bind="foreach: rows">
+    <div data-bind="foreach: $data" class="row">
+        <div class="col-md-3">
+            <div class="panel panel-default" data-bind="attr: {id: Acronym + 'Panel'}">
+                <div class="panel-heading" data-bind="attr: {id: Acronym + 'Heading'}, text: Acronym"></div>
+                <div class="panel-body">
+                    <div class="well well-sm table-cell-hard-wrap" style="overflow-y: auto; height: 100px" data-bind="attr: {id: Acronym + 'Message'}"></div>
+                    <div class="progress" style="margin: 0">
+                        <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" data-bind="attr: {id: Acronym + 'CurrentProgress'}">0%</div>
+                    </div>
+                    <div class="progress" style="margin-top: 5px; margin-bottom: 0">
+                        <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" data-bind="attr: {id: Acronym + 'OverallProgress'}" ">0%</div>
+                    </div>
                 </div>
-                <div class="progress" style="margin-top: 5px; margin-bottom: 0">
-                    <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" id="@(deviceName)OverallProgress">0%</div>
+                <div class="panel-footer">
+                    <button type="button" class="btn btn-primary" data-bind="click: queueNow.bind($data)">Queue Processing...</button>
                 </div>
-            </div>
-            <div class="panel-footer">
-                <button type="button" class="btn btn-primary" onclick="queueNow('@(deviceName)')">Queue Processing...</button>
             </div>
         </div>
-    </div>
-    }
+    </div>    
 </div>
-}    
