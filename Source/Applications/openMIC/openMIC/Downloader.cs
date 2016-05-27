@@ -46,6 +46,7 @@ using GSF.Units;
 using GSF.Web.Model;
 using openMIC.Model;
 using System.Data;
+using GSF.Parsing;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedParameter.Local
@@ -53,21 +54,6 @@ using System.Data;
 // ReSharper disable MemberCanBePrivate.Local
 namespace openMIC
 {
-    /// <summary>
-    /// Directory naming conventions.
-    /// </summary>
-    public enum DirectoryNamingConvention
-    {
-        [Description("Top Folder")]
-        Root,
-        [Description("Year Sub-folder")]
-        Year,
-        [Description("YYYYMM Sub-folder")]
-        YearMonth,
-        [Description("Year/Month Sub-folders")]
-        YearThenMonth
-    }
-
     /// <summary>
     /// Adapter that implements remote file download capabilities.
     /// </summary>
@@ -216,22 +202,12 @@ namespace openMIC
             }
 
             [ConnectionStringParameter,
-            Description("Defines directory naming convention."),
-            DefaultValue("Root")]
-            public string DirectoryNamingConvention
+            Description("Defines directory naming expression."),
+            DefaultValue("<YYYY><MM>\\<DeviceFolderName>")]
+            public string DirectoryNamingExpression
             {
                 get;
                 set;
-            }
-
-            public DirectoryNamingConvention GetDirectoryNamingConvention()
-            {
-                DirectoryNamingConvention convention;
-
-                if (Enum.TryParse(DirectoryNamingConvention, out convention))
-                    return convention;
-
-                return openMIC.DirectoryNamingConvention.Root;
             }
 
             [ConnectionStringParameter,
@@ -319,10 +295,13 @@ namespace openMIC
         private readonly RasDialer m_rasDialer;
         private readonly DeviceProxy m_deviceProxy;
         private readonly object m_connectionProfileLock;
+        private Device m_deviceRecord;
         private ConnectionProfile m_connectionProfile;
         private ConnectionProfileTaskSettings[] m_connectionProfileTaskSettings;
         private LogicalThreadOperation m_dialUpOperation;
         private LongSynchronizedOperation m_executeTasks;
+        private int m_overallTasksCompleted;
+        private int m_overallTasksCount;
         private long m_startDialUpTime;
         private bool m_disposed;
 
@@ -848,6 +827,7 @@ namespace openMIC
             {
                 lock (m_connectionProfileLock)
                 {
+                    m_deviceRecord = context.Table<Device>().QueryRecords(restriction: new RecordRestriction("Acronym = {0}", Name)).FirstOrDefault();
                     m_connectionProfile = context.Table<ConnectionProfile>().LoadRecord(ConnectionProfileID);
                     IEnumerable<ConnectionProfileTask> tasks = context.Table<ConnectionProfileTask>().QueryRecords(null, new RecordRestriction("ConnectionProfileID={0}", ConnectionProfileID));
                     List<ConnectionProfileTaskSettings> connectionProfileTaskSettings = new List<ConnectionProfileTaskSettings>();
@@ -899,7 +879,9 @@ namespace openMIC
 
                     if (taskSettings.Length > 0)
                     {
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"Starting \"{connectionProfileName}\" connection profile processing...", 0, taskSettings.Length));
+                        m_overallTasksCompleted = 0;
+                        m_overallTasksCount = taskSettings.Length;
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"Starting \"{connectionProfileName}\" connection profile processing...", m_overallTasksCompleted, m_overallTasksCount));
 
                         foreach (ConnectionProfileTaskSettings settings in taskSettings)
                         {
@@ -914,14 +896,14 @@ namespace openMIC
                             if (settings.DeleteOldLocalFiles)
                                 HandleLocalFileAgeLimitProcessing(settings);
 
-                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++settingIndex, taskSettings.Length));
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
                         }
 
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"Completed \"{connectionProfileName}\" connection profile processing.", taskSettings.Length, taskSettings.Length));
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"Completed \"{connectionProfileName}\" connection profile processing.", m_overallTasksCount, m_overallTasksCount));
                     }
                     else
                     {
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"Skipped \"{connectionProfileName}\" connection profile processing: No tasks defined.", 0, taskSettings.Length));
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"Skipped \"{connectionProfileName}\" connection profile processing: No tasks defined.", 0, 1));
                     }
 
                     Ticks connectedTime = DateTime.UtcNow.Ticks - connectionStartTime;
@@ -973,23 +955,31 @@ namespace openMIC
                     else
                     {
                         OnStatusMessage("Found {0} remote file{1}, starting file processing...", files.Length, files.Length > 1 ? "s" : "");
+                        m_overallTasksCount += files.Length;
 
                         foreach (FtpFile file in files)
                         {
-                            if (!FilePath.IsFilePatternMatch(settings.FileSpecs, file.Name, true))
-                                continue;
-
-                            OnStatusMessage("Processing remote file \"{0}\"...", file.Name);
-                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Starting \"{file.Name}\" download...", 0, file.Size));
-
                             try
                             {
-                                ProcessFile(settings, file);
-                                TotalProcessedFiles++;
+                                if (!FilePath.IsFilePatternMatch(settings.FileSpecs, file.Name, true))
+                                    continue;
+
+                                OnStatusMessage("Processing remote file \"{0}\"...", file.Name);
+                                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Starting \"{file.Name}\" download...", 0, file.Size));
+
+                                try
+                                {
+                                    ProcessFile(settings, file);
+                                    TotalProcessedFiles++;
+                                }
+                                catch (Exception ex)
+                                {
+                                    OnProcessException(new InvalidOperationException($"Failed to process remote file \"{file.Name ?? "undefined"}\" in \"{settings.RemotePath}\": {ex.Message}", ex));
+                                }
                             }
-                            catch (Exception ex)
+                            finally
                             {
-                                OnProcessException(new InvalidOperationException($"Failed to process remote file \"{file.Name ?? "undefined"}\" in \"{settings.RemotePath}\": {ex.Message}", ex));
+                                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
                             }
                         }
                     }
@@ -1094,21 +1084,22 @@ namespace openMIC
 
         private string GetLocalFileName(ConnectionProfileTaskSettings settings, string fileName)
         {
-            switch (settings.GetDirectoryNamingConvention())
+            TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
+            Dictionary<string, string> substitutions = new Dictionary<string, string>
             {
-                case DirectoryNamingConvention.Root:
-                    fileName = Path.Combine(settings.LocalPath, fileName);
-                    break;
-                case DirectoryNamingConvention.Year:
-                    fileName = Path.Combine(settings.LocalPath, $"{DateTime.Now.Year}\\", fileName);
-                    break;
-                case DirectoryNamingConvention.YearMonth:
-                    fileName = Path.Combine(settings.LocalPath, $"{DateTime.Now.Year}{DateTime.Now.Month.ToString().PadLeft(2, '0')}\\", fileName);
-                    break;
-                case DirectoryNamingConvention.YearThenMonth:
-                    fileName = Path.Combine(settings.LocalPath, $"{DateTime.Now.Year}\\{DateTime.Now.Month.ToString().PadLeft(2, '0')}\\", fileName);
-                    break;
-            }
+                { "<YYYY>", $"{DateTime.Now.Year}" },
+                { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
+                { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
+                { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
+                { "<DeviceName>", m_deviceRecord.Name },
+                { "<DeviceAcronym>", m_deviceRecord.Acronym },
+                { "<DeviceFolderName>", m_deviceRecord.OriginalSource },
+                { "<ProfileName>", m_connectionProfile.Name }
+            };
+
+            directoryNameExpressionParser.TemplatedExpression = settings.DirectoryNamingExpression.Replace("\\", "\\\\");
+
+            fileName = Path.Combine(settings.LocalPath, $"{directoryNameExpressionParser.Execute(substitutions)}\\", fileName);
 
             string directoryName = FilePath.GetDirectoryName(fileName);
 
@@ -1177,9 +1168,7 @@ namespace openMIC
 
             try
             {
-                bool managingSubfolders = settings.GetDirectoryNamingConvention() != DirectoryNamingConvention.Root;
-                string filePattern = managingSubfolders ? "*\\*.*" : "*.*";
-                string[] files = FilePath.GetFileList(Path.Combine(FilePath.GetAbsolutePath(settings.LocalPath), filePattern));
+                string[] files = FilePath.GetFileList(Path.Combine(FilePath.GetAbsolutePath(settings.LocalPath), "*\\*.*"));
                 long deletedCount = 0;
 
                 OnStatusMessage("Found {0} local files, starting age limit processing...", files.Length);
@@ -1198,28 +1187,25 @@ namespace openMIC
 
                         try
                         {
+                            string rootPathName = FilePath.GetDirectoryName(settings.LocalPath);
+                            string directoryName = FilePath.GetDirectoryName(file);
+
                             FilePath.WaitForWriteLock(file);
                             File.Delete(file);
                             deletedCount++;
                             OnStatusMessage("File \"{0}\" successfully deleted...", file);
 
-                            if (managingSubfolders)
+                            if (!directoryName.Equals(rootPathName, StringComparison.OrdinalIgnoreCase))
                             {
-                                string rootPathName = FilePath.GetDirectoryName(settings.LocalPath);
-                                string directoryName = FilePath.GetDirectoryName(file);
-
-                                if (!directoryName.Equals(rootPathName, StringComparison.OrdinalIgnoreCase))
+                                // Try to remove sub-folder, this will only succeed if folder is empty...
+                                try
                                 {
-                                    // Try to remove sub-folder, this will only succeed if folder is empty...
-                                    try
-                                    {
-                                        Directory.Delete(directoryName);
-                                        OnStatusMessage("Removed empty folder \"{0}\"...", directoryName);
-                                    }
-                                    catch
-                                    {
-                                        // Failure is common case, nothing to report
-                                    }
+                                    Directory.Delete(directoryName);
+                                    OnStatusMessage("Removed empty folder \"{0}\"...", directoryName);
+                                }
+                                catch
+                                {
+                                    // Failure is common case, nothing to report
                                 }
                             }
                         }

@@ -188,6 +188,11 @@ namespace openMIC
             return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
+        public IEnumerable<Device> QueryDevices(int limit, string filterText)
+        {
+            return m_dataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Enabled <> 0 AND (Acronym LIKE {0} OR Name LIKE {0})", $"%{filterText}%"), limit);
+        }
+
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Device), RecordOperation.DeleteRecord)]
         public void DeleteDevice(int id)
@@ -213,6 +218,9 @@ namespace openMIC
             device.UpdatedBy = device.CreatedBy;
             device.UpdatedOn = device.CreatedOn;
 
+            if (string.IsNullOrWhiteSpace(device.OriginalSource))
+                device.OriginalSource = device.Acronym;
+
             m_dataContext.Table<Device>().AddNewRecord(device);
         }
 
@@ -221,6 +229,12 @@ namespace openMIC
         public void UpdateDevice(Device device)
         {
             device.ProtocolID = DownloaderProtocolID;
+            device.UpdatedBy = device.CreatedBy;
+            device.UpdatedOn = device.CreatedOn;
+
+            if (string.IsNullOrWhiteSpace(device.OriginalSource))
+                device.OriginalSource = device.Acronym;
+
             m_dataContext.Table<Device>().UpdateRecord(device);
         }
 
@@ -269,6 +283,9 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.UpdateRecord)]
         public void UpdateConnectionProfile(ConnectionProfile connectionProfile)
         {
+            connectionProfile.UpdatedBy = connectionProfile.CreatedBy;
+            connectionProfile.UpdatedOn = connectionProfile.CreatedOn;
+
             m_dataContext.Table<ConnectionProfile>().UpdateRecord(connectionProfile);
         }
 
@@ -330,6 +347,9 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.UpdateRecord)]
         public void UpdateConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
         {
+            connectionProfileTask.UpdatedBy = connectionProfileTask.CreatedBy;
+            connectionProfileTask.UpdatedOn = connectionProfileTask.CreatedOn;
+
             m_dataContext.Table<ConnectionProfileTask>().UpdateRecord(connectionProfileTask);
         }
 
@@ -384,6 +404,9 @@ namespace openMIC
         [RecordOperation(typeof(Company), RecordOperation.UpdateRecord)]
         public void UpdateCompany(Company company)
         {
+            company.UpdatedBy = company.CreatedBy;
+            company.UpdatedOn = company.CreatedOn;
+
             m_dataContext.Table<Company>().UpdateRecord(company);
         }
 
@@ -438,6 +461,9 @@ namespace openMIC
         [RecordOperation(typeof(Vendor), RecordOperation.UpdateRecord)]
         public void UpdateVendor(Vendor vendor)
         {
+            vendor.UpdatedBy = vendor.CreatedBy;
+            vendor.UpdatedOn = vendor.CreatedOn;
+
             m_dataContext.Table<Vendor>().UpdateRecord(vendor);
         }
 
@@ -492,6 +518,9 @@ namespace openMIC
         [RecordOperation(typeof(VendorDevice), RecordOperation.UpdateRecord)]
         public void UpdateVendorDevice(VendorDevice vendorDevice)
         {
+            vendorDevice.UpdatedBy = vendorDevice.CreatedBy;
+            vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
+
             m_dataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
         }
 

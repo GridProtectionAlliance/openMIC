@@ -41,6 +41,7 @@ function PagedViewModel() {
     self.defaultSortAscending = true;                               // Default sort ascending flag
     self.initialFocusField = "";                                    // Initial add/edit field with focus
     self.modelName = "{name}";                                      // Name of model used for cookie names, defaults to page title
+    self.filterText = "";                                           // Search filter text
 
     // Observable fields
     self.pageRecords = ko.observableArray();                        // Records queried for current page
@@ -53,7 +54,6 @@ function PagedViewModel() {
     self.canEdit = ko.observable(true);                             // Can edit flag - normally controlled by external roles
     self.canAddNew = ko.observable(true);                           // Can add new flag - normally controlled by external roles
     self.canDelete = ko.observable(true);                           // Can delete flag - normally controlled by external roles
-    self.filterText = "";                                           // Search filter text
 
     // Internal fields
     self._currentPageSize = ko.observable(1);
