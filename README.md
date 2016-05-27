@@ -97,7 +97,7 @@ If you would like to contribute please:
 
 ![Manage Connection Profiles](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Manage%20Connection%20Profiles.png)
 
-## Manage Connection Profile Tasks
+## Manage Connection Profile Task
 
 ![Manage Connection Profile Tasks](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Manage%20Connection%20Profile%20Task.png)
 
