@@ -73,6 +73,10 @@ If you would like to contribute please:
 
 ![Main Screen](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Main%20Screen.png)
 
+# Status
+
+![Status](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/openMIC%20Status.png)
+
 ## Manage Devices and Schedules
 
 ![Manage Devices and Schedules](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Manage%20Devices%20and%20Schedules.png)
@@ -95,7 +99,7 @@ If you would like to contribute please:
 
 ## Manage Connection Profile Tasks
 
-![Manage Connection Profile Tasks](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Manage%20Connection%20Profile%20Tasks.png)
+![Manage Connection Profile Tasks](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Manage%20Connection%20Profile%20Task.png)
 
 ## Edit Connection Profile Task
 
