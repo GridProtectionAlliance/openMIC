@@ -32,14 +32,12 @@ Meter Information Collector
 
 # Documentation
 
-Documenetation for openMIC can be found [here](https://github.com/GridProtectionAlliance/openMIC/tree/master/Source/Documentation).
-
-Also check out some [screenshots](#screenshots) below.
+openMIC is a new project so documentation is limited, but you can check out some [screenshots](#screenshots) below.
 
 # Deployment
 
 1. Make sure your system meets all the requirements below.
-* Download the [nightly build](#nightly-build) below.
+* Download the [Latest Stable Release](#latest-stable-release) below.
 * Unzip.
 * Run "Setup.exe".
 * Follow the wizard.
@@ -54,6 +52,10 @@ Also check out some [screenshots](#screenshots) below.
   * MySQL
   * Oracle
   * SQLite (Not recommended for production use) - included.
+
+## Latest Stable Release
+
+Download the lastest stable release [here](https://github.com/GridProtectionAlliance/openMIC/releases)
 
 ## Nightly Build
 
