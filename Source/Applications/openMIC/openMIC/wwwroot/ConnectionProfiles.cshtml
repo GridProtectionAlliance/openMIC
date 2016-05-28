@@ -68,7 +68,7 @@
 }
 @helper AddNewEditDialog(DataContext dataContext)
 {
-    @Raw(dataContext.AddInputField<ConnectionProfile>("Name"))
+    @Raw(dataContext.AddInputField<ConnectionProfile>("Name", initialFocus: true))
     @Raw(dataContext.AddInputField<ConnectionProfile>("Description"))
 }
 @Include("PagedViewModel.cshtml")

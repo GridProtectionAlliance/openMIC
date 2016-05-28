@@ -67,7 +67,7 @@
 @helper AddNewEditDialog(DataContext dataContext)
 {
     <div class="col-md-6">
-        @Raw(dataContext.AddInputField<ConnectionProfileTask>("Name"))
+        @Raw(dataContext.AddInputField<ConnectionProfileTask>("Name", initialFocus: true))
         @Raw(dataContext.AddInputField("get('fileextensions')", true, fieldLabel: "File Names or Extensions to Download", fieldID: "inputFileExtensions", groupDataBinding: "with: $root.connectionString", toolTip: "Separate multiple file names or extension patterns with commas", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('remotepath')", true, fieldLabel: "Remote Path", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('localpath')", true, fieldLabel: "Local Path", fieldID: "inputLocalPath", groupDataBinding: "with: $root.connectionString", toolTip: string.Format("User \"{0}\" will need rights to this folder or local path authentication will need to be specified >>", UserInfo.CurrentUserID).HtmlEncode(), enableHotLinks: false))

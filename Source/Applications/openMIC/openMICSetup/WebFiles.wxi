@@ -18,8 +18,8 @@
   <Component Id="Help_cshtml">
     <File Id="Help.cshtml" Name="Help.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Help.cshtml" />
   </Component>
-  <Component Id="Index_cshtml">
-    <File Id="Index.cshtml" Name="Index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Index.cshtml" />
+  <Component Id="index_cshtml">
+    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
   </Component>
   <Component Id="Layout_cshtml">
     <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />

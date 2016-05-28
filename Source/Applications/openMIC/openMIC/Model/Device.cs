@@ -61,6 +61,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Required]
         [Label("Company")]
         public int? CompanyID
         {

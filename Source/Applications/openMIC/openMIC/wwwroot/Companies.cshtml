@@ -61,7 +61,7 @@
 }
 @helper AddNewEditDialog(DataContext dataContext)
 {
-    @Raw(dataContext.AddInputField<Company>("Acronym"))
+    @Raw(dataContext.AddInputField<Company>("Acronym", initialFocus: true))
     @Raw(dataContext.AddInputField<Company>("Name"))
     @Raw(dataContext.AddInputField<Company>("MapAcronym"))
     @Raw(dataContext.AddInputField<Company>("URL", "url"))

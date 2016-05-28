@@ -40,7 +40,7 @@
     ViewBag.ShowSearchFilter = true;
 
     ViewBag.HeaderColumns = new[]
-{   //    { "Field", "Label", "Classes" }
+    {   //    { "Field", "Label", "Classes" }
         new[] { "Acronym", "Acronym", "text-left" },
         new[] { "Name", "Name", "text-left" },
         new[] { "URL", "URL", "text-left" }
@@ -61,7 +61,7 @@
 }
 @helper AddNewEditDialog(DataContext dataContext)
 {
-    @Raw(dataContext.AddInputField<Vendor>("Acronym"))
+    @Raw(dataContext.AddInputField<Vendor>("Acronym", initialFocus: true))
     @Raw(dataContext.AddInputField<Vendor>("Name"))
     @Raw(dataContext.AddInputField<Vendor>("PhoneNumber", "tel"))
     @Raw(dataContext.AddInputField<Vendor>("ContactEmail", "email"))

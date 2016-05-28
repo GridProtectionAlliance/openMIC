@@ -553,6 +553,11 @@
         <File Id="WPFToolkit.dll" Name="WPFToolkit.dll" Source="$(var.SolutionDir)\Dependencies\Microsoft\WPF\WPFToolkit.dll" />
       </Component>
 
+      <!-- DotRas dial-up components -->
+      <Component Id="DotRas">
+        <File Id="DotRas.dll" Name="DotRas.dll" Source="$(var.SolutionDir)Dependencies\NuGet\DotRas.for.Win7.1.3.0\lib\net40\DotRas.dll" />
+      </Component>
+
       <!-- Self Hosting SignalR, WebAPI and Razor Engine Components (from NuGet) -->
       <Component Id="Microsoft.AspNet.Razor">
         <File Id="Microsoft.AspNet.Razor.dll" Name="Microsoft.AspNet.Razor.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.AspNet.Razor.4.0.0-beta7\lib\net45\Microsoft.AspNet.Razor.dll" />

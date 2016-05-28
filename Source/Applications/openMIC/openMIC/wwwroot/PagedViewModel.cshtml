@@ -282,11 +282,13 @@
             $(""#pageHeader"").append(""{0}"");
 
             $(""#searchFilter"").on(""keyup"", function (e) {{
-                if ($(""#searchFilter"").val().length === 0) {{
+                const searchText = $(""#searchFilter"").val();
+
+                if (searchText.length === 0) {{
                     viewModel.filterText = """";
                     viewModel.queryPageRecords();
                 }} else {{
-                    viewModel.filterText = $(""#searchFilter"").val();
+                    viewModel.filterText = searchText;
                     viewModel.queryPageRecords();
                 }}
             }});

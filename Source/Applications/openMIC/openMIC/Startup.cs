@@ -56,10 +56,10 @@ namespace openMIC
 
             // Setup resolver for web page controller instances
             httpConfig.DependencyResolver = WebPageController.GetDependencyResolver(WebServer.Default, Program.Host.DefaultWebPage, new AppModel(), typeof(AppModel));
-#if DEBUG
+
             // Enabled detailed client errors
             hubConfig.EnableDetailedErrors = true;
-#endif
+            
             // Load ServiceHub SignalR class
             app.MapSignalR(hubConfig);
 

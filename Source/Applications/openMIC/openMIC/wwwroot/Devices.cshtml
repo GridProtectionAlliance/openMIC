@@ -49,11 +49,15 @@
     };
 
     // Lookup default company ID
-    try {
-        ViewBag.DefaultCompanyID = dataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Company WHERE Acronym={0}", Model.Global.CompanyAcronym);
+    int? companyID;
+
+    try
+    {
+        companyID = dataContext.Connection.ExecuteScalar<int?>("SELECT ID FROM Company WHERE Acronym={0}", Model.Global.CompanyAcronym);
     }
-    catch {
-        ViewBag.DefaultCompanyID = 0;
+    catch
+    {
+        companyID = null;
     }
 
     ViewBag.BodyRows = BodyRows().ToString();
@@ -74,13 +78,13 @@
 }
 @helper AddNewEditDialog(DataContext dataContext) {
     <div class="col-md-6">
-        @Raw(dataContext.AddInputField<Device>("Acronym", enableHotLinks: false))
+        @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus:true, enableHotLinks: false))
         @Raw(dataContext.AddInputField<Device>("Name", enableHotLinks: false))
         @Raw(dataContext.AddInputField<Device>("OriginalSource", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionusername')", false, fieldLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionpassword')", false, inputType: "password", fieldLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", false, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
+        @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
         @Raw(dataContext.AddInputField("get('schedule')", true, fieldLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name"))
     </div>
@@ -177,7 +181,7 @@
         defaultConnectionString.set("connectionHostName", "");
         defaultConnectionString.set("connectionUserName", "@Raw(Model.Global.DefaultFTPUserName.JavaScriptEncode())");
         defaultConnectionString.set("connectionPassword", "@Raw(Model.Global.DefaultFTPPassword.JavaScriptEncode())");
-        defaultConnectionString.set("connectionProfileID", 0);
+        defaultConnectionString.set("connectionProfileID", "");
         defaultConnectionString.set("schedule", "* * * * *");
         defaultConnectionString.set("useDialUp", false);
         defaultConnectionString.set("dialUpEntryName", "");
@@ -215,7 +219,7 @@
 
         $(viewModel).on("newRecord", function(event, record) {
             // Initialize default values for new record
-            record.CompanyID = @ViewBag.DefaultCompanyID;
+            record.CompanyID = @Raw(companyID == null ? "\"\"" : companyID.ToString());
         });
 
         $(viewModel).on("currentRecordChanged", function(event) {

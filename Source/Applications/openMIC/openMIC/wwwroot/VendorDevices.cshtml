@@ -62,7 +62,7 @@
 @helper AddNewEditDialog(DataContext dataContext)
 {
     @Raw(dataContext.AddSelectField<VendorDevice, Vendor>("VendorID", "ID", "Acronym"))
-    @Raw(dataContext.AddInputField<VendorDevice>("Name"))
+    @Raw(dataContext.AddInputField<VendorDevice>("Name", initialFocus: true))
     @Raw(dataContext.AddInputField<VendorDevice>("Description"))
     @Raw(dataContext.AddInputField<VendorDevice>("URL", "url"))
 }
