@@ -150,7 +150,7 @@ namespace openMIC
                 ProgressUpdate update = e.Argument;
 
                 update.DeviceName = instance.Name;
-                update.TotalProcessedFiles = instance.TotalProcessedFiles;
+                update.FilesDownloaded = instance.FilesDownloaded;
 
                 if (!string.IsNullOrEmpty(update.ProgressMessage))
                     update.ProgressMessage += $"\r\n\r\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}]";

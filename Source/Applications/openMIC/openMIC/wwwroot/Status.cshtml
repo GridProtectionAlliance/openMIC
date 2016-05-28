@@ -45,7 +45,7 @@
         </div>
     </div>
     <div class='form-group' style='margin-top: 5px; margin-bottom: 10px'>
-        Query Limit: <input data-bind='value: itemLimit' type='number' style='width: 50px'/>
+        <label for='inputQueryLimit'>Query Limit:</label> <input id='inputQueryLimit' data-bind='value: itemLimit' type='number' style='width: 50px'/>
         <button type='button' class='btn btn-primary pull-right' data-bind='click: queueAll()'>Queue All for Processing...</button>
     </div>
 }
@@ -139,7 +139,7 @@
                 if (notNull(update.ProgressMessage).length > 0)
                     messageWell.html($("<div />").text(update.ProgressMessage).html().replaceAll("\n", "<br />"));
 
-                $("#" + update.DeviceName + "Heading").text(update.DeviceName + ": " + update.TotalProcessedFiles.toString() + " Downloads");
+                $("#" + update.DeviceName + "Heading").text(update.DeviceName + ": " + update.FilesDownloaded.toString() + " Downloads");
 
                 const progressBar = $("#" + update.DeviceName + (update.TargetIsOverall ? "Overall" : "Current") + "Progress");
                 const progressValue = Math.ceil(update.ProgressComplete / update.ProgressTotal * 100.0);

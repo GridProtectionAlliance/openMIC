@@ -157,6 +157,15 @@ namespace openMIC
             }
 
             [ConnectionStringParameter,
+            Description("Determines if download should be skipped if local file already exists and matches remote."),
+            DefaultValue(false)]
+            public bool SkipDownloadIfUnchanged
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
             Description("Determines if existing local files should be overwritten."),
             DefaultValue(false)]
             public bool OverwriteExistingLocalFiles
@@ -166,9 +175,18 @@ namespace openMIC
             }
 
             [ConnectionStringParameter,
-            Description("Determines if existing local files should be archived before they are overwritten."),
+            Description("Determines if existing local files should be archived before new ones are downloaded."),
             DefaultValue(false)]
-            public bool ArchiveLocalFilesBeforeOverwrite
+            public bool ArchiveExistingFilesBeforeDownload
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Determines if downloaded file timestamps should be synchronized to remote file timestamps."),
+            DefaultValue(true)]
+            public bool SynchronizeTimestamps
             {
                 get;
                 set;
@@ -271,9 +289,9 @@ namespace openMIC
                 {
                     // Ignoring updates
                 }
-        }
+            }
 
-            // Gets or sets total measurements expected to have been received for this <see cref="IDevice"/> - in local context "expected connections" per day.
+            // Gets or sets total measurements expected to have been received for this <see cref="IDevice"/> - in local context "attempted connections" per day.
             public long MeasurementsExpected
             {
                 get
@@ -872,7 +890,6 @@ namespace openMIC
 
                     string connectionProfileName = m_connectionProfile?.Name ?? "Undefined";
                     ConnectionProfileTaskSettings[] taskSettings;
-                    int settingIndex = 0;
 
                     lock (m_connectionProfileLock)
                         taskSettings = m_connectionProfileTaskSettings;
@@ -955,7 +972,9 @@ namespace openMIC
                     else
                     {
                         OnStatusMessage("Found {0} remote file{1}, starting file processing...", files.Length, files.Length > 1 ? "s" : "");
+
                         m_overallTasksCount += files.Length;
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, m_overallTasksCompleted, m_overallTasksCount));
 
                         foreach (FtpFile file in files)
                         {
@@ -1035,7 +1054,36 @@ namespace openMIC
 
             string localFileName = GetLocalFileName(settings, file.Name);
 
-            if (File.Exists(localFileName) && settings.ArchiveLocalFilesBeforeOverwrite)
+            if (File.Exists(localFileName) && settings.SkipDownloadIfUnchanged)
+            {
+                try
+                {
+                    FileInfo info = new FileInfo(localFileName);
+
+                    // Compare file sizes
+                    if (info.Length == file.Size)
+                    {
+                        bool localEqualsRemote = true;
+
+                        // Compare timestamps, if synchronized
+                        if (settings.SynchronizeTimestamps)
+                            localEqualsRemote = info.LastWriteTime == file.Timestamp;
+
+                        if (localEqualsRemote)
+                        {
+                            OnStatusMessage("Skipping file \"{0}\" download for connection profile task \"{1}\": Local file already exists and matches remote file.", file.Name, settings.Name);
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: Local file already exists and matches remote file", 0, file.Size));
+                            return false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    OnProcessException(new InvalidOperationException($"Failed to get info for local file \"{localFileName}\" for connection profile task \"{settings.Name}\": {ex.Message}", ex));
+                }
+            }
+
+            if (File.Exists(localFileName) && settings.ArchiveExistingFilesBeforeDownload)
             {
                 try
                 {
@@ -1058,7 +1106,7 @@ namespace openMIC
 
             if (File.Exists(localFileName) && !settings.OverwriteExistingLocalFiles)
             {
-                OnProcessException(new InvalidOperationException($"Skipping file \"{file.Name}\" download for connection profile task \"{settings.Name}\": Local file already exists and settings do not allow overwrite."));
+                OnStatusMessage("Skipping file \"{0}\" download for connection profile task \"{1}\": Local file already exists and settings do not allow overwrite.", file.Name, settings.Name);
                 OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: Local file already exists", 0, file.Size));
                 return false;
             }
@@ -1071,6 +1119,24 @@ namespace openMIC
                 FilesDownloaded++;
                 BytesDownloaded += file.Size;
                 OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, false, $"Download complete for \"{file.Name}\".", file.Size, file.Size));
+
+                // Synchronize local timestamp to that of remote file if requested
+                if (settings.SynchronizeTimestamps)
+                {
+                    ThreadPool.QueueUserWorkItem(state =>
+                    {
+                        try
+                        {
+                            FileInfo info = new FileInfo(localFileName);
+                            info.LastAccessTime = info.LastWriteTime = file.Timestamp;
+                        }
+                        catch (Exception ex)
+                        {
+                            OnProcessException(new InvalidOperationException($"Failed to update timestamp of downloaded file \"{localFileName}\": {ex.Message}"));
+                        }
+                    });
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -1091,10 +1157,10 @@ namespace openMIC
                 { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
                 { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
                 { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
-                { "<DeviceName>", m_deviceRecord.Name },
+                { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
                 { "<DeviceAcronym>", m_deviceRecord.Acronym },
-                { "<DeviceFolderName>", m_deviceRecord.OriginalSource },
-                { "<ProfileName>", m_connectionProfile.Name }
+                { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
+                { "<ProfileName>", m_connectionProfile.Name ?? "undefined" }
             };
 
             directoryNameExpressionParser.TemplatedExpression = settings.DirectoryNamingExpression.Replace("\\", "\\\\");
@@ -1248,9 +1314,6 @@ namespace openMIC
         private void FtpClient_FileTransferNotification(object sender, EventArgs<FtpAsyncResult> e)
         {
             OnStatusMessage("FTP File Transfer: {0}, response code = {1}", e.Argument.Message, e.Argument.ResponseCode);
-
-            if (e.Argument.IsSuccess)
-                FilesDownloaded++;
         }
 
         private bool ConnectDialUp()

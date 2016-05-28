@@ -81,10 +81,16 @@
             <label><input type="checkbox" data-bind="checked: get('deleteoldlocalfiles'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Delete old local files after @Model.Global.MaxLocalFileAge days</label>
         </div>
         <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" data-bind="checked: get('skipdownloadifunchanged'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Skip download if local file exists and matches remote</label>
+        </div>
+        <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" data-bind="checked: get('archiveexistingfilesbeforedownload'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Archive existing local files before download</label>
+        </div>
+        <div class="checkbox" data-bind="with: $root.connectionString">
             <label><input type="checkbox" data-bind="checked: get('overwriteexistinglocalfiles'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Overwrite existing local files</label>
         </div>
         <div class="checkbox" data-bind="with: $root.connectionString">
-            <label><input type="checkbox" data-bind="checked: get('archivelocalfilesbeforeoverwrite'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Archive local files before overwrite</label>
+            <label><input type="checkbox" data-bind="checked: get('synchronizetimestamps'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Synchronize timestamp of local file to remote</label>
         </div>
     </div>
     <div class="col-md-6">
@@ -119,8 +125,10 @@
         defaultConnectionString.set("deleteRemoteFilesAfterDownload", false);
         defaultConnectionString.set("limitRemoteFileDownloadByAge", false);
         defaultConnectionString.set("deleteOldLocalFiles", false);
+        defaultConnectionString.set("skipDownloadIfUnchanged", true);
         defaultConnectionString.set("overwriteExistingLocalFiles", false);
-        defaultConnectionString.set("archiveLocalFilesBeforeOverwrite", false);
+        defaultConnectionString.set("archiveExistingFilesBeforeDownload", false);
+        defaultConnectionString.set("synchronizeTimestamps", true);
         defaultConnectionString.set("externalOperation", "");
         defaultConnectionString.set("maximumFileSize", 1000);
         defaultConnectionString.set("maximumFileCount", -1);

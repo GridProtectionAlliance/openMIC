@@ -42,7 +42,7 @@ namespace openMIC.Model
             set;
         }
 
-        public long TotalProcessedFiles
+        public long FilesDownloaded
         {
             get;
             set;
