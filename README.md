@@ -31,7 +31,7 @@ Meter Information Collector
 ![GPA WSF - A New Technology Layer](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/GPA%20WSF.png)
 
 
-**Where It Fits In**
+**Where It Fits In:**
 ![Architecture](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Architecture.png)
 
 
