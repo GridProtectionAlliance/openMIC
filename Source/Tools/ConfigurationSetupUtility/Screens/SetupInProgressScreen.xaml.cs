@@ -1327,7 +1327,7 @@ namespace ConfigurationSetupUtility.Screens
             {
                 IDbCommand nodeCommand = connection.CreateCommand();
                 nodeCommand.CommandText = "INSERT INTO Node(Name, CompanyID, Description, Settings, MenuType, MenuData, Master, LoadOrder, Enabled) " +
-                    "VALUES('Default', NULL, 'Default node', 'RemoteStatusServerConnectionString={server=localhost:8515;integratedSecurity=true};datapublisherport=6180;AlarmServiceUrl=http://localhost:5021/alarmservices', 'File', 'Menu.xml', 1, 0, 1)";
+                    "VALUES('Default', NULL, 'Default node', 'RemoteStatusServerConnectionString={server=localhost:8530;integratedSecurity=true};datapublisherport=6195;AlarmServiceUrl=http://localhost:5024/alarmservices', 'File', 'Menu.xml', 1, 0, 1)";
                 nodeCommand.ExecuteNonQuery();
                 m_defaultNodeAdded = true;
                 defaultNodeCreated = true;
@@ -1820,7 +1820,7 @@ namespace ConfigurationSetupUtility.Screens
                 addElement.Attributes.Append(attribute);
 
                 attribute = configFile.CreateAttribute("value");
-                attribute.Value = "http.rest://localhost:5021/alarmservices";
+                attribute.Value = "http.rest://localhost:5024/alarmservices";
                 addElement.Attributes.Append(attribute);
 
                 attribute = configFile.CreateAttribute("description");

@@ -502,7 +502,7 @@ namespace ConfigurationSetupUtility.Screens
                     // Make sure security settings are enabled for the node
                     if (!nodeSettings.TryGetValue("RemoteStatusServerConnectionString", out remoteStatusServerConnectionString))
                     {
-                        nodeSettings.Add("RemoteStatusServerConnectionString", "server=localhost:8515;integratedSecurity=true;interface=0.0.0.0");
+                        nodeSettings.Add("RemoteStatusServerConnectionString", "server=localhost:8530;integratedSecurity=true;interface=0.0.0.0");
                     }
                     else
                     {
@@ -514,7 +514,7 @@ namespace ConfigurationSetupUtility.Screens
 
                     // If the AlarmServiceUrl does not exist in node settings, add it and then update the database record
                     if (!nodeSettings.TryGetValue("AlarmServiceUrl", out alarmServiceUrl))
-                        nodeSettings.Add("AlarmServiceUrl", "http://localhost:5021/alarmservices");
+                        nodeSettings.Add("AlarmServiceUrl", "http://localhost:5024/alarmservices");
 
                     // Execute query to update node settings
                     if (connection.GetType().Name == "OracleConnection")
@@ -800,7 +800,7 @@ namespace ConfigurationSetupUtility.Screens
 
                                 if (!remoteStatusServerSettings.ContainsKey("dataPublisherPort"))
                                 {
-                                    remoteStatusServerSettings["dataPublisherPort"] = "6180";
+                                    remoteStatusServerSettings["dataPublisherPort"] = "6195";
                                     remoteStatusServer = remoteStatusServerSettings.JoinKeyValuePairs();
                                 }
 
