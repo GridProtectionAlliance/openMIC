@@ -60,7 +60,7 @@ openMIC is a new project so documentation is limited, but you can check out some
 
 ## Downloads
 * Download the lastest stable release [here](https://github.com/GridProtectionAlliance/openMIC/releases).
-* Download the nightly build [here](http://www.gridprotectionalliance.org/nightlybuilds/openMIC/Setup.zip).
+* Download the nightly build [here](http://www.gridprotectionalliance.org/nightlybuilds/openMIC/Beta/Setup.zip).
 
 # Contributing
 If you would like to contribute please:
