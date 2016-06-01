@@ -30,6 +30,11 @@ Meter Information Collector
 
 ![GPA WSF - A New Technology Layer](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/GPA%20WSF.png)
 
+
+**Where It Fits In**
+![Architecture](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Architecture.png)
+
+
 # Documentation
 
 openMIC is a new project so documentation is limited, but you can check out some [screenshots](#screenshots) below.
@@ -37,8 +42,8 @@ openMIC is a new project so documentation is limited, but you can check out some
 # Deployment
 
 1. Make sure your system meets all the requirements below.
-* Download the [Latest Stable Release](#latest-stable-release) below.
-* Unzip.
+* Choose a [download](#downloads) below.
+* Unzip if necessary.
 * Run "Setup.exe".
 * Follow the wizard.
 * Enjoy.
@@ -53,13 +58,9 @@ openMIC is a new project so documentation is limited, but you can check out some
   * Oracle
   * SQLite (Not recommended for production use) - included.
 
-## Latest Stable Release
-
-Download the lastest stable release [here](https://github.com/GridProtectionAlliance/openMIC/releases)
-
-## Nightly Build
-
-Download the nightly build [here](http://www.gridprotectionalliance.org/nightlybuilds/openMIC/Setup.zip).
+## Downloads
+* Download the lastest stable release [here](https://github.com/GridProtectionAlliance/openMIC/releases).
+* Download the nightly build [here](http://www.gridprotectionalliance.org/nightlybuilds/openMIC/Setup.zip).
 
 # Contributing
 If you would like to contribute please:
