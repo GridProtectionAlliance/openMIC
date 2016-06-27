@@ -1,4 +1,4 @@
-![openMIC](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/openMIC%20logo.png)
+![openMIC](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/openMIC%20logo.png)
 
 # openMIC
 
@@ -28,11 +28,11 @@ Meter Information Collector
 * File server / file share to receive files
 * Installer / Installation Package
 
-![GPA WSF - A New Technology Layer](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/GPA%20WSF.png)
+![GPA WSF - A New Technology Layer](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/GPA%20WSF.png)
 
 
 **Where It Fits In:**
-![Architecture](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Architecture.png)
+![Architecture](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Architecture.png)
 
 
 # Documentation and Support
@@ -76,40 +76,40 @@ If you would like to contribute please:
 
 ## Main Screen
 
-![Main Screen](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Main%20Screen.png)
+![Main Screen](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Main%20Screen.png)
 
 # Status
 
-![Status](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/openMIC%20Status.png)
+![Status](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/openMIC%20Status.png)
 
 ## Manage Devices and Schedules
 
-![Manage Devices and Schedules](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Manage%20Devices%20and%20Schedules.png)
+![Manage Devices and Schedules](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Manage%20Devices%20and%20Schedules.png)
 
 ## Edit Device Connection Info
 
-![Edit Device Connection Info](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Edit%20Device%20Connection%20Info.png)
+![Edit Device Connection Info](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Edit%20Device%20Connection%20Info.png)
 
 ## Regular Expression Field Validation
 
-![Regular Expression Field Validation](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Regular%20Expression%20Field%20Validation.png)
+![Regular Expression Field Validation](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Regular%20Expression%20Field%20Validation.png)
 
 ## Cron Schedule Syntax Helper
 
-![Cron Schedule Syntax Helper](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Cron%20Schedule%20Syntax%20Helper.png)
+![Cron Schedule Syntax Helper](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Cron%20Schedule%20Syntax%20Helper.png)
 
 ## Manage Connection Profiles
 
-![Manage Connection Profiles](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Manage%20Connection%20Profiles.png)
+![Manage Connection Profiles](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Manage%20Connection%20Profiles.png)
 
 ## Manage Connection Profile Task
 
-![Manage Connection Profile Tasks](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Manage%20Connection%20Profile%20Task.png)
+![Manage Connection Profile Tasks](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Manage%20Connection%20Profile%20Task.png)
 
 ## Edit Connection Profile Task
 
-![Edit Connection Profile Task](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Edit%20Connection%20Profile%20Task.png)
+![Edit Connection Profile Task](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Edit%20Connection%20Profile%20Task.png)
 
 ## Monitor the Service via Web
 
-![Monitor the Service via Web](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Readme%20files/Monitor%20the%20Service%20via%20Web.png)
+![Monitor the Service via Web](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Monitor%20the%20Service%20via%20Web.png)
