@@ -39,7 +39,7 @@ Meter Information Collector
 
 * openMIC is a new project so documentation is limited, but you can check out some [screenshots](#screenshots) below.
 * Get in contact with our development team on our [discussion board](http://discussions.gridprotectionalliance.org/c/gpa-products/openmic).
-* Check out the [wiki](https://gridprotectionalliance.org/wiki/doku.php?id=openpdc:overview).
+* Check out the [wiki](https://gridprotectionalliance.org/wiki/doku.php?id=openmic:overview).
 
 # Deployment
 
