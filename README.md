@@ -32,7 +32,7 @@ Meter Information Collector
 
 
 **Where It Fits In:**
-![Architecture](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/Architecture.png)
+![Architecture](http://www.gridprotectionalliance.org/images/products/PQ%20Tool%20Suite.png)
 
 
 # Documentation and Support
