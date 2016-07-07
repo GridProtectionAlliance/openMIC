@@ -26,12 +26,10 @@ using GSF.TimeSeries;
 using GSF;
 using GSF.Configuration;
 using GSF.IO;
-using GSF.Reflection;
 using GSF.Security.Model;
 using Microsoft.Owin.Hosting;
 using GSF.ServiceProcess;
 using GSF.Web.Hosting;
-using GSF.Web.Model;
 using GSF.Web.Security;
 using openMIC.Model;
 

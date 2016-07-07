@@ -249,7 +249,7 @@
         <ServiceControl Id="openMICServiceControl" Name="openMIC" Stop="both" Remove="uninstall" />
       </Component>
       <Component Id="openMICConfig" Permanent="yes">
-        <File Id="openMIC.exe.config" Name="$(var.openMIC.TargetFileName).config" Source="$(var.openMIC.TargetPath).config" />
+        <File Id="openMIC.exe.config" Name="$(var.openMIC.TargetFileName).config" Source="$(var.openMIC.ProjectDir)App.config" />
       </Component>
       <Component Id="DataMigrationUtility">
         <File Id="DataMigrationUtility.exe" Name="DataMigrationUtility.exe" Source="$(var.ProjectDir)\DataMigrationUtility.exe" />
