@@ -176,6 +176,10 @@
       <HintPath>..\..\..\Dependencies\NuGet\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="NModbus4, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Dependencies\NuGet\NModbus4.2.1.0\lib\net40\NModbus4.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\..\..\Dependencies\NuGet\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
@@ -291,6 +295,7 @@
     <None Include="wwwroot\fonts\fontawesome-webfont.woff2" />
     <None Include="wwwroot\fonts\FontAwesome.otf" />
     <None Include="wwwroot\Help.cshtml" />
+    <None Include="wwwroot\ModbusConfig.cshtml" />
     <None Include="wwwroot\PagedViewModel.cshtml" />
     <None Include="wwwroot\Scripts\jquery-2.2.1.min.map" />
     <None Include="wwwroot\Scripts\knockout.validation.min.js.map" />

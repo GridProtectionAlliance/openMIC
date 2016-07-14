@@ -245,6 +245,15 @@ hr.full-break {
     visibility: hidden;
 }
 
+hr.thick-spacer {
+    height: 5px;
+    border: none;
+    color: #eee;
+    background-color: lightgray;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
 /* Style for in-screen pop-up forms */
 .floating-form {
     position: absolute;

@@ -1,0 +1,501 @@
+﻿@*******************************************************************************************************
+//  ModbusConfig.cshtml - Gbtc
+//
+//  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  07/08/2016 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using openMIC.Model
+@using RazorEngine.Templating
+@inherits TemplateBase<AppModel>
+@{
+    Layout = "Layout.cshtml";
+
+    const string ReadSequencePanelType = "panel-success";
+    const string WriteSequencePanelType = "panel-warning";
+}
+@section StyleSheets {
+    <style>
+        /* Show move cursor over sequence panels to indicate drag-drop re-order capability */
+        #sequencePanels .panel-heading {
+            cursor: move;
+            padding-top: 5px;
+        }
+
+        form.form-inline-sequence {
+            cursor: move;
+        }
+
+        form.form-inline-sequence div label {
+            cursor: move;
+        }
+
+        a.move-sequence-up {
+            cursor: pointer;
+            position: absolute;
+            z-index: 999;
+        }
+
+        a.move-sequence-up span {
+            cursor: pointer;
+            color: darkgray;
+            font-weight: bold;
+            font-size: 12pt;
+            margin-left: 3px;
+            top: -12px;
+        }
+
+        a.move-sequence-up:hover span {
+            color: #0000EE;
+        }
+
+        a.move-sequence-down {
+            cursor: pointer;
+            position: absolute;
+            z-index: 999;
+        }
+
+        a.move-sequence-down span {
+            cursor: pointer;
+            color: darkgray;
+            font-weight: bold;
+            font-size: 12pt;
+            margin-left: 3px;
+            top: 1px;
+        }
+
+        a.move-sequence-down:hover span {
+            color: #0000EE;
+        }
+        
+        @@media screen {
+            .sequence-name {
+                margin-left: 30px;
+                width: calc(100% - 30px);
+                width: -o-calc(100% - 30px);
+                width: -webkit-calc(100% - 30px);
+                width: -moz-calc(100% - 30px);
+            }
+        }        
+
+        @@media screen and (min-width: 768px) {
+            .sequence-name {
+                margin-left: 5px;
+                width: 100%;
+            }
+        }
+
+        .panel {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .form-group {
+            padding-top: 5px;
+        }
+
+        .top-padding {
+            padding-top: 5px;
+        }
+
+        .top-margin {
+            margin-top: 5px;
+        }
+
+        .glyphicon-interpret-type {
+            color: darkgrey;
+            vertical-align: middle;
+            font-size: 15pt;
+            margin-right: -5px;
+            margin-left: -5px;
+        }
+
+        .glyphicon-interpret-as {
+            color: darkgrey;
+            vertical-align: middle;
+            font-size: 17pt;
+        }
+
+        .glyphicon-delete-sequence {
+            vertical-align: text-top;
+            color:red ;
+            font-size: larger;
+        }
+
+        .glyphicon-button-align {
+            vertical-align: text-top;
+        }
+    </style>
+}
+@section Scripts {
+    <script src="Scripts/knockout-3.4.0.js"></script>
+    <script src="Scripts/knockout.mapping-latest.js"></script>
+    <script src="Scripts/knockout.validation.js"></script>
+    <script id="validationMessageTemplate" type="text/html"><!--
+        --><em class="validationPrompt" data-bind="validationMessage: field"></em>
+    </script>
+    <script>
+        "use strict";
+
+        // *** Sequence Reorder Handling ***
+
+        function reorderSequencePanels(event, ui) {
+            const sequencePanels = $("#sequencePanels");
+
+            $(".panel", sequencePanels).each(function (index, elem) {
+                const listItem = $(elem);
+                const newIndex = listItem.index();
+                const badges = listItem.find(".badge");
+
+                if (badges.length > 0) {
+                    const indexBadge = $(badges[0]);
+                    indexBadge.text(newIndex + 1);
+                }
+            });
+        }
+
+        function moveSequenceUp(anchorElement) {
+            const currentItem = $(anchorElement).parents("li");
+            const index = currentItem.index();
+
+            if (index < 1)
+                return;
+
+            currentItem.insertBefore($("#sequencePanels li:eq(" + (index - 1) + ")"));
+            reorderSequencePanels();
+        }
+
+        function moveSequenceDown(anchorElement) {
+            const currentItem = $(anchorElement).parents("li");
+            const index = currentItem.index();
+
+            if (index > $("#sequencePanels li").size() - 2)
+                return;
+
+            currentItem.insertAfter($("#sequencePanels li:eq(" + (index + 1) + ")"));
+            reorderSequencePanels();
+        }
+
+        $(function () {
+            // Initialize jQuery based sequence reordering
+            $("#sequencePanels").sortable({
+                handle: ".panel-heading",
+                update: reorderSequencePanels
+            });
+        });
+
+        // *** Sequence View Models ***
+
+        var RecordType = {
+            DiscreteInput: 0,
+            Coil: 1,
+            InputRegister: 2,
+            HoldingRegister: 3,
+            InterpretedValue: 4
+        }
+
+        function getRecordTypeCode(recordType) {
+            switch (recordType) {
+            case RecordType.DiscreteInput:
+                return "DI";
+            case RecordType.Coil:
+                return "CO";
+            case RecordType.InputRegister:
+                return "IR";
+            case RecordType.HoldingRegister:
+                return "HR";
+            case RecordType.InterpretedValue:
+                return "IV";
+            default:
+                return "??";
+            }
+        }
+
+        // Define view model for write sequences
+
+        // Define view model for read sequences
+        function ReadSequenceViewModel() {
+            const self = this;
+
+            // Configuration fields
+            self.sourceSequenceElement = null;
+
+            // Observable fields
+            self.sequenceRecords = ko.observableArray();
+
+            // Properties
+            self.selectedItems = ko.pureComputed({
+                read: function () {
+                    var selectedCount = 0;
+
+                    for (let i = 0; i < self.sequenceRecords.length; i++) {
+                        if (self.sequenceRecords[i].selected)
+                            selectedCount++;
+                    }
+
+                    return selectedCount;
+                }
+            });
+
+            // Methods
+            self.addNewSequenceRecord = function (recordType) {
+                self.sequenceRecords.push(
+                    ko.mapping.fromJS({
+                        recordType: recordType,
+                        selected: false,
+                        address: "",
+                        description: "",
+                        currentValue: ""
+                    }));
+
+                // Keep sequence map sorted by record type
+                self.sequenceRecords.sort(function (a, b) {
+                    return a.recordType() - b.recordType();
+                });
+            }
+
+            self.removeSequenceRecord = function (record) {
+                self.sequenceRecords.remove(record);
+            }
+        }
+
+        $(window).on("hubConnected", function (event) {
+        });
+    </script>
+}
+<div class="panel panel-primary">
+    <div class="panel-heading"><label>Modbus&nbsp;Device Connection&nbsp;Settings</label>
+    </div>
+    <div class="panel-body">
+        <form class="form-hortizontal" role="form">
+            <div class="row">
+                <div class="form-group">
+                    <label class="col-md-2 control-label top-padding text-right text-nowrap" for="selectFrameFormat">Frame Format:</label>
+                    <div class="col-md-2">
+                        <select class="form-control" id="selectFrameFormat">
+                            <option value="RTU">RTU</option>
+                            <option value="ASCII">ASCII</option>
+                            <option value="TCP">TCP</option>
+                        </select>
+                    </div>
+                    <label class="col-md-2 control-label top-padding text-right text-nowrap" for="selectTransport">Transport:</label>
+                    <div class="col-md-2">
+                        <select class="form-control" id="selectTransport">
+                            <option value="TCP">TCP</option>
+                            <option value="UDP">UDP</option>
+                            <option value="SERIAL">Serial</option>
+                            <option value="FILE">File</option>
+                        </select>
+                    </div>
+                    <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputUnitID">Unit ID:</label>
+                    <div class="col-md-2">
+                        <input type="number" class="form-control" placeholder="Unit ID number..." id="inputUnitID" value="255">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputConnectionString">Connection String:</label>
+                    <div class="col-md-10">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Connection string..." id="inputConnectionString">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-edit glyphicon-button-align"></span> Build...</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputPollingRate">Polling Rate:</label>
+                    <div class="col-md-2">
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="Polling rate..." id="inputPollingRate" value="2000">
+                            <span class="input-group-addon">ms</span>
+                        </div>
+                    </div>
+                    <label class="col-md-2 control-label text-right" for="inputInterSequenceDelay">Inter-Sequence Polling&nbsp;Delay:</label>
+                    <div class="col-md-2">
+                        <div class="input-group">
+                            <input type="number" class="form-control" placeholder="Intersequence delay..." id="inputInterSequenceDelay" value="250">
+                            <span class="input-group-addon">ms</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 top-padding">
+                        <button class="btn btn-primary pull-right" type="button"><strong>Connect</strong>&nbsp;</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body clearfix" style="padding-top: 5px; padding-bottom: 10px">
+        <button class="btn btn-default top-margin" title="Add New Modbus Read Sequence to Current Mapping"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Read Sequence</button>
+        <button class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Write Sequence</button>
+        <div class="top-padding pull-right">
+            <button class="btn btn-default" title="Load Existing Modbus Sequence Mapping"><span class="glyphicon glyphicon-floppy-open glyphicon-button-align"></span> Load Mapping</button>
+            <button class="btn btn-default" title="Save Current Modbus Sequence Mapping"><span class="glyphicon glyphicon-floppy-save glyphicon-button-align"></span> Save Mapping</button>
+            <button class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping"><span class="glyphicon glyphicon-import glyphicon-button-align"></span> Append to Current Mapping</button>
+        </div>
+    </div>
+</div>
+<hr class="thick-spacer" />
+<ul id="sequencePanels" class="list-unstyled">
+    <li class="panel @WriteSequencePanelType" write-sequence>
+        <div class="panel-heading clearfix">
+            <form class="form-inline form-inline-sequence" role="form">
+                <div class="form-group">
+                    <label for="sequenceName1">
+                        <a class="move-sequence-up" title="Move Sequence Order Up" onclick="moveSequenceUp(this)"><span class="glyphicon glyphicon-menu-up"></span></a>
+                        <span class="badge">1</span>&nbsp;&nbsp;Write Sequence:
+                        <a class="move-sequence-down" title="Move Sequence Order Down" onclick="moveSequenceDown(this)"><span class="glyphicon glyphicon-menu-down"></span></a>
+                    </label>
+                    <input type="text" class="form-control sequence-name" placeholder="Sequence name..." id="sequenceName1">
+                </div>
+                <div class="form-group pull-right">
+                    <button class="btn btn-default" title="Add New Modbus Coil Write Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Coil</button>
+                    <button class="btn btn-default" title="Add New Modbus Holding Register Write Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Holding Register</button>
+                    &nbsp;
+                    <button class="btn btn-default" title="Delete Sequence"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                </div>
+            </form>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Address</th>
+                            <th>Description</th>
+                            <th>Value</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center; vertical-align: middle" width="5%">
+                                HR
+                            </td>
+                            <td width="20%">
+                                <input type="number" class="form-control" placeholder="Number...">
+                            </td>
+                            <td width="50%">
+                                <input type="text" class="form-control" placeholder="Description...">
+                            </td>
+                            <td width="20%">
+                                <input type="number" class="form-control" placeholder="New value...">
+                            </td>
+                            <td style="text-align: center" width="5%">
+                                <button class="btn btn-default" title="Delete Sequence Record"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </li>
+    <li class="panel @ReadSequencePanelType" read-sequence>
+        <div class="panel-heading  clearfix">
+            <form class="form-inline form-inline-sequence" role="form">
+                <div class="form-group">
+                    <label for="sequenceName2">
+                        <a class="move-sequence-up" title="Move Sequence Order Up" onclick="moveSequenceUp(this)"><span class="glyphicon glyphicon-menu-up"></span></a>
+                        <span class="badge">2</span>&nbsp;&nbsp;Read Sequence:
+                        <a class="move-sequence-down" title="Move Sequence Order Down" onclick="moveSequenceDown(this)"><span class="glyphicon glyphicon-menu-down"></span></a>
+                    </label>
+                    <input type="text" class="form-control sequence-name" placeholder="Sequence name..." id="sequenceName2">
+                </div>
+                <div class="form-group pull-right">
+                    <button class="btn btn-default" title="Add New Modbus Discrete Input Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Discrete Input</button>
+                    <button class="btn btn-default" title="Add New Modbus Coil Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Coil</button>
+                    <button class="btn btn-default" title="Add New Modbus Input Register Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Input Register</button>
+                    <button class="btn btn-default" title="Add New Modbus Holding Register Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Holding Register</button>
+                    &nbsp;
+                    <button class="btn btn-default" title="Delete Sequence"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                </div>
+            </form>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th></th>
+                            <th>Address</th>
+                            <th>Description</th>
+                            <th>Current Value</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center; vertical-align: middle" width="5%">
+                                HR
+                            </td>
+                            <td style="text-align: center; vertical-align: middle" width="5%">
+                                <input type="checkbox">
+                            </td>
+                            <td width="20%">
+                                <input type="number" class="form-control" placeholder="Number...">
+                            </td>
+                            <td width="45%">
+                                <input type="text" class="form-control" placeholder="Description...">
+                            </td>
+                            <td width="20%">
+                                <input type="number" class="form-control" readonly>
+                            </td>
+                            <td style="text-align: center" width="5%">
+                                <button class="btn btn-default" title="Delete Sequence Record"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="panel-footer" style="padding-top: 10px; padding-bottom: 1px">
+            <span class="text-nowrap" style="margin-left: 5px; font-style: italic"><span id="selectedCount2">0</span> selected, interpret as:</span>
+            <div class="form-group">
+                <span class="glyphicon glyphicon-menu-left glyphicon-interpret-type"></span>
+                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">String</label>
+                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Single</label>
+                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Double</label>
+                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Int32</label>
+                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">UInt32</label>
+                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Int64</label>
+                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">UInt64</label>
+                <span class="text-nowrap">
+                    <span class="glyphicon glyphicon-menu-right glyphicon-interpret-type"></span>
+                    <span class="glyphicon glyphicon-upload glyphicon-rotate-90 glyphicon-interpret-as"></span>
+                </span>
+                &nbsp;&nbsp;
+            </div>
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Interpreted value..." readonly/>
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" title="Add Derived Value as a New Record in Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Derived Value</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </li>
+</ul>
