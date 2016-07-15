@@ -117,6 +117,13 @@
             margin-top: 5px;
         }
 
+        .connection-status {
+            background-color: black;
+            padding: 10px;
+            margin: 0;
+            overflow: auto;
+        }
+
         .glyphicon-interpret-type {
             color: darkgrey;
             vertical-align: middle;
@@ -125,7 +132,7 @@
             margin-left: -5px;
         }
 
-        .glyphicon-interpret-as {
+        .glyphicon-interpret-result {
             color: darkgrey;
             vertical-align: middle;
             font-size: 17pt;
@@ -137,8 +144,32 @@
             font-size: larger;
         }
 
-        .glyphicon-button-align {
+        .glyphicon-action-button {
+            color: #606060;
             vertical-align: text-top;
+        }
+
+        /* Collapsable button style */
+        .btn-collapsable.btn {
+            color: #606060;
+            font-family: "Glyphicons Halflings";
+            font-size: 8pt;
+            position: relative;
+            top: -9px;
+            right: -14px;
+            padding: 0 2px 2px 2px;
+            height: 18px;
+            float: right !important;
+        }
+
+        /* Icon when collapsable content is shown - arrow down */
+        .btn-collapsable.btn:after {
+            content: "\e114";
+        }
+
+        /* Icon when collapsable content is hidden - arrow right */
+        .btn-collapsable.btn.collapsed:after {
+            content: "\e080";
         }
     </style>
 }
@@ -315,9 +346,11 @@
     </script>
 }
 <div class="panel panel-primary">
-    <div class="panel-heading"><label>Modbus&nbsp;Device Connection&nbsp;Settings</label>
+    <div class="panel-heading">
+        <label>Modbus&nbsp;Device Connection&nbsp;Settings</label>
+        <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-target="#connectionSettings"></button>
     </div>
-    <div class="panel-body">
+    <div class="panel-body collapse in" id="connectionSettings">
         <form class="form-hortizontal" role="form">
             <div class="row">
                 <div class="form-group">
@@ -335,7 +368,6 @@
                             <option value="TCP">TCP</option>
                             <option value="UDP">UDP</option>
                             <option value="SERIAL">Serial</option>
-                            <option value="FILE">File</option>
                         </select>
                     </div>
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputUnitID">Unit ID:</label>
@@ -351,7 +383,7 @@
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Connection string..." id="inputConnectionString">
                             <span class="input-group-btn">
-                                <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-edit glyphicon-button-align"></span> Build...</button>
+                                <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-edit glyphicon-action-button"></span> Build...</button>
                             </span>
                         </div>
                     </div>
@@ -374,21 +406,30 @@
                         </div>
                     </div>
                     <div class="col-md-4 top-padding">
-                        <button class="btn btn-primary pull-right" type="button"><strong>Connect</strong>&nbsp;</button>
+                        <button type="button" class="btn btn-primary pull-right"><strong>Connect</strong>&nbsp;</button>
                     </div>
                 </div>
             </div>
         </form>
+        <div class="panel panel-default">
+            <div class="panel-heading" style="height: 30px; padding-top: 5px">
+                <label>Connection&nbsp;Status</label>
+                <button type="button" class="btn btn-xs btn-collapsable collapsed" style="top: 0; right: -10px" data-toggle="collapse" data-target="#connectionStatus"></button>
+            </div>
+            <div class="panel-body collapse" style="padding: 2px" id="connectionStatus">
+                <pre id="connectionStatusWindow" class="small connection-status" style="height: 150px"><span style="color: white">Attempting connection...</span></pre>
+            </div>
+        </div>
     </div>
 </div>
 <div class="panel panel-default">
     <div class="panel-body clearfix" style="padding-top: 5px; padding-bottom: 10px">
-        <button class="btn btn-default top-margin" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: viewModel.addNewSequence(SequenceType.Read)"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Read Sequence</button>
-        <button class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping" data-bind="click: viewModel.addNewSequence(SequenceType.Write)"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Write Sequence</button>
+        <button type="button" class="btn btn-default top-margin" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: viewModel.addNewSequence(SequenceType.Read)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Read Sequence</button>
+        <button type="button" class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping" data-bind="click: viewModel.addNewSequence(SequenceType.Write)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Write Sequence</button>
         <div class="top-padding pull-right">
-            <button class="btn btn-default" title="Load Existing Modbus Sequence Mapping" data-bind="click: viewModel.loadSequenceMap()"><span class="glyphicon glyphicon-floppy-open glyphicon-button-align"></span> Load Mapping</button>
-            <button class="btn btn-default" title="Save Current Modbus Sequence Mapping" data-bind="click: viewModel.saveSequenceMap()"><span class="glyphicon glyphicon-floppy-save glyphicon-button-align"></span> Save Mapping</button>
-            <button class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping" data-bind="click: viewModel.appendSequenceMap()"><span class="glyphicon glyphicon-import glyphicon-button-align"></span> Append to Current Mapping</button>
+            <button type="button" class="btn btn-default" title="Load Existing Modbus Sequence Mapping" data-bind="click: viewModel.loadSequenceMap()"><span class="glyphicon glyphicon-floppy-open glyphicon-action-button"></span> Load Mapping</button>
+            <button type="button" class="btn btn-default" title="Save Current Modbus Sequence Mapping" data-bind="click: viewModel.saveSequenceMap()"><span class="glyphicon glyphicon-floppy-save glyphicon-action-button"></span> Save Mapping</button>
+            <button type="button" class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping" data-bind="click: viewModel.appendSequenceMap()"><span class="glyphicon glyphicon-import glyphicon-action-button"></span> Append to Current Mapping</button>
         </div>
     </div>
 </div>
@@ -406,45 +447,48 @@
                     <input type="text" class="form-control sequence-name" placeholder="Sequence name..." id="sequenceName1">
                 </div>
                 <div class="form-group pull-right">
-                    <button class="btn btn-default" title="Add New Modbus Coil Write Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Coil</button>
-                    <button class="btn btn-default" title="Add New Modbus Holding Register Write Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Holding Register</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Coil Write Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Coil</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Holding Register Write Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Holding Register</button>
                     &nbsp;
-                    <button class="btn btn-default" title="Delete Sequence"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                    <button type="button" class="btn btn-default" style="margin-right: -10px" title="Delete Sequence"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                    <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-target="#sequenceContent1"></button>
                 </div>
             </form>
         </div>
-        <div class="panel-body">
-            <div class="table-responsive">
-                <table class="table table-hover table-striped table-condensed">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Address</th>
-                            <th>Description</th>
-                            <th>Value</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="text-align: center; vertical-align: middle" width="5%">
-                                HR
-                            </td>
-                            <td width="20%">
-                                <input type="number" class="form-control" placeholder="Number...">
-                            </td>
-                            <td width="50%">
-                                <input type="text" class="form-control" placeholder="Description...">
-                            </td>
-                            <td width="20%">
-                                <input type="number" class="form-control" placeholder="New value...">
-                            </td>
-                            <td style="text-align: center" width="5%">
-                                <button class="btn btn-default" title="Delete Sequence Record"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="collapse in" id="sequenceContent1">
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Address</th>
+                                <th>Description</th>
+                                <th>Value</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align: center; vertical-align: middle" width="5%">
+                                    HR
+                                </td>
+                                <td width="20%">
+                                    <input type="number" class="form-control" placeholder="Number...">
+                                </td>
+                                <td width="50%">
+                                    <input type="text" class="form-control" placeholder="Description...">
+                                </td>
+                                <td width="20%">
+                                    <input type="number" class="form-control" placeholder="New value...">
+                                </td>
+                                <td style="text-align: center" width="5%">
+                                    <button type="button" class="btn btn-default" title="Delete Sequence Record"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </li>
@@ -460,76 +504,79 @@
                     <input type="text" class="form-control sequence-name" placeholder="Sequence name..." id="sequenceName2">
                 </div>
                 <div class="form-group pull-right">
-                    <button class="btn btn-default" title="Add New Modbus Discrete Input Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Discrete Input</button>
-                    <button class="btn btn-default" title="Add New Modbus Coil Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Coil</button>
-                    <button class="btn btn-default" title="Add New Modbus Input Register Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Input Register</button>
-                    <button class="btn btn-default" title="Add New Modbus Holding Register Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Holding Register</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Discrete Input Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Discrete Input</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Coil Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Coil</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Input Register Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Input Register</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Holding Register Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Holding Register</button>
                     &nbsp;
-                    <button class="btn btn-default" title="Delete Sequence"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                    <button type="button" class="btn btn-default" style="margin-right: -10px" title="Delete Sequence"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                    <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-target="#sequenceContent2"></button>
                 </div>
             </form>
         </div>
-        <div class="panel-body">
-            <div class="table-responsive">
-                <table class="table table-hover table-striped table-condensed">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th></th>
-                            <th>Address</th>
-                            <th>Description</th>
-                            <th>Current Value</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="text-align: center; vertical-align: middle" width="5%">
-                                HR
-                            </td>
-                            <td style="text-align: center; vertical-align: middle" width="5%">
-                                <input type="checkbox">
-                            </td>
-                            <td width="20%">
-                                <input type="number" class="form-control" placeholder="Number...">
-                            </td>
-                            <td width="45%">
-                                <input type="text" class="form-control" placeholder="Description...">
-                            </td>
-                            <td width="20%">
-                                <input type="number" class="form-control" readonly>
-                            </td>
-                            <td style="text-align: center" width="5%">
-                                <button class="btn btn-default" title="Delete Sequence Record"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="collapse in" id="sequenceContent2">
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th></th>
+                                <th>Address</th>
+                                <th>Description</th>
+                                <th>Current Value</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align: center; vertical-align: middle" width="5%">
+                                    HR
+                                </td>
+                                <td style="text-align: center; vertical-align: middle" width="5%">
+                                    <input type="checkbox">
+                                </td>
+                                <td width="20%">
+                                    <input type="number" class="form-control" placeholder="Number...">
+                                </td>
+                                <td width="45%">
+                                    <input type="text" class="form-control" placeholder="Description...">
+                                </td>
+                                <td width="20%">
+                                    <input type="number" class="form-control" readonly>
+                                </td>
+                                <td style="text-align: center" width="5%">
+                                    <button type="button" class="btn btn-default" title="Delete Sequence Record"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="panel-footer" style="padding-top: 10px; padding-bottom: 1px">
-            <span class="text-nowrap" style="margin-left: 5px; font-style: italic"><span id="selectedCount2">0</span> selected, interpret as:</span>
-            <div class="form-group">
-                <span class="glyphicon glyphicon-menu-left glyphicon-interpret-type"></span>
-                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">String</label>
-                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Single</label>
-                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Double</label>
-                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Int32</label>
-                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">UInt32</label>
-                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Int64</label>
-                <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">UInt64</label>
-                <span class="text-nowrap">
-                    <span class="glyphicon glyphicon-menu-right glyphicon-interpret-type"></span>
-                    <span class="glyphicon glyphicon-upload glyphicon-rotate-90 glyphicon-interpret-as"></span>
-                </span>
-                &nbsp;&nbsp;
-            </div>
-            <div class="form-group">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Interpreted value..." readonly/>
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" title="Add Derived Value as a New Record in Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Derived Value</button>
+            <div class="panel-footer" style="padding-top: 10px; padding-bottom: 1px">
+                <span class="text-nowrap" style="margin-left: 5px; font-style: italic"><span id="selectedCount2">0</span> selected, interpret as:</span>
+                <div class="form-group">
+                    <span class="glyphicon glyphicon-menu-left glyphicon-interpret-type"></span>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">String</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Single</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Double</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Int32</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">UInt32</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Int64</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">UInt64</label>
+                    <span class="text-nowrap">
+                        <span class="glyphicon glyphicon-menu-right glyphicon-interpret-type"></span>
+                        <span class="glyphicon glyphicon-upload glyphicon-rotate-90 glyphicon-interpret-result"></span>
                     </span>
+                    &nbsp;&nbsp;
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Interpreted value..." readonly/>
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" title="Add Derived Value as a New Record in Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Derived Value</button>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
