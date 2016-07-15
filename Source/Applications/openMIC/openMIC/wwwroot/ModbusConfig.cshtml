@@ -157,16 +157,17 @@
         function reorderSequencePanels(event, ui) {
             const sequencePanels = $("#sequencePanels");
 
-            $(".panel", sequencePanels).each(function (index, elem) {
-                const listItem = $(elem);
-                const newIndex = listItem.index();
-                const badges = listItem.find(".badge");
+            $(".panel", sequencePanels)
+                .each(function(index, elem) {
+                    const listItem = $(elem);
+                    const newIndex = listItem.index();
+                    const badges = listItem.find(".badge");
 
-                if (badges.length > 0) {
-                    const indexBadge = $(badges[0]);
-                    indexBadge.text(newIndex + 1);
-                }
-            });
+                    if (badges.length > 0) {
+                        const indexBadge = $(badges[0]);
+                        indexBadge.text(newIndex + 1);
+                    }
+                });
         }
 
         function moveSequenceUp(anchorElement) {
@@ -191,15 +192,21 @@
             reorderSequencePanels();
         }
 
-        $(function () {
+        $(function() {
             // Initialize jQuery based sequence reordering
-            $("#sequencePanels").sortable({
-                handle: ".panel-heading",
-                update: reorderSequencePanels
-            });
+            $("#sequencePanels")
+                .sortable({
+                    handle: ".panel-heading",
+                    update: reorderSequencePanels
+                });
         });
 
         // *** Sequence View Models ***
+
+        var SequenceType = {
+            Read: 0,
+            Write: 1
+        }
 
         var RecordType = {
             DiscreteInput: 0,
@@ -226,21 +233,20 @@
             }
         }
 
-        // Define view model for write sequences
-
-        // Define view model for read sequences
-        function ReadSequenceViewModel() {
+        // Define view model for sequences
+        function SequenceViewModel(sequenceType) {
             const self = this;
 
             // Configuration fields
             self.sourceSequenceElement = null;
+            self.sequenceType = sequenceType;
 
             // Observable fields
             self.sequenceRecords = ko.observableArray();
 
             // Properties
             self.selectedItems = ko.pureComputed({
-                read: function () {
+                read: function() {
                     var selectedCount = 0;
 
                     for (let i = 0; i < self.sequenceRecords.length; i++) {
@@ -253,7 +259,7 @@
             });
 
             // Methods
-            self.addNewSequenceRecord = function (recordType) {
+            self.addNewSequenceRecord = function(recordType) {
                 self.sequenceRecords.push(
                     ko.mapping.fromJS({
                         recordType: recordType,
@@ -264,17 +270,47 @@
                     }));
 
                 // Keep sequence map sorted by record type
-                self.sequenceRecords.sort(function (a, b) {
+                self.sequenceRecords.sort(function(a, b) {
                     return a.recordType() - b.recordType();
                 });
             }
 
-            self.removeSequenceRecord = function (record) {
+            self.removeSequenceRecord = function(record) {
                 self.sequenceRecords.remove(record);
             }
         }
 
-        $(window).on("hubConnected", function (event) {
+        function MapViewModel() {
+            const self = this;
+
+            self.sequences = ko.observableArray();
+
+            self.addNewSequence = function(sequenceType) {
+                self.sequences.push(new SequenceViewModel(sequenceType));
+                console.log("addNewSequence");
+            }
+
+            self.removeSequence = function(sequence) {
+                self.sequences.remove(sequence);
+            }
+
+            self.loadSequenceMap = function () {
+                console.log("loadSequenceMap");
+            }
+
+            self.saveSequenceMap = function() {
+                console.log("saveSequenceMap");
+            }
+
+            self.appendSequenceMap = function() {
+                console.log("appendSequenceMap");
+            }
+        }
+
+        const viewModel = new MapViewModel();
+
+        $(function() {
+            ko.applyBindings(viewModel);
         });
     </script>
 }
@@ -347,12 +383,12 @@
 </div>
 <div class="panel panel-default">
     <div class="panel-body clearfix" style="padding-top: 5px; padding-bottom: 10px">
-        <button class="btn btn-default top-margin" title="Add New Modbus Read Sequence to Current Mapping"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Read Sequence</button>
-        <button class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Write Sequence</button>
+        <button class="btn btn-default top-margin" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: viewModel.addNewSequence(SequenceType.Read)"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Read Sequence</button>
+        <button class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping" data-bind="click: viewModel.addNewSequence(SequenceType.Write)"><span class="glyphicon glyphicon-plus-sign glyphicon-button-align"></span> Write Sequence</button>
         <div class="top-padding pull-right">
-            <button class="btn btn-default" title="Load Existing Modbus Sequence Mapping"><span class="glyphicon glyphicon-floppy-open glyphicon-button-align"></span> Load Mapping</button>
-            <button class="btn btn-default" title="Save Current Modbus Sequence Mapping"><span class="glyphicon glyphicon-floppy-save glyphicon-button-align"></span> Save Mapping</button>
-            <button class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping"><span class="glyphicon glyphicon-import glyphicon-button-align"></span> Append to Current Mapping</button>
+            <button class="btn btn-default" title="Load Existing Modbus Sequence Mapping" data-bind="click: viewModel.loadSequenceMap()"><span class="glyphicon glyphicon-floppy-open glyphicon-button-align"></span> Load Mapping</button>
+            <button class="btn btn-default" title="Save Current Modbus Sequence Mapping" data-bind="click: viewModel.saveSequenceMap()"><span class="glyphicon glyphicon-floppy-save glyphicon-button-align"></span> Save Mapping</button>
+            <button class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping" data-bind="click: viewModel.appendSequenceMap()"><span class="glyphicon glyphicon-import glyphicon-button-align"></span> Append to Current Mapping</button>
         </div>
     </div>
 </div>
