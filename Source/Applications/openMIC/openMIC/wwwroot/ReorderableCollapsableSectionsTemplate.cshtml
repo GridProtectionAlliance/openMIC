@@ -149,18 +149,6 @@
             vertical-align: text-top;
         }
 
-        /*.model-index {
-            color: lightgray;
-            font-size: 7pt;
-            position: relative;
-            top: -24px;
-            right: -8px;
-            margin-left: -8px;
-            height: 5px;
-            float: right !important;
-            opacity: 0.5;
-        }*/
-
         /* Collapsable button style */
         .btn-collapsable.btn {
             color: #606060;
@@ -174,12 +162,12 @@
             float: right !important;
         }
 
-        /* Collapsable button icon when content is shown - arrow down */
+        /* Icon when collapsable content is shown - arrow down */
         .btn-collapsable.btn:after {
             content: "\e114";
         }
 
-        /* Collapsable button icon when content is hidden - arrow right */
+        /* Icon when collapsable content is hidden - arrow right */
         .btn-collapsable.btn.collapsed:after {
             content: "\e080";
         }
@@ -195,174 +183,22 @@
     <script>
         "use strict";
 
-        // *** Sequence View Models ***
-
-        var SequenceType = {
-            Read: 0,
-            Write: 1
-        }
-
-        var RecordType = {
-            DiscreteInput: 0,
-            Coil: 1,
-            InputRegister: 2,
-            HoldingRegister: 3,
-            DerivedValue: 4
-        }
-
-        function getRecordTypeCode(recordType) {
-            switch (recordType) {
-                case RecordType.DiscreteInput:
-                    return "DI";
-                case RecordType.Coil:
-                    return "CO";
-                case RecordType.InputRegister:
-                    return "IR";
-                case RecordType.HoldingRegister:
-                    return "HR";
-                case RecordType.DerivedValue:
-                    return "DV";
-                default:
-                    return "??";
-            }
-        }
-
-        // Define view model for sequences
-        function SequenceViewModel(sequenceType, index) {
-            const self = this;
-
-            // Configuration fields
-            //self.sourceSequenceElement = null;
-            self.sequenceType = sequenceType;
-
-            // Observable fields
-            self.index = ko.observable(index);
-            self.sequenceName = ko.observable();
-            self.sequenceRecords = ko.observableArray();
-
-            // Properties
-            self.selectedRecordCount = ko.pureComputed({
-                read: function () {
-                    const records = self.sequenceRecords();
-                    var selectedCount = 0;
-
-                    for (let i = 0; i < records.length; i++) {
-                        if (records[i].selected())
-                            selectedCount++;
-                    }
-
-                    return selectedCount;
-                }
-            });
-
-            self.canAddDerivedValue = ko.pureComputed({
-                read: function () {
-                    return self.selectedRecordCount() > 0 && $("input[name=interpretAs" + self.index() + "]:checked").length > 0;
-                }
-            });
-
-            self.sequenceDescription = ko.pureComputed({
-                read: function() {
-                    return self.sequenceType === SequenceType.Read ? "Read" : "Write";
-                }
-            });
-           
-            self.panelType =  ko.pureComputed({
-                read: function() {
-                    return "panel " + self.sequenceType === SequenceType.Read ? "@ReadSequencePanelType" : "@WriteSequencePanelType";
-                }
-            });
-
-            // Methods
-            self.addNewSequenceRecord = function(recordType) {
-                self.sequenceRecords.push(
-                    ko.mapping.fromJS({
-                        recordType: recordType,
-                        selected: false,
-                        address: "",
-                        description: "",
-                        dataValue: ""
-                    }));
-
-                // Keep sequence map sorted by record type
-                self.sequenceRecords.sort(function(a, b) {
-                    return a.recordType() - b.recordType();
-                });
-            }
-
-            self.removeSequenceRecord = function(record) {
-                self.sequenceRecords.remove(record);
-            }
-        }
-
-        function MapViewModel() {
-            const self = this;
-
-            self.sequences = ko.observableArray();
-
-            self.addNewSequence = function(sequenceType) {
-                self.sequences.push(new SequenceViewModel(sequenceType, self.sequences().length));
-                reorderSequencePanels();
-                console.log("addNewSequence: " + sequenceType + " -- sequence count = " + self.sequences().length);
-            }
-
-            self.removeSequence = function(sequence) {
-                self.sequences.remove(sequence);
-                reorderSequencePanels();
-                console.log("removeSequence['" + sequence.sequenceName() + "']");
-            }
-
-            self.loadSequenceMap = function() {
-                reorderSequencePanels();
-                console.log("loadSequenceMap");
-            }
-
-            self.saveSequenceMap = function() {
-                console.log("saveSequenceMap");
-            }
-
-            self.appendSequenceMap = function() {
-                reorderSequencePanels();
-                console.log("appendSequenceMap");
-            }
-        }
-
-        const viewModel = new MapViewModel();
-
-        $(function() {
-            ko.applyBindings(viewModel);
-        });
-
         // *** Sequence Reorder Handling ***
 
         function reorderSequencePanels(event, ui) {
             const sequencePanels = $("#sequencePanels");
 
-            $(".panel", sequencePanels).
-                each(function(index, elem) {
+            $(".panel", sequencePanels)
+                .each(function(index, elem) {
                     const listItem = $(elem);
                     const newIndex = listItem.index();
                     const badges = listItem.find(".badge");
 
                     if (badges.length > 0) {
-                        // Update DOM section index
                         const indexBadge = $(badges[0]);
-                        const oldIndex = parseInt(indexBadge.text()) - 1;
-
                         indexBadge.text(newIndex + 1);
-
-                        // Update view model index
-                        const sequence = viewModel.sequences()[oldIndex];
-
-                        if (sequence)
-                            sequence.index(newIndex);
                     }
                 });
-
-            // Make sure view model is reordered to match user defined order
-            viewModel.sequences().sort(function (a, b) {
-                    return a.index() - b.index();
-            });
         }
 
         function moveSequenceUp(anchorElement) {
@@ -389,11 +225,123 @@
 
         $(function() {
             // Initialize jQuery based sequence reordering
-            $("#sequencePanels").
-                sortable({
+            $("#sequencePanels")
+                .sortable({
                     handle: ".panel-heading",
                     update: reorderSequencePanels
                 });
+        });
+
+        // *** Sequence View Models ***
+
+        var SequenceType = {
+            Read: 0,
+            Write: 1
+        }
+
+        var RecordType = {
+            DiscreteInput: 0,
+            Coil: 1,
+            InputRegister: 2,
+            HoldingRegister: 3,
+            InterpretedValue: 4
+        }
+
+        function getRecordTypeCode(recordType) {
+            switch (recordType) {
+            case RecordType.DiscreteInput:
+                return "DI";
+            case RecordType.Coil:
+                return "CO";
+            case RecordType.InputRegister:
+                return "IR";
+            case RecordType.HoldingRegister:
+                return "HR";
+            case RecordType.InterpretedValue:
+                return "IV";
+            default:
+                return "??";
+            }
+        }
+
+        // Define view model for sequences
+        function SequenceViewModel(sequenceType) {
+            const self = this;
+
+            // Configuration fields
+            self.sourceSequenceElement = null;
+            self.sequenceType = sequenceType;
+
+            // Observable fields
+            self.sequenceRecords = ko.observableArray();
+
+            // Properties
+            self.selectedItems = ko.pureComputed({
+                read: function() {
+                    var selectedCount = 0;
+
+                    for (let i = 0; i < self.sequenceRecords.length; i++) {
+                        if (self.sequenceRecords[i].selected)
+                            selectedCount++;
+                    }
+
+                    return selectedCount;
+                }
+            });
+
+            // Methods
+            self.addNewSequenceRecord = function(recordType) {
+                self.sequenceRecords.push(
+                    ko.mapping.fromJS({
+                        recordType: recordType,
+                        selected: false,
+                        address: "",
+                        description: "",
+                        currentValue: ""
+                    }));
+
+                // Keep sequence map sorted by record type
+                self.sequenceRecords.sort(function(a, b) {
+                    return a.recordType() - b.recordType();
+                });
+            }
+
+            self.removeSequenceRecord = function(record) {
+                self.sequenceRecords.remove(record);
+            }
+        }
+
+        function MapViewModel() {
+            const self = this;
+
+            self.sequences = ko.observableArray();
+
+            self.addNewSequence = function(sequenceType) {
+                self.sequences.push(new SequenceViewModel(sequenceType));
+                console.log("addNewSequence");
+            }
+
+            self.removeSequence = function(sequence) {
+                self.sequences.remove(sequence);
+            }
+
+            self.loadSequenceMap = function () {
+                console.log("loadSequenceMap");
+            }
+
+            self.saveSequenceMap = function() {
+                console.log("saveSequenceMap");
+            }
+
+            self.appendSequenceMap = function() {
+                console.log("appendSequenceMap");
+            }
+        }
+
+        const viewModel = new MapViewModel();
+
+        $(function() {
+            ko.applyBindings(viewModel);
         });
     </script>
 }
@@ -483,91 +431,146 @@
 </div>
 <div class="panel panel-default">
     <div class="panel-body clearfix" style="padding-top: 5px; padding-bottom: 10px">
-        <button type="button" class="btn btn-default top-margin" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Read)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Read Sequence</button>
-        <button type="button" class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Write)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Write Sequence</button>
+        <button type="button" class="btn btn-default top-margin" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: viewModel.addNewSequence(SequenceType.Read)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Read Sequence</button>
+        <button type="button" class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping" data-bind="click: viewModel.addNewSequence(SequenceType.Write)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Write Sequence</button>
         <div class="top-padding pull-right">
-            <button type="button" class="btn btn-default" title="Load Existing Modbus Sequence Mapping" data-bind="click: loadSequenceMap.bind($data)"><span class="glyphicon glyphicon-floppy-open glyphicon-action-button"></span> Load Mapping</button>
-            <button type="button" class="btn btn-default" title="Save Current Modbus Sequence Mapping" data-bind="click: saveSequenceMap.bind($data)"><span class="glyphicon glyphicon-floppy-save glyphicon-action-button"></span> Save Mapping</button>
-            <button type="button" class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping" data-bind="click: appendSequenceMap.bind($data)"><span class="glyphicon glyphicon-import glyphicon-action-button"></span> Append to Current Mapping</button>
+            <button type="button" class="btn btn-default" title="Load Existing Modbus Sequence Mapping" data-bind="click: viewModel.loadSequenceMap()"><span class="glyphicon glyphicon-floppy-open glyphicon-action-button"></span> Load Mapping</button>
+            <button type="button" class="btn btn-default" title="Save Current Modbus Sequence Mapping" data-bind="click: viewModel.saveSequenceMap()"><span class="glyphicon glyphicon-floppy-save glyphicon-action-button"></span> Save Mapping</button>
+            <button type="button" class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping" data-bind="click: viewModel.appendSequenceMap()"><span class="glyphicon glyphicon-import glyphicon-action-button"></span> Append to Current Mapping</button>
         </div>
     </div>
 </div>
 <hr class="thick-spacer" />
-<ul id="sequencePanels" class="list-unstyled" data-bind="foreach: sequences">
-    <li class="panel" data-bind="css: { '@ReadSequencePanelType': sequenceType === SequenceType.Read, '@WriteSequencePanelType': sequenceType === SequenceType.Write }">
+<ul id="sequencePanels" class="list-unstyled">
+    <li class="panel @WriteSequencePanelType" write-sequence>
         <div class="panel-heading clearfix">
             <form class="form-inline form-inline-sequence" role="form">
                 <div class="form-group">
-                    <label data-bind="attr: { 'for': 'sequenceName' + $index() }">
+                    <label for="sequenceName1">
                         <a class="move-sequence-up" title="Move Sequence Order Up" onclick="moveSequenceUp(this)"><span class="glyphicon glyphicon-menu-up"></span></a>
-                        <span class="badge"></span>&nbsp;&nbsp;<span data-bind="text: sequenceDescription"></span> Sequence:
+                        <span class="badge">1</span>&nbsp;&nbsp;Write Sequence:
                         <a class="move-sequence-down" title="Move Sequence Order Down" onclick="moveSequenceDown(this)"><span class="glyphicon glyphicon-menu-down"></span></a>
                     </label>
-                    <input type="text" class="form-control sequence-name" placeholder="Sequence name..." data-bind="attr: { 'id': 'sequenceName' + $index() }">
+                    <input type="text" class="form-control sequence-name" placeholder="Sequence name..." id="sequenceName1">
                 </div>
                 <div class="form-group pull-right">
-                    <button type="button" class="btn btn-default" title="Add New Modbus Discrete Input Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.DiscreteInput), visible: sequenceType === SequenceType.Read"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Discrete Input</button>
-                    <button type="button" class="btn btn-default" title="Add New Modbus Coil Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.Coil)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Coil</button>
-                    <button type="button" class="btn btn-default" title="Add New Modbus Input Register Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.InputRegister), visible: sequenceType === SequenceType.Read"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Input Register</button>
-                    <button type="button" class="btn btn-default" title="Add New Modbus Holding Register Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.HoldingRegister)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Holding Register</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Coil Write Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Coil</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Holding Register Write Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Holding Register</button>
                     &nbsp;
-                    <button type="button" class="btn btn-default" style="margin-right: -10px" title="Delete Sequence" data-bind="click: $root.removeSequence.bind($data)"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
-                    <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-bind="attr: { 'data-target': '#sequenceContent' + $index() }"></button>
-                    @*<span class="model-index" data-bind="text: index"></span>*@
+                    <button type="button" class="btn btn-default" style="margin-right: -10px" title="Delete Sequence"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                    <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-target="#sequenceContent1"></button>
                 </div>
             </form>
         </div>
-        <div class="collapse in" data-bind="attr: { 'id': 'sequenceContent' + $index() }">
+        <div class="collapse in" id="sequenceContent1">
             <div class="panel-body">
                 <div class="table-responsive">
                     <table class="table table-hover table-striped table-condensed">
                         <thead>
-                        <tr>
-                            <th style="text-align: center">Type</th>
-                            <th data-bind="if: sequenceType === SequenceType.Read"></th>
-                            <th>Address</th>
-                            <th>Description</th>
-                            <th data-bind="text: sequenceType === SequenceType.Read ? 'Current Value' : 'Value'"></th>
-                            <th></th>
-                        </tr>
+                            <tr>
+                                <th>Type</th>
+                                <th>Address</th>
+                                <th>Description</th>
+                                <th>Value</th>
+                                <th></th>
+                            </tr>
                         </thead>
-                        <tbody data-bind="foreach: sequenceRecords">
-                        <tr>
-                            <td style="text-align: center; vertical-align: middle" width="5%" data-bind="text: getRecordTypeCode(recordType())">
-                            </td>
-                            <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
-                                <input type="checkbox" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, attr: { 'onclick': '$(\'input[name=interpretAs' + $index() + ']\').prop(\'checked\', false)' }">
-                            </td>
-                            <td width="20%">
-                                <span data-bind="if: recordType() !== RecordType.DerivedValue"><input type="number" class="form-control" placeholder="Number..." data-bind="textInput: address"></span>
-                                <span data-bind="if: recordType() === RecordType.DerivedValue"><input type="text" class="form-control" data-bind="value: address" readonly></span>
-                            </td>
-                            <td data-bind="attr: {'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%'}">
-                                <input type="text" class="form-control" placeholder="Description..." data-bind="textInput: description">
-                            </td>
-                            <td width="20%">
-                                <span data-bind="if: $parent.sequenceType === SequenceType.Write"><input type="number" class="form-control" placeholder="New value..." data-bind="textInput: dataValue"></span>                                
-                                <span data-bind="if: $parent.sequenceType === SequenceType.Read"><input type="number" class="form-control" data-bind="value: dataValue" readonly></span>                                
-                            </td>
-                            <td style="text-align: center" width="5%">
-                                <button type="button" class="btn btn-default" title="Delete Sequence Record" data-bind="click: $parent.removeSequenceRecord"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
-                            </td>
-                        </tr>
+                        <tbody>
+                            <tr>
+                                <td style="text-align: center; vertical-align: middle" width="5%">
+                                    HR
+                                </td>
+                                <td width="20%">
+                                    <input type="number" class="form-control" placeholder="Number...">
+                                </td>
+                                <td width="50%">
+                                    <input type="text" class="form-control" placeholder="Description...">
+                                </td>
+                                <td width="20%">
+                                    <input type="number" class="form-control" placeholder="New value...">
+                                </td>
+                                <td style="text-align: center" width="5%">
+                                    <button type="button" class="btn btn-default" title="Delete Sequence Record"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <div class="panel-footer" style="padding-top: 10px; padding-bottom: 1px" data-bind="if: sequenceType === SequenceType.Read">
-                <span class="text-nowrap" style="margin-left: 5px; font-style: italic"><span data-bind="text: selectedRecordCount"></span> selected, interpret as:</span>
+        </div>
+    </li>
+    <li class="panel @ReadSequencePanelType" read-sequence>
+        <div class="panel-heading  clearfix">
+            <form class="form-inline form-inline-sequence" role="form">
+                <div class="form-group">
+                    <label for="sequenceName2">
+                        <a class="move-sequence-up" title="Move Sequence Order Up" onclick="moveSequenceUp(this)"><span class="glyphicon glyphicon-menu-up"></span></a>
+                        <span class="badge">2</span>&nbsp;&nbsp;Read Sequence:
+                        <a class="move-sequence-down" title="Move Sequence Order Down" onclick="moveSequenceDown(this)"><span class="glyphicon glyphicon-menu-down"></span></a>
+                    </label>
+                    <input type="text" class="form-control sequence-name" placeholder="Sequence name..." id="sequenceName2">
+                </div>
+                <div class="form-group pull-right">
+                    <button type="button" class="btn btn-default" title="Add New Modbus Discrete Input Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Discrete Input</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Coil Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Coil</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Input Register Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Input Register</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Holding Register Read Record to Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Holding Register</button>
+                    &nbsp;
+                    <button type="button" class="btn btn-default" style="margin-right: -10px" title="Delete Sequence"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                    <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-target="#sequenceContent2"></button>
+                </div>
+            </form>
+        </div>
+        <div class="collapse in" id="sequenceContent2">
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th></th>
+                                <th>Address</th>
+                                <th>Description</th>
+                                <th>Current Value</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align: center; vertical-align: middle" width="5%">
+                                    HR
+                                </td>
+                                <td style="text-align: center; vertical-align: middle" width="5%">
+                                    <input type="checkbox">
+                                </td>
+                                <td width="20%">
+                                    <input type="number" class="form-control" placeholder="Number...">
+                                </td>
+                                <td width="45%">
+                                    <input type="text" class="form-control" placeholder="Description...">
+                                </td>
+                                <td width="20%">
+                                    <input type="number" class="form-control" readonly>
+                                </td>
+                                <td style="text-align: center" width="5%">
+                                    <button type="button" class="btn btn-default" title="Delete Sequence Record"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="panel-footer" style="padding-top: 10px; padding-bottom: 1px">
+                <span class="text-nowrap" style="margin-left: 5px; font-style: italic"><span id="selectedCount2">0</span> selected, interpret as:</span>
                 <div class="form-group">
                     <span class="glyphicon glyphicon-menu-left glyphicon-interpret-type"></span>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() === 0 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() > 0">String</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 2 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 2">Single</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 4 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 4">Double</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 2 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 2">Int32</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 2 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 2">UInt32</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 4 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 4">Int64</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 4 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 4">UInt64</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">String</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Single</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Double</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Int32</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">UInt32</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">Int64</label>
+                    <label class="radio-inline text-nowrap"><input type="radio" name="interpretAs2">UInt64</label>
                     <span class="text-nowrap">
                         <span class="glyphicon glyphicon-menu-right glyphicon-interpret-type"></span>
                         <span class="glyphicon glyphicon-upload glyphicon-rotate-90 glyphicon-interpret-result"></span>
@@ -576,9 +579,9 @@
                 </div>
                 <div class="form-group">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Interpreted value..." readonly />
+                        <input type="text" class="form-control" placeholder="Interpreted value..." readonly/>
                         <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" title="Add Derived Value as a New Record in Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.DerivedValue), enable: canAddDerivedValue()"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Derived Value</button>
+                            <button type="button" class="btn btn-default" title="Add Derived Value as a New Record in Sequence"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Derived Value</button>
                         </span>
                     </div>
                 </div>
