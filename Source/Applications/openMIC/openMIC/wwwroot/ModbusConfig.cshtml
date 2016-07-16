@@ -82,7 +82,32 @@
         a.move-sequence-down:hover span {
             color: #0000EE;
         }
-        
+
+        @@supports (-ms-accelerator:true) {
+            /* Handle adjustments for Microsoft Edge */
+            a.move-sequence-up span {
+                margin-left: 2px;
+            }
+
+            a.move-sequence-down span {
+                margin-left: -135px;
+                top: 20px;
+            }
+        }
+
+        @@media all and (-ms-high-contrast:none)
+        {
+            /* Handle adjustments for IE 11 */
+            a.move-sequence-up span {
+                margin-left: 2px;
+            }
+
+            a.move-sequence-down span {
+                margin-left: -139px;
+                top: 20px;
+            }
+        }
+
         @@media screen {
             .sequence-name {
                 margin-left: 30px;
@@ -91,7 +116,7 @@
                 width: -webkit-calc(100% - 30px);
                 width: -moz-calc(100% - 30px);
             }
-        }        
+        }
 
         @@media screen and (min-width: 768px) {
             .sequence-name {
@@ -140,7 +165,7 @@
 
         .glyphicon-delete-sequence {
             vertical-align: text-top;
-            color:red ;
+            color: red;
             font-size: larger;
         }
 
@@ -184,6 +209,19 @@
             content: "\e080";
         }
     </style>
+    <!--[if IE]>
+    <style type="text/css">
+        /* Handle adjustments for older IE versions */
+        a.move-sequence-up span {
+            margin-left: 2px;
+        }
+
+        a.move-sequence-down span {
+            margin-left: -139px;
+            top: 20px;
+        }
+    </style>
+    <![endif]-->
 }
 @section Scripts {
     <script src="Scripts/knockout-3.4.0.js"></script>
@@ -265,7 +303,7 @@
                 }
             });
 
-            self.sequenceDescription = ko.pureComputed({
+            self.sequenceTypeDescription = ko.pureComputed({
                 read: function() {
                     return self.sequenceType === SequenceType.Read ? "Read" : "Write";
                 }
@@ -344,7 +382,6 @@
                 self.sequences.push(new SequenceViewModel(sequenceType, sequenceDomIndex, self.sequences().length));
                 sequenceDomIndex++;
                 reorderSequencePanels();
-                console.log("addNewSequence: " + sequenceType + " -- sequence count = " + self.sequences().length);
             }
 
             self.removeSequence = function (sequence) {
@@ -355,7 +392,7 @@
                     if (index !== -1)
                         sequences.splice(index, 1);
 
-                    // Fully rerender sequences
+                    // Fully rerender reorderable sequences when one is removed
                     self.sequences(null);
                     self.sequences(sequences);
 
@@ -484,26 +521,25 @@
         function reorderSequencePanels(event, ui) {
             const sequencePanels = $("#sequencePanels");
 
-            $(".panel", sequencePanels).
-                each(function(index, elem) {
-                    const listItem = $(elem);
-                    const newIndex = listItem.index();
-                    const badges = listItem.find(".badge");
+            $(".panel", sequencePanels).each(function(index, elem) {
+                const listItem = $(elem);
+                const newIndex = listItem.index();
+                const badges = listItem.find(".badge");
 
-                    if (badges.length > 0) {
-                        // Update DOM section index
-                        const indexBadge = $(badges[0]);
-                        const oldIndex = parseInt(indexBadge.text()) - 1;
+                if (badges.length > 0) {
+                    // Update DOM section index
+                    const indexBadge = $(badges[0]);
+                    const oldIndex = parseInt(indexBadge.text()) - 1;
 
-                        indexBadge.text(newIndex + 1);
+                    indexBadge.text(newIndex + 1);
 
-                        // Update view model index
-                        const sequence = viewModel.sequences()[oldIndex];
+                    // Update view model index
+                    const sequence = viewModel.sequences()[oldIndex];
 
-                        if (sequence)
-                            sequence.index(newIndex);
-                    }
-                });
+                    if (sequence)
+                        sequence.index(newIndex);
+                }
+            });
 
             // Make sure view model is reordered to match user defined order
             viewModel.sequences().sort(function (a, b) {
@@ -535,11 +571,10 @@
 
         $(function() {
             // Initialize jQuery based sequence reordering
-            $("#sequencePanels").
-                sortable({
-                    handle: ".panel-heading",
-                    update: reorderSequencePanels
-                });
+            $("#sequencePanels").sortable({
+                handle: ".panel-heading",
+                update: reorderSequencePanels
+            });
         });
     </script>
 }
@@ -646,7 +681,7 @@
                 <div class="form-group">
                     <label data-bind="attr: { 'for': 'sequenceName' + domIndex }">
                         <a class="move-sequence-up" title="Move Sequence Order Up" onclick="moveSequenceUp(this)"><span class="glyphicon glyphicon-menu-up"></span></a>
-                        <span class="badge"></span>&nbsp;&nbsp;<span data-bind="text: sequenceDescription"></span> Sequence:
+                        <span class="badge"></span>&nbsp;&nbsp;<span data-bind="text: sequenceTypeDescription"></span> Sequence:
                         <a class="move-sequence-down" title="Move Sequence Order Down" onclick="moveSequenceDown(this)"><span class="glyphicon glyphicon-menu-down"></span></a>
                     </label>
                     <input type="text" class="form-control sequence-name" placeholder="Sequence name..." data-bind="textInput: sequenceName, attr: { 'id': 'sequenceName' + domIndex }">
