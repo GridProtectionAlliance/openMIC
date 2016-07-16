@@ -197,6 +197,8 @@
 
         // *** Sequence View Models ***
 
+        var sequenceDomIndex = 0;
+
         var SequenceType = {
             Read: 0,
             Write: 1
@@ -228,12 +230,12 @@
         }
 
         // Define view model for sequences
-        function SequenceViewModel(sequenceType, index) {
+        function SequenceViewModel(sequenceType, domIndex, index) {
             const self = this;
 
             // Configuration fields
-            //self.sourceSequenceElement = null;
             self.sequenceType = sequenceType;
+            self.domIndex = domIndex;
 
             // Observable fields
             self.index = ko.observable(index);
@@ -246,18 +248,20 @@
                     const records = self.sequenceRecords();
                     var selectedCount = 0;
 
-                    for (let i = 0; i < records.length; i++) {
-                        if (records[i].selected())
-                            selectedCount++;
+                    if (records) {
+                        for (let i = 0; i < records.length; i++) {
+                            if (records[i].selected())
+                                selectedCount++;
+                        }
                     }
 
                     return selectedCount;
                 }
-            });
+            }).extend({ notify: "always" });
 
             self.canAddDerivedValue = ko.pureComputed({
-                read: function () {
-                    return self.selectedRecordCount() > 0 && $("input[name=interpretAs" + self.index() + "]:checked").length > 0;
+                read: function() {
+                    return self.selectedRecordCount() > 0 && $("input[name=interpretAs" + self.domIndex + "]:checked").length > 0;
                 }
             });
 
@@ -274,12 +278,22 @@
             });
 
             // Methods
-            self.addNewSequenceRecord = function(recordType) {
+            self.addNewSequenceRecord = function (recordType) {
+                const records = self.sequenceRecords();
+                var address = "";
+
+                if (records && records.length > 0) {
+                    const lastAddress = records[records.length - 1].address();
+
+                    if (isNumber(lastAddress))
+                        address = parseInt(lastAddress) + 1;
+                }
+
                 self.sequenceRecords.push(
                     ko.mapping.fromJS({
                         recordType: recordType,
                         selected: false,
-                        address: "",
+                        address: address,
                         description: "",
                         dataValue: ""
                     }));
@@ -293,6 +307,32 @@
             self.removeSequenceRecord = function(record) {
                 self.sequenceRecords.remove(record);
             }
+
+            self.clearInterpretAsSelection = function() {
+                $("input[name=interpretAs" + self.domIndex + "]").prop("checked", false);
+            }
+
+            self.interpretAsSelectionChanged = function() {
+                self.sequenceRecords.valueHasMutated();
+            }
+
+            self.selectNone = function() {
+                const records = self.sequenceRecords();
+
+                if (records) {
+                    for (let i = 0; i < records.length; i++)
+                        records[i].selected(false);
+                }
+            }
+
+            self.selectOne = function(index) {
+                const records = self.sequenceRecords();
+
+                if (records) {
+                    for (let i = 0; i < records.length; i++)
+                        records[i].selected(i === index);
+                }
+            }
         }
 
         function MapViewModel() {
@@ -300,16 +340,29 @@
 
             self.sequences = ko.observableArray();
 
-            self.addNewSequence = function(sequenceType) {
-                self.sequences.push(new SequenceViewModel(sequenceType, self.sequences().length));
+            self.addNewSequence = function (sequenceType) {
+                self.sequences.push(new SequenceViewModel(sequenceType, sequenceDomIndex, self.sequences().length));
+                sequenceDomIndex++;
                 reorderSequencePanels();
                 console.log("addNewSequence: " + sequenceType + " -- sequence count = " + self.sequences().length);
             }
 
-            self.removeSequence = function(sequence) {
-                self.sequences.remove(sequence);
-                reorderSequencePanels();
-                console.log("removeSequence['" + sequence.sequenceName() + "']");
+            self.removeSequence = function (sequence) {
+                if (sequence.sequenceRecords().length === 0 || confirm("Are you sure you want to delete sequence \"" + sequence.sequenceName() + "\"?")) {
+                    const sequences = self.sequences();
+                    const index = sequences.indexOf(sequence);
+
+                    if (index !== -1)
+                        sequences.splice(index, 1);
+
+                    // Fully rerender sequences
+                    self.sequences(null);
+                    self.sequences(sequences);
+
+                    setTimeout(function() {
+                        reorderSequencePanels();
+                    }, 100);
+                }
             }
 
             self.loadSequenceMap = function() {
@@ -328,6 +381,99 @@
         }
 
         const viewModel = new MapViewModel();
+
+        function getSequence(domIndex) {
+            const sequences = viewModel.sequences();
+
+            for (var i = 0; i < sequences.length; i++) {
+                const sequence = sequences[i];
+
+                if (sequence.domIndex === domIndex)
+                    return sequence;
+            }
+
+            return null;
+        }
+
+        function interpretAsSelectionChanged(domIndex) {
+            const sequence = getSequence(domIndex);
+
+            if (!sequence)
+                return;
+
+            // Notify sequence view model that interpret-as selection has changed
+            sequence.interpretAsSelectionChanged();
+
+            // Auto-interpret selected record values as type
+            // TODO: Call data-hub function to interpret selected values
+        }
+
+        function selectedSequenceRecordsChanged(domIndex, selectedIndex) {
+            const sequence = getSequence(domIndex);
+
+            if (!sequence)
+                return;
+
+            // Clear any selected interpret-as option
+            sequence.clearInterpretAsSelection();
+
+            // Wait a moment for ko processing to complete before validating selections
+            setTimeout(function() {
+                const records = sequence.sequenceRecords();
+
+                if (!records)
+                    return;
+
+                // Validate selected record types match
+                let firstSelectedType = null;
+                let recordTypesMatch = true;
+
+                for (let i = 0; i < records.length; i++) {
+                    if (records[i].selected()) {
+                        if (firstSelectedType != null) {
+                            if (firstSelectedType !== records[i].recordType()) {
+                                recordTypesMatch = false;
+                                break;
+                            }
+                        }
+                        else {
+                            firstSelectedType = records[i].recordType();
+                        }
+                    }
+                }
+
+                if (!recordTypesMatch) {
+                    if (records[selectedIndex].selected())
+                        sequence.selectOne(selectedIndex);
+                    else
+                        sequence.selectNone();
+                }
+
+                // Validate selected records are contiguous
+                let lastSelectedIndex = null;
+                let recordsAreContiguous = true;
+
+                for (let i = 0; i < records.length; i++) {
+                    if (records[i].selected()) {
+                        if (lastSelectedIndex != null) {
+                            if (i !== lastSelectedIndex + 1) {
+                                recordsAreContiguous = false;
+                                break;
+                            }
+                        }
+
+                        lastSelectedIndex = i;
+                    }
+                }
+
+                if (!recordsAreContiguous) {
+                    if (records[selectedIndex].selected())
+                        sequence.selectOne(selectedIndex);
+                    else
+                        sequence.selectNone();
+                }
+            }, 100);
+        }
 
         $(function() {
             ko.applyBindings(viewModel);
@@ -498,12 +644,12 @@
         <div class="panel-heading clearfix">
             <form class="form-inline form-inline-sequence" role="form">
                 <div class="form-group">
-                    <label data-bind="attr: { 'for': 'sequenceName' + $index() }">
+                    <label data-bind="attr: { 'for': 'sequenceName' + domIndex }">
                         <a class="move-sequence-up" title="Move Sequence Order Up" onclick="moveSequenceUp(this)"><span class="glyphicon glyphicon-menu-up"></span></a>
                         <span class="badge"></span>&nbsp;&nbsp;<span data-bind="text: sequenceDescription"></span> Sequence:
                         <a class="move-sequence-down" title="Move Sequence Order Down" onclick="moveSequenceDown(this)"><span class="glyphicon glyphicon-menu-down"></span></a>
                     </label>
-                    <input type="text" class="form-control sequence-name" placeholder="Sequence name..." data-bind="attr: { 'id': 'sequenceName' + $index() }">
+                    <input type="text" class="form-control sequence-name" placeholder="Sequence name..." data-bind="textInput: sequenceName, attr: { 'id': 'sequenceName' + domIndex }">
                 </div>
                 <div class="form-group pull-right">
                     <button type="button" class="btn btn-default" title="Add New Modbus Discrete Input Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.DiscreteInput), visible: sequenceType === SequenceType.Read"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Discrete Input</button>
@@ -512,12 +658,12 @@
                     <button type="button" class="btn btn-default" title="Add New Modbus Holding Register Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.HoldingRegister)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Holding Register</button>
                     &nbsp;
                     <button type="button" class="btn btn-default" style="margin-right: -10px" title="Delete Sequence" data-bind="click: $root.removeSequence.bind($data)"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
-                    <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-bind="attr: { 'data-target': '#sequenceContent' + $index() }"></button>
+                    <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-bind="attr: { 'data-target': '#sequenceContent' + domIndex }"></button>
                     @*<span class="model-index" data-bind="text: index"></span>*@
                 </div>
             </form>
         </div>
-        <div class="collapse in" data-bind="attr: { 'id': 'sequenceContent' + $index() }">
+        <div class="collapse in" data-bind="attr: { 'id': 'sequenceContent' + domIndex }">
             <div class="panel-body">
                 <div class="table-responsive">
                     <table class="table table-hover table-striped table-condensed">
@@ -536,13 +682,13 @@
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="text: getRecordTypeCode(recordType())">
                             </td>
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
-                                <input type="checkbox" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, attr: { 'onclick': '$(\'input[name=interpretAs' + $index() + ']\').prop(\'checked\', false)' }">
+                                <input type="checkbox" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
                             </td>
                             <td width="20%">
                                 <span data-bind="if: recordType() !== RecordType.DerivedValue"><input type="number" class="form-control" placeholder="Number..." data-bind="textInput: address"></span>
                                 <span data-bind="if: recordType() === RecordType.DerivedValue"><input type="text" class="form-control" data-bind="value: address" readonly></span>
                             </td>
-                            <td data-bind="attr: {'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%'}">
+                            <td data-bind="attr: { 'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%' }">
                                 <input type="text" class="form-control" placeholder="Description..." data-bind="textInput: description">
                             </td>
                             <td width="20%">
@@ -561,13 +707,13 @@
                 <span class="text-nowrap" style="margin-left: 5px; font-style: italic"><span data-bind="text: selectedRecordCount"></span> selected, interpret as:</span>
                 <div class="form-group">
                     <span class="glyphicon glyphicon-menu-left glyphicon-interpret-type"></span>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() === 0 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() > 0">String</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 2 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 2">Single</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 4 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 4">Double</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 2 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 2">Int32</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 2 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 2">UInt32</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 4 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 4">Int64</label>
-                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 4 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + $index() }, enable: selectedRecordCount() === 4">UInt64</label>
+                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() === 0 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + domIndex, 'onclick': 'interpretAsSelectionChanged(' + domIndex + ')' }, enable: selectedRecordCount() > 0">String</label>
+                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 2 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + domIndex, 'onclick': 'interpretAsSelectionChanged(' + domIndex + ')' }, enable: selectedRecordCount() === 2">Single</label>
+                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 4 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + domIndex, 'onclick': 'interpretAsSelectionChanged(' + domIndex + ')' }, enable: selectedRecordCount() === 4">Double</label>
+                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 2 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + domIndex, 'onclick': 'interpretAsSelectionChanged(' + domIndex + ')' }, enable: selectedRecordCount() === 2">Int32</label>
+                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 2 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + domIndex, 'onclick': 'interpretAsSelectionChanged(' + domIndex + ')' }, enable: selectedRecordCount() === 2">UInt32</label>
+                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 4 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + domIndex, 'onclick': 'interpretAsSelectionChanged(' + domIndex + ')' }, enable: selectedRecordCount() === 4">Int64</label>
+                    <label class="radio-inline text-nowrap" data-bind="css: { disabled: selectedRecordCount() !== 4 }"><input type="radio" data-bind="attr: { 'name': 'interpretAs' + domIndex, 'onclick': 'interpretAsSelectionChanged(' + domIndex + ')' }, enable: selectedRecordCount() === 4">UInt64</label>
                     <span class="text-nowrap">
                         <span class="glyphicon glyphicon-menu-right glyphicon-interpret-type"></span>
                         <span class="glyphicon glyphicon-upload glyphicon-rotate-90 glyphicon-interpret-result"></span>
