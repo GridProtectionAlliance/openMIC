@@ -879,7 +879,7 @@
             // Initialize primary view model
             ko.applyBindings(viewModel);
 
-            ko.watch(viewModel.sequences, { depth: -1 }, function (parents, child, item) {
+            ko.watch(viewModel.sequences, { depth: -1 }, function(parents, child, item) {
                 viewModel.isDirty(true);
             });
 
@@ -907,8 +907,13 @@
                     $("#saveMappingFile").click();
             });
 
+            // Auto-select all text on focus
+            $("#inputMappingFileName").focus(function() {
+                $(this).select();
+            });
+
             // Prevent default form submission when user presses enter
-            $("#saveMappingFileNameDialog").submit(function () {
+            $("#saveMappingFileNameDialog").submit(function() {
                 return false;
             });
 
