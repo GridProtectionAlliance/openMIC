@@ -411,7 +411,7 @@
                         sequences.splice(index, 1);
 
                     // Fully rerender reorderable sequences when one is removed
-                    self.sequences(null);
+                    self.sequences([]);
                     self.sequences(sequences);
 
                     setTimeout(function() {
@@ -913,6 +913,7 @@
         </div>
     </li>
 </ul>
+<hr class="thick-spacer" data-bind="visible: sequences().length > 0" />
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 30px; padding-top: 5px">
         <label>Serialized&nbsp;Sequences</label>
