@@ -386,7 +386,7 @@
             // Observable fields
             self.index = ko.observable(index);
             self.sequenceName = ko.observable();
-            self.sequenceRecords = ko.observableArray();
+            self.sequenceRecords = ko.observableArray(); // Fields: recordType, selected, address, description, dataValue
             self.expanded = ko.observable(true);
 
             // Properties
@@ -514,8 +514,14 @@
             self.serializeSequence = function() {
                 var records = [];
 
+                // Only serializing recordType, address, description and dataValue
                 self.sequenceRecords().forEach(function(record) {
-                    records.push(ko.mapping.toJS(record));
+                    records.push({
+                        recordType: record.recordType(),
+                        address: record.address().toString(),
+                        description: record.description(),
+                        dataValue: record.dataValue()
+                    });
                 });
 
                 return {
@@ -523,6 +529,20 @@
                     name: self.sequenceName(),
                     records: records
                 };
+            }
+        }
+
+        function addSequenceRecord(sequence, recordType) {
+            if (recordType === RecordType.DerivedValue) {
+                sequence.addNewSequenceRecord(null, {
+                    recordType: recordType,
+                    selected: false,
+                    address: getDerivedValueAddressExpression(sequence),
+                    description: "",
+                    dataValue: ""
+                });
+            } else {
+                sequence.addNewSequenceRecord(recordType, null);
             }
         }
 
@@ -596,8 +616,15 @@
                         var sequence = self.addNewSequence(parsedSequence.type);
                         sequence.sequenceName(parsedSequence.name);
 
+                        // Restore full field set, only a partial set gets serialized
                         parsedSequence.records.forEach(function(record) {
-                            sequence.addNewSequenceRecord(null, record);
+                            sequence.addNewSequenceRecord(null, {
+                                recordType: record.recordType,
+                                selected: false,
+                                address: record.address,
+                                description: record.description,
+                                dataValue: record.dataValue
+                            });
                         });
                     });
 
@@ -738,6 +765,37 @@
             }, 500);
         }
 
+        function getDerivedValueAddressExpression(sequence) {
+            const records = sequence.sequenceRecords();
+
+            if (!records)
+                return "";
+
+            let address = $("input[name='interpretAs" + sequence.domIndex + "']:checked").parent().text();
+
+            if (isEmpty(address))
+                return "";
+
+            address += "(";
+
+            let count = 0;
+
+            for (let i = 0; i < records.length; i++) {
+                if (records[i].selected()) {
+                    if (count > 0)
+                        address += ",";
+
+                    address += getRecordTypeCode(records[i].recordType());
+                    address += records[i].address();
+                    count++;
+                }
+            }
+
+            address += ")";
+
+            return address;
+        }
+
         function postSequenceRendering(elements, sequence) {            
             const collapsableSection = $(elements).find("div.collapse");
 
@@ -820,7 +878,7 @@
             // Initialize primary view model
             ko.applyBindings(viewModel);
 
-            ko.watch(viewModel.sequences, function (parents, child, item) {
+            ko.watch(viewModel.sequences, { depth: -1 }, function (parents, child, item) {
                 viewModel.isDirty(true);
             });
 
@@ -898,8 +956,8 @@
         </label>
         <div class="pull-right">
             <span id="notConnected">Not&nbsp;Connected&nbsp;&nbsp;<span class="glyphicon glyphicon-ban-circle" style="color: #FF003B;"></span></span>&nbsp;&nbsp;
-            <span id="attemptingConnection">Attempting&nbsp;Connection&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin" style="color: yellow"></span></span>&nbsp;&nbsp;
-            <span id="connected">Connected&nbsp;&nbsp;<span class="glyphicon glyphicon-check" style="color: chartreuse"></span></span>
+            <span id="attemptingConnection" style="display: none">Attempting&nbsp;Connection&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin" style="color: yellow"></span></span>&nbsp;&nbsp;
+            <span id="connected" style="display: none">Connected&nbsp;&nbsp;<span class="glyphicon glyphicon-check" style="color: chartreuse"></span></span>
             <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-target="#connectionSettings"></button>
         </div>
     </div>
@@ -1022,10 +1080,10 @@
                     <input type="text" class="form-control sequence-name" placeholder="Sequence name..." data-bind="textInput: sequenceName, attr: { 'id': 'sequenceName' + domIndex }">
                 </div>
                 <div class="form-group pull-right">
-                    <button type="button" class="btn btn-default" title="Add New Modbus Discrete Input Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.DiscreteInput, null), visible: sequenceType === SequenceType.Read"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Discrete Input</button>
-                    <button type="button" class="btn btn-default" title="Add New Modbus Coil Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.Coil, null)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Coil</button>
-                    <button type="button" class="btn btn-default" title="Add New Modbus Input Register Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.InputRegister, null), visible: sequenceType === SequenceType.Read"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Input Register</button>
-                    <button type="button" class="btn btn-default" title="Add New Modbus Holding Register Record to Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.HoldingRegister, null)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Holding Register</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Discrete Input Record to Sequence" data-bind="click: addSequenceRecord.bind($data, $data, RecordType.DiscreteInput), visible: sequenceType === SequenceType.Read"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Discrete Input</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Coil Record to Sequence" data-bind="click: addSequenceRecord.bind($data, $data, RecordType.Coil)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Coil</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Input Register Record to Sequence" data-bind="click: addSequenceRecord.bind($data, $data, RecordType.InputRegister), visible: sequenceType === SequenceType.Read"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Input Register</button>
+                    <button type="button" class="btn btn-default" title="Add New Modbus Holding Register Record to Sequence" data-bind="click: addSequenceRecord.bind($data, $data, RecordType.HoldingRegister)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Holding Register</button>
                     &nbsp;
                     <button type="button" class="btn btn-default" style="margin-right: -10px" title="Delete Sequence" data-bind="click: $root.removeSequence.bind($data)"><span class="glyphicon glyphicon-remove-circle glyphicon-delete-sequence"></span></button>
                     <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-bind="css: { 'collapsed': !expanded() }, attr: { 'data-target': '#sequenceContent' + domIndex }"></button>
@@ -1052,11 +1110,11 @@
                         <tr>
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="text: getRecordTypeCode(recordType())"></td>
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
-                                <input type="checkbox" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
+                                <input type="checkbox" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
                             </td>
                             <td width="20%">
                                 <span data-bind="if: recordType() !== RecordType.DerivedValue"><input type="number" class="form-control" placeholder="Number..." data-bind="textInput: address"></span>
-                                <span data-bind="if: recordType() === RecordType.DerivedValue"><input type="text" class="form-control" data-bind="value: address" readonly></span>
+                                <span data-bind="if: recordType() === RecordType.DerivedValue"><input type="text" class="form-control" data-bind="value: address"></span>
                             </td>
                             <td data-bind="attr: { 'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%' }">
                                 <input type="text" class="form-control" placeholder="Description..." data-bind="textInput: description">
@@ -1090,14 +1148,17 @@
                     </span>
                     &nbsp;&nbsp;
                 </div>
-                <div class="form-group">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Interpreted value..." readonly/>
-                        <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" title="Add Derived Value as a New Record in Sequence" data-bind="click: addNewSequenceRecord.bind($data, RecordType.DerivedValue, null), enable: canAddDerivedValue()"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Derived Value</button>
-                        </span>
+                <form class="form-inline form-inline-sequence" role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" data-bind="value: getDerivedValueAddressExpression($data), attr: { 'name': 'derivedValueExpression' + domIndex }" />
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Interpreted value..." readonly/>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" title="Add Derived Value as a New Record in Sequence" data-bind="click: addSequenceRecord.bind($data, $data, RecordType.DerivedValue), enable: canAddDerivedValue()"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Derived Value</button>
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </li>
