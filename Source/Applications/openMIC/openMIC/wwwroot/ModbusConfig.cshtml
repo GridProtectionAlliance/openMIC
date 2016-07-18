@@ -575,7 +575,6 @@
                 self.sequences.push(sequence);
 
                 sequenceDomIndex++;
-                reorderSequencePanels();
 
                 return sequence;
             }
@@ -592,9 +591,7 @@
                     self.sequences([]);
                     self.sequences(sequences);
 
-                    setTimeout(function() {
-                        reorderSequencePanels();
-                    }, 100);
+                    reorderSequencePanels();
                 }
             }
 
@@ -628,7 +625,7 @@
                         });
                     });
 
-                   self.isDirty(appendMode);
+                    self.isDirty(appendMode);
                 };
 
                 reader.onloadend = function() {
@@ -762,7 +759,7 @@
                     else
                         sequence.selectNone();
                 }
-            }, 500);
+            }, 250);
         }
 
         function getDerivedValueAddressExpression(sequence) {
@@ -796,7 +793,11 @@
             return address;
         }
 
-        function postSequenceRendering(elements, sequence) {            
+        function postSequenceRendering(elements, sequence) {
+            // Call reorder sequence panels after any rendering to make sure
+            // model index always matches visible sequence ordering
+            reorderSequencePanels();
+
             const collapsableSection = $(elements).find("div.collapse");
 
             if (!collapsableSection)
