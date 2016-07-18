@@ -108,6 +108,12 @@
             }
         }
 
+        span.sequence-record-count {
+            color: darkgray;
+            font-size: 7pt;
+            position: absolute;
+        }
+
         @@media screen {
             .sequence-name {
                 margin-left: 30px;
@@ -116,6 +122,14 @@
                 width: -webkit-calc(100% - 30px);
                 width: -moz-calc(100% - 30px);
             }
+
+            span.sequence-record-count {
+                margin-top: -15px;
+            }
+
+            span.sequence-record-count span {
+                margin-left: 155px;
+            }
         }
 
         @@media screen and (min-width: 768px) {
@@ -123,10 +137,81 @@
                 margin-left: 5px;
                 width: 100%;
             }
+
+            span.sequence-record-count {
+                margin-top: 3px;
+            }
+
+            span.sequence-record-count span {
+                margin-left: 45px;
+            }
+        }
+        
+        @@supports (-ms-accelerator:true)
+        {
+            /* Handle adjustments for Microsoft Edge */
+            span.sequence-record-count {
+                margin-top: 3px;
+            }
+
+            span.sequence-record-count span {
+                margin-left: 15px;
+            }
+        }
+
+        @@supports (-ms-accelerator:true) and (min-width: 768px)
+        {
+            /* Handle adjustments for Microsoft Edge */
+            span.sequence-record-count {
+                margin-top: 21px;
+            }
+
+            span.sequence-record-count span {
+                margin-left: -95px;
+            }
+        }
+
+        @@media all and (-ms-high-contrast:none)
+        {
+            /* Handle adjustments for IE 11 */
+            span.sequence-record-count {
+                margin-top: 3px;
+            }
+
+            span.sequence-record-count span {
+                margin-left: 15px;
+            }
+        }
+
+        @@media all and (-ms-high-contrast:none) and (min-width: 768px)
+        {
+            /* Handle adjustments for IE 11 */
+            span.sequence-record-count {
+                margin-top: 21px;
+            }
+
+            span.sequence-record-count span {
+                margin-left: -95px;
+            }
         }
 
         .panel {
             margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .panel-body.warning-border {
+            border-color: yellow;
+            border-style: solid;
+        }
+
+        div.warning-message {
+            font-size: 10pt;
+            font-style: italic;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 1px 1px lightgray;
+            margin-top: -6px;
             margin-bottom: 5px;
         }
 
@@ -220,12 +305,35 @@
             margin-left: -139px;
             top: 20px;
         }
+
+        @@media screen
+        {
+            span.sequence-record-count {
+                margin-top: 3px;
+            }
+
+            span.sequence-record-count span {
+                margin-left: 15px;
+            }
+        }
+
+        @@media screen and (min-width: 768px)
+        {
+            span.sequence-record-count {
+                margin-top: 21px;
+            }
+
+            span.sequence-record-count span {
+                margin-left: -95px;
+            }
+        }
     </style>
     <![endif]-->
 }
 @section Scripts {
     <script src="Scripts/knockout-3.4.0.js"></script>
     <script src="Scripts/knockout.mapping-latest.js"></script>
+    <script src="Scripts/ko-reactor.min.js"></script>
     <script src="Scripts/knockout.validation.js"></script>
     <script id="validationMessageTemplate" type="text/html"><!--
         --><em class="validationPrompt" data-bind="validationMessage: field"></em>
@@ -295,19 +403,22 @@
                     }
 
                     return selectedCount;
-                }
+                },
+                owner: self
             }).extend({ notify: "always" });
 
             self.canAddDerivedValue = ko.pureComputed({
                 read: function() {
                     return self.selectedRecordCount() > 0 && $("input[name=interpretAs" + self.domIndex + "]:checked").length > 0;
-                }
+                },
+                owner: self
             });
 
             self.sequenceTypeDescription = ko.pureComputed({
                 read: function() {
                     return self.sequenceType === SequenceType.Read ? "Read" : "Write";
-                }
+                },
+                owner: self
             });
 
             // Methods
@@ -315,8 +426,15 @@
                 const records = self.sequenceRecords();
                 var address = "";
 
-                if (records && records.length > 0) {
-                    const lastAddress = records[records.length - 1].address();
+                if (!sequenceRecord && records && records.length > 0) {
+                    let lastAddress = null;
+
+                    for (let i = records.length - 1; i >= 0; i--) {
+                        if (records[i].recordType() === recordType) {
+                            lastAddress = records[i].address();
+                            break;
+                        }
+                    }                    
 
                     if (isNumber(lastAddress))
                         address = parseInt(lastAddress) + 1;
@@ -334,10 +452,33 @@
                     }));
                 }
 
-                // Keep sequence map sorted by record type
-                self.sequenceRecords.sort(function(a, b) {
-                    return a.recordType() - b.recordType();
+                // Keep sequence map sorted by record type, then address
+                self.sequenceRecords.sort(function (a, b) {
+                    const firstOrderSort = a.recordType() - b.recordType();
+
+                    if (firstOrderSort !== 0)
+                        return firstOrderSort;
+
+                    var addra = a.address();
+                    var addrb = b.address();
+
+                    if (isEmpty(addra))
+                        addra = 0;
+
+                    if (isEmpty(addrb))
+                        addrb = 0;
+
+                    if (isNumber(addra) && isNumber(addrb))
+                        return parseInt(addra) - parseInt(addrb);
+
+                    addra = addra.toUpperCase();
+                    addrb = addrb.toUpperCase();
+
+                    return addra < addrb ? -1 : (addra > addrb ? 1 : 0);
                 });
+
+                // Make sure sequence is expanded when adding a record
+                $("#sequenceContent" + domIndex).collapse("show");
             }
 
             self.removeSequenceRecord = function(record) {
@@ -373,8 +514,8 @@
             self.serializeSequence = function() {
                 var records = [];
 
-                self.sequenceRecords().forEach(function(element) {
-                    records.push(ko.mapping.toJS(element));
+                self.sequenceRecords().forEach(function(record) {
+                    records.push(ko.mapping.toJS(record));
                 });
 
                 return {
@@ -388,8 +529,25 @@
         function MapViewModel() {
             const self = this;
 
+            // Observable fields
             self.sequences = ko.observableArray();
 
+            // Internal fields
+            self._isDirty = ko.observable(false);
+
+            // Properties
+            self.isDirty = ko.pureComputed({
+                read: self._isDirty,
+                write: function (value) {
+                    if (value === undefined)
+                        value = true;
+
+                    self._isDirty(value);
+                },
+                owner: self
+            });
+
+            // Methods
             self.addNewSequence = function(sequenceType) {
                 const domIndex = sequenceDomIndex;
                 const sequence = new SequenceViewModel(sequenceType, domIndex, self.sequences().length);
@@ -420,6 +578,11 @@
                 }
             }
 
+            self.newSequenceMap = function () {
+                self.sequences([]);
+                self.isDirty(false);
+            }
+
             self.loadSequenceMap = function(fileBlob, appendMode) {
                 var reader = new FileReader();
 
@@ -437,9 +600,11 @@
                             sequence.addNewSequenceRecord(null, record);
                         });
                     });
+
+                   self.isDirty(appendMode);
                 };
 
-                reader.onloadend = function () {
+                reader.onloadend = function() {
                     if (reader.error && reader.error.message)
                         alert("Failed to load sequence file: " + reader.error.message);
                 };
@@ -457,7 +622,9 @@
                     anchor[0].click();
                 } else {
                     window.open(data, "_blank", "");
-                }                    
+                }
+
+                self.isDirty(false);
             }
 
             self.serializeMapping = function() {
@@ -649,11 +816,13 @@
             $("li.panel div.collapse").collapse("hide");
         }
 
-        var loadAppendMode = false;
-
         $(function() {
             // Initialize primary view model
             ko.applyBindings(viewModel);
+
+            ko.watch(viewModel.sequences, function (parents, child, item) {
+                viewModel.isDirty(true);
+            });
 
             // Initialize jQuery based sequence reordering
             $("#sequencePanels").sortable({
@@ -661,11 +830,7 @@
                 update: reorderSequencePanels
             });
 
-            // Prevent default form submission when user presses enter
-            $("#saveMappingFileNameDialog").submit(function() {
-                return false;
-            });
-
+            // Setup save mapping file name dialog functionality
             $("#saveMappingFile").click(function() {
                 $("#saveMappingFileNameDialog").hide();
 
@@ -677,9 +842,15 @@
                 viewModel.saveSequenceMap(fileName);
             });
 
+            // Make enter key auto-click save 
             $("#inputMappingFileName").keyup(function(event) {
                 if (event.keyCode === 13)
                     $("#saveMappingFile").click();
+            });
+
+            // Prevent default form submission when user presses enter
+            $("#saveMappingFileNameDialog").submit(function () {
+                return false;
             });
 
             // Auto-hide pop-up form when user clicks outside form area
@@ -689,12 +860,24 @@
             });
         });
 
+        var loadAppendMode = false;
+
+        function createNewMappingFile() {
+            if (viewModel.isDirty() && !confirm("Are you sure you want to lose unsaved changes to current mapping?"))
+                return;
+
+            viewModel.newSequenceMap();
+        }
+
         function loadMappingFile(event) {
             viewModel.loadSequenceMap(event.target.files[0], loadAppendMode);
             $("#loadMappingFileName").val("");
         }
 
         function showLoadMappingFileNameDialog(appendMode) {
+            if (!appendMode && viewModel.isDirty() && !confirm("Are you sure you want to lose unsaved changes to current mapping?"))
+                return;
+
             loadAppendMode = appendMode;
             $("#loadMappingFileName").trigger("click");
         }
@@ -707,6 +890,7 @@
         }
     </script>
 }
+@* Connection Settings and Status Panel *@
 <div class="panel panel-primary">
     <div class="panel-heading clearfix">
         <label>
@@ -791,14 +975,16 @@
         </div>
     </div>
 </div>
+@* Primary Buttons Panel *@
 <div class="panel panel-default">
     <div class="panel-body clearfix" style="padding-top: 5px; padding-bottom: 10px">
         <button type="button" class="btn btn-default top-margin" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Read)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Read Sequence</button>
         <button type="button" class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Write)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Write Sequence</button>
         <div class="top-padding pull-right">
+            <button type="button" class="btn btn-default" title="Create a New Modbus Sequence Mapping" onclick="createNewMappingFile()"><span class="glyphicon glyphicon-circle-arrow-down glyphicon-action-button"></span> New Mapping</button>
             <button type="button" class="btn btn-default" title="Load Existing Modbus Sequence Mapping" onclick="showLoadMappingFileNameDialog(false)"><span class="glyphicon glyphicon-floppy-open glyphicon-action-button"></span> Load Mapping</button>
             <input id="loadMappingFileName" type="file" accept="text/json" style="position: fixed; top: -100em" onchange="loadMappingFile(event)">
-            <button type="button" class="btn btn-default" title="Save Current Modbus Sequence Mapping" onclick="showSaveMappingFileNameDialog()" id="showSaveMappingFileNameDialog"><span class="glyphicon glyphicon-floppy-save glyphicon-action-button"></span> Save Mapping</button>
+            <button type="button" class="btn btn-default" title="Save Current Modbus Sequence Mapping" onclick="showSaveMappingFileNameDialog()" id="showSaveMappingFileNameDialog" data-bind="enable: isDirty"><span class="glyphicon glyphicon-floppy-save glyphicon-action-button"></span> Save Mapping</button>
             <div class="well well-sm floating-form" id="saveMappingFileNameDialog" style="z-index: 1000">
                 <form class="form-inline" role="form">
                     <div class="form-group form-group-sm">
@@ -814,10 +1000,11 @@
                 </form>
             </div>            
             <a href="#" id="saveMappingFileLink" target="_blank" style="display: none"></a>
-            <button type="button" class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping" onclick="showLoadMappingFileNameDialog(true)"><span class="glyphicon glyphicon-import glyphicon-action-button"></span> Append to Current Mapping</button>
+            <button type="button" class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping" onclick="showLoadMappingFileNameDialog(true)"><span class="glyphicon glyphicon-import glyphicon-action-button"></span> Append Mapping</button>
         </div>
     </div>
 </div>
+@* Reorderable Mapping Sequences Panel *@
 <button type="button" class="btn btn-xs btn-collapsable" onclick="collapseAllSequences()" title="Collapse all sequences" style="top: 3px; right: 0"></button>
 <button type="button" class="btn btn-xs btn-collapsable collapsed" onclick="expandAllSequences()" title="Expand all sequences" style="top: 3px; right: 2px; margin-left: 5px"></button>
 <hr class="thick-spacer"/>
@@ -829,6 +1016,7 @@
                     <label data-bind="attr: { 'for': 'sequenceName' + domIndex }">
                         <a class="move-sequence-up" title="Move Sequence Order Up" onclick="moveSequenceUp(this)"><span class="glyphicon glyphicon-menu-up"></span></a>
                         <span class="badge"></span>&nbsp;&nbsp;<span data-bind="text: sequenceTypeDescription"></span> Sequence:
+                        <span class="sequence-record-count"><span data-bind="text: 'Record&nbsp;Count:&nbsp;' + sequenceRecords().length"></span></span>
                         <a class="move-sequence-down" title="Move Sequence Order Down" onclick="moveSequenceDown(this)"><span class="glyphicon glyphicon-menu-down"></span></a>
                     </label>
                     <input type="text" class="form-control sequence-name" placeholder="Sequence name..." data-bind="textInput: sequenceName, attr: { 'id': 'sequenceName' + domIndex }">
@@ -846,7 +1034,8 @@
             </form>
         </div>
         <div class="collapse" data-bind="css: { 'in': expanded }, attr: { 'id': 'sequenceContent' + domIndex }">
-            <div class="panel-body">
+            <div class="panel-body" data-bind="css: { 'warning-border': sequenceRecords().length > 100 }">
+                <div class="warning-message" data-bind="visible: sequenceRecords().length > 100">Some Modbus devices may not respond to reading or writing more than 100 registers in a single sequence.</div>
                 <div class="table-responsive">
                     <table class="table table-hover table-striped table-condensed">
                         <thead>
@@ -913,6 +1102,7 @@
         </div>
     </li>
 </ul>
+@* JSON Sequences Display Panel *@
 <hr class="thick-spacer" data-bind="visible: sequences().length > 0" />
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 30px; padding-top: 5px">
