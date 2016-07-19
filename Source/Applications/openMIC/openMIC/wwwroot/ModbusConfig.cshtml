@@ -440,17 +440,26 @@
                         address = parseInt(lastAddress) + 1;
                 }
 
+                var observableRecord;
+
                 if (sequenceRecord) {
-                    self.sequenceRecords.push(ko.mapping.fromJS(sequenceRecord));
+                    observableRecord = ko.mapping.fromJS(sequenceRecord);
                 } else {
-                    self.sequenceRecords.push(ko.mapping.fromJS({
+                    observableRecord = ko.mapping.fromJS({
                         recordType: recordType,
                         selected: false,
                         address: address,
                         description: "",
                         dataValue: ""
-                    }));
+                    });
                 }
+
+                observableRecord.address.extend({ required: true });
+                
+                if (observableRecord.recordType() !== RecordType.DerivedValue )
+                    observableRecord.address.extend({ number: true });
+
+                self.sequenceRecords.push(observableRecord);
 
                 // Keep sequence map sorted by record type, then address
                 self.sequenceRecords.sort(function (a, b) {
@@ -550,13 +559,13 @@
             const self = this;
 
             // Observable fields
-            self.sequences = ko.observableArray();
-            self.frameFormat = ko.observable("TCP");
+            self.sequences = ko.observableArray();            
             self.transport = ko.observable("TCP");
-            self.unitID = ko.observable(255);
+            self.unitID = ko.observable(255).extend({ number: true }).extend({ min: 0 }).extend({ max: 255 });
 
             // Internal fields
             self._isDirty = ko.observable(false);
+            self._frameFormat = ko.observable("TCP");
             self._connectionString = ko.observable("");
 
             // Properties
@@ -571,6 +580,23 @@
                 owner: self
             });
 
+            self.frameFormat = ko.pureComputed({
+                read: self._frameFormat,
+                write: function(value) {
+                    if (value === "TCP") {
+                        if (self.transport() === "SERIAL")
+                            self.transport("TCP");
+                    }
+                    else {
+                        if (self.transport() !== "SERIAL")
+                            self.transport("SERIAL");
+                    }
+
+                    self._frameFormat(value);
+                },
+                owner: self
+            });
+
             self.connectionString = ko.pureComputed({
                 read: function() {
                     const parameters = notNull(self._connectionString()).parseKeyValuePairs();
@@ -580,7 +606,7 @@
                     self._connectionString(parameters.joinKeyValuePairs());
                     return self._connectionString();
                 },
-                write: function (value) {
+                write: function(value) {
                     self._connectionString(value);
                 },
                 owner: self
@@ -895,6 +921,18 @@
         }
 
         $(function() {
+            ko.validation.rules.pattern.message = "Invalid";
+
+            ko.validation.init({
+                registerExtenders: true,
+                messagesOnModified: true,
+                insertMessages: true,
+                parseInputAttributes: true,
+                allowHtmlMessages: true,
+                messageTemplate: null,
+                grouping: { deep: true, observable: true, live: true }
+            }, true);
+
             // Initialize primary view model
             ko.applyBindings(viewModel);
 
@@ -1017,6 +1055,7 @@
         }
     </script>
 }
+<h3>Modbus Configuration Map Builder</h3>
 @* Connection Settings and Status Panel *@
 <div class="panel panel-primary">
     <div class="panel-heading clearfix">
@@ -1045,9 +1084,9 @@
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="selectTransport">Transport:</label>
                     <div class="col-md-2">
                         <select class="form-control" id="selectTransport" data-bind="value: transport">
-                            <option value="TCP">TCP</option>
-                            <option value="UDP">UDP</option>
-                            <option value="SERIAL">Serial</option>
+                            <option value="TCP" data-bind="attr: { 'disabled': frameFormat() != 'TCP' }">TCP</option>
+                            <option value="UDP" data-bind="attr: { 'disabled': frameFormat() != 'TCP' }">UDP</option>
+                            <option value="SERIAL" data-bind="attr: { 'disabled': frameFormat() == 'TCP' }">Serial</option>
                         </select>
                     </div>
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputUnitID">Unit ID:</label>
@@ -1105,7 +1144,7 @@
 @* Primary Buttons Panel *@
 <div class="panel panel-default">
     <div class="panel-body clearfix" style="padding-top: 5px; padding-bottom: 10px">
-        <button type="button" class="btn btn-default top-margin" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Read)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Read Sequence</button>
+        <button type="button" class="btn btn-default top-margin" style="margin-left: -5px" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Read)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Read Sequence</button>
         <button type="button" class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Write)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Write Sequence</button>
         <div class="top-padding pull-right">
             <button type="button" class="btn btn-default" title="Create a New Modbus Sequence Mapping" onclick="createNewMappingFile()"><span class="glyphicon glyphicon-circle-arrow-down glyphicon-action-button"></span> New Mapping</button>
@@ -1127,7 +1166,7 @@
                 </form>
             </div>            
             <a href="#" id="saveMappingFileLink" target="_blank" style="display: none"></a>
-            <button type="button" class="btn btn-default" title="Load Modbus Sequence Mapping and Append to Current Mapping" onclick="showLoadMappingFileNameDialog(true)"><span class="glyphicon glyphicon-import glyphicon-action-button"></span> Append Mapping</button>
+            <button type="button" class="btn btn-default" style="margin-right: -5px" title="Load Modbus Sequence Mapping and Append to Current Mapping" onclick="showLoadMappingFileNameDialog(true)"><span class="glyphicon glyphicon-import glyphicon-action-button"></span> Append Mapping</button>
         </div>
     </div>
 </div>
@@ -1139,14 +1178,14 @@
     <li class="panel" data-bind="css: { '@ReadSequencePanelType': sequenceType === SequenceType.Read, '@WriteSequencePanelType': sequenceType === SequenceType.Write }">
         <div class="panel-heading clearfix">
             <form class="form-inline form-inline-sequence" role="form">
-                <div class="form-group">
+                <div class="form-group" data-bind="css: {'has-error': isEmpty(sequenceName()), 'has-feedback': isEmpty(sequenceName())}">
                     <label data-bind="attr: { 'for': 'sequenceName' + domIndex }">
                         <a class="move-sequence-up" title="Move Sequence Order Up" onclick="moveSequenceUp(this)"><span class="glyphicon glyphicon-menu-up"></span></a>
                         <span class="badge"></span>&nbsp;&nbsp;<span data-bind="text: sequenceTypeDescription"></span> Sequence:
                         <span class="sequence-record-count"><span data-bind="text: 'Record&nbsp;Count:&nbsp;' + sequenceRecords().length"></span></span>
                         <a class="move-sequence-down" title="Move Sequence Order Down" onclick="moveSequenceDown(this)"><span class="glyphicon glyphicon-menu-down"></span></a>
                     </label>
-                    <input type="text" class="form-control sequence-name" placeholder="Sequence name..." data-bind="textInput: sequenceName, attr: { 'id': 'sequenceName' + domIndex }">
+                    <input type="text" class="form-control sequence-name" style="padding-right: 0" placeholder="Sequence name..." data-bind="textInput: sequenceName, attr: { 'id': 'sequenceName' + domIndex }">
                 </div>
                 <div class="form-group pull-right">
                     <button type="button" class="btn btn-default" title="Add New Modbus Discrete Input Record to Sequence" data-bind="click: addSequenceRecord.bind($data, $data, RecordType.DiscreteInput), visible: sequenceType === SequenceType.Read"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Discrete Input</button>
@@ -1182,8 +1221,10 @@
                                 <input type="checkbox" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
                             </td>
                             <td width="20%">
-                                <span data-bind="if: recordType() !== RecordType.DerivedValue"><input type="number" class="form-control" placeholder="Number..." data-bind="textInput: address"></span>
-                                <span data-bind="if: recordType() === RecordType.DerivedValue"><input type="text" class="form-control" data-bind="value: address"></span>
+                                <div class="form-group" style="padding: 0; margin: 0" data-bind="css: {'has-error': isEmpty(address()), 'has-feedback': isEmpty(address())}">
+                                    <input class="form-control" data-bind="textInput: address, attr: { 'type': recordType() == RecordType.DerivedValue ? 'text' : 'number', 'placeholder': recordType() == RecordType.DerivedValue ? undefined : 'Number...' }" required>
+                                    <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(address())"></span>
+                                </div>
                             </td>
                             <td data-bind="attr: { 'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%' }">
                                 <input type="text" class="form-control" placeholder="Description..." data-bind="textInput: description">

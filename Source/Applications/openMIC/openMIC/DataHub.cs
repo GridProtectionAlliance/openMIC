@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using GSF;
@@ -550,81 +549,8 @@ namespace openMIC
         #region [ Modbus Functions ]
 
         public bool ModbusConnect(string connectionString)
-        {
-            Dictionary<string, string> parameters = connectionString.ParseKeyValuePairs();
-
-            string frameFormat, transport, setting;
-            byte unitID;
-
-            if (!parameters.TryGetValue("frameFormat", out frameFormat) || string.IsNullOrWhiteSpace(frameFormat))
-                throw new ArgumentException("Connection string is missing \"frameFormat\".");
-
-            if (!parameters.TryGetValue("transport", out transport) || string.IsNullOrWhiteSpace(transport))
-                throw new ArgumentException("Connection string is missing \"transport\".");
-
-            if (!parameters.TryGetValue("unitID", out setting) || !byte.TryParse(setting, out unitID))
-                throw new ArgumentException("Connection string is missing \"unitID\" or value is invalid.");
-
-            bool useIP = false;
-            bool useRTU = false;
-
-            switch (frameFormat.ToUpperInvariant())
-            {
-                case "RTU":
-                    useRTU = true;
-                    break;
-                case "TCP":
-                    useIP = true;
-                    break;
-            }
-
-            if (useIP)
-            {
-                int port;
-
-                if (!parameters.TryGetValue("port", out setting) || !int.TryParse(setting, out port))
-                    throw new ArgumentException("Connection string is missing \"port\" or value is invalid.");
-
-                if (transport.ToUpperInvariant() == "TCP")
-                {
-                    string hostName;
-
-                    if (!parameters.TryGetValue("hostName", out hostName) || string.IsNullOrWhiteSpace(hostName))
-                        throw new ArgumentException("Connection string is missing \"hostName\".");
-
-                    return ModbusHubClient.ConnectTcpModbusMaster(hostName, port);
-                }
-
-                string interfaceIP;
-
-                if (!parameters.TryGetValue("interface", out interfaceIP))
-                    interfaceIP = "0.0.0.0";
-
-                return ModbusHubClient.ConnectUdpModbusMaster(interfaceIP, port);
-            }
-
-            string portName;
-            int baudRate;
-            int dataBits;
-            Parity parity;
-            StopBits stopBits;
-
-            if (!parameters.TryGetValue("portName", out portName) || string.IsNullOrWhiteSpace(portName))
-                throw new ArgumentException("Connection string is missing \"portName\".");
-
-            if (!parameters.TryGetValue("baudRate", out setting) || !int.TryParse(setting, out baudRate))
-                throw new ArgumentException("Connection string is missing \"baudRate\" or value is invalid.");
-
-            if (!parameters.TryGetValue("dataBits", out setting) || !int.TryParse(setting, out dataBits))
-                throw new ArgumentException("Connection string is missing \"dataBits\" or value is invalid.");
-
-            if (!parameters.TryGetValue("parity", out setting) || !Enum.TryParse(setting, out parity))
-                throw new ArgumentException("Connection string is missing \"parity\" or value is invalid.");
-
-            if (!parameters.TryGetValue("stopBits", out setting) || !Enum.TryParse(setting, out stopBits))
-                throw new ArgumentException("Connection string is missing \"stopBits\" or value is invalid.");
-
-            return ModbusHubClient.ConnectSerialModbusMaster(useRTU, portName, baudRate, dataBits, parity, stopBits);
+        {            
+            return ModbusHubClient.ModbusConnect(connectionString);
         }
 
         #endregion

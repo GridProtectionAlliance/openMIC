@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 using System;
+using System.Collections.Generic;
 using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
@@ -108,6 +109,23 @@ namespace openMIC
             m_modbusConnection?.Dispose();
         }
 
+        private void UpdateStatus(string message, UpdateType type)
+        {
+            string color = "white";
+
+            switch (type)
+            {
+                case UpdateType.Warning:
+                    color = "yellow";
+                    break;
+                case UpdateType.Alarm:
+                    color = "red";
+                    break;
+            }
+
+            m_hubClient.connectionStatusUpdate(message, color);
+        }
+
         private void AttemptingConnection(string type)
         {
             m_hubClient.attemptingConnection();
@@ -126,7 +144,96 @@ namespace openMIC
             UpdateStatus($"Failed to connect to device using {type}: {exceptionMessage}", UpdateType.Alarm);
         }
 
-        public bool ConnectTcpModbusMaster(string hostName, int port)
+        public bool ModbusConnect(string connectionString)
+        {
+            try
+            {
+                Dictionary<string, string> parameters = connectionString.ParseKeyValuePairs();
+
+                string frameFormat, transport, setting;
+                byte unitID;
+
+                if (!parameters.TryGetValue("frameFormat", out frameFormat) || string.IsNullOrWhiteSpace(frameFormat))
+                    throw new ArgumentException("Connection string is missing \"frameFormat\".");
+
+                if (!parameters.TryGetValue("transport", out transport) || string.IsNullOrWhiteSpace(transport))
+                    throw new ArgumentException("Connection string is missing \"transport\".");
+
+                if (!parameters.TryGetValue("unitID", out setting) || !byte.TryParse(setting, out unitID))
+                    throw new ArgumentException("Connection string is missing \"unitID\" or value is invalid.");
+
+                bool useIP = false;
+                bool useRTU = false;
+
+                switch (frameFormat.ToUpperInvariant())
+                {
+                    case "RTU":
+                        useRTU = true;
+                        break;
+                    case "TCP":
+                        useIP = true;
+                        break;
+                }
+
+                if (useIP)
+                {
+                    int port;
+
+                    if (!parameters.TryGetValue("port", out setting) || !int.TryParse(setting, out port))
+                        throw new ArgumentException("Connection string is missing \"port\" or value is invalid.");
+
+                    if (transport.ToUpperInvariant() == "TCP")
+                    {
+                        string hostName;
+
+                        if (!parameters.TryGetValue("hostName", out hostName) || string.IsNullOrWhiteSpace(hostName))
+                            throw new ArgumentException("Connection string is missing \"hostName\".");
+
+                        return ConnectTcpModbusMaster(hostName, port);
+                    }
+
+                    string interfaceIP;
+
+                    if (!parameters.TryGetValue("interface", out interfaceIP))
+                        interfaceIP = "0.0.0.0";
+
+                    return ConnectUdpModbusMaster(interfaceIP, port);
+                }
+
+                string portName;
+                int baudRate;
+                int dataBits;
+                Parity parity;
+                StopBits stopBits;
+
+                if (!parameters.TryGetValue("portName", out portName) || string.IsNullOrWhiteSpace(portName))
+                    throw new ArgumentException("Connection string is missing \"portName\".");
+
+                if (!parameters.TryGetValue("baudRate", out setting) || !int.TryParse(setting, out baudRate))
+                    throw new ArgumentException("Connection string is missing \"baudRate\" or value is invalid.");
+
+                if (!parameters.TryGetValue("dataBits", out setting) || !int.TryParse(setting, out dataBits))
+                    throw new ArgumentException("Connection string is missing \"dataBits\" or value is invalid.");
+
+                if (!parameters.TryGetValue("parity", out setting) || !Enum.TryParse(setting, out parity))
+                    throw new ArgumentException("Connection string is missing \"parity\" or value is invalid.");
+
+                if (!parameters.TryGetValue("stopBits", out setting) || !Enum.TryParse(setting, out stopBits))
+                    throw new ArgumentException("Connection string is missing \"stopBits\" or value is invalid.");
+
+                return ConnectSerialModbusMaster(useRTU, portName, baudRate, dataBits, parity, stopBits);
+            }
+            catch (Exception ex)
+            {
+                m_hubClient.connectionFailed();
+                UpdateStatus($"Failed to connect to device: {ex.Message}", UpdateType.Alarm);
+            }
+
+            return false;
+        }
+
+
+        private bool ConnectTcpModbusMaster(string hostName, int port)
         {
             DisposeConnections();
 
@@ -148,7 +255,7 @@ namespace openMIC
             return false;
         }
 
-        public bool ConnectUdpModbusMaster(string interfaceIP, int port)
+        private bool ConnectUdpModbusMaster(string interfaceIP, int port)
         {
             DisposeConnections();
 
@@ -170,7 +277,7 @@ namespace openMIC
             return false;
         }
 
-        public bool ConnectSerialModbusMaster(bool isRTU, string portName, int baudRate, int dataBits, Parity parity, StopBits stopBits)
+        private bool ConnectSerialModbusMaster(bool useRTU, string portName, int baudRate, int dataBits, Parity parity, StopBits stopBits)
         {
             DisposeConnections();
 
@@ -179,7 +286,7 @@ namespace openMIC
                 AttemptingConnection("Serial");
 
                 m_serialClient = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
-                m_modbusConnection = isRTU ? ModbusSerialMaster.CreateRtu(m_serialClient) : ModbusSerialMaster.CreateAscii(m_serialClient);
+                m_modbusConnection = useRTU ? ModbusSerialMaster.CreateRtu(m_serialClient) : ModbusSerialMaster.CreateAscii(m_serialClient);
 
                 ConnectionSucceeded("Serial");
                 return true;
@@ -190,23 +297,6 @@ namespace openMIC
             }
 
             return false;
-        }
-
-        private void UpdateStatus(string message, UpdateType type)
-        {
-            string color = "white";
-
-            switch (type)
-            {
-                case UpdateType.Warning:
-                    color = "yellow";
-                    break;
-                case UpdateType.Alarm:
-                    color = "red";
-                    break;
-            }
-
-            m_hubClient.connectionStatusUpdate(message, color);
         }
 
         #endregion
