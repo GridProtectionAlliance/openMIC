@@ -227,6 +227,7 @@
     <Compile Include="Downloader.cs" />
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="IOrderedQueryableExtensions.cs" />
+    <Compile Include="ModbusHubClient.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Model\AlarmLog.cs" />
     <Compile Include="Model\AppModel.cs" />

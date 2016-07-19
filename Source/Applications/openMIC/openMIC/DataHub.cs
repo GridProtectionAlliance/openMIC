@@ -22,7 +22,9 @@
 //******************************************************************************************************
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using GSF;
@@ -43,6 +45,7 @@ namespace openMIC
 
         // Fields
         private readonly DataContext m_dataContext;
+        private ModbusHubClient m_modbusHubClient;
         private bool m_disposed;
 
         #endregion
@@ -63,6 +66,13 @@ namespace openMIC
         /// </summary>
         public RecordOperationsCache RecordOperationsCache => s_recordOperationsCache;
 
+        private ModbusHubClient ModbusHubClient
+        {
+            get
+            {
+                return m_modbusHubClient ?? (m_modbusHubClient = s_modbusHubClients.GetOrAdd(Context.ConnectionId, id => new ModbusHubClient(Clients.Client(Context.ConnectionId))));
+            }
+        }
         #endregion
 
         #region [ Methods ]
@@ -101,7 +111,15 @@ namespace openMIC
         {
             if (stopCalled)
             {
+                ModbusHubClient modbusHubClient;
+
+                // Dispose of Modbus hub client when client connection is disconnected
+                if (s_modbusHubClients.TryRemove(Context.ConnectionId, out modbusHubClient))
+                    modbusHubClient.Dispose();
+
+                m_modbusHubClient = null;
                 s_connectCount--;
+
                 Program.Host.LogStatusMessage($"DataHub disconnect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
             }
 
@@ -120,6 +138,7 @@ namespace openMIC
         public static string CurrentConnectionID => s_connectionID.Value;
 
         // Static Fields
+        private static readonly ConcurrentDictionary<string, ModbusHubClient> s_modbusHubClients;
         private static volatile int s_connectCount;
         private static int s_downloaderProtocolID;
         private static readonly ThreadLocal<string> s_connectionID = new ThreadLocal<string>();
@@ -136,6 +155,8 @@ namespace openMIC
         // Static Constructor
         static DataHub()
         {
+            s_modbusHubClients = new ConcurrentDictionary<string, ModbusHubClient>(StringComparer.OrdinalIgnoreCase);
+
             // Analyze and cache record operations of data hub
             s_recordOperationsCache = new RecordOperationsCache(typeof(DataHub));
             Downloader.ProgressUpdated += DownloaderProgressUpdated;
@@ -522,6 +543,88 @@ namespace openMIC
             vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
 
             m_dataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
+        }
+
+        #endregion
+
+        #region [ Modbus Functions ]
+
+        public bool ModbusConnect(string connectionString)
+        {
+            Dictionary<string, string> parameters = connectionString.ParseKeyValuePairs();
+
+            string frameFormat, transport, setting;
+            byte unitID;
+
+            if (!parameters.TryGetValue("frameFormat", out frameFormat) || string.IsNullOrWhiteSpace(frameFormat))
+                throw new ArgumentException("Connection string is missing \"frameFormat\".");
+
+            if (!parameters.TryGetValue("transport", out transport) || string.IsNullOrWhiteSpace(transport))
+                throw new ArgumentException("Connection string is missing \"transport\".");
+
+            if (!parameters.TryGetValue("unitID", out setting) || !byte.TryParse(setting, out unitID))
+                throw new ArgumentException("Connection string is missing \"unitID\" or value is invalid.");
+
+            bool useIP = false;
+            bool useRTU = false;
+
+            switch (frameFormat.ToUpperInvariant())
+            {
+                case "RTU":
+                    useRTU = true;
+                    break;
+                case "TCP":
+                    useIP = true;
+                    break;
+            }
+
+            if (useIP)
+            {
+                int port;
+
+                if (!parameters.TryGetValue("port", out setting) || !int.TryParse(setting, out port))
+                    throw new ArgumentException("Connection string is missing \"port\" or value is invalid.");
+
+                if (transport.ToUpperInvariant() == "TCP")
+                {
+                    string hostName;
+
+                    if (!parameters.TryGetValue("hostName", out hostName) || string.IsNullOrWhiteSpace(hostName))
+                        throw new ArgumentException("Connection string is missing \"hostName\".");
+
+                    return ModbusHubClient.ConnectTcpModbusMaster(hostName, port);
+                }
+
+                string interfaceIP;
+
+                if (!parameters.TryGetValue("interface", out interfaceIP))
+                    interfaceIP = "0.0.0.0";
+
+                return ModbusHubClient.ConnectUdpModbusMaster(interfaceIP, port);
+            }
+
+            string portName;
+            int baudRate;
+            int dataBits;
+            Parity parity;
+            StopBits stopBits;
+
+            if (!parameters.TryGetValue("portName", out portName) || string.IsNullOrWhiteSpace(portName))
+                throw new ArgumentException("Connection string is missing \"portName\".");
+
+            if (!parameters.TryGetValue("baudRate", out setting) || !int.TryParse(setting, out baudRate))
+                throw new ArgumentException("Connection string is missing \"baudRate\" or value is invalid.");
+
+            if (!parameters.TryGetValue("dataBits", out setting) || !int.TryParse(setting, out dataBits))
+                throw new ArgumentException("Connection string is missing \"dataBits\" or value is invalid.");
+
+            if (!parameters.TryGetValue("parity", out setting) || !Enum.TryParse(setting, out parity))
+                throw new ArgumentException("Connection string is missing \"parity\" or value is invalid.");
+
+            if (!parameters.TryGetValue("stopBits", out setting) || !Enum.TryParse(setting, out stopBits))
+                throw new ArgumentException("Connection string is missing \"stopBits\" or value is invalid.");
+
+            return ModbusHubClient.ConnectSerialModbusMaster(useRTU, portName, baudRate, dataBits, parity, stopBits);
         }
 
         #endregion

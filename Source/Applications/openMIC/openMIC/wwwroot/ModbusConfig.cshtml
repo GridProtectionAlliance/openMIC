@@ -551,18 +551,37 @@
 
             // Observable fields
             self.sequences = ko.observableArray();
+            self.frameFormat = ko.observable("TCP");
+            self.transport = ko.observable("TCP");
+            self.unitID = ko.observable(255);
 
             // Internal fields
             self._isDirty = ko.observable(false);
+            self._connectionString = ko.observable("");
 
             // Properties
             self.isDirty = ko.pureComputed({
                 read: self._isDirty,
-                write: function (value) {
+                write: function(value) {
                     if (value === undefined)
                         value = true;
 
                     self._isDirty(value);
+                },
+                owner: self
+            });
+
+            self.connectionString = ko.pureComputed({
+                read: function() {
+                    const parameters = notNull(self._connectionString()).parseKeyValuePairs();
+                    parameters.set("frameFormat", self.frameFormat());
+                    parameters.set("transport", self.transport());
+                    parameters.set("unitID", self.unitID());
+                    self._connectionString(parameters.joinKeyValuePairs());
+                    return self._connectionString();
+                },
+                write: function (value) {
+                    self._connectionString(value);
                 },
                 owner: self
             });
@@ -922,6 +941,50 @@
                 if (!$("#saveMappingFileNameDialog").is(":hover") && !$("#showSaveMappingFileNameDialog").is(":hover"))
                     $("#saveMappingFileNameDialog").hide();
             });
+
+            dataHubClient.connectionStatusUpdate = function(message, color) {
+                // Html encode message
+                var encodedMessage = $("<div />").text(message).html();
+                var connectionStatusWindow = $("#connectionStatusWindow");
+
+                connectionStatusWindow.append("<span style='color: " + color + "'>" + encodedMessage + "</span>");
+
+                if (connectionStatusWindow[0].childElementCount > 50)
+                    connectionStatusWindow.find(":first-child").remove();
+
+               scrollConnectionStatusWindowToBottom();
+            }
+
+            dataHubClient.attemptingConnection = function() {
+                $("#notConnected").hide();
+                $("#connected").hide();
+                $("#attemptingConnection").show();
+            }
+
+            dataHubClient.connectionSucceeded = function() {
+                $("#notConnected").hide();
+                $("#attemptingConnection").hide();
+                $("#connected").show();
+            }
+
+            dataHubClient.connectionFailed = function() {
+                $("#attemptingConnection").hide();
+                $("#connected").hide();
+                $("#notConnected").show();
+            }
+        });
+
+        function scrollConnectionStatusWindowToBottom() {
+            const connectionStatusWindow = $("#connectionStatusWindow");
+            connectionStatusWindow.scrollTop(connectionStatusWindow[0].scrollHeight);
+        }
+
+        $(window).resize(function() {
+            scrollConnectionStatusWindowToBottom();
+        });
+
+        $(window).on("onMessageVisibiltyChanged", function(event) {
+            scrollConnectionStatusWindowToBottom();
         });
 
         var loadAppendMode = false;
@@ -973,7 +1036,7 @@
                 <div class="form-group">
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="selectFrameFormat">Frame Format:</label>
                     <div class="col-md-2">
-                        <select class="form-control" id="selectFrameFormat">
+                        <select class="form-control" id="selectFrameFormat" data-bind="value: frameFormat">
                             <option value="RTU">RTU</option>
                             <option value="ASCII">ASCII</option>
                             <option value="TCP">TCP</option>
@@ -981,7 +1044,7 @@
                     </div>
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="selectTransport">Transport:</label>
                     <div class="col-md-2">
-                        <select class="form-control" id="selectTransport">
+                        <select class="form-control" id="selectTransport" data-bind="value: transport">
                             <option value="TCP">TCP</option>
                             <option value="UDP">UDP</option>
                             <option value="SERIAL">Serial</option>
@@ -989,7 +1052,7 @@
                     </div>
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputUnitID">Unit ID:</label>
                     <div class="col-md-2">
-                        <input type="number" class="form-control" placeholder="Unit ID number..." id="inputUnitID" value="255">
+                        <input type="number" class="form-control" id="inputUnitID" data-bind="textInput: unitID">
                     </div>
                 </div>
             </div>
@@ -998,7 +1061,7 @@
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputConnectionString">Connection String:</label>
                     <div class="col-md-10">
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Connection string..." id="inputConnectionString">
+                            <input type="text" class="form-control" id="inputConnectionString" data-bind="textInput: connectionString">
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-edit glyphicon-action-button"></span> Build...</button>
                             </span>
