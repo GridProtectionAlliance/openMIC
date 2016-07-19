@@ -335,9 +335,6 @@
     <script src="Scripts/knockout.mapping-latest.js"></script>
     <script src="Scripts/ko-reactor.min.js"></script>
     <script src="Scripts/knockout.validation.js"></script>
-    <script id="validationMessageTemplate" type="text/html"><!--
-        --><em class="validationPrompt" data-bind="validationMessage: field"></em>
-    </script>
     <script>
         "use strict";
 
@@ -456,8 +453,8 @@
 
                 observableRecord.address.extend({ required: true });
                 
-                if (observableRecord.recordType() !== RecordType.DerivedValue )
-                    observableRecord.address.extend({ number: true });
+                if (observableRecord.recordType() !== RecordType.DerivedValue)
+                    observableRecord.address.extend({ number: true }).extend({ min: 0 });
 
                 self.sequenceRecords.push(observableRecord);
 
@@ -561,7 +558,9 @@
             // Observable fields
             self.sequences = ko.observableArray();            
             self.transport = ko.observable("TCP");
-            self.unitID = ko.observable(255).extend({ number: true }).extend({ min: 0 }).extend({ max: 255 });
+            self.unitID = ko.observable(255).extend({ required: true }).extend({ number: true }).extend({ min: 0 }).extend({ max: 255 });
+            self.pollingRate = ko.observable(2000).extend({ required: true }).extend({ number: true }).extend({ min: 100 });
+            self.interSequencePollingDelay = ko.observable(250).extend({ required: true }).extend({ number: true }).extend({ min: 100 });
 
             // Internal fields
             self._isDirty = ko.observable(false);
@@ -930,8 +929,27 @@
                 parseInputAttributes: true,
                 allowHtmlMessages: true,
                 messageTemplate: null,
+                decorateElement: true,
+                errorElementClass: "has-error",
+                errorMessageClass: "help-block",
                 grouping: { deep: true, observable: true, live: true }
             }, true);
+
+            // Handle special validation error message location when using bootstap add-on fields
+            ko.bindingHandlers.validationCore = {
+                init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+                    const parent = $(element).parent().closest(".input-group");
+                    const message = document.createElement("em");
+                    message.className = "validationMessage small";
+
+                    if (parent.length > 0)
+                        $(parent).after(message);
+                    else
+                        $(element).after(message);
+
+                    ko.applyBindingsToNode(message, { validationMessage: valueAccessor() });
+                }
+            };
 
             // Initialize primary view model
             ko.applyBindings(viewModel);
@@ -1089,6 +1107,8 @@
                             <option value="SERIAL" data-bind="attr: { 'disabled': frameFormat() == 'TCP' }">Serial</option>
                         </select>
                     </div>
+                </div>
+                <div class="form-group" style="padding-top: 0; margin-top: -15px;" data-bind="validationElement: unitID">
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputUnitID">Unit ID:</label>
                     <div class="col-md-2">
                         <input type="number" class="form-control" id="inputUnitID" data-bind="textInput: unitID">
@@ -1109,18 +1129,20 @@
                 </div>
             </div>
             <div class="row">
-                <div class="form-group">
+                <div class="form-group" data-bind="validationElement: pollingRate">
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputPollingRate">Polling Rate:</label>
                     <div class="col-md-2">
                         <div class="input-group">
-                            <input type="number" class="form-control" placeholder="Polling rate..." id="inputPollingRate" value="2000">
+                            <input type="number" class="form-control" placeholder="Polling rate..." id="inputPollingRate" data-bind="textInput: pollingRate" required>
                             <span class="input-group-addon">ms</span>
                         </div>
                     </div>
+                </div>
+                <div class="form-group" style="padding-top: 0; margin-top: -15px;" data-bind="validationElement: interSequencePollingDelay">
                     <label class="col-md-2 control-label text-right" for="inputInterSequenceDelay">Inter-Sequence Polling&nbsp;Delay:</label>
                     <div class="col-md-2">
                         <div class="input-group">
-                            <input type="number" class="form-control" placeholder="Intersequence delay..." id="inputInterSequenceDelay" value="250">
+                            <input type="number" class="form-control" placeholder="Intersequence delay..." id="inputInterSequenceDelay" data-bind="textInput: interSequencePollingDelay" required>
                             <span class="input-group-addon">ms</span>
                         </div>
                     </div>
@@ -1221,9 +1243,8 @@
                                 <input type="checkbox" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
                             </td>
                             <td width="20%">
-                                <div class="form-group" style="padding: 0; margin: 0" data-bind="css: {'has-error': isEmpty(address()), 'has-feedback': isEmpty(address())}">
+                                <div class="form-group" style="padding: 0; margin: 0" data-bind="validationElement: address">
                                     <input class="form-control" data-bind="textInput: address, attr: { 'type': recordType() == RecordType.DerivedValue ? 'text' : 'number', 'placeholder': recordType() == RecordType.DerivedValue ? undefined : 'Number...' }" required>
-                                    <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: isEmpty(address())"></span>
                                 </div>
                             </td>
                             <td data-bind="attr: { 'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%' }">
