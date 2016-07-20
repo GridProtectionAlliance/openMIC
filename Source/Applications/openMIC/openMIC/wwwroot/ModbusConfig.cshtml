@@ -856,6 +856,12 @@
             collapsableSection.on("hidden.bs.collapse", function() {
                 sequence.expanded(false);
             });
+
+            $(elements).find("tbody").sortable({
+                items: "tr",
+                cursor: "move",
+                opacity: 0.6
+            }).disableSelection();
         }
 
         // *** Sequence Reorder Handling ***
@@ -1237,7 +1243,7 @@
                         </tr>
                         </thead>
                         <tbody data-bind="foreach: sequenceRecords">
-                        <tr>
+                        <tr style="cursor: move">
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="text: getRecordTypeCode(recordType())"></td>
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
                                 <input type="checkbox" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
