@@ -346,6 +346,17 @@ String.prototype.replaceAll = function (findText, replaceWith, ignoreCase) {
         (typeof replaceWith == "string") ? replaceWith.replace(/\$/g, "$$$$") : replaceWith);
 }
 
+if (!String.format) {
+    String.format = function(format) {
+        var text = format;
+
+        for (let i = 1; i < arguments.length; i++)
+            text = text.replaceAll("{" + (i - 1) + "}", arguments[i]);
+
+        return text;
+    };
+}
+
 String.prototype.padLeft = function (totalWidth, paddingChar) {
     if (totalWidth > this.length)
         return Array(totalWidth - this.length + 1).join(paddingChar || " ") + this;
