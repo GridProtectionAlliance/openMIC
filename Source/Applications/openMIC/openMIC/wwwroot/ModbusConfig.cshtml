@@ -505,7 +505,7 @@
         }
 
         // Define view model for sequences
-        function SequenceViewModel(sequenceType, domIndex, index) {
+        function SequenceViewModel(sequenceType, domIndex, index, expanded) {
             const self = this;
 
             // Configuration fields
@@ -516,7 +516,7 @@
             self.index = ko.observable(index);
             self.sequenceName = ko.observable();
             self.sequenceRecords = ko.observableArray();
-            self.expanded = ko.observable(true);            
+            self.expanded = ko.observable(expanded);
 
             // Properties
             self.selectedRecordCount = ko.pureComputed({
@@ -551,7 +551,7 @@
             });
 
             // Methods
-            self.addNewSequenceRecord = function(recordType, deserializedRecord) {               
+            self.addNewSequenceRecord = function(recordType, deserializedRecord, expand) {               
                 var address = "";
 
                 if (!deserializedRecord && self.sequenceRecords().length > 0) {
@@ -574,7 +574,8 @@
                 self.sortSequenceRecords();
 
                 // Make sure sequence is expanded when adding a record
-                $("#sequenceContent" + domIndex).collapse("show");
+                if (expand)
+                    $("#sequenceContent" + domIndex).collapse("show");
             }
 
             self.sortSequenceRecords = function() {
@@ -671,9 +672,9 @@
                     address: getDerivedValueAddressExpression(sequence),
                     description: "",
                     dataValue: ""
-                });
+                }, true);
             } else {
-                sequence.addNewSequenceRecord(recordType, null);
+                sequence.addNewSequenceRecord(recordType, null, true);
             }
         }
 
@@ -737,9 +738,9 @@
             });
 
             // Methods
-            self.addNewSequence = function(sequenceType) {
+            self.addNewSequence = function(sequenceType, expanded) {
                 const domIndex = sequenceDomIndex;
-                const sequence = new SequenceViewModel(sequenceType, domIndex, self.sequences().length);
+                const sequence = new SequenceViewModel(sequenceType, domIndex, self.sequences().length, expanded);
 
                 self.sequences.push(sequence);
 
@@ -779,7 +780,7 @@
                         self.sequences([]);
 
                     data.sequences.forEach(function(parsedSequence) {
-                        var sequence = self.addNewSequence(parsedSequence.type);
+                        var sequence = self.addNewSequence(parsedSequence.type, false);
                         sequence.sequenceName(parsedSequence.name);
 
                         // Restore full field set, only a partial set gets serialized
@@ -790,7 +791,7 @@
                                 address: record.address,
                                 description: record.description,
                                 dataValue: record.dataValue
-                            });
+                            }, false);
                         });                        
                     });
 
@@ -1005,7 +1006,6 @@
                 return;
 
             const records = sequenceRecord.parent.sequenceRecords;
-
             const parentCell = checkbox.parents("td");
 
             // Make dragged checkbox mark all other checkboxes for easy mass selection
@@ -1270,7 +1270,17 @@
 
         function loadMappingFile(event) {
             $("#loadingMappingMessage").show();
-            viewModel.loadSequenceMap(event.target.files[0], loadAppendMode);
+
+            if (loadAppendMode) {
+                const files = event.target.files;
+
+                for (let i = 0; i < files.length; i++) {
+                    viewModel.loadSequenceMap(files[i], loadAppendMode);
+                }
+            } else {
+                viewModel.loadSequenceMap(event.target.files[0], loadAppendMode);
+            }
+
             $("#loadMappingFileName").val("");
         }
 
@@ -1387,12 +1397,12 @@
 @* Primary Buttons Panel *@
 <div class="panel panel-default">
     <div class="panel-body clearfix" style="padding-top: 5px; padding-bottom: 10px">
-        <button type="button" class="btn btn-default top-margin" style="margin-left: -5px" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Read)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Read Sequence</button>
-        <button type="button" class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Write)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Write Sequence</button>
+        <button type="button" class="btn btn-default top-margin" style="margin-left: -5px" title="Add New Modbus Read Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Read, true)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Read Sequence</button>
+        <button type="button" class="btn btn-default top-margin" title="Add New Modbus Write Sequence to Current Mapping" data-bind="click: addNewSequence.bind($data, SequenceType.Write, true)"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Write Sequence</button>
         <div class="top-padding pull-right">
             <button type="button" class="btn btn-default" title="Create a New Modbus Sequence Mapping" onclick="createNewMappingFile()"><span class="glyphicon glyphicon-circle-arrow-down glyphicon-action-button"></span> New Mapping</button>
             <button type="button" class="btn btn-default" title="Load Existing Modbus Sequence Mapping" onclick="showLoadMappingFileNameDialog(false)"><span class="glyphicon glyphicon-floppy-open glyphicon-action-button"></span> Load Mapping</button>
-            <input id="loadMappingFileName" type="file" accept="text/json" style="position: fixed; top: -100em" onchange="loadMappingFile(event)">
+            <input id="loadMappingFileName" type="file" accept="text/json" style="position: fixed; top: -100em" onchange="loadMappingFile(event)" multiple>
             <button type="button" class="btn btn-default" title="Save Current Modbus Sequence Mapping" onclick="showSaveMappingFileNameDialog()" id="showSaveMappingFileNameDialog" data-bind="enable: isDirty"><span class="glyphicon glyphicon-floppy-save glyphicon-action-button"></span> Save Mapping</button>
             <div class="well well-sm floating-form" id="saveMappingFileNameDialog" style="z-index: 1000">
                 <form class="form-inline" role="form">
