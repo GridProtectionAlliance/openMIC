@@ -991,6 +991,50 @@
             }).disableSelection();
         }
 
+        function postSequenceRecordRendering(elements, sequenceRecord) {
+            const checkbox = $(elements).find("input[type=checkbox]");            
+
+            if (!checkbox)
+                return;
+
+            const sequenceContent = $("#sequenceContent" + sequenceRecord.parent.domIndex);
+
+            if (!sequenceContent)
+                return;
+
+            const records = sequenceRecord.parent.sequenceRecords;
+
+            // Allow up/down arrow keys to change focus between each row's checkbox
+            checkbox.keydown(function(event) {
+                if (event.which === 38) {
+                    // Arrow up
+                    const previousIndex = records.indexOf(sequenceRecord) - 1;
+
+                    if (previousIndex > -1) {
+                        const previous = sequenceContent.find("input[type=checkbox]:eq(" + previousIndex + ")");
+
+                        if (!$.isEmptyObject(previous)) {
+                            previous[0].scrollIntoView(true);
+                            previous.focus();
+                        }
+                    }
+
+                } else if (event.which === 40) {
+                    // Arrow down
+                    const nextIndex = records.indexOf(sequenceRecord) + 1;
+
+                    if (nextIndex < records().length) {
+                        const next = sequenceContent.find("input[type=checkbox]:eq(" + nextIndex + ")");
+
+                        if (!$.isEmptyObject(next)) {
+                            next[0].scrollIntoView(false);
+                            next.focus();
+                        }
+                    }
+                }
+            });
+        }
+
         // *** Sequence Reorder Handling ***
 
         function reorderSequencePanels(event, ui) {
@@ -1379,7 +1423,7 @@
                             <th></th>
                         </tr>
                         </thead>
-                        <tbody data-bind="foreach: sequenceRecords">
+                        <tbody data-bind="foreach: { data: sequenceRecords, afterRender: postSequenceRecordRendering }">
                         <tr style="cursor: move", data-bind="style: { backgroundColor:  isDuplicate() ? 'yellow' : undefined }">
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="text: getRecordTypeCode(recordType()), style: groupBorders()"></td>
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
