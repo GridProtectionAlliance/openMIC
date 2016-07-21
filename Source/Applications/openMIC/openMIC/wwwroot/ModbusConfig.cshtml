@@ -991,6 +991,8 @@
             }).disableSelection();
         }
 
+        var sourceCheckbox = null;
+
         function postSequenceRecordRendering(elements, sequenceRecord) {
             const checkbox = $(elements).find("input[type=checkbox]");            
 
@@ -1004,6 +1006,47 @@
 
             const records = sequenceRecord.parent.sequenceRecords;
 
+            const parentCell = checkbox.parents("td");
+
+            // Make dragged checkbox mark all other checkboxes for easy mass selection
+            checkbox.on("drag", function(event) {
+                sourceCheckbox = event.target;
+                parentCell.css("background-color", "lightgray");
+                parentCell.css("border-style", "dashed");
+                parentCell.css("border-top-width", "3px");
+                parentCell.css("border-top-color", "black");
+            });
+            
+            checkbox.on("dragover", function(event) {
+                event.preventDefault();
+
+                if (sourceCheckbox && event.target !== sourceCheckbox) {
+                    const record = records()[$(event.target).parents("tr")[0].rowIndex - 1];
+
+                    if (record.recordType() !== RecordType.DerivedValue)
+                        record.selected(sourceCheckbox.checked);
+                }
+            });
+
+            parentCell.on("dragover", function(event) {
+                event.preventDefault();
+
+                if (sourceCheckbox && event.target !== sourceCheckbox && !event.target.disabled) {
+                    const record = records()[$(event.target).parents("tr")[0].rowIndex - 1];
+
+                    if (record.recordType() !== RecordType.DerivedValue)
+                        record.selected(sourceCheckbox.checked);
+                }
+            });
+
+            checkbox.on("dragend", function(event) {
+                sourceCheckbox = null;
+                parentCell.css("background-color", "");
+                parentCell.css("border-style", "");
+                parentCell.css("border-top-width", "");
+                parentCell.css("border-top-color", "");
+            });
+
             // Allow up/down arrow keys to change focus between each row's checkbox
             checkbox.keydown(function(event) {
                 if (event.which === 38) {
@@ -1013,10 +1056,8 @@
                     if (previousIndex > -1) {
                         const previous = sequenceContent.find("input[type=checkbox]:eq(" + previousIndex + ")");
 
-                        if (!$.isEmptyObject(previous)) {
-                            previous[0].scrollIntoView(true);
+                        if (!$.isEmptyObject(previous))
                             previous.focus();
-                        }
                     }
 
                 } else if (event.which === 40) {
@@ -1026,10 +1067,8 @@
                     if (nextIndex < records().length) {
                         const next = sequenceContent.find("input[type=checkbox]:eq(" + nextIndex + ")");
 
-                        if (!$.isEmptyObject(next)) {
-                            next[0].scrollIntoView(false);
+                        if (!$.isEmptyObject(next))
                             next.focus();
-                        }
                     }
                 }
             });
@@ -1427,7 +1466,7 @@
                         <tr style="cursor: move", data-bind="style: { backgroundColor:  isDuplicate() ? 'yellow' : undefined }">
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="text: getRecordTypeCode(recordType()), style: groupBorders()"></td>
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
-                                <input type="checkbox" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
+                                <input type="checkbox" draggable="true" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
                             </td>
                             <td width="20%">
                                 <div class="form-group" style="padding: 0; margin: 0" data-bind="validationElement: address, css: checkValidation()">
