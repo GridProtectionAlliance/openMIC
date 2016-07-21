@@ -380,6 +380,130 @@
             }
         }
 
+        // Define view model for sequence records
+        function RecordViewModel(parent, recordType, address, deserializedRecord) {
+            const self = this;            
+
+            // Configuration fields
+            self.parent = parent;
+
+            // Observable fields
+            self.recordType = ko.observable(recordType);
+            self.selected = ko.observable(false);
+            self.address = ko.observable(address);
+            self.description = ko.observable("");
+            self.dataValue = ko.observable();
+
+            // If provided, construct from existing deserialized record
+            if (deserializedRecord) {
+                self.recordType(deserializedRecord.recordType);
+                self.selected(deserializedRecord.selected);
+                self.address(deserializedRecord.address);
+                self.description(deserializedRecord.description);
+                self.dataValue(deserializedRecord.dataValue);
+            }
+
+            // Setup address validation
+            self.address.extend({ required: true });
+                
+            if (self.recordType() !== RecordType.DerivedValue)
+                self.address.extend({ number: true }).extend({ min: 0 });
+
+            self.addressValidation = ko.validatedObservable({ address: self.address });
+
+            // Properties
+            self.checkValidation = ko.pureComputed({
+                read: function() {
+                    if (!self.addressValidation.isValid() || isEmpty(self.address()))
+                        return "has-error";
+
+                    return undefined;
+                },
+                owner: self
+            });
+
+            self.groupBorders = ko.pureComputed({
+                read: function() {
+                    const records = self.parent.sequenceRecords();
+                    const borderExpression = "\"border-{0}-color\": \"{1}\", \"border-{0}-style\": \"{2}\", \"border-{0}-width\": \"{3}\"";
+                    const recordIndex = records.indexOf(self);
+                    const width = "3px";
+                    const leftStyle = "solid";
+                    var color = "black";
+                    var topStyle = "solid";
+                    var bottomStyle = "none";
+
+                    if (recordIndex > 0) {
+                        const previous = records[recordIndex -1];
+
+                        if (previous.recordType() === self.recordType()) {
+                            if (self.recordType() === RecordType.DerivedValue) {
+                                topStyle = "none";
+                            }
+                            else if ((isEmpty(previous.address()) && isEmpty(self.address())) || parseInt(previous.address()) + 1 === parseInt(self.address())) {
+                                topStyle = "none";
+                            }
+                        }
+                    }
+
+                    if (recordIndex === records.length - 1) {
+                        bottomStyle = "solid";
+                    }
+
+                    var style = "{ " + String.format(borderExpression, "top", color, topStyle, width);
+                    style += ", " + String.format(borderExpression, "left", color, leftStyle, width);
+                    style += ", " + String.format(borderExpression, "bottom", color, bottomStyle, width);
+                    style += ", \"border-right-style\": \"none\" }";
+
+                    return JSON.parse(style);
+                },
+                owner: self
+            });
+
+            self.isDuplicate = ko.pureComputed({
+                read: function() {
+                    const records = self.parent.sequenceRecords();
+                    const recordIndex = records.indexOf(self);
+
+                    if (self.recordType() === RecordType.DerivedValue)
+                    {
+                        if (recordIndex < records.length - 1) {
+                            const next = records[recordIndex + 1];
+
+                            if (next.recordType() === self.recordType() && notNull(next.address()).toUpperCase() === notNull(self.address()).toUpperCase())
+                                return true;
+                        }
+
+                        if (recordIndex > 0) {
+                            const previous = records[recordIndex - 1];
+
+                            if (previous.recordType() === self.recordType() && notNull(previous.address()).toUpperCase() === notNull(self.address()).toUpperCase())
+                                return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (recordIndex < records.length - 1) {
+                        const next = records[recordIndex + 1];
+
+                        if (self.recordType() === next.recordType() && parseInt(self.address()) === parseInt(next.address()))
+                            return true;
+                    }
+
+                    if (recordIndex > 0) {
+                        const previous = records[recordIndex - 1];
+
+                        if (previous.recordType() === self.recordType() && parseInt(previous.address()) === parseInt(self.address()))
+                            return true;
+                    }
+                        
+                    return false;
+                },
+                owner: self
+            });
+        }
+
         // Define view model for sequences
         function SequenceViewModel(sequenceType, domIndex, index) {
             const self = this;
@@ -391,7 +515,7 @@
             // Observable fields
             self.index = ko.observable(index);
             self.sequenceName = ko.observable();
-            self.sequenceRecords = ko.observableArray(); // Fields: recordType, selected, address, description, dataValue
+            self.sequenceRecords = ko.observableArray();
             self.expanded = ko.observable(true);            
 
             // Properties
@@ -427,10 +551,10 @@
             });
 
             // Methods
-            self.addNewSequenceRecord = function(recordType, sequenceRecord) {               
+            self.addNewSequenceRecord = function(recordType, deserializedRecord) {               
                 var address = "";
 
-                if (!sequenceRecord && self.sequenceRecords().length > 0) {
+                if (!deserializedRecord && self.sequenceRecords().length > 0) {
                     const records = self.sequenceRecords();
                     let lastAddress = null;
 
@@ -445,119 +569,8 @@
                         address = parseInt(lastAddress) + 1;
                 }
 
-                var observableRecord;
 
-                if (sequenceRecord) {
-                    observableRecord = ko.mapping.fromJS(sequenceRecord);
-                } else {
-                    observableRecord = ko.mapping.fromJS({
-                        recordType: recordType,
-                        selected: false,
-                        address: address,
-                        description: "",
-                        dataValue: ""
-                    });
-                }
-
-                observableRecord.address.extend({ required: true });
-                
-                if (observableRecord.recordType() !== RecordType.DerivedValue)
-                    observableRecord.address.extend({ number: true }).extend({ min: 0 });
-
-                observableRecord.addressValidation = ko.validatedObservable({ address: observableRecord.address });
-
-                observableRecord.checkValidation = ko.pureComputed({
-                    read: function() {
-                        if (!observableRecord.addressValidation.isValid() || isEmpty(observableRecord.address()))
-                            return "has-error";
-
-                        return undefined;
-                    },
-                    owner: observableRecord
-                });
-
-                observableRecord.groupBorders = ko.pureComputed({
-                    read: function() {
-                        const records = self.sequenceRecords();
-                        const borderExpression = "\"border-{0}-color\": \"{1}\", \"border-{0}-style\": \"{2}\", \"border-{0}-width\": \"{3}\"";
-                        const recordIndex = records.indexOf(observableRecord);
-                        const width = "3px";
-                        const leftStyle = "solid";
-                        var color = "black";
-                        var topStyle = "solid";
-                        var bottomStyle = "none";
-
-                        if (recordIndex > 0) {
-                            const previous = records[recordIndex -1];
-
-                            if (previous.recordType() === observableRecord.recordType()) {
-                                if (observableRecord.recordType() === RecordType.DerivedValue) {
-                                    topStyle = "none";
-                                }
-                                else if ((isEmpty(previous.address()) && isEmpty(observableRecord.address())) || parseInt(previous.address()) + 1 === parseInt(observableRecord.address())) {
-                                    topStyle = "none";
-                                }
-                            }
-                        }
-
-                        if (recordIndex === records.length - 1) {
-                            bottomStyle = "solid";
-                        }
-
-                        var style = "{ " + String.format(borderExpression, "top", color, topStyle, width);
-                        style += ", " + String.format(borderExpression, "left", color, leftStyle, width);
-                        style += ", " + String.format(borderExpression, "bottom", color, bottomStyle, width);
-                        style += ", \"border-right-style\": \"none\" }";
-
-                        return JSON.parse(style);
-                    },
-                    owner: observableRecord
-                });
-
-                observableRecord.isDuplicate = ko.pureComputed({
-                    read: function() {
-                        const records = self.sequenceRecords();
-                        const recordIndex = records.indexOf(observableRecord);
-
-                        if (observableRecord.recordType() === RecordType.DerivedValue)
-                        {
-                            if (recordIndex < records.length - 1) {
-                                const next = records[recordIndex + 1];
-
-                                if (next.recordType() === observableRecord.recordType() && notNull(next.address()).toUpperCase() === notNull(observableRecord.address()).toUpperCase())
-                                    return true;
-                            }
-
-                            if (recordIndex > 0) {
-                                const previous = records[recordIndex - 1];
-
-                                if (previous.recordType() === observableRecord.recordType() && notNull(previous.address()).toUpperCase() === notNull(observableRecord.address()).toUpperCase())
-                                    return true;
-                            }
-
-                            return false;
-                        }
-
-                        if (recordIndex < records.length - 1) {
-                            const next = records[recordIndex + 1];
-
-                            if (observableRecord.recordType() === next.recordType() && parseInt(observableRecord.address()) === parseInt(next.address()))
-                                return true;
-                        }
-
-                        if (recordIndex > 0) {
-                            const previous = records[recordIndex - 1];
-
-                            if (previous.recordType() === observableRecord.recordType() && parseInt(previous.address()) === parseInt(observableRecord.address()))
-                                return true;
-                        }
-                        
-                        return false;
-                    },
-                    owner: observableRecord
-                });
-
-                self.sequenceRecords.push(observableRecord);
+                self.sequenceRecords.push(new RecordViewModel(self, recordType, address, deserializedRecord));
                 self.sortSequenceRecords();
 
                 // Make sure sequence is expanded when adding a record
@@ -672,7 +685,7 @@
             self.transport = ko.observable("TCP");
             self.unitID = ko.observable(255).extend({ required: true }).extend({ number: true }).extend({ min: 0 }).extend({ max: 255 });
             self.pollingRate = ko.observable(2000).extend({ required: true }).extend({ number: true }).extend({ min: 100 });
-            self.interSequencePollingDelay = ko.observable(250).extend({ required: true }).extend({ number: true }).extend({ min: 100 });
+            self.interSequenceGroupPollDelay = ko.observable(250).extend({ required: true }).extend({ number: true }).extend({ min: 100 });
 
             // Internal fields
             self._isDirty = ko.observable(false);
@@ -1263,11 +1276,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group" style="padding-top: 0; margin-top: -15px;" data-bind="validationElement: interSequencePollingDelay">
-                    <label class="col-md-2 control-label text-right" for="inputInterSequenceDelay">Inter-Sequence Polling&nbsp;Delay:</label>
+                <div class="form-group" style="padding-top: 0; margin-top: -15px;" data-bind="validationElement: interSequenceGroupPollDelay">
+                    <label class="col-md-2 control-label text-right" for="inputInterSequenceGroupDelay">Inter-Sequence Group&nbsp;Poll&nbsp;Delay:</label>
                     <div class="col-md-2">
                         <div class="input-group">
-                            <input type="number" class="form-control" placeholder="Intersequence delay..." id="inputInterSequenceDelay" data-bind="textInput: interSequencePollingDelay" required>
+                            <input type="number" class="form-control" placeholder="Poll delay..." id="inputInterSequenceGroupDelay" data-bind="textInput: interSequenceGroupPollDelay" required>
                             <span class="input-group-addon">ms</span>
                         </div>
                     </div>
