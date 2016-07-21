@@ -207,7 +207,6 @@
 
         div.warning-message {
             font-size: 9.5pt;
-            font-style: italic;
             font-weight: bold;
             text-align: center;
             text-shadow: 1px 1px lightgray;
@@ -218,9 +217,22 @@
         div.sequence-records-message {
             font-size: 9pt;
             text-align: center;
-            color: lightgray;
+            color: darkgray;
             margin-top: -10px;
             margin-bottom: 0;
+        }
+
+        span.sequence-group-count {
+            position: absolute;
+            font-size: 8pt;
+            margin-top: 7px;
+            margin-left: -36px;
+            -moz-transform: rotate(-90.0deg);
+            -o-transform: rotate(-90.0deg);
+            -webkit-transform: rotate(-90.0deg);
+            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);
+            -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)";
+            transform: rotate(-90.0deg);
         }
 
         .form-group {
@@ -233,6 +245,10 @@
 
         .top-margin {
             margin-top: 5px;
+        }
+
+        .bottom-margin {
+            margin-bottom: 5px;
         }
 
         .connection-status {
@@ -422,26 +438,92 @@
                 owner: self
             });
 
+            self.groupIndex = ko.pureComputed({
+                read: function() {
+                    const groups = self.parent.sequenceGroups();
+                    const recordIndex = self.parent.sequenceRecords().indexOf(self);
+
+                    for (let i = 0; i < groups.length; i++) {
+                        const group = groups[i];
+
+                        if (recordIndex >= group.start && recordIndex <= group.stop)
+                            return i;
+                    }
+                    
+                    return -1;
+                },
+                owner: self
+            });
+
+            self.groupCount = ko.pureComputed({
+                read: function() {
+                    const groupIndex = self.groupIndex();
+
+                    if (groupIndex > -1) {
+                        const group = self.parent.sequenceGroups()[groupIndex];
+                        return (group.stop - group.start + 1);
+                    }
+
+                    return -1;
+                },
+                owner: self
+            });
+
+            self.isGroupFirst = ko.pureComputed({
+                read: function() {
+                    const groupIndex = self.groupIndex();
+
+                    if (groupIndex > -1) {
+                        const group = self.parent.sequenceGroups()[groupIndex];
+                        return self.parent.sequenceRecords.indexOf(self) === group.start;
+                    }
+
+                    return false;
+                },
+                owner: self
+            });
+
+            self.isGroupLast = ko.pureComputed({
+                read: function() {
+                    const groupIndex = self.groupIndex();
+
+                    if (groupIndex > -1) {
+                        const group = self.parent.sequenceGroups()[groupIndex];
+                        return self.parent.sequenceRecords.indexOf(self) === group.stop;
+                    }
+
+                    return false;
+                },
+                owner: self
+            });
+
             self.groupBorders = ko.pureComputed({
                 read: function() {
                     const records = self.parent.sequenceRecords();
                     const borderExpression = "\"border-{0}-color\": \"{1}\", \"border-{0}-style\": \"{2}\", \"border-{0}-width\": \"{3}\"";
                     const recordIndex = records.indexOf(self);
+                    const style = "solid";
                     const width = "3px";
-                    const leftStyle = "solid";
                     var color = "black";
-                    var topStyle = "solid";
+                    var topWidth = width;
                     var bottomStyle = "none";
+
+                    if (self.recordType() !== RecordType.DiscreteInput && self.groupCount() > 100)
+                        color = "yellow";
+
+                    var topColor = color;
 
                     if (recordIndex > 0) {
                         const previous = records[recordIndex -1];
 
                         if (previous.recordType() === self.recordType()) {
                             if (self.recordType() === RecordType.DerivedValue) {
-                                topStyle = "none";
+                                topWidth = "1px";
+                                topColor = "#ddd";
                             }
                             else if ((isEmpty(previous.address()) && isEmpty(self.address())) || parseInt(previous.address()) + 1 === parseInt(self.address())) {
-                                topStyle = "none";
+                                topWidth = "1px";
+                                topColor = "#ddd";
                             }
                         }
                     }
@@ -450,12 +532,12 @@
                         bottomStyle = "solid";
                     }
 
-                    var style = "{ " + String.format(borderExpression, "top", color, topStyle, width);
-                    style += ", " + String.format(borderExpression, "left", color, leftStyle, width);
-                    style += ", " + String.format(borderExpression, "bottom", color, bottomStyle, width);
-                    style += ", \"border-right-style\": \"none\" }";
+                    var borderStyles = "{ " + String.format(borderExpression, "top", topColor, style, topWidth);
+                    borderStyles += ", " + String.format(borderExpression, "left", color, style, width);
+                    borderStyles += ", " + String.format(borderExpression, "bottom", color, bottomStyle, width);
+                    borderStyles += ", \"border-right-style\": \"none\" }";
 
-                    return JSON.parse(style);
+                    return JSON.parse(borderStyles);
                 },
                 owner: self
             });
@@ -504,6 +586,7 @@
             });
         }
 
+
         // Define view model for sequences
         function SequenceViewModel(sequenceType, domIndex, index, expanded) {
             const self = this;
@@ -550,6 +633,56 @@
                 owner: self
             });
 
+            self.sequenceGroups = ko.pureComputed({
+                read: function() {
+                    const records = self.sequenceRecords();
+                    const groups = [];
+                    var group = { start: 0, stop: -1, type: -1 };
+
+                    if (records.length > 0) {
+                        for (let i = 1; i < records.length; i++) {
+                            const previous = records[i - 1];
+                            const current = records[i];
+                                
+                            if (current.recordType() !== previous.recordType()) {
+                                group.stop = i - 1;
+                                group.type = previous.recordType();
+                                groups.push(group);
+                                group = { start: i, stop: -1 };
+                            } else if (current.recordType() !== RecordType.DerivedValue && !((isEmpty(current.address()) && isEmpty(previous.address())) || parseInt(current.address()) === parseInt(previous.address()) + 1)) {
+                                group.stop = i - 1;
+                                group.type = previous.recordType();
+                                groups.push(group);
+                                group = { start: i, stop: -1 };
+                            }
+                        }
+
+                        group.stop = records.length - 1;
+                        group.type = records[group.stop].recordType();
+                        groups.push(group);
+                    }
+
+                    return groups;
+                },
+                owner: self
+            });
+
+            self.groupLengthWarning = ko.pureComputed({
+                read: function() {
+                    const groups = self.sequenceGroups();
+
+                    for (let i = 0; i < groups.length; i++) {
+                        const group = groups[i];
+
+                        if (group.type !== RecordType.DerivedValue && group.stop - group.start + 1 > 100)
+                            return true;
+                    }
+
+                    return false;
+                },
+                owner: self
+            });
+
             // Methods
             self.addNewSequenceRecord = function(recordType, deserializedRecord, expand) {               
                 var address = "";
@@ -576,6 +709,8 @@
                 // Make sure sequence is expanded when adding a record
                 if (expand)
                     $("#sequenceContent" + domIndex).collapse("show");
+
+                self.refreshSequenceCountWidths();
             }
 
             self.sortSequenceRecords = function() {
@@ -607,14 +742,25 @@
 
             self.removeSequenceRecord = function(record) {
                 self.sequenceRecords.remove(record);
+                self.refreshSequenceCountWidths();
             }
 
             self.refreshSequenceRecords = function() {
                 // Sort and fully rerender sequence records upon request
                 self.sortSequenceRecords();
                 const records = self.sequenceRecords();
+                
                 self.sequenceRecords([]);
                 self.sequenceRecords(records);
+                
+                self.refreshSequenceCountWidths();
+            }
+
+            self.refreshSequenceCountWidths = function() {
+                $(".sequence-group-count").each(function(classIndex, element) {
+                    element.style.height = element.offsetWidth + "px";
+                    element.style.width = element.offsetHeight + "px";
+                });
             }
 
             self.clearInterpretAsSelection = function() {
@@ -634,12 +780,12 @@
                 }
             }
 
-            self.selectOne = function(index) {
+            self.selectOne = function(selectedIndex) {
                 const records = self.sequenceRecords();
 
                 if (records) {
                     for (let i = 0; i < records.length; i++)
-                        records[i].selected(i === index);
+                        records[i].selected(i === selectedIndex);
                 }
             }
 
@@ -733,6 +879,19 @@
                 },
                 write: function(value) {
                     self._connectionString(value);
+                },
+                owner: self
+            });
+
+            self.totalSequenceGroups = ko.pureComputed({
+                read: function() {
+                    var total = 0;
+
+                    for (let i = 0; i < self.sequences().length; i++) {
+                        total += self.sequences()[i].sequenceGroups().length;
+                    }
+
+                    return total;
                 },
                 owner: self
             });
@@ -1071,7 +1230,7 @@
                             next.focus();
                     }
                 }
-            });
+            });            
         }
 
         // *** Sequence Reorder Handling ***
@@ -1271,14 +1430,18 @@
         function loadMappingFile(event) {
             $("#loadingMappingMessage").show();
 
+            const files = event.target.files;
+
             if (loadAppendMode) {
-                const files = event.target.files;
 
                 for (let i = 0; i < files.length; i++) {
                     viewModel.loadSequenceMap(files[i], loadAppendMode);
                 }
             } else {
-                viewModel.loadSequenceMap(event.target.files[0], loadAppendMode);
+                viewModel.loadSequenceMap(files[0], loadAppendMode);
+
+                if (files.length > 0)
+                    showInfoMessage("Only loaded first file from the selected set. Use \"Append Mapping\" to load multiple mappings into the current configuration.", -1);
             }
 
             $("#loadMappingFileName").val("");
@@ -1360,7 +1523,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="form-group" data-bind="validationElement: pollingRate">
+                <div class="form-group" data-bind="validationElement: pollingRate, css: { 'has-warning': totalSequenceGroups() * interSequenceGroupPollDelay() > pollingRate() }">
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputPollingRate">Polling Rate:</label>
                     <div class="col-md-2">
                         <div class="input-group">
@@ -1423,13 +1586,16 @@
         </div>
     </div>
 </div>
-<div id="loadingMappingMessage" style="display: none">
-    Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+<div id="loadingMappingMessage" class="top-margin bottom-margin clearfix" style="display: none">
+    <div class="pull-right" style="font-weight: bold">
+        Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+    </div>    
 </div>
 @* Reorderable Mapping Sequences Panel *@
 <button type="button" class="btn btn-xs btn-collapsable" onclick="collapseAllSequences()" title="Collapse All Sequences" style="top: 3px; right: 0"></button>
 <button type="button" class="btn btn-xs btn-collapsable collapsed" onclick="expandAllSequences()" title="Expand All Sequences" style="top: 3px; right: 2px; margin-left: 5px"></button>
 <hr class="thick-spacer"/>
+<div class="sequence-records-message">Total Sequences: <span data-bind="text: sequences().length"></span> <span style="padding-left: 25px">Total Sequence Groups: <span data-bind="text: totalSequenceGroups()"></span></span><span style="padding-left: 25px">Minimum Total Read Time: <span data-bind="text: totalSequenceGroups() * interSequenceGroupPollDelay(), style: { 'color': totalSequenceGroups() * interSequenceGroupPollDelay() > pollingRate() ? 'red' : undefined }"></span> ms</span></div>
 <ul id="sequencePanels" class="list-unstyled" data-bind="foreach: { data: sequences, afterRender: postSequenceRendering }">
     <li class="panel" data-bind="css: { '@ReadSequencePanelType': sequenceType === SequenceType.Read, '@WriteSequencePanelType': sequenceType === SequenceType.Write }">
         <div class="panel-heading clearfix">
@@ -1456,10 +1622,10 @@
             </form>
         </div>
         <div class="collapse" data-bind="css: { 'in': expanded }, attr: { 'id': 'sequenceContent' + domIndex }">
-            <div class="panel-body" data-bind="css: { 'warning-border': sequenceRecords().length > 100 }">
+            <div class="panel-body" data-bind="css: { 'warning-border': groupLengthWarning }">
                 <button type="button" class="btn btn-default btn-xs pull-right" style="margin-top: -10px; margin-right: -10px" title="Resort Sequence Records" data-bind="click: refreshSequenceRecords.bind($data)"><span class="glyphicon glyphicon-sort-by-attributes"></span></button>
-                <div class="warning-message" data-bind="visible: sequenceRecords().length > 100">Some Modbus devices may not respond to reading or writing more than 100 registers in a single sequence group.</div>
-                <div class="sequence-records-message"><span>Total Sequence Groups: nn</span><span style="padding-left: 25px">Minimum Total Read Time: nn**ispd ms</span></div>
+                <div class="warning-message" data-bind="visible: groupLengthWarning">Some Modbus devices may not respond to reading or writing more than 100 registers in a single sequence group.</div>
+                <div class="sequence-records-message">Sequence Groups: <span data-bind="text: sequenceGroups().length"></span><span style="padding-left: 25px">Minimum Read Time: <span data-bind="text: sequenceGroups().length * $parent.interSequenceGroupPollDelay()"></span> ms</span></div>
                 <div class="table-responsive">
                     <table class="table table-hover table-striped table-condensed">
                         <thead>
@@ -1474,7 +1640,7 @@
                         </thead>
                         <tbody data-bind="foreach: { data: sequenceRecords, afterRender: postSequenceRecordRendering }">
                         <tr style="cursor: move", data-bind="style: { backgroundColor:  isDuplicate() ? 'yellow' : undefined }">
-                            <td style="text-align: center; vertical-align: middle" width="5%" data-bind="text: getRecordTypeCode(recordType()), style: groupBorders()"></td>
+                            <td style="text-align: center; vertical-align: middle" width="5%" data-bind="style: groupBorders()"><div data-bind="if: isGroupFirst"><span class="sequence-group-count" data-bind="text: groupCount"></span></div><span data-bind="text: getRecordTypeCode(recordType())"></span></td>
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
                                 <input type="checkbox" draggable="true" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
                             </td>
