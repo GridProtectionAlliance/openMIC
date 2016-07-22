@@ -234,6 +234,12 @@
             -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)";
             transform: rotate(-90.0deg);
         }
+        
+        @@media screen and (min-width: 1200px) {
+            span.sequence-group-count {
+                margin-left: -44px;
+            }
+        }
 
         .form-group {
             padding-top: 5px;
@@ -710,7 +716,7 @@
                 if (expand)
                     $("#sequenceContent" + domIndex).collapse("show");
 
-                self.refreshSequenceCountWidths();
+                self.refreshSequenceGroupCountWidths();
             }
 
             self.sortSequenceRecords = function() {
@@ -742,7 +748,7 @@
 
             self.removeSequenceRecord = function(record) {
                 self.sequenceRecords.remove(record);
-                self.refreshSequenceCountWidths();
+                self.refreshSequenceGroupCountWidths();
             }
 
             self.refreshSequenceRecords = function() {
@@ -753,10 +759,10 @@
                 self.sequenceRecords([]);
                 self.sequenceRecords(records);
                 
-                self.refreshSequenceCountWidths();
+                self.refreshSequenceGroupCountWidths();
             }
 
-            self.refreshSequenceCountWidths = function() {
+            self.refreshSequenceGroupCountWidths = function() {
                 $(".sequence-group-count").each(function(classIndex, element) {
                     element.style.height = element.offsetWidth + "px";
                     element.style.width = element.offsetHeight + "px";
@@ -1037,60 +1043,64 @@
 
             // Wait a moment for ko processing to complete before validating selections
             setTimeout(function() {
-                const records = sequence.sequenceRecords();
-
-                if (!records)
-                    return;
-
-                // Validate selected record types match
-                let firstSelectedType = null;
-                let recordTypesMatch = true;
-
-                for (let i = 0; i < records.length; i++) {
-                    if (records[i].selected()) {
-                        if (firstSelectedType != null) {
-                            if (firstSelectedType !== records[i].recordType()) {
-                                recordTypesMatch = false;
-                                break;
-                            }
-                        }
-                        else {
-                            firstSelectedType = records[i].recordType();
-                        }
-                    }
-                }
-
-                if (!recordTypesMatch) {
-                    if (records[selectedIndex].selected())
-                        sequence.selectOne(selectedIndex);
-                    else
-                        sequence.selectNone();
-                }
-
-                // Validate selected records are contiguous
-                let lastSelectedIndex = null;
-                let recordsAreContiguous = true;
-
-                for (let i = 0; i < records.length; i++) {
-                    if (records[i].selected()) {
-                        if (lastSelectedIndex != null) {
-                            if (i !== lastSelectedIndex + 1) {
-                                recordsAreContiguous = false;
-                                break;
-                            }
-                        }
-
-                        lastSelectedIndex = i;
-                    }
-                }
-
-                if (!recordsAreContiguous) {
-                    if (records[selectedIndex].selected())
-                        sequence.selectOne(selectedIndex);
-                    else
-                        sequence.selectNone();
-                }
+                validateSelections(sequence, selectedIndex);
             }, 250);
+        }
+
+        function validateSelections(sequence, selectedIndex) {
+            const records = sequence.sequenceRecords();
+
+            if (!records)
+                return;
+
+            // Validate selected record types match
+            let firstSelectedType = null;
+            let recordTypesMatch = true;
+
+            for (let i = 0; i < records.length; i++) {
+                if (records[i].selected()) {
+                    if (firstSelectedType != null) {
+                        if (firstSelectedType !== records[i].recordType()) {
+                            recordTypesMatch = false;
+                            break;
+                        }
+                    }
+                    else {
+                        firstSelectedType = records[i].recordType();
+                    }
+                }
+            }
+
+            if (!recordTypesMatch) {
+                if (records[selectedIndex].selected())
+                    sequence.selectOne(selectedIndex);
+                else
+                    sequence.selectNone();
+            }
+
+            // Validate selected records are contiguous
+            let lastSelectedIndex = null;
+            let recordsAreContiguous = true;
+
+            for (let i = 0; i < records.length; i++) {
+                if (records[i].selected()) {
+                    if (lastSelectedIndex != null) {
+                        if (i !== lastSelectedIndex + 1) {
+                            recordsAreContiguous = false;
+                            break;
+                        }
+                    }
+
+                    lastSelectedIndex = i;
+                }
+            }
+
+            if (!recordsAreContiguous) {
+                if (records[selectedIndex].selected())
+                    sequence.selectOne(selectedIndex);
+                else
+                    sequence.selectNone();
+            }
         }
 
         function getDerivedValueAddressExpression(sequence) {
@@ -1179,22 +1189,28 @@
             checkbox.on("dragover", function(event) {
                 event.preventDefault();
 
-                if (sourceCheckbox && event.target !== sourceCheckbox) {
-                    const record = records()[$(event.target).parents("tr")[0].rowIndex - 1];
+                if (sourceCheckbox && event.target !== sourceCheckbox && !$(event.target).prop("disabled")) {
+                    const index = $(event.target).parents("tr")[0].rowIndex - 1;
+                    const record = records()[index];
 
-                    if (record.recordType() !== RecordType.DerivedValue)
+                    if (record.recordType() !== RecordType.DerivedValue) {
                         record.selected(sourceCheckbox.checked);
+                        validateSelections(sequenceRecord.parent, index);
+                    }
                 }
             });
 
             parentCell.on("dragover", function(event) {
                 event.preventDefault();
 
-                if (sourceCheckbox && event.target !== sourceCheckbox && !event.target.disabled) {
-                    const record = records()[$(event.target).parents("tr")[0].rowIndex - 1];
+                if (sourceCheckbox && event.target !== sourceCheckbox && !$(event.target).find("input[type=checkbox]").prop("disabled")) {
+                    const index = $(event.target).parents("tr")[0].rowIndex - 1;
+                    const record = records()[index];
 
-                    if (record.recordType() !== RecordType.DerivedValue)
+                    if (record.recordType() !== RecordType.DerivedValue) {
                         record.selected(sourceCheckbox.checked);
+                        validateSelections(sequenceRecord.parent, index);
+                    }
                 }
             });
 
