@@ -411,6 +411,7 @@
     <Content Include="wwwroot\Scripts\fileinput.js" />
     <Content Include="wwwroot\Scripts\fileinput.min.js" />
     <Content Include="wwwroot\Scripts\gsf.web.client.js" />
+    <Content Include="wwwroot\Scripts\gsf.web.knockout.js" />
     <Content Include="wwwroot\Scripts\gsf.web.primeui.js" />
     <Content Include="wwwroot\Scripts\jquery-2.2.1.js" />
     <Content Include="wwwroot\Scripts\jquery-2.2.1.min.js" />
