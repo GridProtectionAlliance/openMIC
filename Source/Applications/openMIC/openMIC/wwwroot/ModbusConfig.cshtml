@@ -225,13 +225,15 @@
         span.sequence-group-count {
             position: absolute;
             font-size: 8pt;
-            margin-top: 7px;
+            margin-top: 6px;
             margin-left: -36px;
+            height: 6px;
+            width: 6px;
             -moz-transform: rotate(-90.0deg);
             -o-transform: rotate(-90.0deg);
             -webkit-transform: rotate(-90.0deg);
-            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);
             -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)";
+            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);
             transform: rotate(-90.0deg);
         }
         
@@ -514,7 +516,7 @@
                     var topWidth = width;
                     var bottomStyle = "none";
 
-                    if (self.recordType() !== RecordType.DiscreteInput && self.groupCount() > 100)
+                    if (self.recordType() !== RecordType.DerivedValue && self.groupCount() > 100)
                         color = "yellow";
 
                     var topColor = color;
@@ -600,14 +602,28 @@
             // Configuration fields
             self.sequenceType = sequenceType;
             self.domIndex = domIndex;
+            self.everExpanded = expanded;
 
             // Observable fields
             self.index = ko.observable(index);
             self.sequenceName = ko.observable();
             self.sequenceRecords = ko.observableArray();
-            self.expanded = ko.observable(expanded);
+
+            // Internal fields
+            self._expanded = ko.observable(expanded);
 
             // Properties
+            self.expanded = ko.pureComputed({
+                read: self._expanded,
+                write: function(value) {
+                    self._expanded(value);
+
+                    if (value)
+                        self.everExpanded = true;
+                },
+                owner: self
+            });
+
             self.selectedRecordCount = ko.pureComputed({
                 read: function() {
                     const records = self.sequenceRecords();
@@ -716,7 +732,7 @@
                 if (expand)
                     $("#sequenceContent" + domIndex).collapse("show");
 
-                self.refreshSequenceGroupCountWidths();
+                refreshSequenceGroupCountWidths();
             }
 
             self.sortSequenceRecords = function() {
@@ -748,7 +764,7 @@
 
             self.removeSequenceRecord = function(record) {
                 self.sequenceRecords.remove(record);
-                self.refreshSequenceGroupCountWidths();
+                refreshSequenceGroupCountWidths();
             }
 
             self.refreshSequenceRecords = function() {
@@ -759,14 +775,7 @@
                 self.sequenceRecords([]);
                 self.sequenceRecords(records);
                 
-                self.refreshSequenceGroupCountWidths();
-            }
-
-            self.refreshSequenceGroupCountWidths = function() {
-                $(".sequence-group-count").each(function(classIndex, element) {
-                    element.style.height = element.offsetWidth + "px";
-                    element.style.width = element.offsetHeight + "px";
-                });
+                refreshSequenceGroupCountWidths();
             }
 
             self.clearInterpretAsSelection = function() {
@@ -828,6 +837,13 @@
             } else {
                 sequence.addNewSequenceRecord(recordType, null, true);
             }
+        }
+
+        function refreshSequenceGroupCountWidths() {
+            $("span.sequence-group-count").each(function(classIndex, element) {
+                element.style.height = element.offsetWidth + "px";
+                element.style.width = element.offsetHeight + "px";
+            });
         }
 
         function MapViewModel() {
@@ -898,6 +914,13 @@
                     }
 
                     return total;
+                },
+                owner: self
+            });
+
+            self.pollingRateWarning = ko.pureComputed({
+                read: function() {
+                    return self.totalSequenceGroups() * self.interSequenceGroupPollDelay() > self.pollingRate();
                 },
                 owner: self
             });
@@ -1147,7 +1170,12 @@
             // Track current expanded state such that upon any
             // re-render, expanded state is maintained
             collapsableSection.on("shown.bs.collapse", function() {
+                const everExpanded = sequence.everExpanded;
+
                 sequence.expanded(true);
+
+                if (!everExpanded)
+                    sequence.refreshSequenceRecords();
             });
 
             collapsableSection.on("hidden.bs.collapse", function() {
@@ -1246,7 +1274,7 @@
                             next.focus();
                     }
                 }
-            });            
+            });
         }
 
         // *** Sequence Reorder Handling ***
@@ -1391,8 +1419,8 @@
 
             dataHubClient.connectionStatusUpdate = function(message, color) {
                 // Html encode message
-                var encodedMessage = $("<div />").text(message).html();
-                var connectionStatusWindow = $("#connectionStatusWindow");
+                const encodedMessage = $("<div />").text(message).html();
+                const connectionStatusWindow = $("#connectionStatusWindow");
 
                 connectionStatusWindow.append("<span style='color: " + color + "'>" + encodedMessage + "</span>");
 
@@ -1456,7 +1484,7 @@
             } else {
                 viewModel.loadSequenceMap(files[0], loadAppendMode);
 
-                if (files.length > 0)
+                if (files.length > 1)
                     showInfoMessage("Only loaded first file from the selected set. Use \"Append Mapping\" to load multiple mappings into the current configuration.", -1);
             }
 
@@ -1539,7 +1567,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="form-group" data-bind="validationElement: pollingRate, css: { 'has-warning': totalSequenceGroups() * interSequenceGroupPollDelay() > pollingRate() }">
+                <div class="form-group" data-bind="validationElement: pollingRate, css: { 'has-warning': pollingRateWarning }">
                     <label class="col-md-2 control-label top-padding text-right text-nowrap" for="inputPollingRate">Polling Rate:</label>
                     <div class="col-md-2">
                         <div class="input-group">
@@ -1611,7 +1639,8 @@
 <button type="button" class="btn btn-xs btn-collapsable" onclick="collapseAllSequences()" title="Collapse All Sequences" style="top: 3px; right: 0"></button>
 <button type="button" class="btn btn-xs btn-collapsable collapsed" onclick="expandAllSequences()" title="Expand All Sequences" style="top: 3px; right: 2px; margin-left: 5px"></button>
 <hr class="thick-spacer"/>
-<div class="sequence-records-message">Total Sequences: <span data-bind="text: sequences().length"></span> <span style="padding-left: 25px">Total Sequence Groups: <span data-bind="text: totalSequenceGroups()"></span></span><span style="padding-left: 25px">Minimum Total Read Time: <span data-bind="text: totalSequenceGroups() * interSequenceGroupPollDelay(), style: { 'color': totalSequenceGroups() * interSequenceGroupPollDelay() > pollingRate() ? 'red' : undefined }"></span> ms</span></div>
+<div class="warning-message" data-bind="visible: pollingRateWarning">Minimum total read time for all sequence groups exceeds defined polling rate.</div>
+<div class="sequence-records-message">Total Sequences: <span data-bind="text: sequences().length"></span> <span style="padding-left: 25px">Total Sequence Groups: <span data-bind="text: totalSequenceGroups()"></span></span><span style="padding-left: 25px">Minimum Total Read Time: <span data-bind="text: totalSequenceGroups() * interSequenceGroupPollDelay(), style: { 'color': pollingRateWarning() ? 'red' : undefined }"></span> ms</span></div>
 <ul id="sequencePanels" class="list-unstyled" data-bind="foreach: { data: sequences, afterRender: postSequenceRendering }">
     <li class="panel" data-bind="css: { '@ReadSequencePanelType': sequenceType === SequenceType.Read, '@WriteSequencePanelType': sequenceType === SequenceType.Write }">
         <div class="panel-heading clearfix">
