@@ -1838,11 +1838,11 @@
             </div>
             <div class="modal-body">
                 <form role="form">
-                    <div class="form-group">
+                    <div class="form-group" data-bind="validationElement: hostName">
                         <label for="inputTcpHostName">Host Name or IP:</label>
                         <input type="text" class="form-control" id="inputTcpHostName" maxlength="200" size="200" data-bind="textInput: hostName">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" data-bind="validationElement: ipPort">
                         <label for="inputTcpPort">Port:</label>
                         <input type="number" class="form-control" id="inputTcpPort" maxlength="5" size="5" data-bind="integer, textInput: ipPort">
                     </div>
@@ -1865,11 +1865,11 @@
             </div>
             <div class="modal-body">
                 <form role="form">
-                    <div class="form-group">
+                    <div class="form-group" data-bind="validationElement: ipPort">
                         <label for="inputUdpPort">Port:</label>
                         <input type="number" class="form-control" id="inputUdpPort" maxlength="5" size="5" data-bind="integer, textInput: ipPort">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" data-bind="validationElement: interface">
                         <label for="inputUdpInterface">Interface IP:</label>
                         <input type="text" class="form-control" id="inputUdpInterface" maxlength="200" size="200" data-bind="textInput: interface">
                     </div>
@@ -1892,7 +1892,7 @@
             </div>
             <div class="modal-body">
                 <form role="form">
-                    <div class="form-group">
+                    <div class="form-group" data-bind="validationElement: comPort">
                         <label for="inputSerialPort">Port:</label>
                         <div class="input-group">
                             <span class="input-group-addon">COM</span>
@@ -1930,7 +1930,7 @@
                             <option value="OnePointFive">OnePointFive</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" data-bind="validationElement: dataBits">
                         <label for="inputSerialDataBits">Data Bits:</label>
                         <input type="number" class="form-control" id="inputSerialDataBits" maxlength="200" size="200" data-bind="integer, textInput: dataBits">
                     </div>
