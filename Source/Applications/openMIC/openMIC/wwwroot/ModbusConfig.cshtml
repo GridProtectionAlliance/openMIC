@@ -602,7 +602,7 @@
             // Configuration fields
             self.sequenceType = sequenceType;
             self.domIndex = domIndex;
-            self.everExpanded = expanded;
+            // TODO: self.everExpanded = expanded;
 
             // Observable fields
             self.index = ko.observable(index);
@@ -618,8 +618,8 @@
                 write: function(value) {
                     self._expanded(value);
 
-                    if (value)
-                        self.everExpanded = true;
+                    // TODO: if (value)
+                    //    self.everExpanded = true;
                 },
                 owner: self
             });
@@ -732,7 +732,7 @@
                 if (expand)
                     $("#sequenceContent" + domIndex).collapse("show");
 
-                refreshSequenceGroupCountWidths();
+                // TODO: refreshSequenceGroupCountWidths();
             }
 
             self.sortSequenceRecords = function() {
@@ -764,7 +764,7 @@
 
             self.removeSequenceRecord = function(record) {
                 self.sequenceRecords.remove(record);
-                refreshSequenceGroupCountWidths();
+                // TODO: refreshSequenceGroupCountWidths();
             }
 
             self.refreshSequenceRecords = function() {
@@ -775,7 +775,7 @@
                 self.sequenceRecords([]);
                 self.sequenceRecords(records);
                 
-                refreshSequenceGroupCountWidths();
+                // TODO: refreshSequenceGroupCountWidths();
             }
 
             self.clearInterpretAsSelection = function() {
@@ -837,13 +837,6 @@
             } else {
                 sequence.addNewSequenceRecord(recordType, null, true);
             }
-        }
-
-        function refreshSequenceGroupCountWidths() {
-            $("span.sequence-group-count").each(function(classIndex, element) {
-                element.style.height = element.offsetWidth + "px";
-                element.style.width = element.offsetHeight + "px";
-            });
         }
 
         function MapViewModel() {
@@ -1170,12 +1163,12 @@
             // Track current expanded state such that upon any
             // re-render, expanded state is maintained
             collapsableSection.on("shown.bs.collapse", function() {
-                const everExpanded = sequence.everExpanded;
+                // TODO: const everExpanded = sequence.everExpanded;
 
                 sequence.expanded(true);
 
-                if (!everExpanded)
-                    sequence.refreshSequenceRecords();
+                // TODO: if (!everExpanded)
+                //    sequence.refreshSequenceRecords();
             });
 
             collapsableSection.on("hidden.bs.collapse", function() {
@@ -1294,6 +1287,14 @@
 
                     indexBadge.text(newIndex + 1);
 
+                    const length = indexBadge.text().length;
+
+                    if (length === 2)
+                        indexBadge.css("margin-left", "-3px");
+
+                    if (length === 3)
+                        indexBadge.css("margin-left", "-5px");
+
                     // Update view model index
                     const sequence = viewModel.sequences()[oldIndex];
 
@@ -1369,6 +1370,22 @@
                     ko.applyBindingsToNode(message, { validationMessage: valueAccessor() });
                 }
             };
+
+            ko.bindingHandlers.applyVerticalText = {
+                init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                    $(element).text(ko.unwrap(valueAccessor()));
+                },
+                update: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+                    // Adjust element height and width if element is visible
+                    if (element.offsetParent !== null) {
+                        element.style.height = element.offsetWidth + "px";
+                        element.style.width = element.offsetHeight + "px";
+                    }
+                    $(element).text(ko.unwrap(valueAccessor()));
+                }
+            };
+
+            ko.options.deferUpdates = true;
 
             // Initialize primary view model
             ko.applyBindings(viewModel);
@@ -1685,7 +1702,7 @@
                         </thead>
                         <tbody data-bind="foreach: { data: sequenceRecords, afterRender: postSequenceRecordRendering }">
                         <tr style="cursor: move", data-bind="style: { backgroundColor:  isDuplicate() ? 'yellow' : undefined }">
-                            <td style="text-align: center; vertical-align: middle" width="5%" data-bind="style: groupBorders()"><div data-bind="if: isGroupFirst"><span class="sequence-group-count" data-bind="text: groupCount"></span></div><span data-bind="text: getRecordTypeCode(recordType())"></span></td>
+                            <td style="text-align: center; vertical-align: middle" width="5%" data-bind="style: groupBorders()"><div data-bind="if: isGroupFirst"><span class="sequence-group-count" data-bind="applyVerticalText: groupCount"></span></div><span data-bind="text: getRecordTypeCode(recordType())"></span></td>
                             <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
                                 <input type="checkbox" draggable="true" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
                             </td>
