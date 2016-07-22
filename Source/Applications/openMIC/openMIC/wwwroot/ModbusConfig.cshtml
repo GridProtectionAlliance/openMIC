@@ -783,15 +783,14 @@
                 var records = [];
 
                 // Only serializing recordType, address, description and dataValue
-                self.sequenceRecords().
-                    forEach(function(record) {
-                        records.push({
-                            recordType: record.recordType(),
-                            address: record.address().toString(),
-                            description: record.description(),
-                            dataValue: record.dataValue()
-                        });
+                self.sequenceRecords().forEach(function(record) {
+                    records.push({
+                        recordType: record.recordType(),
+                        address: record.address().toString(),
+                        description: record.description(),
+                        dataValue: record.dataValue()
                     });
+                });
 
                 return {
                     type: self.sequenceType,
@@ -1327,6 +1326,8 @@
             $("li.panel div.collapse").collapse("hide");
         }
 
+        var deviceConnected = false;
+
         $(function() {
             ko.validation.rules.pattern.message = "Invalid";
 
@@ -1455,6 +1456,9 @@
                 $("#notConnected").hide();
                 $("#attemptingConnection").hide();
                 $("#connected").show();
+
+                deviceConnected = true;
+                startSequenceProcessing();
             }
 
             dataHubClient.connectionFailed = function() {
@@ -1462,6 +1466,8 @@
                 $("#connected").hide();
                 $("#notConnected").show();
                 $("#connectionStatus").collapse("show");
+
+                deviceConnected = false;
             }
 
             $("#tcpBuilderDialog").modal({
@@ -1584,6 +1590,33 @@
                     console.log("connect returned: " + success);
                 });
             }
+        }
+
+        function startSequenceProcessing() {
+            if (!deviceConnected)
+                return;
+
+            const delay = viewModel.interSequenceGroupPollDelay();
+
+            viewModel.sequences().delayedForEach(function (sequence) {
+                sequence.groups().delayedForEach(function(group) {
+                    switch (group.type) {
+                        case RecordType.DiscreteInput:
+                            break;
+                        case RecordType.Coil:
+                            break;
+                        case RecordType.InputRegister:
+                            break;
+                        case RecordType.HoldingRegister:
+                            break;
+                        case RecordType.DerivedValue:
+                            break;
+                    }
+                }, delay);
+            }, delay);
+
+            // Setup for next poll
+            setTimeout(startSequenceProcessing, viewModel.pollingRate());
         }
     </script>
 }

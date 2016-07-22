@@ -139,10 +139,22 @@ function joinKeyValuePairs (source, parameterDelimiter, keyValueDelimiter, start
     }
 
     return values.join(parameterDelimiter + " ");
-};
+}
 
 Array.prototype.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter) {
     return joinKeyValuePairs(this, parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter);
+};
+
+Array.prototype.delayedForEach = function(callback, timeout, thisArg) {
+    var index = 0,
+    count = this.length,
+    self = this,
+    caller = function() {
+        callback.call(thisArg || self, self[index], index, self);
+        (++index < count) && setTimeout(caller, timeout);
+    };
+
+    caller();
 };
 
 if (!Array.prototype.any) {

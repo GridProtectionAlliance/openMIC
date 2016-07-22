@@ -548,9 +548,39 @@ namespace openMIC
 
         #region [ Modbus Functions ]
 
-        public bool ModbusConnect(string connectionString)
+        public async Task<bool> ModbusConnect(string connectionString)
         {            
-            return ModbusHubClient.ModbusConnect(connectionString);
+            return await ModbusHubClient.ModbusConnect(connectionString);
+        }
+
+        public async Task<bool[]> ReadDiscreteInputs(ushort startAddress, ushort pointCount)
+        {
+            return await ModbusHubClient.ReadDiscreteInputs(startAddress, pointCount);
+        }
+
+        public async Task<bool[]> ReadCoils(ushort startAddress, ushort pointCount)
+        {
+            return await ModbusHubClient.ReadCoils(startAddress, pointCount);
+        }
+
+        public async Task<ushort[]> ReadInputRegisters(ushort startAddress, ushort pointCount)
+        {
+            return await ModbusHubClient.ReadInputRegisters(startAddress, pointCount);
+        }
+
+        public async Task<ushort[]> ReadHoldingRegisters(ushort startAddress, ushort pointCount)
+        {
+            return await ModbusHubClient.ReadHoldingRegisters(startAddress, pointCount);
+        }
+
+        public async Task WriteCoils(ushort startAddress, bool[] data)
+        {
+            await ModbusHubClient.WriteCoils(startAddress, data);
+        }
+
+        public async Task WriteHoldingRegisters(ushort startAddress, ushort[] data)
+        {
+            await ModbusHubClient.WriteHoldingRegisters(startAddress, data);
         }
 
         #endregion
