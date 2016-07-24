@@ -66,7 +66,7 @@ namespace openMIC
 
         #region [ Properties ]
 
-        //
+        public dynamic Instance => m_hubClient;
 
         #endregion
 
@@ -128,7 +128,15 @@ namespace openMIC
             m_hubClient.connectionStatusUpdate(message, color);
         }
 
-        public Task<bool> ModbusConnect(string connectionString)
+        public void Disconnect()
+        {
+            DisposeConnections();
+
+            m_hubClient.connectionTerminated();
+            UpdateStatus("Device disconnected.", UpdateType.Warning);
+        }
+
+        public Task<bool> Connect(string connectionString)
         {
             return Task.Factory.StartNew(() => {
                 try

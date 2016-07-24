@@ -145,16 +145,23 @@ Array.prototype.joinKeyValuePairs = function (parameterDelimiter, keyValueDelimi
     return joinKeyValuePairs(this, parameterDelimiter, keyValueDelimiter, startValueDelimiter, endValueDelimiter);
 };
 
-Array.prototype.delayedForEach = function(callback, timeout, thisArg) {
+Array.prototype.forEachWithDelay = function(iterationCallback, timeout, completedCallback, thisArg) {
     var index = 0,
     count = this.length,
     self = this,
-    caller = function() {
-        callback.call(thisArg || self, self[index], index, self);
-        (++index < count) && setTimeout(caller, timeout);
+    next = function() {
+        if (self[index])
+            iterationCallback.call(thisArg || self, self[index], index, self);
+        
+        index++;
+
+        if (index < count)
+            setTimeout(next, timeout);
+        else
+            completedCallback.call(thisArg || self, self);
     };
 
-    caller();
+    next();
 };
 
 if (!Array.prototype.any) {

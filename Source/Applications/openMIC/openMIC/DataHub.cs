@@ -550,37 +550,94 @@ namespace openMIC
 
         public async Task<bool> ModbusConnect(string connectionString)
         {            
-            return await ModbusHubClient.ModbusConnect(connectionString);
+            return await ModbusHubClient.Connect(connectionString);
+        }
+
+        public void ModbusDisconnect()
+        {
+            ModbusHubClient.Disconnect();
         }
 
         public async Task<bool[]> ReadDiscreteInputs(ushort startAddress, ushort pointCount)
         {
-            return await ModbusHubClient.ReadDiscreteInputs(startAddress, pointCount);
+            try
+            {
+                return await ModbusHubClient.ReadDiscreteInputs(startAddress, pointCount);
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(ex);
+                ModbusHubClient.Instance.sendErrorMessage($"Exception while reading discrete inputs starting @ {startAddress}: {ex.Message}");
+                return new bool[0];
+            }
         }
 
         public async Task<bool[]> ReadCoils(ushort startAddress, ushort pointCount)
         {
-            return await ModbusHubClient.ReadCoils(startAddress, pointCount);
+            try
+            {
+                return await ModbusHubClient.ReadCoils(startAddress, pointCount);
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(ex);
+                ModbusHubClient.Instance.sendErrorMessage($"Exception while reading coil values starting @ {startAddress}: {ex.Message}");
+                return new bool[0];
+            }
         }
 
         public async Task<ushort[]> ReadInputRegisters(ushort startAddress, ushort pointCount)
         {
-            return await ModbusHubClient.ReadInputRegisters(startAddress, pointCount);
+            try
+            {
+                return await ModbusHubClient.ReadInputRegisters(startAddress, pointCount);
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(ex);
+                ModbusHubClient.Instance.sendErrorMessage($"Exception while reading input registers starting @ {startAddress}: {ex.Message}");
+                return new ushort[0];
+            }
         }
 
         public async Task<ushort[]> ReadHoldingRegisters(ushort startAddress, ushort pointCount)
         {
-            return await ModbusHubClient.ReadHoldingRegisters(startAddress, pointCount);
+            try
+            {
+                return await ModbusHubClient.ReadHoldingRegisters(startAddress, pointCount);
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(ex);
+                ModbusHubClient.Instance.sendErrorMessage($"Exception while reading holding registers starting @ {startAddress}: {ex.Message}");
+                return new ushort[0];
+            }
         }
 
         public async Task WriteCoils(ushort startAddress, bool[] data)
         {
-            await ModbusHubClient.WriteCoils(startAddress, data);
+            try
+            {
+                await ModbusHubClient.WriteCoils(startAddress, data);
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(ex);
+                ModbusHubClient.Instance.sendErrorMessage($"Exception while writing coil values starting @ {startAddress}: {ex.Message}");
+            }
         }
 
         public async Task WriteHoldingRegisters(ushort startAddress, ushort[] data)
         {
-            await ModbusHubClient.WriteHoldingRegisters(startAddress, data);
+            try
+            {
+                await ModbusHubClient.WriteHoldingRegisters(startAddress, data);
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(ex);
+                ModbusHubClient.Instance.sendErrorMessage($"Exception while writing holding registers starting @ {startAddress}: {ex.Message}");
+            }
         }
 
         #endregion
