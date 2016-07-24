@@ -640,6 +640,41 @@ namespace openMIC
             }
         }
 
+        public string DeriveString(ushort[] values)
+        {
+            return ModbusHubClient.DeriveString(values);
+        }
+
+        public float DeriveSingle(ushort highValue, ushort lowValue)
+        {
+            return ModbusHubClient.DeriveSingle(highValue, lowValue);
+        }
+
+        public double DeriveDouble(ushort b3, ushort b2, ushort b1, ushort b0)
+        {
+            return ModbusHubClient.DeriveDouble(b3, b2, b1, b0);
+        }
+
+        public int DeriveInt32(ushort highValue, ushort lowValue)
+        {
+            return ModbusHubClient.DeriveInt32(highValue, lowValue);
+        }
+
+        public uint DeriveUInt32(ushort highValue, ushort lowValue)
+        {
+            return ModbusHubClient.DeriveUInt32(highValue, lowValue);
+        }
+
+        public long DeriveInt64(ushort b3, ushort b2, ushort b1, ushort b0)
+        {
+            return ModbusHubClient.DeriveInt64(b3, b2, b1, b0);
+        }
+
+        public ulong DeriveUInt64(ushort b3, ushort b2, ushort b1, ushort b0)
+        {
+            return ModbusHubClient.DeriveUInt64(b3, b2, b1, b0);
+        }
+
         #endregion
 
         #region [ Miscellaneous Functions ]

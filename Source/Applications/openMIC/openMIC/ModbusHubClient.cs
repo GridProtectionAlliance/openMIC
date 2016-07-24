@@ -26,9 +26,11 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using GSF;
 using Modbus.Device;
+using Modbus.Utility;
 
 namespace openMIC
 {
@@ -45,6 +47,7 @@ namespace openMIC
         private TcpClient m_tcpClient;
         private UdpClient m_udpClient;
         private SerialPort m_serialClient;
+        private ASCIIEncoding m_asciiEncoding;
         private byte m_unitID;
         private bool m_disposed;
 
@@ -59,8 +62,8 @@ namespace openMIC
         public ModbusHubClient(dynamic hubClient)
         {
             m_hubClient = hubClient;
+            m_asciiEncoding = new ASCIIEncoding();
         }
-
 
         #endregion
 
@@ -337,6 +340,41 @@ namespace openMIC
         public async Task WriteHoldingRegisters(ushort startAddress, ushort[] data)
         {
             await m_modbusConnection.WriteMultipleRegistersAsync(m_unitID, startAddress, data);
+        }
+
+        public string DeriveString(ushort[] values)
+        {
+            return m_asciiEncoding.GetString(ModbusUtility.GetAsciiBytes(values));
+        }
+
+        public float DeriveSingle(ushort highValue, ushort lowValue)
+        {
+            return ModbusUtility.GetSingle(highValue, lowValue);
+        }
+
+        public double DeriveDouble(ushort b3, ushort b2, ushort b1, ushort b0)
+        {
+            return ModbusUtility.GetDouble(b3, b2, b1, b0);
+        }
+
+        public int DeriveInt32(ushort highValue, ushort lowValue)
+        {
+            return (int)ModbusUtility.GetUInt32(highValue, lowValue);
+        }
+
+        public uint DeriveUInt32(ushort highValue, ushort lowValue)
+        {
+            return ModbusUtility.GetUInt32(highValue, lowValue);
+        }
+
+        public long DeriveInt64(ushort b3, ushort b2, ushort b1, ushort b0)
+        {
+            return (long)DeriveUInt64(b3, b2, b1, b0);
+        }
+
+        public ulong DeriveUInt64(ushort b3, ushort b2, ushort b1, ushort b0)
+        {
+            return Word.MakeQuadWord(ModbusUtility.GetUInt32(b3, b2), ModbusUtility.GetUInt32(b1, b0));
         }
 
         #endregion

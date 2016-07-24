@@ -41,6 +41,7 @@ function SequenceViewModel(sequenceType, domIndex, index, expanded) {
     self.sequenceName = ko.observable();
     self.sequenceRecords = ko.observableArray();
     self.expanded = ko.observable(expanded);
+    self.derivedValue = ko.observable("");
 
     // Properties
     self.selectedRecordCount = ko.pureComputed({
@@ -183,8 +184,30 @@ function SequenceViewModel(sequenceType, domIndex, index, expanded) {
         self.sequenceRecords.remove(record);
     }
 
+    self.findSequenceRecord = function(recordType, address, parseAsInt) {
+        const records = self.sequenceRecords();
+
+        if (parseAsInt === undefined)
+            parseAsInt = true;
+
+        for (let i = 0; i < records.length; i++) {
+            const record = records[i];
+
+            if (record.recordType() === recordType) {
+                if (parseAsInt) {
+                    if (parseInt(record.address()) === parseInt(address))
+                        return record;
+                    else if (record.address() === address)
+                        return record;
+                }
+            }
+        }
+
+        return null;
+    }
+
     self.refreshSequenceRecords = function() {
-        // Sort and fully rerender sequence records upon request
+        // Sort and fully re-render sequence records upon request
         self.sortSequenceRecords();
         const records = self.sequenceRecords();
 

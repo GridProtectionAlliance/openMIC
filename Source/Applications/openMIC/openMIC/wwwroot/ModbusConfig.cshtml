@@ -412,9 +412,7 @@
 
             // Notify sequence view model that interpret-as selection has changed
             sequence.interpretAsSelectionChanged();
-
-            // Auto-interpret selected record values as type
-            // TODO: Call data-hub function to interpret selected values
+            sequence.derivedValue("");
         }
         
         function selectedSequenceRecordsChanged(domIndex, selectedIndex) {
@@ -516,6 +514,89 @@
             address += ")";
 
             return address;
+        }
+
+        function parseDerivedValueAddressExpression(sequence, expression) {
+            const indexOfParen = expression.indexOf("(");
+            const derivedType = expression.substring(0, indexOfParen).toUpperCase();
+            const addressRefs = expression.substring(indexOfParen + 1, expression.length - 1);
+            const addressList = addressRefs.split(",");
+            const parsedValue = {
+                type: derivedType,
+                values: []  
+            };
+
+            for (let i = 0; i < addressList.length; i++) {
+                const addressID = addressList[i].trim();
+                const recordType = addressID.substring(0, 2).toUpperCase();
+                const address = parseInt(addressID.substring(2, addressID.length));
+                let record = null;
+
+                switch (recordType) {
+                    case "DI":
+                        record = sequence.findSequenceRecord(RecordType.DiscreteInput, address);
+                        break;
+                    case "CO":
+                        record = sequence.findSequenceRecord(RecordType.Coil, address);
+                        break;
+                    case "IR":
+                        record = sequence.findSequenceRecord(RecordType.InputRegister, address);
+                        break;
+                    case "HR":
+                        record = sequence.findSequenceRecord(RecordType.HoldingRegister, address);
+                        break;
+                }
+
+                if (record)
+                    parsedValue.values.push(record.dataValue());   
+            }
+
+            return parsedValue;
+        }
+
+        function getDerivedValue(sequence, address, dataValue) {
+            if (!sequence || !address)
+                return;
+
+            const parsedValue = parseDerivedValueAddressExpression(sequence, address);
+
+            switch (parsedValue.type) {
+                case "STRING":
+                    dataHub.deriveString(parsedValue.values).done(function(value) {
+                        dataValue(value);
+                    });
+                    break;
+                case "SINGLE":
+                    dataHub.deriveSingle(parsedValue.values[0], parsedValue.values[1]).done(function(value) {
+                        dataValue(value);
+                    });
+                    break;
+                case "DOUBLE":
+                    dataHub.deriveDouble(parsedValue.values[0], parsedValue.values[1], parsedValue.values[2], parsedValue.values[3]).done(function(value) {
+                        dataValue(value);
+                    });
+                    break;
+                case "INT32":
+                    dataHub.deriveInt32(parsedValue.values[0], parsedValue.values[1]).done(function(value) {
+                        dataValue(value);
+                    });
+                    break;
+                case "UINT32":
+                    dataHub.deriveUInt32(parsedValue.values[0], parsedValue.values[1]).done(function(value) {
+                        dataValue(value);
+                    });
+                    break;
+                case "INT64":
+                    dataHub.deriveInt64(parsedValue.values[0], parsedValue.values[1], parsedValue.values[2], parsedValue.values[3]).done(function(value) {
+                        dataValue(value);
+                    });
+                    break;
+                case "UINT64":
+                    dataHub.deriveUInt64(parsedValue.values[0], parsedValue.values[1], parsedValue.values[2], parsedValue.values[3]).done(function(value) {
+                        dataValue(value);
+                    });
+                    break;
+            }
         }
 
         function postSequenceRendering(elements, sequence) {
@@ -875,7 +956,13 @@
                     }
                     break;
                 case RecordType.DerivedValue:
-                    // TODO: Calculate derived values
+                    const records = sequence.sequenceRecords();
+
+                    for (let i = group.start; i <= group.stop; i++) {
+                        const record = records[i];
+                        getDerivedValue(sequence, record.address(), record.dataValue);
+                    }
+
                     break;
             }
         }
@@ -897,6 +984,12 @@
                     sequence.sequenceGroups().forEachWithDelay(function(group) {
                         processSequenceGroup(sequence, group);
                     }, delay, function() {
+                        // Once values are read, auto-interpret selected record values as type if defined
+                        const address = $("#derivedValueExpression" + sequence.domIndex).val();
+
+                        if (notNull(address).length > 0)
+                            getDerivedValue(sequence, address, sequence.derivedValue);
+
                         setTimeout(next, delay);
                     });
                 }
@@ -1345,9 +1438,9 @@
                 </div>
                 <form class="form-inline form-inline-sequence" role="form">
                     <div class="form-group">
-                        <input type="text" class="form-control" data-bind="value: getDerivedValueAddressExpression($data), attr: { 'name': 'derivedValueExpression' + domIndex }" />
+                        <input type="text" class="form-control" data-bind="textInput: getDerivedValueAddressExpression($data), attr: { 'id': 'derivedValueExpression' + domIndex }" />
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Interpreted value..." readonly />
+                            <input type="text" class="form-control" placeholder="Interpreted value..." data-bind="value: derivedValue" readonly />
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-default" title="Add Derived Value as a New Record in Sequence" data-bind="click: addSequenceRecord.bind($data, $data, RecordType.DerivedValue), enable: canAddDerivedValue()"><span class="glyphicon glyphicon-plus-sign glyphicon-action-button"></span> Derived Value</button>
                             </span>
