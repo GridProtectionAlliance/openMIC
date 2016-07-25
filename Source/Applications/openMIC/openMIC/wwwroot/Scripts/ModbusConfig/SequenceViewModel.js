@@ -41,6 +41,7 @@ function SequenceViewModel(sequenceType, domIndex, index, expanded) {
     self.sequenceName = ko.observable();
     self.sequenceRecords = ko.observableArray();
     self.expanded = ko.observable(expanded);
+    self.dataAsHex = ko.observable(false);
     self.derivedValue = ko.observable("");
 
     // Properties
@@ -212,11 +213,10 @@ function SequenceViewModel(sequenceType, domIndex, index, expanded) {
         const records = self.sequenceRecords();
 
         self.sequenceRecords([]);
-        self.sequenceRecords(records);
-    }
 
-    self.clearInterpretAsSelection = function() {
-        $("input[name=interpretAs" + self.domIndex + "]").prop("checked", false);
+        setTimeout(function() {
+            self.sequenceRecords(records);
+        }, 250);
     }
 
     self.interpretAsSelectionChanged = function() {

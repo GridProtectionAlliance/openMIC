@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -47,7 +48,6 @@ namespace openMIC
         private TcpClient m_tcpClient;
         private UdpClient m_udpClient;
         private SerialPort m_serialClient;
-        private ASCIIEncoding m_asciiEncoding;
         private byte m_unitID;
         private bool m_disposed;
 
@@ -62,7 +62,6 @@ namespace openMIC
         public ModbusHubClient(dynamic hubClient)
         {
             m_hubClient = hubClient;
-            m_asciiEncoding = new ASCIIEncoding();
         }
 
         #endregion
@@ -344,7 +343,7 @@ namespace openMIC
 
         public string DeriveString(ushort[] values)
         {
-            return m_asciiEncoding.GetString(ModbusUtility.GetAsciiBytes(values));
+            return Encoding.Default.GetString(values.Select(BigEndianOrder.Default.GetBytes).SelectMany(bytes => bytes).ToArray());
         }
 
         public float DeriveSingle(ushort highValue, ushort lowValue)

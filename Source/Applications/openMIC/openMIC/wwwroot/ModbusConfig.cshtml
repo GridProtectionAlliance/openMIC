@@ -422,7 +422,7 @@
                 return;
 
             // Clear any selected interpret-as option
-            sequence.clearInterpretAsSelection();
+            $("input[name=interpretAs" + domIndex + "]").prop("checked", false);
 
             // Wait a moment for ko processing to complete before validating selections
             setTimeout(function() {
@@ -547,8 +547,12 @@
                         break;
                 }
 
-                if (record)
-                    parsedValue.values.push(record.dataValue());   
+                if (record) {
+                    if (sequence.dataAsHex())
+                        parsedValue.values.push(parseInt(record.dataValue(), 16));
+                    else
+                        parsedValue.values.push(parseInt(record.dataValue()));
+                }
             }
 
             return parsedValue;
@@ -578,22 +582,34 @@
                     break;
                 case "INT32":
                     dataHub.deriveInt32(parsedValue.values[0], parsedValue.values[1]).done(function(value) {
-                        dataValue(value);
+                        if (sequence.dataAsHex())
+                            dataValue(toHex(value, 8));
+                        else
+                            dataValue(value);
                     });
                     break;
                 case "UINT32":
                     dataHub.deriveUInt32(parsedValue.values[0], parsedValue.values[1]).done(function(value) {
-                        dataValue(value);
+                        if (sequence.dataAsHex())
+                            dataValue(toHex(value, 8));
+                        else
+                            dataValue(value);
                     });
                     break;
                 case "INT64":
                     dataHub.deriveInt64(parsedValue.values[0], parsedValue.values[1], parsedValue.values[2], parsedValue.values[3]).done(function(value) {
-                        dataValue(value);
+                        if (sequence.dataAsHex())
+                            dataValue(toHex(value, 16));
+                        else
+                            dataValue(value);
                     });
                     break;
                 case "UINT64":
                     dataHub.deriveUInt64(parsedValue.values[0], parsedValue.values[1], parsedValue.values[2], parsedValue.values[3]).done(function(value) {
-                        dataValue(value);
+                        if (sequence.dataAsHex())
+                            dataValue(toHex(value, 16));
+                        else
+                            dataValue(value);
                     });
                     break;
             }
@@ -889,8 +905,12 @@
         function processGroupValues(sequence, group, values) {
             const records = sequence.sequenceRecords();
 
-            for (let i = group.start; i <= group.stop; i++)
-                records[i].dataValue(values[i]);
+            for (let i = group.start; i <= group.stop; i++) {
+                if (sequence.dataAsHex())
+                    records[i].dataValue(toHex(values[i], 4));
+                else
+                    records[i].dataValue(values[i]);
+            }
         }
 
         function getGroupValues(sequence, group, treatAsBool) {
@@ -898,7 +918,12 @@
             const records = sequence.sequenceRecords();
 
             for (let i = group.start; i <= group.stop; i++) {
-                let value = parseInt(records[i].dataValue());
+                let value;
+        
+                if (sequence.dataAsHex())
+                    value = parseInt(records[i].dataValue(), 16);
+                else
+                    value = parseInt(records[i].dataValue());
 
                 if (treatAsBool)
                     value = value !== 0;
@@ -1387,7 +1412,7 @@
                                 <th data-bind="if: sequenceType === SequenceType.Read"></th>
                                 <th>Address</th>
                                 <th>Description</th>
-                                <th data-bind="text: sequenceType === SequenceType.Read ? 'Current Value' : 'Value'"></th>
+                                <th nowrap><span data-bind="text: sequenceType === SequenceType.Read ? 'Current Value' : 'Value'"></span>&nbsp;&nbsp;&nbsp;<label data-bind="attr: { 'for': 'dataAsHex' + domIndex }"><input type="checkbox" style="vertical-align: top" data-bind="checked: dataAsHex, attr: { 'id': 'dataAsHex' + domIndex }"/>&nbsp;Hex</label></th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -1407,8 +1432,8 @@
                                 </td>
                                 <td width="20%">
                                     <div class="form-group" style="padding: 0; margin: 0">
-                                        <span data-bind="if: $parent.sequenceType === SequenceType.Write"><input type="number" class="form-control" placeholder="New value..." data-bind="integer, textInput: dataValue"></span>
-                                        <span data-bind="if: $parent.sequenceType === SequenceType.Read"><input type="number" class="form-control" data-bind="value: dataValue" readonly></span>
+                                        <span data-bind="if: $parent.sequenceType === SequenceType.Write"><input type="text" class="form-control" placeholder="New value..." data-bind="textInput: dataValue"></span>
+                                        <span data-bind="if: $parent.sequenceType === SequenceType.Read"><input type="text" class="form-control" data-bind="value: dataValue" readonly></span>
                                     </div>
                                 </td>
                                 <td style="text-align: center" width="5%">

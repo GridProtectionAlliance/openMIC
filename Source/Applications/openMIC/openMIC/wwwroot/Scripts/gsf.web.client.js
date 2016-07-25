@@ -73,6 +73,14 @@ function isNumber(val) {
     return !isNaN(parseFloat(val)) && isFinite(val);
 }
 
+function toHex(val, leftPadding) {
+    if (leftPadding === undefined)
+        leftPadding = 4;
+
+    const isNegative = val < 0;
+    return (isNegative ? "-" : "") + "0x" + Math.abs(val).toString(16).padLeft(leftPadding, "0").toUpperCase();
+}
+
 function isBool(val) {
     if (typeof value === "boolean")
         return true;
