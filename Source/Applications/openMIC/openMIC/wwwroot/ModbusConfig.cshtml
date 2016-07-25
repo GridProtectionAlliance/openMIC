@@ -1051,8 +1051,10 @@
         });
 
         $(window).on("hubDisconnected", function(event) {
-            dataHubClient.connectionStatusUpdate("Connection to server was terminated, device disconnected.", "red");
-            dataHubClient.connectionFailed();
+            if (deviceConnected) {
+                dataHubClient.connectionStatusUpdate("Connection to server was terminated, device disconnected.", "red");
+                dataHubClient.connectionFailed();
+            }
         });
 
         $(function() {
