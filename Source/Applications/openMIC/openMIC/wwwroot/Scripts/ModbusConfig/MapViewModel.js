@@ -153,9 +153,11 @@ function MapViewModel() {
 
             // Fully re-render reorderable sequences when one is removed
             self.sequences([]);
-            self.sequences(sequences);
 
-            self.reorderSequencePanels();
+            setTimeout(function() {
+                self.sequences(sequences);
+                self.reorderSequencePanels();
+            }, 250);
         }
     }
 
