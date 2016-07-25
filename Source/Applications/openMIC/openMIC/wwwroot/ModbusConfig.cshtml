@@ -533,12 +533,6 @@
                 let record = null;
 
                 switch (recordType) {
-                    case "DI":
-                        record = sequence.findSequenceRecord(RecordType.DiscreteInput, address);
-                        break;
-                    case "CO":
-                        record = sequence.findSequenceRecord(RecordType.Coil, address);
-                        break;
                     case "IR":
                         record = sequence.findSequenceRecord(RecordType.InputRegister, address);
                         break;
