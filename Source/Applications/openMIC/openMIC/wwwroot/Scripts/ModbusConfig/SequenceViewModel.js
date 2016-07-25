@@ -91,12 +91,12 @@ function SequenceViewModel(sequenceType, domIndex, index, expanded) {
                         group.stop = i - 1;
                         group.type = previous.recordType();
                         groups.push(group);
-                        group = { start: i, stop: -1 };
+                        group = { start: i, stop: -1, type: -1 };
                     } else if (current.recordType() !== RecordType.DerivedValue && !((isEmpty(current.address()) && isEmpty(previous.address())) || parseInt(current.address()) === parseInt(previous.address()) + 1)) {
                         group.stop = i - 1;
                         group.type = previous.recordType();
                         groups.push(group);
-                        group = { start: i, stop: -1 };
+                        group = { start: i, stop: -1, type: -1 };
                     }
                 }
 
