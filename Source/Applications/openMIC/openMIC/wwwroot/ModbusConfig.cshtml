@@ -714,9 +714,9 @@
             checkbox.keydown(function(event) {
                 if (event.which === 38) {
                     // Arrow up
-                    const previousIndex = records.indexOf(sequenceRecord) - 1;
+                    const previousIndex = $(event.target).parents("tr")[0].rowIndex - 1;
 
-                    if (previousIndex > -1) {
+                    if (previousIndex > 0) {
                         const previous = sequenceContent.find("input[type=checkbox]:eq(" + previousIndex + ")");
 
                         if (!$.isEmptyObject(previous))
@@ -725,7 +725,7 @@
 
                 } else if (event.which === 40) {
                     // Arrow down
-                    const nextIndex = records.indexOf(sequenceRecord) + 1;
+                    const nextIndex = $(event.target).parents("tr")[0].rowIndex + 1;
 
                     if (nextIndex < records().length) {
                         const next = sequenceContent.find("input[type=checkbox]:eq(" + nextIndex + ")");
