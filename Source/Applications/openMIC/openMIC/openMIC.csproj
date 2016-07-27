@@ -224,6 +224,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataHub.cs" />
+    <Compile Include="DataSubscriptionHubClient.cs" />
     <Compile Include="Downloader.cs" />
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="IOrderedQueryableExtensions.cs" />
@@ -237,15 +238,21 @@
     <Compile Include="Model\CustomOutputAdapter.cs" />
     <Compile Include="Model\DataOperation.cs" />
     <Compile Include="Model\Device.cs" />
+    <Compile Include="Model\DeviceDetail.cs" />
     <Compile Include="Model\Historian.cs" />
     <Compile Include="Model\Interconnection.cs" />
     <Compile Include="Model\Measurement.cs" />
+    <Compile Include="Model\MeasurementDetail.cs" />
     <Compile Include="Model\ModelExtensions.cs" />
+    <Compile Include="Model\PhasorDetail.cs" />
     <Compile Include="Model\ProgressUpdate.cs" />
     <Compile Include="Model\Protocol.cs" />
+    <Compile Include="Model\RealtimeMeasurement.cs" />
+    <Compile Include="Model\SchemaVersion.cs" />
     <Compile Include="Model\SignalType.cs" />
     <Compile Include="Model\Statistic.cs" />
     <Compile Include="Model\ConnectionProfile.cs" />
+    <Compile Include="Model\StatusLight.cs" />
     <Compile Include="Model\Vendor.cs" />
     <Compile Include="Model\ConnectionProfileTask.cs" />
     <Compile Include="Model\VendorDevice.cs" />
@@ -290,14 +297,22 @@
     <None Include="wwwroot\Content\bootstrap.css.map" />
     <None Include="wwwroot\Content\bootstrap.min.css.map" />
     <None Include="wwwroot\ConnectionProfileTasks.cshtml" />
+    <None Include="wwwroot\DirectoryBrowser.cshtml" />
     <None Include="wwwroot\fonts\fontawesome-webfont.eot" />
     <None Include="wwwroot\fonts\fontawesome-webfont.ttf" />
     <None Include="wwwroot\fonts\fontawesome-webfont.woff" />
     <None Include="wwwroot\fonts\fontawesome-webfont.woff2" />
     <None Include="wwwroot\fonts\FontAwesome.otf" />
+    <None Include="wwwroot\GraphMeasurements.cshtml" />
+    <None Include="wwwroot\GraphMeasurementsPopup.cshtml" />
     <None Include="wwwroot\Help.cshtml" />
     <None Include="wwwroot\ModbusConfig.cshtml" />
     <None Include="wwwroot\PagedViewModel.cshtml" />
+    <None Include="wwwroot\Scripts\flot\API.md" />
+    <None Include="wwwroot\Scripts\flot\CONTRIBUTING.md" />
+    <None Include="wwwroot\Scripts\flot\FAQ.md" />
+    <None Include="wwwroot\Scripts\flot\Makefile" />
+    <None Include="wwwroot\Scripts\flot\NEWS.md" />
     <None Include="wwwroot\Scripts\jquery-2.2.1.min.map" />
     <None Include="wwwroot\Scripts\knockout.validation.min.js.map" />
     <None Include="wwwroot\Groups.cshtml" />
@@ -410,6 +425,44 @@
     <Content Include="wwwroot\Scripts\bootstrap-toolkit.min.js" />
     <Content Include="wwwroot\Scripts\fileinput.js" />
     <Content Include="wwwroot\Scripts\fileinput.min.js" />
+    <Content Include="wwwroot\Scripts\flot\excanvas.js" />
+    <Content Include="wwwroot\Scripts\flot\excanvas.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.colorhelpers.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.colorhelpers.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.axislabels.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.canvas.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.canvas.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.categories.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.categories.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.crosshair.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.crosshair.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.errorbars.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.errorbars.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.fillbetween.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.fillbetween.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.image.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.image.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.navigate.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.navigate.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.pie.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.pie.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.resize.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.resize.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.selection.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.selection.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.stack.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.stack.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.symbol.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.symbol.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.threshold.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.threshold.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.time.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.flot.time.min.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.js" />
+    <Content Include="wwwroot\Scripts\flot\jquery.min.js" />
+    <Content Include="wwwroot\Scripts\flot\LICENSE.txt" />
     <Content Include="wwwroot\Scripts\gsf.web.client.js" />
     <Content Include="wwwroot\Scripts\gsf.web.knockout.js" />
     <Content Include="wwwroot\Scripts\gsf.web.primeui.js" />
@@ -494,13 +547,21 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)Database Scripts" "$(SolutionDir)Data\*.*"
+
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(SolutionDir)Dependencies\GSF\*.*"
+
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(SolutionDir)Dependencies\Microsoft\System.Web.Razor.dll"
+
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(SolutionDir)Dependencies\SQLite\*.*"
+
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(SolutionDir)Applications\openMIC\openMICSetup\*.exe*"
+
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(ProjectDir)Sample1344.PmuCapture"
+
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)wwwroot" "$(SolutionDir)Applications\openMIC\openMIC\wwwroot\*.*"
+
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(ProjectDir)bin" "$(TargetDir)*.dll"
+
 XCOPY "$(SolutionDir)Data\SerializedSchema.bin" "$(TargetDir)" /Y</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

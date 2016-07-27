@@ -45,6 +45,13 @@ namespace openMIC
             set;
         }
 
+
+        public string SubscriptionConnectionString
+        {
+            get;
+            set;
+        }
+
         public string ApplicationName
         {
             get;
@@ -142,6 +149,12 @@ namespace openMIC
         }
 
         public int MaxLocalFileAge
+        {
+            get;
+            set;
+        }
+
+        public string DefaultAppPath
         {
             get;
             set;

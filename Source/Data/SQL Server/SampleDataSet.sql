@@ -2,7 +2,7 @@ USE openMIC
 GO
 
 INSERT INTO Node(Name, CompanyID, Description, Settings, MenuType, MenuData, Master, LoadOrder, Enabled) 
-	VALUES('Default', NULL, 'Default node', 'RemoteStatusServerConnectionString={server=localhost:8515;integratedSecurity=true};dataPublisherPort=6180', 'File', 'Menu.xml', 1, 0, 1)
+	VALUES('Default', NULL, 'Default node', 'RemoteStatusServerConnectionString={server=localhost:8530;integratedSecurity=true};dataPublisherPort=6195', 'File', 'Menu.xml', 1, 0, 1)
 GO
 
 UPDATE Node SET ID='8a8d1856-ebc8-4238-848a-8084b7dd9541' WHERE Name='Default'

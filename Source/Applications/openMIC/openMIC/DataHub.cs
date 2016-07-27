@@ -24,11 +24,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GSF;
 using GSF.Data.Model;
 using GSF.Identity;
+using GSF.IO;
 using GSF.Web.Model;
 using GSF.Web.Security;
 using Microsoft.AspNet.SignalR;
@@ -44,6 +47,7 @@ namespace openMIC
 
         // Fields
         private readonly DataContext m_dataContext;
+        private DataSubscriptionHubClient m_dataSubscriptionHubClient;
         private ModbusHubClient m_modbusHubClient;
         private bool m_disposed;
 
@@ -53,7 +57,7 @@ namespace openMIC
 
         public DataHub()
         {
-            m_dataContext = new DataContext();
+            m_dataContext = new DataContext(exceptionHandler: LogException);
         }
 
         #endregion
@@ -65,6 +69,14 @@ namespace openMIC
         /// </summary>
         public RecordOperationsCache RecordOperationsCache => s_recordOperationsCache;
 
+        private DataSubscriptionHubClient DataSubscriptionHubClient
+        {
+            get
+            {
+                return m_dataSubscriptionHubClient ?? (m_dataSubscriptionHubClient = s_dataSubscriptionHubClients.GetOrAdd(Context.ConnectionId, id => new DataSubscriptionHubClient(Clients.Client(Context.ConnectionId))));
+            }
+        }
+
         private ModbusHubClient ModbusHubClient
         {
             get
@@ -72,6 +84,7 @@ namespace openMIC
                 return m_modbusHubClient ?? (m_modbusHubClient = s_modbusHubClients.GetOrAdd(Context.ConnectionId, id => new ModbusHubClient(Clients.Client(Context.ConnectionId))));
             }
         }
+
         #endregion
 
         #region [ Methods ]
@@ -110,6 +123,14 @@ namespace openMIC
         {
             if (stopCalled)
             {
+                DataSubscriptionHubClient client;
+
+                // Dispose of data hub client when client connection is disconnected
+                if (s_dataSubscriptionHubClients.TryRemove(Context.ConnectionId, out client))
+                    client.Dispose();
+
+                m_dataSubscriptionHubClient = null;
+
                 ModbusHubClient modbusHubClient;
 
                 // Dispose of Modbus hub client when client connection is disconnected
@@ -125,6 +146,27 @@ namespace openMIC
             return base.OnDisconnected(stopCalled);
         }
 
+        private void LogStatusMessage(string message, UpdateType type = UpdateType.Information)
+        {
+            dynamic hubClient = Clients.Client(Context.ConnectionId);
+
+            if (hubClient != null)
+                hubClient.sendErrorMessage(message, type == UpdateType.Information ? 2000 : -1);
+
+            Program.Host.LogStatusMessage(message, type);
+
+        }
+
+        private void LogException(Exception ex)
+        {
+            dynamic hubClient = Clients.Client(Context.ConnectionId);
+
+            if (hubClient != null)
+                hubClient.sendInfoMessage(ex.Message, -1);
+
+            Program.Host.LogException(ex);
+        }
+
         #endregion
 
         #region [ Static ]
@@ -137,6 +179,7 @@ namespace openMIC
         public static string CurrentConnectionID => s_connectionID.Value;
 
         // Static Fields
+        private static readonly ConcurrentDictionary<string, DataSubscriptionHubClient> s_dataSubscriptionHubClients;
         private static readonly ConcurrentDictionary<string, ModbusHubClient> s_modbusHubClients;
         private static volatile int s_connectCount;
         private static int s_downloaderProtocolID;
@@ -154,6 +197,7 @@ namespace openMIC
         // Static Constructor
         static DataHub()
         {
+            s_dataSubscriptionHubClients = new ConcurrentDictionary<string, DataSubscriptionHubClient>(StringComparer.OrdinalIgnoreCase);
             s_modbusHubClients = new ConcurrentDictionary<string, ModbusHubClient>(StringComparer.OrdinalIgnoreCase);
 
             // Analyze and cache record operations of data hub
@@ -546,7 +590,69 @@ namespace openMIC
 
         #endregion
 
-        #region [ Modbus Functions ]
+        #region [ Data Subscription Operations ]
+
+        // These functions are dependent on subscriptions to data where each client connection can customize the subscriptions, so an instance
+        // of the DataHubSubscriptionClient is created per SignalR DataHub client connection to manage the subscription life-cycles.
+
+        public IEnumerable<RealtimeMeasurement> GetMeasurements()
+        {
+            return DataSubscriptionHubClient.Measurements;
+        }
+
+        public IEnumerable<DeviceDetail> GetDeviceDetails()
+        {
+            return DataSubscriptionHubClient.DeviceDetails;
+        }
+
+        public IEnumerable<MeasurementDetail> GetMeasurementDetails()
+        {
+            return DataSubscriptionHubClient.MeasurementDetails;
+        }
+
+        public IEnumerable<PhasorDetail> GetPhasorDetails()
+        {
+            return DataSubscriptionHubClient.PhasorDetails;
+        }
+
+        public IEnumerable<SchemaVersion> GetSchemaVersion()
+        {
+            return DataSubscriptionHubClient.SchemaVersion;
+        }
+
+        public IEnumerable<RealtimeMeasurement> GetStats()
+        {
+            return DataSubscriptionHubClient.Statistics;
+        }
+
+        public IEnumerable<StatusLight> GetLights()
+        {
+            return DataSubscriptionHubClient.StatusLights;
+        }
+
+        public void InitializeSubscriptions()
+        {
+            DataSubscriptionHubClient.InitializeSubscriptions();
+        }
+
+        public void TerminateSubscriptions()
+        {
+            DataSubscriptionHubClient.TerminateSubscriptions();
+        }
+
+        public void UpdateFilters(string filterExpression)
+        {
+            DataSubscriptionHubClient.UpdatePrimaryDataSubscription(filterExpression);
+        }
+
+        public void StatSubscribe(string filterExpression)
+        {
+            DataSubscriptionHubClient.UpdateStatisticsDataSubscription(filterExpression);
+        }
+
+        #endregion
+
+        #region [ Modbus Operations ]
 
         public async Task<bool> ModbusConnect(string connectionString)
         {            
@@ -566,8 +672,7 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                Program.Host.LogException(ex);
-                ModbusHubClient.Instance.sendErrorMessage($"Exception while reading discrete inputs starting @ {startAddress}: {ex.Message}");
+                LogException(new InvalidOperationException($"Exception while reading discrete inputs starting @ {startAddress}: {ex.Message}", ex));
                 return new bool[0];
             }
         }
@@ -580,8 +685,7 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                Program.Host.LogException(ex);
-                ModbusHubClient.Instance.sendErrorMessage($"Exception while reading coil values starting @ {startAddress}: {ex.Message}");
+                LogException(new InvalidOperationException($"Exception while reading coil values starting @ {startAddress}: {ex.Message}", ex));
                 return new bool[0];
             }
         }
@@ -594,8 +698,7 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                Program.Host.LogException(ex);
-                ModbusHubClient.Instance.sendErrorMessage($"Exception while reading input registers starting @ {startAddress}: {ex.Message}");
+                LogException(new InvalidOperationException($"Exception while reading input registers starting @ {startAddress}: {ex.Message}", ex));
                 return new ushort[0];
             }
         }
@@ -608,8 +711,7 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                Program.Host.LogException(ex);
-                ModbusHubClient.Instance.sendErrorMessage($"Exception while reading holding registers starting @ {startAddress}: {ex.Message}");
+                LogException(new InvalidOperationException($"Exception while reading holding registers starting @ {startAddress}: {ex.Message}", ex));
                 return new ushort[0];
             }
         }
@@ -622,8 +724,7 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                Program.Host.LogException(ex);
-                ModbusHubClient.Instance.sendErrorMessage($"Exception while writing coil values starting @ {startAddress}: {ex.Message}");
+                LogException(new InvalidOperationException($"Exception while writing coil values starting @ {startAddress}: {ex.Message}", ex));
             }
         }
 
@@ -635,8 +736,7 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                Program.Host.LogException(ex);
-                ModbusHubClient.Instance.sendErrorMessage($"Exception while writing holding registers starting @ {startAddress}: {ex.Message}");
+                LogException(new InvalidOperationException($"Exception while writing holding registers starting @ {startAddress}: {ex.Message}", ex));
             }
         }
 
@@ -673,6 +773,50 @@ namespace openMIC
         public ulong DeriveUInt64(ushort b3, ushort b2, ushort b1, ushort b0)
         {
             return ModbusHubClient.DeriveUInt64(b3, b2, b1, b0);
+        }
+
+        #endregion
+
+        #region [ DirectoryBrowser Hub Operations ]
+
+        public IEnumerable<string> LoadDirectories(string rootFolder, bool showHidden)
+        {
+            if (string.IsNullOrWhiteSpace(rootFolder))
+                return Directory.GetLogicalDrives();
+
+            IEnumerable<string> directories = Directory.GetDirectories(rootFolder);
+
+            if (!showHidden)
+                directories = directories.Where(path => !new DirectoryInfo(path).Attributes.HasFlag(FileAttributes.Hidden));
+
+            return new[] { "..\\" }.Concat(directories.Select(path => FilePath.AddPathSuffix(FilePath.GetLastDirectoryName(path))));
+        }
+
+        public bool IsLogicalDrive(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+
+            DirectoryInfo info = new DirectoryInfo(path);
+            return info.FullName == info.Root.FullName;
+        }
+
+        public string ResolvePath(string path)
+        {
+            if (IsLogicalDrive(path) && Path.GetFullPath(path) == path)
+                return path;
+
+            return Path.GetFullPath(FilePath.GetAbsolutePath(Environment.ExpandEnvironmentVariables(path)));
+        }
+
+        public string CombinePath(string path1, string path2)
+        {
+            return Path.Combine(path1, path2);
+        }
+
+        public void CreatePath(string path)
+        {
+            Directory.CreateDirectory(path);
         }
 
         #endregion
