@@ -106,6 +106,8 @@ namespace openMIC
                         m_dataSubscription.AutoSynchronizeMetadata = false;
                         m_dataSubscription.OperationalModes |= OperationalModes.UseCommonSerializationFormat | OperationalModes.CompressMetadata | OperationalModes.CompressSignalIndexCache;
                         m_dataSubscription.CompressionModes = CompressionModes.GZip;
+                        m_dataSubscription.ReceiveInternalMetadata = true;
+                        m_dataSubscription.ReceiveExternalMetadata = true;
 
                         m_dataSubscription.Initialize();
                         m_dataSubscription.Start();
