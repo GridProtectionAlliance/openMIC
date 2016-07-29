@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace openMIC.Model
 {
-    public class RealtimeMeasurement
+    public class MeasurementValue
     {
         public Double Timestamp { get; set; }
         public Double Value { get; set; }

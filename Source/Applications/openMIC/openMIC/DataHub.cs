@@ -595,7 +595,7 @@ namespace openMIC
         // These functions are dependent on subscriptions to data where each client connection can customize the subscriptions, so an instance
         // of the DataHubSubscriptionClient is created per SignalR DataHub client connection to manage the subscription life-cycles.
 
-        public IEnumerable<RealtimeMeasurement> GetMeasurements()
+        public IEnumerable<MeasurementValue> GetMeasurements()
         {
             return DataSubscriptionHubClient.Measurements;
         }
@@ -620,7 +620,7 @@ namespace openMIC
             return DataSubscriptionHubClient.SchemaVersion;
         }
 
-        public IEnumerable<RealtimeMeasurement> GetStats()
+        public IEnumerable<MeasurementValue> GetStats()
         {
             return DataSubscriptionHubClient.Statistics;
         }

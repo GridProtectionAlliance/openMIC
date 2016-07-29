@@ -247,7 +247,7 @@
     <Compile Include="Model\PhasorDetail.cs" />
     <Compile Include="Model\ProgressUpdate.cs" />
     <Compile Include="Model\Protocol.cs" />
-    <Compile Include="Model\RealtimeMeasurement.cs" />
+    <Compile Include="Model\MeasurementValue.cs" />
     <Compile Include="Model\SchemaVersion.cs" />
     <Compile Include="Model\SignalType.cs" />
     <Compile Include="Model\Statistic.cs" />

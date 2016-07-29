@@ -46,8 +46,8 @@ namespace openMIC
         private DataSubscriber m_statisticSubscription;
         private readonly UnsynchronizedSubscriptionInfo m_dataSubscriptionInfo;
         private readonly UnsynchronizedSubscriptionInfo m_statisticSubscriptionInfo;
-        private readonly List<RealtimeMeasurement> m_measurements;
-        private readonly List<RealtimeMeasurement> m_statistics;
+        private readonly List<MeasurementValue> m_measurements;
+        private readonly List<MeasurementValue> m_statistics;
         private readonly List<StatusLight> m_statusLights;
         private readonly List<DeviceDetail> m_deviceDetails;
         private readonly List<MeasurementDetail> m_measurementDetails;
@@ -69,8 +69,8 @@ namespace openMIC
             m_hubClient = hubClient;
             m_statisticSubscriptionInfo = new UnsynchronizedSubscriptionInfo(false);
             m_dataSubscriptionInfo = new UnsynchronizedSubscriptionInfo(false);
-            m_measurements = new List<RealtimeMeasurement>();
-            m_statistics = new List<RealtimeMeasurement>();
+            m_measurements = new List<MeasurementValue>();
+            m_statistics = new List<MeasurementValue>();
             m_statusLights = new List<StatusLight>();
             m_deviceDetails = new List<DeviceDetail>();
             m_measurementDetails = new List<MeasurementDetail>();
@@ -157,15 +157,15 @@ namespace openMIC
             }
         }
 
-        public List<RealtimeMeasurement> Measurements
+        public List<MeasurementValue> Measurements
         {
             get
             {
-                List<RealtimeMeasurement> currentMeasurements;
+                List<MeasurementValue> currentMeasurements;
 
                 lock (m_measurementLock)
                 {
-                    currentMeasurements = new List<RealtimeMeasurement>(m_measurements);
+                    currentMeasurements = new List<MeasurementValue>(m_measurements);
                     m_measurements.Clear();
                 }
 
@@ -173,7 +173,7 @@ namespace openMIC
             }
         }
 
-        public List<RealtimeMeasurement> Statistics => m_statistics;
+        public List<MeasurementValue> Statistics => m_statistics;
 
         public List<StatusLight> StatusLights
         {
@@ -295,7 +295,7 @@ namespace openMIC
             {
                 foreach (IMeasurement measurement in e.Argument)
                 {
-                    RealtimeMeasurement value = new RealtimeMeasurement();
+                    MeasurementValue value = new MeasurementValue();
                     value.Timestamp = GetUnixMilliseconds(measurement.Timestamp);
                     value.Value = measurement.Value;
                     value.ID = measurement.ID;
@@ -442,7 +442,7 @@ namespace openMIC
 
                 if (index < 0)
                 {
-                    RealtimeMeasurement statistic = new RealtimeMeasurement
+                    MeasurementValue statistic = new MeasurementValue
                     {
                         ID = measurement.ID,
                         Value = measurement.Value,
