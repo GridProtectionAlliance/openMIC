@@ -1456,12 +1456,11 @@
             <param name="pageName">Page name to render.</param>
             <returns>Rendered page result for given page.</returns>
         </member>
-        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.Object)">
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String)">
             <summary>
             Common post request handler.
             </summary>
             <param name="pageName">Page name to render.</param>
-            <param name="postData">Post data.</param>
             <returns>Rendered page result for given page.</returns>
         </member>
         <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String)">
@@ -1472,13 +1471,12 @@
             <param name="pageName">Page name to render.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
-        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.Object)">
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String)">
             <summary>
             // Sub-folder post handler - depth 1.
             </summary>
             <param name="folder1">First folder.</param>
             <param name="pageName">Page name to render.</param>
-            <param name="postData">Post data.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
         <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String,System.String)">
@@ -1490,14 +1488,13 @@
             <param name="pageName">Page name to render.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
-        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.Object)">
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String)">
             <summary>
             Sub-folder post handler - depth 2.
             </summary>
             <param name="folder1">First folder.</param>
             <param name="folder2">Second folder.</param>
             <param name="pageName">Page name to render.</param>
-            <param name="postData">Post data.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
         <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String,System.String,System.String)">
@@ -1510,7 +1507,7 @@
             <param name="pageName">Page name to render.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
-        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.Object)">
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String)">
             <summary>
             Sub-folder post handler - depth 3.
             </summary>
@@ -1518,7 +1515,6 @@
             <param name="folder2">Second folder.</param>
             <param name="folder3">Third folder.</param>
             <param name="pageName">Page name to render.</param>
-            <param name="postData">Post data.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
         <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String,System.String,System.String,System.String)">
@@ -1532,7 +1528,7 @@
             <param name="pageName">Page name to render.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
-        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.String,System.Object)">
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.String)">
             <summary>
             Sub-folder post handler - depth 4.
             </summary>
@@ -1541,7 +1537,6 @@
             <param name="folder3">Third folder.</param>
             <param name="folder4">Fourth folder.</param>
             <param name="pageName">Page name to render.</param>
-            <param name="postData">Post data.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
         <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String,System.String,System.String,System.String,System.String)">
@@ -1556,7 +1551,7 @@
             <param name="pageName">Page name to render.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
-        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.String,System.String,System.Object)">
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
             Sub-folder post handler - depth 5.
             </summary>
@@ -1566,7 +1561,156 @@
             <param name="folder4">Fourth folder.</param>
             <param name="folder5">Fifth folder.</param>
             <param name="pageName">Page name to render.</param>
-            <param name="postData">Post data.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder request handler - depth 6.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="pageName">Page name to render.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder post handler - depth 6.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="pageName">Page name to render.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder request handler - depth 7.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="folder7">Seventh folder.</param>
+            <param name="pageName">Page name to render.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder post handler - depth 7.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="folder7">Seventh folder.</param>
+            <param name="pageName">Page name to render.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder request handler - depth 8.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="folder7">Seventh folder.</param>
+            <param name="folder8">Eighth folder.</param>
+            <param name="pageName">Page name to render.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder post handler - depth 8.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="folder7">Seventh folder.</param>
+            <param name="folder8">Eighth folder.</param>
+            <param name="pageName">Page name to render.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder request handler - depth 9.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="folder7">Seventh folder.</param>
+            <param name="folder8">Eighth folder.</param>
+            <param name="folder9">Ninth folder.</param>
+            <param name="pageName">Page name to render.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder post handler - depth 9.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="folder7">Seventh folder.</param>
+            <param name="folder8">Eighth folder.</param>
+            <param name="folder9">Ninth folder.</param>
+            <param name="pageName">Page name to render.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.GetPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder request handler - depth 10.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="folder7">Seventh folder.</param>
+            <param name="folder8">Eighth folder.</param>
+            <param name="folder9">Ninth folder.</param>
+            <param name="folder10">Tenth folder.</param>
+            <param name="pageName">Page name to render.</param>
+            <returns>Rendered page result for given page and path.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Sub-folder post handler - depth 10.
+            </summary>
+            <param name="folder1">First folder.</param>
+            <param name="folder2">Second folder.</param>
+            <param name="folder3">Third folder.</param>
+            <param name="folder4">Fourth folder.</param>
+            <param name="folder5">Fifth folder.</param>
+            <param name="folder6">Sixth folder.</param>
+            <param name="folder7">Seventh folder.</param>
+            <param name="folder8">Eighth folder.</param>
+            <param name="folder9">Ninth folder.</param>
+            <param name="folder10">Tenth folder.</param>
+            <param name="pageName">Page name to render.</param>
             <returns>Rendered page result for given page and path.</returns>
         </member>
         <member name="M:GSF.Web.Hosting.WebPageController.GetDependencyResolver(GSF.Web.Hosting.WebServer,System.String,System.Object,System.Type,GSF.Data.AdoDataConnection)">
@@ -1642,17 +1786,17 @@
             </summary>
             <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         </member>
-        <member name="M:GSF.Web.Hosting.WebServer.RenderResponse(System.Net.Http.HttpRequestMessage,System.String,System.Object,System.Type,GSF.Data.AdoDataConnection,System.Object)">
+        <member name="M:GSF.Web.Hosting.WebServer.RenderResponse(System.Net.Http.HttpRequestMessage,System.String,System.Boolean,System.Object,System.Type,GSF.Data.AdoDataConnection)">
             <summary>
             Renders an HTTP response for a given request.
             </summary>
-            <param name="request">HTTP request instance.</param>
+            <param name="request">HTTP request message.</param>
             <param name="pageName">Name of page to render.</param>
+            <param name="isPost"><c>true</c>if <paramref name="request"/> is HTTP post; otherwise, <c>false</c>.</param>
             <param name="model">Reference to model to use when rendering Razor templates, if any.</param>
             <param name="modelType">Type of <paramref name="model"/>, if any.</param>
             <param name="database"><see cref="T:GSF.Data.AdoDataConnection"/> to use, if any.</param>
-            <param name="postData">Any posted data if request is a POST type.</param>
-            <returns></returns>
+            <returns>HTTP response for provided request.</returns>
         </member>
         <member name="P:GSF.Web.Hosting.WebServer.Default">
             <summary>
@@ -1667,6 +1811,17 @@
             <param name="razorEngineCS">Razor engine instance for .cshtml templates; uses default instance if not provided.</param>
             <param name="razorEngineVB">Razor engine instance for .vbhtml templates; uses default instance if not provided.</param>
             <returns>Shared <see cref="T:GSF.Web.Hosting.WebServer"/> instance created based on configured options.</returns>
+        </member>
+        <member name="M:GSF.Web.Hosting.WebServer.OpenEmbeddedResourceStream(System.String)">
+            <summary>
+            Opens a stream to an embedded resource.
+            </summary>
+            <param name="resourceName">Resource to open.</param>
+            <returns>Stream to embedded resource if found; otherwise, <c>null</c>.</returns>
+            <remarks>
+            This function will first try loading resources out of the local assembly, if not found it
+            will fall back on loading resource from entry assembly.
+            </remarks>
         </member>
         <member name="T:GSF.Web.IgnoreServicesSecurityModule">
             <summary>
@@ -1688,6 +1843,11 @@
             This class is used by views to render HTML form input templates, paged view model configurations,
             provide access to modeled table operations and general database access.
             </remarks>
+        </member>
+        <member name="F:GSF.Web.Model.DataContext.UrlValidation">
+            <summary>
+            Defines the regular expression used to validate URLs. 
+            </summary>
         </member>
         <member name="M:GSF.Web.Model.DataContext.#ctor(GSF.Data.AdoDataConnection,System.Boolean,GSF.Web.Model.IRazorEngine,System.Action{System.Exception})">
             <summary>
@@ -1796,12 +1956,12 @@
             <param name="model">Modeled database table (or view) type.</param>
             <returns>Table operations for the specified modeled table type <paramref name="model"/>.</returns>
         </member>
-        <member name="M:GSF.Web.Model.DataContext.GetScriptResource(System.String)">
+        <member name="M:GSF.Web.Model.DataContext.GetEmbeddedResource(System.String)">
             <summary>
-            Gets script resource.
+            Gets text-based embedded resource.
             </summary>
-            <param name="scriptName">Script name.</param>
-            <returns>Script resource contents.</returns>
+            <param name="resourceName">Resource name, e.g.: "GSF.Web.Model.Scripts.gsf.web.client.js".</param>
+            <returns>String based resource contents.</returns>
         </member>
         <member name="M:GSF.Web.Model.DataContext.GetPrimaryLabelField``1">
             <summary>
@@ -2702,21 +2862,45 @@
             </summary>
             <returns>Rendered result.</returns>
         </member>
-        <member name="M:GSF.Web.Model.RazorView.Execute(System.Net.Http.HttpRequestMessage,System.Object)">
+        <member name="M:GSF.Web.Model.RazorView.Execute(System.Net.Http.HttpRequestMessage,System.Boolean)">
             <summary>
             Compiles and executes view template for specified request message and post data.
             </summary>
+            <param name="request">HTTP request message.</param>
+            <param name="isPost"><c>true</c>if <paramref name="request"/> is HTTP post; otherwise, <c>false</c>.</param>
             <returns>Rendered result.</returns>
         </member>
-        <member name="M:GSF.Web.Model.RazorView.ExecuteAsync(System.Net.Http.HttpRequestMessage,System.Object)">
+        <member name="M:GSF.Web.Model.RazorView.ExecuteAsync(System.Net.Http.HttpRequestMessage,System.Boolean)">
             <summary>
             Asynchronously compiles and executes view template for specified request message and post data.
             </summary>
+            <param name="request">HTTP request message.</param>
+            <param name="isPost"><c>true</c>if <paramref name="request"/> is HTTP post; otherwise, <c>false</c>.</param>
             <returns>Task that will provide rendered result.</returns>
         </member>
         <member name="T:GSF.Web.NamespaceDoc">
             <summary>
             Contains classes and extension functions related to .NET web enabled platforms such as ASP.NET and WCF.
+            </summary>
+        </member>
+        <member name="T:GSF.Web.PostData">
+            <summary>
+            Represents parsed HTTP post data from multipart form data.
+            </summary>
+        </member>
+        <member name="M:GSF.Web.PostData.#ctor">
+            <summary>
+            Creates a new <see cref="T:GSF.Web.PostData"/> instance.
+            </summary>
+        </member>
+        <member name="P:GSF.Web.PostData.FormData">
+            <summary>
+            Gets any form data passed as part of the multipart form data.
+            </summary>
+        </member>
+        <member name="P:GSF.Web.PostData.FileData">
+            <summary>
+            Gets any uploaded file data passed as part of the multipart form data.
             </summary>
         </member>
         <member name="T:GSF.Web.SecurityModule">
@@ -3463,9 +3647,6 @@
             Defines extension methods useful for web applications.
             </summary>
         </member>
-        <member name="P:GSF.Web.WebExtensions.FileStreamStreamProvider.FileData">
-            Gets list of uploaded files
-        </member>
         <member name="M:GSF.Web.WebExtensions.JavaScriptEncode(System.String)">
             <summary>
             Performs JavaScript encoding on given string.
@@ -3491,13 +3672,19 @@
             <param name="request"></param>
             <returns></returns>
         </member>
-        <member name="M:GSF.Web.WebExtensions.GetFilesAsync(System.Net.Http.HttpRequestMessage,System.Collections.Specialized.NameValueCollection)">
+        <member name="M:GSF.Web.WebExtensions.GetPostData(System.Net.Http.HttpRequestMessage)">
             <summary>
-            Asynchronously gets a collection of uploaded file data from an <see cref="T:System.Net.Http.HttpRequestMessage"/>.
+            Gets a collection of uploaded post data from an <see cref="T:System.Net.Http.HttpRequestMessage"/>.
             </summary>
-            <param name="request"><see cref="T:System.Net.Http.HttpRequestMessage"/> request data that contains uploaded files.</param>
-            <param name="formData">Optional form data from <paramref name="request"/> if needed.</param>
-            <returns></returns>
+            <param name="request"><see cref="T:System.Net.Http.HttpRequestMessage"/> request data that contains form data and/or uploaded files.</param>
+            <returns>Parsed post data.</returns>
+        </member>
+        <member name="M:GSF.Web.WebExtensions.GetPostDataAsync(System.Net.Http.HttpRequestMessage)">
+            <summary>
+            Asynchronously gets a collection of uploaded post data from an <see cref="T:System.Net.Http.HttpRequestMessage"/>.
+            </summary>
+            <param name="request"><see cref="T:System.Net.Http.HttpRequestMessage"/> request data that contains form data and/or uploaded files.</param>
+            <returns>Parsed post data.</returns>
         </member>
         <member name="M:GSF.Web.WebExtensions.FixForwardSpacing(System.String,System.Int32)">
             <summary>

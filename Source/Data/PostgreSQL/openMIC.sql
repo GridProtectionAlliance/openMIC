@@ -30,7 +30,7 @@
 --  ----------------------------------------------------------------------------------------------------
 
 -- CREATE DATABASE openMIC;
--- \c openmic
+-- \c gsfschema
 
 -- *******************************************************************************************
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
@@ -1791,3 +1791,25 @@ $SignalType_UpdateTrackerFn$ LANGUAGE plpgsql;
 CREATE TRIGGER SignalType_UpdateTracker AFTER UPDATE ON SignalType
 FOR EACH ROW WHEN (OLD.Acronym <> NEW.Acronym)
 EXECUTE PROCEDURE SignalType_UpdateTrackerFn();
+ 
+CREATE TABLE ConnectionProfile(
+    ID SERIAL NOT NULL PRIMARY KEY,
+    Name VARCHAR(200) NOT NULL,
+    Description TEXT NULL,
+    CreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy VARCHAR(200) NOT NULL DEFAULT '',
+    UpdatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedBy VARCHAR(200) NOT NULL DEFAULT ''
+);
+
+CREATE TABLE ConnectionProfileTask(
+    ID SERIAL NOT NULL PRIMARY KEY,
+    ConnectionProfileID INTEGER NOT NULL DEFAULT 1,
+    Name VARCHAR(200) NOT NULL,
+    Settings TEXT NULL,
+    CreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy VARCHAR(200) NOT NULL DEFAULT '',
+    UpdatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedBy VARCHAR(200) NOT NULL DEFAULT '',
+    CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID)
+);

@@ -47,6 +47,7 @@ INSERT INTO Company(Acronym, MapAcronym, Name, LoadOrder) VALUES('CX', 'CX', 'No
 INSERT INTO Company(Acronym, MapAcronym, Name, LoadOrder) VALUES('NE', 'NE', 'National Grid USA', 45); 
 INSERT INTO Company(Acronym, MapAcronym, Name, LoadOrder) VALUES('BE', 'BE', 'NSTAR Electric', 46); 
 INSERT INTO Company(Acronym, MapAcronym, Name, LoadOrder) VALUES('BH', 'BH', 'Bangor Hydro-Electric Company', 47); 
+INSERT INTO Company(Acronym, MapAcronym, Name, LoadOrder) VALUES('SDG&E', 'SDG&E', 'San Diego Gas & Electric', 48); 
 INSERT INTO ConfigurationEntity(SourceName, RuntimeName, Description, LoadOrder, Enabled) VALUES('IaonInputAdapter', 'InputAdapters', 'Defines IInputAdapter definitions for a PDC node', 1, 1);
 INSERT INTO ConfigurationEntity(SourceName, RuntimeName, Description, LoadOrder, Enabled) VALUES('IaonActionAdapter', 'ActionAdapters', 'Defines IActionAdapter definitions for a PDC node', 2, 1);
 INSERT INTO ConfigurationEntity(SourceName, RuntimeName, Description, LoadOrder, Enabled) VALUES('IaonOutputAdapter', 'OutputAdapters', 'Defines IOutputAdapter definitions for a PDC node', 3, 1);
@@ -85,7 +86,6 @@ INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, Load
 INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, LoadOrder) VALUES('IeeeC37_118V2', 'IEEE C37.118.2-2011', 'Frame', 'Phasor', 'PhasorProtocolAdapters.dll', 'PhasorProtocolAdapters.PhasorMeasurementMapper', 2);
 INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, LoadOrder) VALUES('WAV', 'Wave Form Input Adapter', 'Frame', 'Audio', 'WavInputAdapter.dll', 'WavInputAdapter.WavInputAdapter', 10);
 INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, LoadOrder) VALUES('VirtualInput', 'Virtual Device', 'Frame', 'Virtual', 'TestingAdapters.dll', 'TestingAdapters.VirtualInputAdapter', 11);
-INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, LoadOrder) VALUES('Downloader', 'Remote Downloader', 'File', 'File', 'openMIC.exe', 'openMIC.Downloader', 12);
 INSERT INTO SignalType(Name, Acronym, Suffix, Abbreviation, LongAcronym, Source, EngineeringUnits) VALUES('Current Magnitude', 'IPHM', 'PM', 'I', 'CurrentMagnitude', 'Phasor', 'Amps');
 INSERT INTO SignalType(Name, Acronym, Suffix, Abbreviation, LongAcronym, Source, EngineeringUnits) VALUES('Current Phase Angle', 'IPHA', 'PA', 'IH', 'CurrentAngle', 'Phasor', 'Degrees');
 INSERT INTO SignalType(Name, Acronym, Suffix, Abbreviation, LongAcronym, Source, EngineeringUnits) VALUES('Voltage Magnitude', 'VPHM', 'PM', 'V', 'VoltageMagnitude', 'Phasor', 'Volts');
@@ -197,6 +197,43 @@ INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, Type
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Publisher', 10, 'Lifetime Minimum Latency', 'Minimum latency from output stream, in milliseconds, during the lifetime of the publisher.', 'GSF.TimeSeries.dll', 'GSF.TimeSeries.Statistics.GatewayStatistics', 'GetPublisherStatistic_LifetimeMinimumLatency', '', 1, 'System.Int64', '{0:N0} ms', 0, 10);
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Publisher', 11, 'Lifetime Maximum Latency', 'Maximum latency from output stream, in milliseconds, during the lifetime of the publisher.', 'GSF.TimeSeries.dll', 'GSF.TimeSeries.Statistics.GatewayStatistics', 'GetPublisherStatistic_LifetimeMaximumLatency', '', 1, 'System.Int64', '{0:N0} ms', 0, 11);
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Publisher', 12, 'Lifetime Average Latency', 'Average latency from output stream, in milliseconds, during the lifetime of the publisher.', 'GSF.TimeSeries.dll', 'GSF.TimeSeries.Statistics.GatewayStatistics', 'GetPublisherStatistic_LifetimeAverageLatency', '', 1, 'System.Int64', '{0:N0} ms', 0, 12);
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('ABB', 'ABB', '', '', 'http://www.abb.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('ARB', 'Arbiter', '', '', 'http://www.arbiter.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('ATK', 'Ametek', '', '', 'http://www.ametek.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('BPA', 'Bonneville Power Administration', '', '', 'http://www.bpa.gov/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('GE', 'General Electric', '', '', 'http://www.ge.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('HWY', 'Hathaway', '', '', 'http://www.qualitrolcorp.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('MAC', 'Macrodyne', '', '', 'http://www.macrodyneusa.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('MTA', 'Mehtatech', '', '', 'http://www.mehtatech.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('NPT', 'NxtPhase', '', '', 'http://www.nxtphase.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('OTR', 'Other / Unspecified', '', '', '');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('SEL', 'Schweitzer', '', '', 'http://www.selinc.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('GPA', 'Grid Protection Alliance', '', '', 'http://www.gridprotectionalliance.org/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('UTK', 'University of Tennessee, Knoxville', '', '', 'http://www.utk.edu/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('SIE', 'Siemens', '', '', 'http://www.siemens.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('EPG', 'Electric Power Group', '', '', 'http://www.electricpowergroup.com/');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(2, 'Arbiter-1133A', 'Arbiter 1133A Power Sentinel', 'http://www.arbiter.com/catalog/power/1133a/1133a.php');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(1, 'ABB-521', 'ABB RES521', 'http://library.abb.com/GLOBAL/SCOT/SCOT296.nsf/VerityDisplay/79B16E5CF206C79CC125712D0074AC6F/$File/1MRK511113-HEN_D_en_Phasor_Measurement_Terminal_RES_521.pdf');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(8, 'Mehtatech', 'Metha Tech Transcan 2000 IED', 'http://www.mehtatech.com/pdf/IEDbrochMay02b.pdf');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(7, 'Macrodyne', 'Macrodyne 1690', 'http://www.macrodyneusa.com/model_1690.htm');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-421', 'SEL-421 Relay', 'http://www.selinc.com/sel-421.htm');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(4, 'BPA PDC', 'Bonneville Power Administration', 'http://www.bpa.gov/');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(6, 'Hathaway IDM', 'Qualitrol Hathaway IDM Fault Recorder', 'http://www.qualitrolcorp.com/docs/home/IDM_Brochure.pdf');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(3, 'Ametek', 'Ametek TR-2000 Multi-Function Recorder', 'http://www.ametekpower.com/products/sku.cfm?SKU_Id=12328');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(9, 'NxtPhase', 'NxtPhase Telsa 2000 Fault Recorder', 'http://www.nxtphase.com/sub-products-relays-tesla-model-2000P.htm');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(10, 'Other', 'Other Device', '');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-5077', 'SEL-5077 SynchroWAVe Server Software', 'http://www.selinc.com/synchrowave.htm');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-451', 'SEL-451 Relay', 'http://www.selinc.com/sel-451.htm');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-3306', 'SEL-3306 Synchrophasor Processor', 'http://synchrophasor.selinc.com/');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(5, 'GE N60', 'GE N60 Synchrophasor Measurement System', 'http://www.geindustrial.com/cwc/products?pnlid=6&famid=31&catid=234&id=n60&lang=en_US');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(12, 'openPDC', 'Open Source Phasor Data Concentrator', 'http://www.openpdc.com/');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(13, 'FNET', 'UTK FNET Device', '');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-3373', 'SEL-3373 Synchrophasor Data Concentrator', 'http://www.selinc.com/SEL-3373/');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(14, 'SIMEAS R-PMU', '7KE6100 Digital Fault Recorder & PMU', 'http://www.energy.siemens.com/mx/en/automation/power-transmission-distribution/power-quality/simeas-r-pmu.htm');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(15, 'ePDC', 'ePDC & eSPDC', 'http://www.electricpowergroup.com/solutions/epdc/index.html');
+ 
+INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, LoadOrder) VALUES('Downloader', 'Remote Downloader', 'File', 'File', 'openMIC.exe', 'openMIC.Downloader', 12);
+
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 1, 'Downloader Enabled', 'Boolean value representing if the downloader was continually enabled with access to local download path during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_Enabled', '', 1, 'System.Boolean', '{0}', 1, 1);
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 2, 'Downloader Attempted Connections', 'Number of attempted FTP connections reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_AttemptedConnections', '', 1, 'System.Int64', '{0:N0}', 0, 2);
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 3, 'Downloader Successful Connections', 'Number of successful FTP connections reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_SuccessfulConnections', '', 1, 'System.Int64', '{0:N0}', 0, 3);
@@ -208,10 +245,17 @@ INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, Type
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 9, 'Downloader MegaBytes Downloaded', 'Number of downloaded megabytes reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_MegaBytesDownloaded', '', 1, 'System.Double', '{0:N3} MB', 0, 9);
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 10, 'Downloader Connected Time', 'Total FTP connection time reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_TotalConnectedTime', '', 1, 'System.Double', '{0:N3} Seconds', 0, 10);
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 11, 'Downloader Dial-up Time', 'Total dial-up time reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_TotalDialUpTime', '', 1, 'System.Double', '{0:N3} Seconds', 0, 11);
+
+DELETE FROM VendorDevice;
+DELETE FROM Vendor;
+DELETE FROM sqlite_sequence WHERE name='VendorDevice';
+DELETE FROM sqlite_sequence WHERE name='Vendor';
+
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('OTHER', 'Other / Unspecified', '', '', '');
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('APP', 'APP Engineering Inc.', '', '', 'http://appengineering.com/');
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('EMAX', 'E-MAX Instruments, Inc.', '', '', 'http://www.e-maxinstruments.com/');
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('QUAL', 'Qualitrol LLC', '', '', 'http://www.qualitrolcorp.com/');
+
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(2, 'APP-501', 'APP-501 Multifunction Recorder', 'http://appengineering.com/products/601_Sales_Literature_Rev_4.pdf');
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(2, 'APP-601', 'APP-601 Multifunction Recorder', 'http://appengineering.com/products/601_Sales_Literature_Rev_4.pdf');
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(3, 'EMAX-DII', 'E-MAX Director DII DFR', 'http://www.e-maxinstruments.com/images/pdf/product-catalog/E-MAX-Digital-Fault-Recorder-DII-2014.pdf');

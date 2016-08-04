@@ -38,7 +38,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW SchemaVersion AS
-SELECT 4 AS VersionNumber
+SELECT 5 AS VersionNumber
 FROM dual;
 
 CREATE TABLE ErrorLog(
@@ -174,49 +174,6 @@ CREATE SEQUENCE SEQ_Vendor START WITH 1 INCREMENT BY 1;
 
 CREATE TRIGGER AI_Vendor BEFORE INSERT ON Vendor
     FOR EACH ROW BEGIN SELECT SEQ_Vendor.nextval INTO :NEW.ID FROM dual;
-END;
-/
-
-CREATE TABLE ConnectionProfile(
-    ID NUMBER NOT NULL,
-    Name VARCHAR2(200) NOT NULL,
-    Description VARCHAR2(4000) NULL,
-    CreatedOn DATE NOT NULL,
-    CreatedBy VARCHAR2(200) NOT NULL,
-    UpdatedOn DATE NOT NULL,
-    UpdatedBy VARCHAR2(200) NOT NULL
-);
-
-CREATE UNIQUE INDEX IX_ConnectionProfile_ID ON ConnectionProfile (ID ASC) TABLESPACE openMIC_INDEX;
-
-ALTER TABLE ConnectionProfile ADD CONSTRAINT PK_ConnectionProfile PRIMARY KEY (ID);
-
-CREATE SEQUENCE SEQ_ConnectionProfile START WITH 1 INCREMENT BY 1;
-
-CREATE TRIGGER AI_ConnectionProfile BEFORE INSERT ON ConnectionProfile
-    FOR EACH ROW BEGIN SELECT SEQ_ConnectionProfile.nextval INTO :NEW.ID FROM dual;
-END;
-/
-
-CREATE TABLE ConnectionProfileTask(
-    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    ConnectionProfileID NUMBER DEFAULT 1 NOT NULL,
-    Name VARCHAR2(200) NOT NULL,
-    Settings VARCHAR2(4000) NULL,
-    CreatedOn DATE NOT NULL,
-    CreatedBy VARCHAR2(200) NOT NULL,
-    UpdatedOn DATE NOT NULL,
-    UpdatedBy VARCHAR2(200) NOT NULL
-);
-
-CREATE UNIQUE INDEX IX_ConnectionProfileTask_ID ON ConnectionProfileTask (ID ASC) TABLESPACE openMIC_INDEX;
-
-ALTER TABLE ConnectionProfileTask ADD CONSTRAINT PK_ConnectionProfileTask PRIMARY KEY (ID);
-
-CREATE SEQUENCE SEQ_ConnectionProfileTask START WITH 1 INCREMENT BY 1;
-
-CREATE TRIGGER AI_ConnectionProfileTask BEFORE INSERT ON ConnectionProfileTask
-    FOR EACH ROW BEGIN SELECT SEQ_ConnectionProfileTask.nextval INTO :NEW.ID FROM dual;
 END;
 /
 
@@ -848,6 +805,31 @@ CREATE TRIGGER AI_OutputStream BEFORE INSERT ON OutputStream
 END;
 /
 
+CREATE TABLE PowerCalculation(
+    NodeID VARCHAR2(36) NULL,
+    ID NUMBER NOT NULL,
+    CircuitDescription VARCHAR2(4000) NULL,
+    VoltageAngleSignalID VARCHAR2(36) NOT NULL,
+    VoltageMagSignalID VARCHAR2(36) NOT NULL,
+    CurrentAngleSignalID VARCHAR2(36) NOT NULL,
+    CurrentMagSignalID VARCHAR2(36) NOT NULL,
+    ActivePowerOutputSignalID VARCHAR2(36) NULL,
+    ReactivePowerOutputSignalID VARCHAR2(36) NULL,
+    ApparentPowerOutputSignalID VARCHAR2(36) NULL,
+    Enabled NUMBER NOT NULL
+);
+
+CREATE UNIQUE INDEX IX_PowerCalculation_ID ON PowerCalculation (ID ASC) TABLESPACE openMIC_INDEX;
+
+ALTER TABLE PowerCalculation ADD CONSTRAINT PK_PowerCalculation PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_PowerCalculation START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_PowerCalculation BEFORE INSERT ON PowerCalculation
+    FOR EACH ROW BEGIN SELECT SEQ_PowerCalculation.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
 CREATE TABLE Alarm(
     NodeID VARCHAR2(36) NOT NULL,
     ID NUMBER NOT NULL,
@@ -1156,8 +1138,6 @@ ALTER TABLE Device ADD CONSTRAINT FK_Device_VendorDevice FOREIGN KEY(VendorDevic
 
 ALTER TABLE VendorDevice ADD CONSTRAINT FK_VendorDevice_Vendor FOREIGN KEY(VendorID) REFERENCES Vendor (ID);
 
-ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
-
 ALTER TABLE OutputStreamDeviceDigital ADD CONSTRAINT FK_OutStreamDeviceDigital_Node FOREIGN KEY(NodeID) REFERENCES Node (ID);
 
 ALTER TABLE OutputStreamDeviceDigital ADD CONSTRAINT FK_OutStrDevDigital_OutStrDev FOREIGN KEY(OutputStreamDeviceID) REFERENCES OutputStreamDevice (ID) ON DELETE CASCADE;
@@ -1201,6 +1181,20 @@ ALTER TABLE Historian ADD CONSTRAINT FK_Historian_Node FOREIGN KEY(NodeID) REFER
 ALTER TABLE CustomInputAdapter ADD CONSTRAINT FK_CustomInputAdapter_Node FOREIGN KEY(NodeID) REFERENCES Node (ID) ON DELETE CASCADE;
 
 ALTER TABLE OutputStream ADD CONSTRAINT FK_OutputStream_Node FOREIGN KEY(NodeID) REFERENCES Node (ID) ON DELETE CASCADE;
+
+ALTER TABLE PowerCalculation ADD CONSTRAINT FK_PowerCalculation_Measurement1 FOREIGN KEY(ApparentPowerOutputSignalID) REFERENCES Measurement (SignalID) ON DELETE CASCADE;
+
+ALTER TABLE PowerCalculation ADD CONSTRAINT FK_PowerCalculation_Measurement2 FOREIGN KEY(CurrentAngleSignalID) REFERENCES Measurement (SignalID) ON DELETE CASCADE;
+
+ALTER TABLE PowerCalculation ADD CONSTRAINT FK_PowerCalculation_Measurement3 FOREIGN KEY(CurrentMagSignalID) REFERENCES Measurement (SignalID) ON DELETE CASCADE;
+
+ALTER TABLE PowerCalculation ADD CONSTRAINT FK_PowerCalculation_Measurement4 FOREIGN KEY(ReactivePowerOutputSignalID) REFERENCES Measurement (SignalID) ON DELETE CASCADE;
+
+ALTER TABLE PowerCalculation ADD CONSTRAINT FK_PowerCalculation_Measurement5 FOREIGN KEY(ActivePowerOutputSignalID) REFERENCES Measurement (SignalID) ON DELETE CASCADE;
+
+ALTER TABLE PowerCalculation ADD CONSTRAINT FK_PowerCalculation_Measurement6 FOREIGN KEY(VoltageAngleSignalID) REFERENCES Measurement (SignalID) ON DELETE CASCADE;
+
+ALTER TABLE PowerCalculation ADD CONSTRAINT FK_PowerCalculation_Measurement7 FOREIGN KEY(VoltageMagSignalID) REFERENCES Measurement (SignalID) ON DELETE CASCADE;
 
 ALTER TABLE Alarm ADD CONSTRAINT FK_Alarm_Node FOREIGN KEY(NodeID) REFERENCES Node (ID) ON DELETE CASCADE;
 
@@ -2666,4 +2660,48 @@ CREATE PACKAGE BODY context AS
         RETURN current_user;
     END;
 END;
+/ 
+CREATE TABLE ConnectionProfile(
+    ID NUMBER NOT NULL,
+    Name VARCHAR2(200) NOT NULL,
+    Description VARCHAR2(4000) NULL,
+    CreatedOn DATE NOT NULL,
+    CreatedBy VARCHAR2(200) NOT NULL,
+    UpdatedOn DATE NOT NULL,
+    UpdatedBy VARCHAR2(200) NOT NULL
+);
+
+CREATE UNIQUE INDEX IX_ConnectionProfile_ID ON ConnectionProfile (ID ASC) TABLESPACE openMIC_INDEX;
+
+ALTER TABLE ConnectionProfile ADD CONSTRAINT PK_ConnectionProfile PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_ConnectionProfile START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_ConnectionProfile BEFORE INSERT ON ConnectionProfile
+    FOR EACH ROW BEGIN SELECT SEQ_ConnectionProfile.nextval INTO :NEW.ID FROM dual;
+END;
 /
+
+CREATE TABLE ConnectionProfileTask(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    ConnectionProfileID NUMBER DEFAULT 1 NOT NULL,
+    Name VARCHAR2(200) NOT NULL,
+    Settings VARCHAR2(4000) NULL,
+    CreatedOn DATE NOT NULL,
+    CreatedBy VARCHAR2(200) NOT NULL,
+    UpdatedOn DATE NOT NULL,
+    UpdatedBy VARCHAR2(200) NOT NULL
+);
+
+CREATE UNIQUE INDEX IX_ConnectionProfileTask_ID ON ConnectionProfileTask (ID ASC) TABLESPACE openMIC_INDEX;
+
+ALTER TABLE ConnectionProfileTask ADD CONSTRAINT PK_ConnectionProfileTask PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_ConnectionProfileTask START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_ConnectionProfileTask BEFORE INSERT ON ConnectionProfileTask
+    FOR EACH ROW BEGIN SELECT SEQ_ConnectionProfileTask.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
+ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);

@@ -142,6 +142,9 @@ GO
 INSERT INTO Company(Acronym, MapAcronym, Name, LoadOrder) VALUES('BH', 'BH', 'Bangor Hydro-Electric Company', 47) 
 GO
 
+INSERT INTO Company(Acronym, MapAcronym, Name, LoadOrder) VALUES('SDG&E', 'SDG&E', 'San Diego Gas & Electric', 48)
+GO
+
 INSERT INTO ConfigurationEntity(SourceName, RuntimeName, Description, LoadOrder, Enabled) VALUES('IaonInputAdapter', 'InputAdapters', 'Defines IInputAdapter definitions for a PDC node', 1, 1)
 GO
 
@@ -254,9 +257,6 @@ INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, Load
 GO
 
 INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, LoadOrder) VALUES('VirtualInput', 'Virtual Device', 'Frame', 'Virtual', 'TestingAdapters.dll', 'TestingAdapters.VirtualInputAdapter', 11)
-GO
-
-INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, LoadOrder) VALUES('Downloader', 'Remote Downloader', 'File', 'File', 'openMIC.exe', 'openMIC.Downloader', 12)
 GO
 
 INSERT INTO SignalType(Name, Acronym, Suffix, Abbreviation, LongAcronym, Source, EngineeringUnits) VALUES('Current Magnitude', 'IPHM', 'PM', 'I', 'CurrentMagnitude', 'Phasor', 'Amps')
@@ -592,6 +592,111 @@ GO
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Publisher', 12, 'Lifetime Average Latency', 'Average latency from output stream, in milliseconds, during the lifetime of the publisher.', 'GSF.TimeSeries.dll', 'GSF.TimeSeries.Statistics.GatewayStatistics', 'GetPublisherStatistic_LifetimeAverageLatency', '', 1, 'System.Int64', '{0:N0} ms', 0, 12)
 GO
 
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('ABB', 'ABB', '', '', 'http://www.abb.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('ARB', 'Arbiter', '', '', 'http://www.arbiter.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('ATK', 'Ametek', '', '', 'http://www.ametek.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('BPA', 'Bonneville Power Administration', '', '', 'http://www.bpa.gov/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('GE', 'General Electric', '', '', 'http://www.ge.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('HWY', 'Hathaway', '', '', 'http://www.qualitrolcorp.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('MAC', 'Macrodyne', '', '', 'http://www.macrodyneusa.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('MTA', 'Mehtatech', '', '', 'http://www.mehtatech.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('NPT', 'NxtPhase', '', '', 'http://www.nxtphase.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('OTR', 'Other / Unspecified', '', '', '')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('SEL', 'Schweitzer', '', '', 'http://www.selinc.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('GPA', 'Grid Protection Alliance', '', '', 'http://www.gridprotectionalliance.org/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('UTK', 'University of Tennessee, Knoxville', '', '', 'http://www.utk.edu/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('SIE', 'Siemens', '', '', 'http://www.siemens.com/')
+GO
+
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('EPG', 'Electric Power Group', '', '', 'http://www.electricpowergroup.com/')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(2, 'Arbiter-1133A', 'Arbiter 1133A Power Sentinel', 'http://www.arbiter.com/catalog/power/1133a/1133a.php')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(1, 'ABB-521', 'ABB RES521', 'http://library.abb.com/GLOBAL/SCOT/SCOT296.nsf/VerityDisplay/79B16E5CF206C79CC125712D0074AC6F/$File/1MRK511113-HEN_D_en_Phasor_Measurement_Terminal_RES_521.pdf')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(8, 'Mehtatech', 'Metha Tech Transcan 2000 IED', 'http://www.mehtatech.com/pdf/IEDbrochMay02b.pdf')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(7, 'Macrodyne', 'Macrodyne 1690', 'http://www.macrodyneusa.com/model_1690.htm')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-421', 'SEL-421 Relay', 'http://www.selinc.com/sel-421.htm')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(4, 'BPA PDC', 'Bonneville Power Administration', 'http://www.bpa.gov/')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(6, 'Hathaway IDM', 'Qualitrol Hathaway IDM Fault Recorder', 'http://www.qualitrolcorp.com/docs/home/IDM_Brochure.pdf')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(3, 'Ametek', 'Ametek TR-2000 Multi-Function Recorder', 'http://www.ametekpower.com/products/sku.cfm?SKU_Id=12328')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(9, 'NxtPhase', 'NxtPhase Telsa 2000 Fault Recorder', 'http://www.nxtphase.com/sub-products-relays-tesla-model-2000P.htm')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(10, 'Other', 'Other Device', '')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-5077', 'SEL-5077 SynchroWAVe Server Software', 'http://www.selinc.com/synchrowave.htm')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-451', 'SEL-451 Relay', 'http://www.selinc.com/sel-451.htm')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-3306', 'SEL-3306 Synchrophasor Processor', 'http://synchrophasor.selinc.com/')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(5, 'GE N60', 'GE N60 Synchrophasor Measurement System', 'http://www.geindustrial.com/cwc/products?pnlid=6&famid=31&catid=234&id=n60&lang=en_US')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(12, 'openPDC', 'Open Source Phasor Data Concentrator', 'http://www.openpdc.com/')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(13, 'FNET', 'UTK FNET Device', '')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-3373', 'SEL-3373 Synchrophasor Data Concentrator', 'http://www.selinc.com/SEL-3373/')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(14, 'SIMEAS R-PMU', '7KE6100 Digital Fault Recorder & PMU', 'http://www.energy.siemens.com/mx/en/automation/power-transmission-distribution/power-quality/simeas-r-pmu.htm')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(15, 'ePDC', 'ePDC & eSPDC', 'http://www.electricpowergroup.com/solutions/epdc/index.html')
+GO
+ 
+INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, LoadOrder) VALUES('Downloader', 'Remote Downloader', 'File', 'File', 'openMIC.exe', 'openMIC.Downloader', 12)
+GO
+
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 1, 'Downloader Enabled', 'Boolean value representing if the downloader was continually enabled with access to local download path during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_Enabled', '', 1, 'System.Boolean', '{0}', 1, 1)
 GO
 
@@ -623,6 +728,18 @@ INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, Type
 GO
 
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 11, 'Downloader Dial-up Time', 'Total dial-up time reported by the downloader during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_TotalDialUpTime', '', 1, 'System.Double', '{0:N3} Seconds', 0, 11)
+GO
+
+DELETE FROM VendorDevice
+GO
+
+DELETE FROM Vendor
+GO
+
+DBCC CHECKIDENT(VendorDevice, RESEED, 0)
+GO
+
+DBCC CHECKIDENT(Vendor, RESEED, 0)
 GO
 
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('OTHER', 'Other / Unspecified', '', '', '')

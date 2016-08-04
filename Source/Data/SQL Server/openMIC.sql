@@ -16,8 +16,15 @@
 --
 --  Schema Modification History:
 --  ----------------------------------------------------------------------------------------------------
---  09/15/2015 - J. Ritchie Carroll
---       Derived original version of schema from GSFSchema.
+--  05/07/2011 - J. Ritchie Carroll
+--       Generated original version of schema.
+--	05/23/2011 - Mehulbhai P Thakkar
+--       Script is based on openMIC.sql script created by James Ritchie Carroll.
+--  03/27/2012 - prasanthgs
+--       Added ExceptionLog table for keeping recent exceptions.
+--  04/12/2012 - prasanthgs
+--       Reworked as per the comments of codeplex reviewers.
+--       Added new field Type to ErrorLog table. Removed ExceptionLog table.
 --  ----------------------------------------------------------------------------------------------------
 
 -- *******************************************************************************************
@@ -109,7 +116,7 @@ GO
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[SchemaVersion] AS
-SELECT 1 AS VersionNumber
+SELECT 5 AS VersionNumber
 GO
 
 SET ANSI_NULLS ON
@@ -183,7 +190,7 @@ GO
 CREATE TABLE [dbo].[Company](
     [ID] [int] IDENTITY(1,1) NOT NULL,
     [Acronym] [varchar](200) NOT NULL,
-    [MapAcronym] [nchar](3) NOT NULL,
+    [MapAcronym] [nchar](10) NOT NULL,
     [Name] [varchar](200) NOT NULL,
     [URL] [varchar](max) NULL,
     [LoadOrder] [int] NOT NULL CONSTRAINT [DF_Company_LoadOrder]  DEFAULT ((0)),
@@ -253,53 +260,14 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE TABLE [dbo].[ConnectionProfile](
-    [ID] [int] IDENTITY(1,1) NOT NULL,
-    [Name] [varchar](200) NOT NULL,
-    [Description] [varchar](max) NULL,
-    [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfile_CreatedOn]  DEFAULT (getutcdate()),
-    [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfile_CreatedBy]  DEFAULT (suser_name()),
-    [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfile_UpdatedOn]  DEFAULT (getutcdate()),
-    [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfile_UpdatedBy]  DEFAULT (suser_name()),
- CONSTRAINT [PK_ConnectionProfile] PRIMARY KEY CLUSTERED 
-(
-    [ID] ASC
-)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[ConnectionProfileTask](
-    [ID] [int] IDENTITY(1,1) NOT NULL,
-    [ConnectionProfileID] [int] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_ConnectionProfileID] DEFAULT (0),
-    [Name] [varchar](200) NOT NULL,
-    [Settings] [varchar](max) NULL,
-    [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_CreatedOn]  DEFAULT (getutcdate()),
-    [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_CreatedBy]  DEFAULT (suser_name()),
-    [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedOn]  DEFAULT (getutcdate()),
-    [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedBy]  DEFAULT (suser_name()),
- CONSTRAINT [PK_ConnectionProfileTask] PRIMARY KEY CLUSTERED 
-(
-    [ID] ASC
-)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[Protocol](
     [ID] [int] IDENTITY(1,1) NOT NULL,
     [Acronym] [varchar](200) NOT NULL,
     [Name] [varchar](200) NOT NULL,
-    [Type] [varchar](200) NOT NULL CONSTRAINT [DF_Protocol_Type] DEFAULT (N'File'),
-    [Category] [varchar](200) NOT NULL CONSTRAINT [DF_Protocol_Category] DEFAULT (N'Power'),
-    [AssemblyName] [varchar] (1024) NOT NULL CONSTRAINT [DF_Protocol_AssemblyName] DEFAULT (N'TestingAdapters.dll'),
-    [TypeName] [varchar] (200) NOT NULL CONSTRAINT [DF_Protocol_TypeName] DEFAULT (N'TestingAdapters.VirtualInputAdapter'),
+    [Type] [varchar](200) NOT NULL CONSTRAINT [DF_Protocol_Type] DEFAULT (N'Frame'),
+    [Category] [varchar](200) NOT NULL CONSTRAINT [DF_Protocol_Category] DEFAULT (N'Phasor'),
+    [AssemblyName] [varchar] (1024) NOT NULL CONSTRAINT [DF_Protocol_AssemblyName] DEFAULT (N'PhasorProtocolAdapters.dll'),
+    [TypeName] [varchar] (200) NOT NULL CONSTRAINT [DF_Protocol_TypeName] DEFAULT (N'PhasorProtocolAdapters.PhasorMeasurementMapper'),
     [LoadOrder] [int] NOT NULL CONSTRAINT [DF_Protocol_LoadOrder] DEFAULT ((0)),
  CONSTRAINT [PK_Protocol] PRIMARY KEY CLUSTERED 
 (
@@ -1133,6 +1101,67 @@ END
 
 
 GO
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+CREATE TABLE [dbo].[PowerCalculation](
+    [NodeID] [uniqueidentifier] NULL,
+    [ID] [int] IDENTITY(1,1) NOT NULL,
+    [CircuitDescription] [varchar](max) NULL,
+    [VoltageAngleSignalID] [uniqueidentifier] NOT NULL,
+    [VoltageMagSignalID] [uniqueidentifier] NOT NULL,
+    [CurrentAngleSignalID] [uniqueidentifier] NOT NULL,
+    [CurrentMagSignalID] [uniqueidentifier] NOT NULL,
+    [ActivePowerOutputSignalID] [uniqueidentifier] NULL,
+    [ReactivePowerOutputSignalID] [uniqueidentifier] NULL,
+    [ApparentPowerOutputSignalID] [uniqueidentifier] NULL,
+    [Enabled] [bit] NOT NULL,
+ CONSTRAINT [PK_PowerCalculation] PRIMARY KEY CLUSTERED 
+(
+    [ID] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+ALTER TABLE [dbo].[PowerCalculation]  WITH CHECK ADD  CONSTRAINT [FK_PowerCalculation_Measurement1] FOREIGN KEY([ApparentPowerOutputSignalID])
+REFERENCES [dbo].[Measurement] ([SignalID])
+GO
+
+ALTER TABLE [dbo].[PowerCalculation]  WITH CHECK ADD  CONSTRAINT [FK_PowerCalculation_Measurement2] FOREIGN KEY([CurrentAngleSignalID])
+REFERENCES [dbo].[Measurement] ([SignalID])
+GO
+
+ALTER TABLE [dbo].[PowerCalculation]  WITH CHECK ADD  CONSTRAINT [FK_PowerCalculation_Measurement3] FOREIGN KEY([CurrentMagSignalID])
+REFERENCES [dbo].[Measurement] ([SignalID])
+GO
+
+ALTER TABLE [dbo].[PowerCalculation]  WITH CHECK ADD  CONSTRAINT [FK_PowerCalculation_Measurement4] FOREIGN KEY([ReactivePowerOutputSignalID])
+REFERENCES [dbo].[Measurement] ([SignalID])
+GO
+
+ALTER TABLE [dbo].[PowerCalculation]  WITH CHECK ADD  CONSTRAINT [FK_PowerCalculation_Measurement5] FOREIGN KEY([ActivePowerOutputSignalID])
+REFERENCES [dbo].[Measurement] ([SignalID])
+GO
+
+ALTER TABLE [dbo].[PowerCalculation]  WITH CHECK ADD  CONSTRAINT [FK_PowerCalculation_Measurement6] FOREIGN KEY([VoltageAngleSignalID])
+REFERENCES [dbo].[Measurement] ([SignalID])
+GO
+
+ALTER TABLE [dbo].[PowerCalculation]  WITH CHECK ADD  CONSTRAINT [FK_PowerCalculation_Measurement7] FOREIGN KEY([VoltageMagSignalID])
+REFERENCES [dbo].[Measurement] ([SignalID])
+GO
+
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1640,8 +1669,6 @@ GO
 
 ALTER TABLE [dbo].[MeasurementGroupMeasurement]  WITH CHECK ADD  CONSTRAINT [FK_MeasurementGroupMeasurement_Measurement] FOREIGN KEY([SignalID])
 REFERENCES [dbo].[Measurement] ([SignalID])
-ON UPDATE CASCADE
-ON DELETE CASCADE
 GO
 
 ALTER TABLE [dbo].[MeasurementGroupMeasurement] CHECK CONSTRAINT [FK_MeasurementGroupMeasurement_Measurement]
@@ -1696,8 +1723,6 @@ GO
 
 ALTER TABLE [dbo].[SubscriberMeasurement]  WITH CHECK ADD  CONSTRAINT [FK_SubscriberMeasurement_Measurement] FOREIGN KEY([SignalID])
 REFERENCES [dbo].[Measurement] ([SignalID])
-ON UPDATE CASCADE
-ON DELETE CASCADE
 GO
 
 ALTER TABLE [dbo].[SubscriberMeasurement] CHECK CONSTRAINT [FK_SubscriberMeasurement_Measurement]
@@ -2435,9 +2460,6 @@ GO
 ALTER TABLE [dbo].[VendorDevice]  WITH CHECK ADD  CONSTRAINT [FK_VendorDevice_Vendor] FOREIGN KEY([VendorID])
 REFERENCES [dbo].[Vendor] ([ID])
 GO
-ALTER TABLE [dbo].[ConnectionProfileTask]  WITH CHECK ADD  CONSTRAINT [FK_ConnectionProfileTask_ConnectionProfile] FOREIGN KEY([ConnectionProfileID])
-REFERENCES [dbo].[ConnectionProfile] ([ID])
-GO
 ALTER TABLE [dbo].[OutputStreamDeviceDigital]  WITH CHECK ADD  CONSTRAINT [FK_OutputStreamDeviceDigital_Node] FOREIGN KEY([NodeID])
 REFERENCES [dbo].[Node] ([ID])
 GO
@@ -2475,7 +2497,6 @@ REFERENCES [dbo].[Historian] ([ID])
 GO
 ALTER TABLE [dbo].[OutputStreamMeasurement]  WITH CHECK ADD  CONSTRAINT [FK_OutputStreamMeasurement_Measurement] FOREIGN KEY([PointID])
 REFERENCES [dbo].[Measurement] ([PointID])
-ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[OutputStreamMeasurement]  WITH CHECK ADD  CONSTRAINT [FK_OutputStreamMeasurement_Node] FOREIGN KEY([NodeID])
 REFERENCES [dbo].[Node] ([ID])
@@ -2560,6 +2581,29 @@ BEGIN
 END
 GO
 
+CREATE TRIGGER [dbo].[Measurement_ClearReferences]
+    ON [dbo].[Measurement]
+    INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DELETE FROM [dbo].[PowerCalculation] WHERE 
+		   [ApparentPowerOutputSignalID] IN (SELECT [SignalID] FROM DELETED)
+		OR [CurrentAngleSignalID] IN (SELECT [SignalID] FROM DELETED)
+		OR [CurrentMagSignalID] IN (SELECT [SignalID] FROM DELETED)
+		OR [ReactivePowerOutputSignalID] IN (SELECT [SignalID] FROM DELETED)
+		OR [ActivePowerOutputSignalID] IN (SELECT [SignalID] FROM DELETED)
+		OR [VoltageAngleSignalID] IN (SELECT [SignalID] FROM DELETED)
+		OR [VoltageMagSignalID] IN (SELECT [SignalID] FROM DELETED)
+    DELETE FROM [dbo].[MeasurementGroupMeasurement] WHERE [SignalID] IN (SELECT [SignalID] FROM DELETED)
+    DELETE FROM [dbo].[SubscriberMeasurement] WHERE [SignalID] IN (SELECT [SignalID] FROM DELETED)
+    DELETE FROM [dbo].[OutputStreamMeasurement] WHERE [PointID] IN (SELECT [PointID] FROM DELETED)
+    DELETE FROM [dbo].[AlarmLog] WHERE [SignalID] IN (SELECT [SignalID] FROM DELETED)
+    DELETE FROM [dbo].[Alarm] WHERE [SignalID] IN (SELECT [SignalID] FROM DELETED) OR [AssociatedMeasurementID] IN (SELECT [SignalID] FROM DELETED)
+    DELETE FROM [dbo].[Measurement] WHERE [SignalID] IN (SELECT [SignalID] FROM DELETED)
+END
+GO
+
 CREATE TRIGGER [dbo].[Device_ClearReferences]
     ON [dbo].[Device]
     INSTEAD OF DELETE
@@ -2567,17 +2611,6 @@ AS
 BEGIN
     DELETE FROM Measurement WHERE DeviceID IN (SELECT ID FROM deleted)
     DELETE FROM Device WHERE ID IN (SELECT ID FROM deleted)
-END
-GO
-
-CREATE TRIGGER [dbo].[Measurement_ClearReferences]
-    ON [dbo].[Measurement]
-    INSTEAD OF DELETE
-AS
-BEGIN
-    DELETE FROM AlarmLog WHERE SignalID IN (SELECT SignalID FROM deleted)
-    DELETE FROM Alarm WHERE SignalID IN (SELECT SignalID FROM deleted) OR AssociatedMeasurementID IN (SELECT SignalID FROM deleted)
-    DELETE FROM Measurement WHERE SignalID IN (SELECT SignalID FROM deleted)
 END
 GO
 
@@ -2954,4 +2987,47 @@ GO
 --    RETURN @measurements
 --END
 
---GO
+--GO 
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ConnectionProfile](
+    [ID] [int] IDENTITY(1,1) NOT NULL,
+    [Name] [varchar](200) NOT NULL,
+    [Description] [varchar](max) NULL,
+    [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfile_CreatedOn]  DEFAULT (getutcdate()),
+    [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfile_CreatedBy]  DEFAULT (suser_name()),
+    [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfile_UpdatedOn]  DEFAULT (getutcdate()),
+    [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfile_UpdatedBy]  DEFAULT (suser_name()),
+ CONSTRAINT [PK_ConnectionProfile] PRIMARY KEY CLUSTERED 
+(
+    [ID] ASC
+)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ConnectionProfileTask](
+    [ID] [int] IDENTITY(1,1) NOT NULL,
+    [ConnectionProfileID] [int] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_ConnectionProfileID] DEFAULT (0),
+    [Name] [varchar](200) NOT NULL,
+    [Settings] [varchar](max) NULL,
+    [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_CreatedOn]  DEFAULT (getutcdate()),
+    [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_CreatedBy]  DEFAULT (suser_name()),
+    [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedOn]  DEFAULT (getutcdate()),
+    [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedBy]  DEFAULT (suser_name()),
+ CONSTRAINT [PK_ConnectionProfileTask] PRIMARY KEY CLUSTERED 
+(
+    [ID] ASC
+)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[ConnectionProfileTask]  WITH CHECK ADD  CONSTRAINT [FK_ConnectionProfileTask_ConnectionProfile] FOREIGN KEY([ConnectionProfileID])
+REFERENCES [dbo].[ConnectionProfile] ([ID])
+GO
