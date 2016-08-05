@@ -279,7 +279,7 @@ namespace ConfigurationSetupUtility.Screens
                             //Process.Start("openMICManager.exe");
                             Process process = new Process();
                             process.StartInfo.UseShellExecute = true;
-                            process.StartInfo.FileName = "http://localhost:8080/";
+                            process.StartInfo.FileName = "http://localhost:8089/";
                             process.Start();
                         }
                     }
