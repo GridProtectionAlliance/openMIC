@@ -80,7 +80,7 @@ If you would like to contribute please:
 
 # Status
 
-![Status](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/openMIC%20Status.png)
+![Status](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/openMIC%20Status.PNG)
 
 ## Manage Devices and Schedules
 
