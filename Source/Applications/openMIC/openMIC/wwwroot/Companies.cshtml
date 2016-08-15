@@ -23,8 +23,7 @@
 @using GSF.Web.Model
 @using openMIC
 @using openMIC.Model
-@using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@inherits ExtendedTemplateBase<AppModel>
 @section StyleSheets {
     <style>
         html, body {
@@ -67,7 +66,7 @@
     @Raw(dataContext.AddInputField<Company>("URL", "url"))
     @Raw(dataContext.AddInputField<Company>("LoadOrder", "number", "Load Order"))
 }
-@Include("PagedViewModel.cshtml")
+@Html.RenderResource("GSF.Web.Model.Views.PagedViewModel.cshtml")
 @section Scripts {
     @Raw(ViewBag.PageControlScripts.ToString())
     <script>
