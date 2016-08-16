@@ -39,7 +39,7 @@
     ViewBag.ShowSearchFilter = true;
 
     ViewBag.HeaderColumns = new[]
-{   //    { "Field", "Label", "Classes" }
+    {   //    { "Field", "Label", "Classes" }
         new[] { "Acronym", "Acronym", "text-left" },
         new[] { "Name", "Name", "text-left" },
         new[] { "URL", "URL", "text-left" }
@@ -68,7 +68,6 @@
 }
 @Html.RenderResource("GSF.Web.Model.Views.PagedViewModel.cshtml")
 @section Scripts {
-    @Raw(ViewBag.PageControlScripts.ToString())
     <script>
         @Raw(dataContext.RenderViewModelConfiguration<Company, DataHub>(ViewBag, "Acronym"))
     </script>

@@ -24,7 +24,7 @@
 @using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@inherits ExtendedTemplateBase<AppModel>
 @section StyleSheets {
     <style>
         html, body {
@@ -71,7 +71,7 @@
     @Raw(dataContext.AddInputField<ConnectionProfile>("Name", initialFocus: true))
     @Raw(dataContext.AddInputField<ConnectionProfile>("Description"))
 }
-@Include("PagedViewModel.cshtml")
+@Html.RenderResource("GSF.Web.Model.Views.PagedViewModel.cshtml")
 <div id="editTasksDialog" class="modal modal-wide fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">

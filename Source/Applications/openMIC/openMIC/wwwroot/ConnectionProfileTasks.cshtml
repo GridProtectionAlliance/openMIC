@@ -31,7 +31,7 @@
 @using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@inherits ExtendedTemplateBase<AppModel>
 @section StyleSheets {
     <link href="Content/Popup.css" rel="stylesheet">
 }
@@ -108,9 +108,8 @@
         </div>
     </div>
 }
-@Include("PagedViewModel.cshtml")
+@Html.RenderResource("GSF.Web.Model.Views.PagedViewModel.cshtml")
 @section Scripts {
-    @Raw(ViewBag.PageControlScripts.ToString())
     <script>
         "use strict";
 

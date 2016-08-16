@@ -22,8 +22,9 @@
 //*****************************************************************************************************@
 @using System
 @using openMIC.Model
+@using GSF.Web.Model
 @using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@inherits ExtendedTemplateBase<AppModel>
 @{
     const string DateTimeFormat = "yyyy-MM-dd HH:mm.ss.fff";
 
@@ -104,7 +105,7 @@
         </div>
     </div>
     <div class="col-sm-4">
-        @Include("RemoteConsole.html")
+        @Include("RemoteConsole.cshtml")
     </div>
     <div class="col-sm-4">
         <div class="well">

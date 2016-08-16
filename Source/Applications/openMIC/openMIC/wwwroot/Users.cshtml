@@ -26,7 +26,7 @@
 @using GSF.Web.Security
 @using openMIC.Model
 @using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@inherits ExtendedTemplateBase<AppModel>
 @section StyleSheets{
     <style>
          .account-feedback-wrapper {
@@ -140,7 +140,7 @@
         </div>
     </div>
 }
-@Include("PagedViewModel.cshtml")
+@Html.RenderResource("GSF.Web.Model.Views.PagedViewModel.cshtml")
 <div id="editRolesDialog" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -182,7 +182,6 @@
     </div>
 </div>
 @section Scripts {
-    @Raw(ViewBag.PageControlScripts.ToString())
     <script>
         "use strict";
 

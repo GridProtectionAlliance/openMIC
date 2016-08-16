@@ -29,11 +29,12 @@
 @using GSF.Configuration
 @using GSF.IO
 @using GSF.Web
+@using GSF.Web.Model
 @using GSF.Web.Hosting
 @using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@inherits ExtendedTemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
     ViewBag.Title = "Select Theme";

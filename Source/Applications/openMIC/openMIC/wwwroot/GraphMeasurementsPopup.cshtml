@@ -23,9 +23,10 @@
 @using System.Collections.Generic
 @using System.Net.Http
 @using GSF.Web
+@using GSF.Web.Model
 @using openMIC.Model
 @using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@inherits ExtendedTemplateBase<AppModel>
 @{
     HttpRequestMessage request = ViewBag.Request;
     Dictionary<string, string> parameters = request.QueryParameters();

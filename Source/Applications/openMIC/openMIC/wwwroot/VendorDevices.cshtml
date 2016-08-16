@@ -24,7 +24,7 @@
 @using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@inherits ExtendedTemplateBase<AppModel>
 @section StyleSheets {
     <style>
         html, body {
@@ -66,9 +66,8 @@
     @Raw(dataContext.AddInputField<VendorDevice>("Description"))
     @Raw(dataContext.AddInputField<VendorDevice>("URL", "url"))
 }
-@Include("PagedViewModel.cshtml")
+@Html.RenderResource("GSF.Web.Model.Views.PagedViewModel.cshtml")
 @section Scripts {
-    @Raw(ViewBag.PageControlScripts.ToString())
     <script>
         @Raw(dataContext.RenderViewModelConfiguration<VendorDevice, DataHub>(ViewBag, "Name"))
     </script>

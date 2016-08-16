@@ -23,9 +23,10 @@
 @using System.Collections.Generic
 @using System.Net.Http
 @using GSF.Web
+@using GSF.Web.Model
 @using openMIC.Model
 @using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@inherits ExtendedTemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
     ViewBag.Title = "Remote Service Console";
@@ -108,7 +109,7 @@
     }
 }
 @section Scripts {
-    <script src="Scripts/js.cookie.js"></script>
+    <script src="@("@GSF/Web/Model/Scripts/js.cookie.js")"></script>
     <script>
         $(function () {
             var overRemoteConsole = false;

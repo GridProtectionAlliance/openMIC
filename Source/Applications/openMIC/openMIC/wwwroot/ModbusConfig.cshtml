@@ -22,7 +22,8 @@
 //*****************************************************************************************************@
 @using openMIC.Model
 @using RazorEngine.Templating
-@inherits TemplateBase<AppModel>
+@using GSF.Web.Model
+@inherits ExtendedTemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
 
@@ -361,8 +362,8 @@
     <script src="Scripts/knockout-3.4.0.js"></script>
     <script src="Scripts/knockout.mapping-latest.js"></script>
     <script src="Scripts/knockout.validation.js"></script>
-    <script src="Scripts/ko-reactor.min.js"></script>
-    <script src="Scripts/gsf.web.knockout.js"></script>
+    <script src="@("@GSF/Web/Model/Scripts/ko-reactor.min.js")"></script>
+    <script src="@("@GSF/Web/Model/Scripts/gsf.web.knockout.js")"></script>
     <script src="Scripts/ModbusConfig/RecordViewModel.js"></script>
     <script src="Scripts/ModbusConfig/SequenceViewModel.js"></script>
     <script src="Scripts/ModbusConfig/MapViewModel.js"></script>
