@@ -84,7 +84,6 @@
     </div>
 </div>
 @section Scripts {
-    @Raw(ViewBag.PageControlScripts.ToString())
     <script>
         @Raw(dataContext.RenderViewModelConfiguration<ConnectionProfile, DataHub>(ViewBag, "Name"))
 
