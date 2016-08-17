@@ -163,6 +163,8 @@
                         <ul class="dropdown-menu">
                             <li><a href="ConnectionProfiles.cshtml">Connection Profiles</a></li>
                             <li role="separator" class="divider"></li>
+                            <li><a href="ModbusConfig.cshtml">Modbus Configuration Builder</a></li>
+                            <li role="separator" class="divider"></li>
                             <li><a href="Companies.cshtml">Companies</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a href="Vendors.cshtml">Vendors</a></li>
@@ -231,6 +233,7 @@ else {
     <script src="Scripts/plugins-all.js"></script>
     <script src="Scripts/primeui@(min).js"></script>
     <script src="Scripts/Site.js"></script>
+    @Raw(ViewBag.PageControlScripts.ToString())
     @RenderSection("Scripts", false)
 </body>
 </html>

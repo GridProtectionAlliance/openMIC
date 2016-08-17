@@ -225,8 +225,10 @@
   <ItemGroup>
     <Compile Include="DataHub.cs" />
     <Compile Include="DataSubscriptionHubClient.cs" />
+    <Compile Include="DataSubscriptionOperations.cs" />
     <Compile Include="Downloader.cs" />
     <Compile Include="GlobalSettings.cs" />
+    <Compile Include="ModbusOperations.cs" />
     <Compile Include="IOrderedQueryableExtensions.cs" />
     <Compile Include="ModbusHubClient.cs" />
     <Compile Include="Model\Alarm.cs" />

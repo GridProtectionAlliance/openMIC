@@ -30,6 +30,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using GSF;
+using GSF.Web.Hubs;
 using Modbus.Device;
 using Modbus.Utility;
 
@@ -38,12 +39,11 @@ namespace openMIC
     /// <summary>
     /// Represents a client instance of a <see cref="DataHub"/> for Modbus connections.
     /// </summary>
-    public class ModbusHubClient : IDisposable
+    public class ModbusHubClient : HubClientBase
     {
         #region [ Members ]
 
         // Fields
-        private readonly dynamic m_hubClient;
         private IModbusMaster m_modbusConnection;
         private TcpClient m_tcpClient;
         private UdpClient m_udpClient;
@@ -53,54 +53,27 @@ namespace openMIC
 
         #endregion
 
-        #region [ Constructors ]
-
-        /// <summary>
-        /// Creates a new <see cref="ModbusHubClient"/> instance.
-        /// </summary>
-        /// <param name="hubClient"></param>
-        public ModbusHubClient(dynamic hubClient)
-        {
-            m_hubClient = hubClient;
-        }
-
-        #endregion
-
-        #region [ Properties ]
-
-        public dynamic Instance => m_hubClient;
-
-        #endregion
-
         #region [ Methods ]
-
-        /// <summary>
-        /// Releases all the resources used by the <see cref="ModbusHubClient"/> object.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
 
         /// <summary>
         /// Releases the unmanaged resources used by the <see cref="ModbusHubClient"/> object and optionally releases the managed resources.
         /// </summary>
         /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (!m_disposed)
             {
                 try
                 {
+                    // This will be done regardless of whether the object is finalized or disposed.
+
                     if (disposing)
-                    {
                         DisposeConnections();
-                    }
                 }
                 finally
                 {
-                    m_disposed = true;  // Prevent duplicate dispose.
+                    m_disposed = true;          // Prevent duplicate dispose.
+                    base.Dispose(disposing);    // Call base class Dispose().
                 }
             }
         }
@@ -126,15 +99,15 @@ namespace openMIC
                     color = "red";
                     break;
             }
-
-            m_hubClient.connectionStatusUpdate(message, color);
+            
+            HubScript?.connectionStatusUpdate(message, color);
         }
 
         public void Disconnect()
         {
             DisposeConnections();
 
-            m_hubClient.connectionTerminated();
+            HubScript?.connectionTerminated();
             UpdateStatus("Device disconnected.", UpdateType.Warning);
         }
 
@@ -219,7 +192,7 @@ namespace openMIC
                 }
                 catch (Exception ex)
                 {
-                    m_hubClient.connectionFailed();
+                    HubScript?.connectionFailed();
                     UpdateStatus($"Failed to connect to device: {ex.Message}", UpdateType.Alarm);
                 }
 
@@ -295,19 +268,19 @@ namespace openMIC
 
         private void AttemptingConnection(string type)
         {
-            m_hubClient.attemptingConnection();
+            HubScript?.attemptingConnection();
             UpdateStatus($"Attempting to connect to device using {type}...", UpdateType.Information);
         }
 
         private void ConnectionSucceeded(string type)
         {
-            m_hubClient.connectionSucceeded();
+            HubScript?.connectionSucceeded();
             UpdateStatus($"Connected to device using {type}", UpdateType.Information);
         }
 
         private void ConnectionFailed(string type, string exceptionMessage)
         {
-            m_hubClient.connectionFailed();
+            HubScript?.connectionFailed();
             UpdateStatus($"Failed to connect to device using {type}: {exceptionMessage}", UpdateType.Alarm);
         }
 

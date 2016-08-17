@@ -22,7 +22,6 @@
 //******************************************************************************************************
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,7 +31,7 @@ using GSF;
 using GSF.Data.Model;
 using GSF.Identity;
 using GSF.IO;
-using GSF.Web.Model;
+using GSF.Web.Hubs;
 using GSF.Web.Security;
 using Microsoft.AspNet.SignalR;
 using openMIC.Model;
@@ -41,81 +40,34 @@ using RecordRestriction = GSF.Data.Model.RecordRestriction;
 namespace openMIC
 {
     [AuthorizeHubRole]
-    public class DataHub : Hub, IRecordOperationsHub
+    public class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOperations, IModbusOperations
     {
         #region [ Members ]
 
         // Fields
-        private readonly DataContext m_dataContext;
-        private DataSubscriptionHubClient m_dataSubscriptionHubClient;
-        private ModbusHubClient m_modbusHubClient;
-        private bool m_disposed;
+        private readonly DataSubscriptionOperations m_dataSubscriptionOperations;
+        private readonly ModbusOperations m_modbusOperations;
 
         #endregion
 
         #region [ Constructors ]
 
-        public DataHub()
+        public DataHub() : base(null, Program.Host.LogStatusMessage, Program.Host.LogException)
         {
-            m_dataContext = new DataContext(exceptionHandler: LogException);
-        }
+            Action<string, UpdateType> logStatusMessage = (message, updateType) => LogStatusMessage(message, updateType);
+            Action<Exception> logException = ex => LogException(ex);
 
-        #endregion
-
-        #region [ Properties ]
-
-        /// <summary>
-        /// Gets <see cref="IRecordOperationsHub.RecordOperationsCache"/> for SignalR hub.
-        /// </summary>
-        public RecordOperationsCache RecordOperationsCache => s_recordOperationsCache;
-
-        private DataSubscriptionHubClient DataSubscriptionHubClient
-        {
-            get
-            {
-                return m_dataSubscriptionHubClient ?? (m_dataSubscriptionHubClient = s_dataSubscriptionHubClients.GetOrAdd(Context.ConnectionId, id => new DataSubscriptionHubClient(Clients.Client(Context.ConnectionId))));
-            }
-        }
-
-        private ModbusHubClient ModbusHubClient
-        {
-            get
-            {
-                return m_modbusHubClient ?? (m_modbusHubClient = s_modbusHubClients.GetOrAdd(Context.ConnectionId, id => new ModbusHubClient(Clients.Client(Context.ConnectionId))));
-            }
+            m_dataSubscriptionOperations = new DataSubscriptionOperations(this, logStatusMessage, logException);
+            m_modbusOperations = new ModbusOperations(this, logStatusMessage, logException);
         }
 
         #endregion
 
         #region [ Methods ]
 
-        /// <summary>
-        /// Releases the unmanaged resources used by the <see cref="DataHub"/> object and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (!m_disposed)
-            {
-                try
-                {
-                    if (disposing)
-                    {
-                        m_dataContext?.Dispose();
-                    }
-                }
-                finally
-                {
-                    m_disposed = true;          // Prevent duplicate dispose.
-                    base.Dispose(disposing);    // Call base class Dispose().
-                }
-            }
-        }
-
         public override Task OnConnected()
         {
-            s_connectCount++;
-            Program.Host.LogStatusMessage($"DataHub connect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
+            Program.Host.LogStatusMessage($"DataHub connect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {ConnectionCount}");
             return base.OnConnected();
         }
 
@@ -123,48 +75,14 @@ namespace openMIC
         {
             if (stopCalled)
             {
-                DataSubscriptionHubClient client;
+                // Dispose any associated hub operations associated with current SignalR client
+                m_dataSubscriptionOperations?.EndSession();
+                m_modbusOperations?.EndSession();
 
-                // Dispose of data hub client when client connection is disconnected
-                if (s_dataSubscriptionHubClients.TryRemove(Context.ConnectionId, out client))
-                    client.Dispose();
-
-                m_dataSubscriptionHubClient = null;
-
-                ModbusHubClient modbusHubClient;
-
-                // Dispose of Modbus hub client when client connection is disconnected
-                if (s_modbusHubClients.TryRemove(Context.ConnectionId, out modbusHubClient))
-                    modbusHubClient.Dispose();
-
-                m_modbusHubClient = null;
-                s_connectCount--;
-
-                Program.Host.LogStatusMessage($"DataHub disconnect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {s_connectCount}");
+                Program.Host.LogStatusMessage($"DataHub disconnect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {ConnectionCount}");
             }
 
             return base.OnDisconnected(stopCalled);
-        }
-
-        private void LogStatusMessage(string message, UpdateType type = UpdateType.Information)
-        {
-            dynamic hubClient = Clients.Client(Context.ConnectionId);
-
-            if (hubClient != null)
-                hubClient.sendErrorMessage(message, type == UpdateType.Information ? 2000 : -1);
-
-            Program.Host.LogStatusMessage(message, type);
-
-        }
-
-        private void LogException(Exception ex)
-        {
-            dynamic hubClient = Clients.Client(Context.ConnectionId);
-
-            if (hubClient != null)
-                hubClient.sendInfoMessage(ex.Message, -1);
-
-            Program.Host.LogException(ex);
         }
 
         #endregion
@@ -173,35 +91,12 @@ namespace openMIC
 
         // Static Properties
 
-        /// <summary>
-        /// Gets the hub connection ID for the current thread.
-        /// </summary>
-        public static string CurrentConnectionID => s_connectionID.Value;
-
         // Static Fields
-        private static readonly ConcurrentDictionary<string, DataSubscriptionHubClient> s_dataSubscriptionHubClients;
-        private static readonly ConcurrentDictionary<string, ModbusHubClient> s_modbusHubClients;
-        private static volatile int s_connectCount;
         private static int s_downloaderProtocolID;
-        private static readonly ThreadLocal<string> s_connectionID = new ThreadLocal<string>();
-        private static readonly RecordOperationsCache s_recordOperationsCache;
-
-        // Static Methods
-
-        /// <summary>
-        /// Gets statically cached instance of <see cref="RecordOperationsCache"/> for <see cref="DataHub"/> instances.
-        /// </summary>
-        /// <returns>Statically cached instance of <see cref="RecordOperationsCache"/> for <see cref="DataHub"/> instances.</returns>
-        public static RecordOperationsCache GetRecordOperationsCache() => s_recordOperationsCache;
 
         // Static Constructor
         static DataHub()
         {
-            s_dataSubscriptionHubClients = new ConcurrentDictionary<string, DataSubscriptionHubClient>(StringComparer.OrdinalIgnoreCase);
-            s_modbusHubClients = new ConcurrentDictionary<string, ModbusHubClient>(StringComparer.OrdinalIgnoreCase);
-
-            // Analyze and cache record operations of data hub
-            s_recordOperationsCache = new RecordOperationsCache(typeof(DataHub));
             Downloader.ProgressUpdated += DownloaderProgressUpdated;
         }
 
@@ -232,36 +127,36 @@ namespace openMIC
         /// <summary>
         /// Gets protocol ID for "Downloader" adapter.
         /// </summary>
-        public int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : (s_downloaderProtocolID = m_dataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'"));
+        public int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : (s_downloaderProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'"));
 
         [RecordOperation(typeof(Device), RecordOperation.QueryRecordCount)]
         public int QueryDeviceCount(string filterText)
         {
             if (string.IsNullOrWhiteSpace(filterText))
-                return m_dataContext.Table<Device>().QueryRecordCount();
+                return DataContext.Table<Device>().QueryRecordCount();
 
-            return m_dataContext.Table<Device>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            return DataContext.Table<Device>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [RecordOperation(typeof(Device), RecordOperation.QueryRecords)]
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
             if (string.IsNullOrWhiteSpace(filterText))
-                return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
+                return DataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
 
-            return m_dataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            return DataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         public IEnumerable<Device> QueryDevices(int limit, string filterText)
         {
-            return m_dataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Enabled <> 0 AND (Acronym LIKE {0} OR Name LIKE {0})", $"%{filterText}%"), limit);
+            return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Enabled <> 0 AND (Acronym LIKE {0} OR Name LIKE {0})", $"%{filterText}%"), limit);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Device), RecordOperation.DeleteRecord)]
         public void DeleteDevice(int id)
         {
-            m_dataContext.Table<Device>().DeleteRecord(id);
+            DataContext.Table<Device>().DeleteRecord(id);
         }
 
         [RecordOperation(typeof(Device), RecordOperation.CreateNewRecord)]
@@ -285,7 +180,7 @@ namespace openMIC
             if (string.IsNullOrWhiteSpace(device.OriginalSource))
                 device.OriginalSource = device.Acronym;
 
-            m_dataContext.Table<Device>().AddNewRecord(device);
+            DataContext.Table<Device>().AddNewRecord(device);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -299,7 +194,7 @@ namespace openMIC
             if (string.IsNullOrWhiteSpace(device.OriginalSource))
                 device.OriginalSource = device.Acronym;
 
-            m_dataContext.Table<Device>().UpdateRecord(device);
+            DataContext.Table<Device>().UpdateRecord(device);
         }
 
         #endregion
@@ -309,20 +204,20 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.QueryRecordCount)]
         public int QueryConnectionProfileCount(string filterText)
         {
-            return m_dataContext.Table<ConnectionProfile>().QueryRecordCount();
+            return DataContext.Table<ConnectionProfile>().QueryRecordCount();
         }
 
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.QueryRecords)]
         public IEnumerable<ConnectionProfile> QueryConnectionProfiles(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            return m_dataContext.Table<ConnectionProfile>().QueryRecords(sortField, ascending, page, pageSize);
+            return DataContext.Table<ConnectionProfile>().QueryRecords(sortField, ascending, page, pageSize);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.DeleteRecord)]
         public void DeleteConnectionProfile(int id)
         {
-            m_dataContext.Table<ConnectionProfile>().DeleteRecord(id);
+            DataContext.Table<ConnectionProfile>().DeleteRecord(id);
         }
 
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.CreateNewRecord)]
@@ -340,7 +235,7 @@ namespace openMIC
             connectionProfile.UpdatedBy = connectionProfile.CreatedBy;
             connectionProfile.UpdatedOn = connectionProfile.CreatedOn;
 
-            m_dataContext.Table<ConnectionProfile>().AddNewRecord(connectionProfile);
+            DataContext.Table<ConnectionProfile>().AddNewRecord(connectionProfile);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -350,7 +245,7 @@ namespace openMIC
             connectionProfile.UpdatedBy = connectionProfile.CreatedBy;
             connectionProfile.UpdatedOn = connectionProfile.CreatedOn;
 
-            m_dataContext.Table<ConnectionProfile>().UpdateRecord(connectionProfile);
+            DataContext.Table<ConnectionProfile>().UpdateRecord(connectionProfile);
         }
 
         #endregion
@@ -365,7 +260,7 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.QueryRecordCount)]
         public int QueryConnectionProfileTaskCount(int parentID, string filterText)
         {
-            return m_dataContext.Table<ConnectionProfileTask>().QueryRecordCount(new RecordRestriction
+            return DataContext.Table<ConnectionProfileTask>().QueryRecordCount(new RecordRestriction
             {
                 FilterExpression = "ConnectionProfileID = {0}",
                 Parameters = new object[] { parentID }
@@ -375,7 +270,7 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.QueryRecords)]
         public IEnumerable<ConnectionProfileTask> QueryConnectionProfileTasks(int parentID, string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            return m_dataContext.Table<ConnectionProfileTask>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction
+            return DataContext.Table<ConnectionProfileTask>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction
             {
                 FilterExpression = "ConnectionProfileID = {0}",
                 Parameters = new object[] { parentID }
@@ -386,7 +281,7 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.DeleteRecord)]
         public void DeleteConnectionProfileTask(int id)
         {
-            m_dataContext.Table<ConnectionProfileTask>().DeleteRecord(id);
+            DataContext.Table<ConnectionProfileTask>().DeleteRecord(id);
         }
 
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.CreateNewRecord)]
@@ -404,7 +299,7 @@ namespace openMIC
             connectionProfileTask.UpdatedBy = connectionProfileTask.CreatedBy;
             connectionProfileTask.UpdatedOn = connectionProfileTask.CreatedOn;
 
-            m_dataContext.Table<ConnectionProfileTask>().AddNewRecord(connectionProfileTask);
+            DataContext.Table<ConnectionProfileTask>().AddNewRecord(connectionProfileTask);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -414,7 +309,7 @@ namespace openMIC
             connectionProfileTask.UpdatedBy = connectionProfileTask.CreatedBy;
             connectionProfileTask.UpdatedOn = connectionProfileTask.CreatedOn;
 
-            m_dataContext.Table<ConnectionProfileTask>().UpdateRecord(connectionProfileTask);
+            DataContext.Table<ConnectionProfileTask>().UpdateRecord(connectionProfileTask);
         }
 
         #endregion
@@ -425,25 +320,25 @@ namespace openMIC
         public int QueryCompanyCount(string filterText)
         {
             if (string.IsNullOrWhiteSpace(filterText))
-                return m_dataContext.Table<Company>().QueryRecordCount();
+                return DataContext.Table<Company>().QueryRecordCount();
 
-            return m_dataContext.Table<Company>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            return DataContext.Table<Company>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [RecordOperation(typeof(Company), RecordOperation.QueryRecords)]
         public IEnumerable<Company> QueryCompanies(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
             if (string.IsNullOrWhiteSpace(filterText))
-                return m_dataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize);
+                return DataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize);
 
-            return m_dataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            return DataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Company), RecordOperation.DeleteRecord)]
         public void DeleteCompany(int id)
         {
-            m_dataContext.Table<Company>().DeleteRecord(id);
+            DataContext.Table<Company>().DeleteRecord(id);
         }
 
         [RecordOperation(typeof(Company), RecordOperation.CreateNewRecord)]
@@ -461,7 +356,7 @@ namespace openMIC
             company.UpdatedBy = company.CreatedBy;
             company.UpdatedOn = company.CreatedOn;
 
-            m_dataContext.Table<Company>().AddNewRecord(company);
+            DataContext.Table<Company>().AddNewRecord(company);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -471,7 +366,7 @@ namespace openMIC
             company.UpdatedBy = company.CreatedBy;
             company.UpdatedOn = company.CreatedOn;
 
-            m_dataContext.Table<Company>().UpdateRecord(company);
+            DataContext.Table<Company>().UpdateRecord(company);
         }
 
         #endregion
@@ -482,25 +377,25 @@ namespace openMIC
         public int QueryVendorCount(string filterText)
         {
             if (string.IsNullOrWhiteSpace(filterText))
-                return m_dataContext.Table<Vendor>().QueryRecordCount();
+                return DataContext.Table<Vendor>().QueryRecordCount();
 
-            return m_dataContext.Table<Vendor>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            return DataContext.Table<Vendor>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [RecordOperation(typeof(Vendor), RecordOperation.QueryRecords)]
         public IEnumerable<Vendor> QueryVendors(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
             if (string.IsNullOrWhiteSpace(filterText))
-                return m_dataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize);
+                return DataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize);
 
-            return m_dataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            return DataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Vendor), RecordOperation.DeleteRecord)]
         public void DeleteVendor(int id)
         {
-            m_dataContext.Table<Vendor>().DeleteRecord(id);
+            DataContext.Table<Vendor>().DeleteRecord(id);
         }
 
         [RecordOperation(typeof(Vendor), RecordOperation.CreateNewRecord)]
@@ -518,7 +413,7 @@ namespace openMIC
             vendor.UpdatedBy = vendor.CreatedBy;
             vendor.UpdatedOn = vendor.CreatedOn;
 
-            m_dataContext.Table<Vendor>().AddNewRecord(vendor);
+            DataContext.Table<Vendor>().AddNewRecord(vendor);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -528,7 +423,7 @@ namespace openMIC
             vendor.UpdatedBy = vendor.CreatedBy;
             vendor.UpdatedOn = vendor.CreatedOn;
 
-            m_dataContext.Table<Vendor>().UpdateRecord(vendor);
+            DataContext.Table<Vendor>().UpdateRecord(vendor);
         }
 
         #endregion
@@ -539,25 +434,25 @@ namespace openMIC
         public int QueryVendorDeviceCount(string filterText)
         {
             if (string.IsNullOrWhiteSpace(filterText))
-                return m_dataContext.Table<VendorDevice>().QueryRecordCount();
+                return DataContext.Table<VendorDevice>().QueryRecordCount();
 
-            return m_dataContext.Table<VendorDevice>().QueryRecordCount(new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
+            return DataContext.Table<VendorDevice>().QueryRecordCount(new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
         }
 
         [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecords)]
         public IEnumerable<VendorDevice> QueryVendorDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
             if (string.IsNullOrWhiteSpace(filterText))
-                return m_dataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize);
+                return DataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize);
 
-            return m_dataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
+            return DataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(VendorDevice), RecordOperation.DeleteRecord)]
         public void DeleteVendorDevice(int id)
         {
-            m_dataContext.Table<VendorDevice>().DeleteRecord(id);
+            DataContext.Table<VendorDevice>().DeleteRecord(id);
         }
 
         [RecordOperation(typeof(VendorDevice), RecordOperation.CreateNewRecord)]
@@ -575,7 +470,7 @@ namespace openMIC
             vendorDevice.UpdatedBy = vendorDevice.CreatedBy;
             vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
 
-            m_dataContext.Table<VendorDevice>().AddNewRecord(vendorDevice);
+            DataContext.Table<VendorDevice>().AddNewRecord(vendorDevice);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -585,7 +480,7 @@ namespace openMIC
             vendorDevice.UpdatedBy = vendorDevice.CreatedBy;
             vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
 
-            m_dataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
+            DataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
         }
 
         #endregion
@@ -597,78 +492,78 @@ namespace openMIC
 
         public IEnumerable<MeasurementValue> GetMeasurements()
         {
-            return DataSubscriptionHubClient.Measurements;
+            return m_dataSubscriptionOperations.GetMeasurements();
         }
 
         public IEnumerable<DeviceDetail> GetDeviceDetails()
         {
-            return DataSubscriptionHubClient.DeviceDetails;
+            return m_dataSubscriptionOperations.GetDeviceDetails();
         }
 
         public IEnumerable<MeasurementDetail> GetMeasurementDetails()
         {
-            return DataSubscriptionHubClient.MeasurementDetails;
+            return m_dataSubscriptionOperations.GetMeasurementDetails();
         }
 
         public IEnumerable<PhasorDetail> GetPhasorDetails()
         {
-            return DataSubscriptionHubClient.PhasorDetails;
+            return m_dataSubscriptionOperations.GetPhasorDetails();
         }
 
         public IEnumerable<SchemaVersion> GetSchemaVersion()
         {
-            return DataSubscriptionHubClient.SchemaVersion;
+            return m_dataSubscriptionOperations.GetSchemaVersion();
         }
 
         public IEnumerable<MeasurementValue> GetStats()
         {
-            return DataSubscriptionHubClient.Statistics;
+            return m_dataSubscriptionOperations.GetStats();
         }
 
         public IEnumerable<StatusLight> GetLights()
         {
-            return DataSubscriptionHubClient.StatusLights;
+            return m_dataSubscriptionOperations.GetLights();
         }
 
         public void InitializeSubscriptions()
         {
-            DataSubscriptionHubClient.InitializeSubscriptions();
+            m_dataSubscriptionOperations.InitializeSubscriptions();
         }
 
         public void TerminateSubscriptions()
         {
-            DataSubscriptionHubClient.TerminateSubscriptions();
+            m_dataSubscriptionOperations.TerminateSubscriptions();
         }
 
         public void UpdateFilters(string filterExpression)
         {
-            DataSubscriptionHubClient.UpdatePrimaryDataSubscription(filterExpression);
+            m_dataSubscriptionOperations.UpdateFilters(filterExpression);
         }
 
         public void StatSubscribe(string filterExpression)
         {
-            DataSubscriptionHubClient.UpdateStatisticsDataSubscription(filterExpression);
+            m_dataSubscriptionOperations.StatSubscribe(filterExpression);
         }
 
         #endregion
 
         #region [ Modbus Operations ]
 
-        public async Task<bool> ModbusConnect(string connectionString)
+        public Task<bool> ModbusConnect(string connectionString)
         {            
-            return await ModbusHubClient.Connect(connectionString);
+            return m_modbusOperations.ModbusConnect(connectionString);
         }
 
         public void ModbusDisconnect()
         {
-            ModbusHubClient.Disconnect();
+            m_modbusOperations.ModbusDisconnect();
         }
 
         public async Task<bool[]> ReadDiscreteInputs(ushort startAddress, ushort pointCount)
         {
             try
             {
-                return await ModbusHubClient.ReadDiscreteInputs(startAddress, pointCount);
+                return await m_modbusOperations.ReadDiscreteInputs(startAddress, pointCount);
             }
             catch (Exception ex)
             {
@@ -681,7 +576,7 @@ namespace openMIC
         {
             try
             {
-                return await ModbusHubClient.ReadCoils(startAddress, pointCount);
+                return await m_modbusOperations.ReadCoils(startAddress, pointCount);
             }
             catch (Exception ex)
             {
@@ -694,7 +589,7 @@ namespace openMIC
         {
             try
             {
-                return await ModbusHubClient.ReadInputRegisters(startAddress, pointCount);
+                return await m_modbusOperations.ReadInputRegisters(startAddress, pointCount);
             }
             catch (Exception ex)
             {
@@ -707,7 +602,7 @@ namespace openMIC
         {
             try
             {
-                return await ModbusHubClient.ReadHoldingRegisters(startAddress, pointCount);
+                return await m_modbusOperations.ReadHoldingRegisters(startAddress, pointCount);
             }
             catch (Exception ex)
             {
@@ -720,7 +615,7 @@ namespace openMIC
         {
             try
             {
-                await ModbusHubClient.WriteCoils(startAddress, data);
+                await m_modbusOperations.WriteCoils(startAddress, data);
             }
             catch (Exception ex)
             {
@@ -732,7 +627,7 @@ namespace openMIC
         {
             try
             {
-                await ModbusHubClient.WriteHoldingRegisters(startAddress, data);
+                await m_modbusOperations.WriteHoldingRegisters(startAddress, data);
             }
             catch (Exception ex)
             {
@@ -742,37 +637,37 @@ namespace openMIC
 
         public string DeriveString(ushort[] values)
         {
-            return ModbusHubClient.DeriveString(values);
+            return m_modbusOperations.DeriveString(values);
         }
 
         public float DeriveSingle(ushort highValue, ushort lowValue)
         {
-            return ModbusHubClient.DeriveSingle(highValue, lowValue);
+            return m_modbusOperations.DeriveSingle(highValue, lowValue);
         }
 
         public double DeriveDouble(ushort b3, ushort b2, ushort b1, ushort b0)
         {
-            return ModbusHubClient.DeriveDouble(b3, b2, b1, b0);
+            return m_modbusOperations.DeriveDouble(b3, b2, b1, b0);
         }
 
         public int DeriveInt32(ushort highValue, ushort lowValue)
         {
-            return ModbusHubClient.DeriveInt32(highValue, lowValue);
+            return m_modbusOperations.DeriveInt32(highValue, lowValue);
         }
 
         public uint DeriveUInt32(ushort highValue, ushort lowValue)
         {
-            return ModbusHubClient.DeriveUInt32(highValue, lowValue);
+            return m_modbusOperations.DeriveUInt32(highValue, lowValue);
         }
 
         public long DeriveInt64(ushort b3, ushort b2, ushort b1, ushort b0)
         {
-            return ModbusHubClient.DeriveInt64(b3, b2, b1, b0);
+            return m_modbusOperations.DeriveInt64(b3, b2, b1, b0);
         }
 
         public ulong DeriveUInt64(ushort b3, ushort b2, ushort b1, ushort b0)
         {
-            return ModbusHubClient.DeriveUInt64(b3, b2, b1, b0);
+            return m_modbusOperations.DeriveUInt64(b3, b2, b1, b0);
         }
 
         #endregion
