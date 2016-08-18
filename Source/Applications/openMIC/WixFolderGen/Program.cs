@@ -242,7 +242,7 @@ namespace WixFolderGen
             const string Suffix = "_Components";
 
             if (string.IsNullOrWhiteSpace(folderName))
-                return Prefix + Suffix;
+                return RootFolderName + Suffix;
 
             return Prefix + GetCleanID(folderName, MaxWixIDLength - Prefix.Length - Suffix.Length, replaceDirectorySeparatorChar: true, replaceSpaces: true) + Suffix;
         }

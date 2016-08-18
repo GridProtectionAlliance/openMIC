@@ -1,5 +1,5 @@
 <Include>
-<ComponentGroup Id="wwwroot__Components" Directory="WWWROOTFOLDER">
+<ComponentGroup Id="wwwroot_Components" Directory="WWWROOTFOLDER">
   <Component Id="_Companies_cshtml">
     <File Id="_Companies.cshtml" Name="Companies.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Companies.cshtml" />
   </Component>
