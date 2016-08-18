@@ -28,11 +28,11 @@ Meter Information Collector
 * File server / file share to receive files
 * Installer / Installation Package
 
+**openMIC Overview Diagram:**
+![Architecture](http://www.gridprotectionalliance.org/images/products/MIC%20Overview%20Diagram.png)
+
+**GPA Web Solutions Framework Overview**
 ![GPA WSF - A New Technology Layer](https://raw.githubusercontent.com/GridProtectionAlliance/openMIC/master/Source/Documentation/Readme%20files/GPA%20WSF.png)
-
-
-**Where It Fits In:**
-![Architecture](http://www.gridprotectionalliance.org/images/products/PQ%20Tool%20Suite.png)
 
 
 # Documentation and Support
