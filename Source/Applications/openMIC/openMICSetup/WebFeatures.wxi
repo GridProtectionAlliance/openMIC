@@ -1,6 +1,6 @@
 <Include>
 <Feature Id="WebFilesFeature" Title="Web Files" Description="Web Files">
-  <ComponentGroupRef Id="wwwroot_Components" />
+  <ComponentGroupRef Id="wwwroot__Components" />
   <ComponentGroupRef Id="wwwroot_Content_Components" />
   <ComponentGroupRef Id="wwwroot_Content_images_Components" />
   <ComponentGroupRef Id="wwwroot_fonts_Components" />
@@ -9,6 +9,15 @@
   <ComponentGroupRef Id="wwwroot_Images_StatusLights_Components" />
   <ComponentGroupRef Id="wwwroot_Images_StatusLights_Large_Components" />
   <ComponentGroupRef Id="wwwroot_Images_StatusLights_Small_Components" />
+  <ComponentGroupRef Id="wwwroot_ModbusConfigs_Components" />
+  <ComponentGroupRef Id="wwwroot_ModbusConfigs_CellWatch_Components" />
+  <ComponentGroupRef Id="wwwroot_ModbusConfigs_CellWatch_Global_Information_Components" />
+  <ComponentGroupRef Id="wwwroot_ModbusConfigs_CellWatch_String_Dependent_Information_Components" />
+  <ComponentGroupRef Id="wwwroot_ModbusConfigs_CellWatch_String_Dependent_In3045251445_Components" />
+  <ComponentGroupRef Id="wwwroot_ModbusConfigs_KelmanTransformerDGA_Components" />
+  <ComponentGroupRef Id="wwwroot_ModbusConfigs_PQube_Components" />
   <ComponentGroupRef Id="wwwroot_Scripts_Components" />
+  <ComponentGroupRef Id="wwwroot_Scripts_flot_Components" />
+  <ComponentGroupRef Id="wwwroot_Scripts_ModbusConfig_Components" />
 </Feature>
 </Include>

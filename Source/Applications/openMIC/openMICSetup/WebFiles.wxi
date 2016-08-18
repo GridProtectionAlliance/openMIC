@@ -1,505 +1,1057 @@
 <Include>
-<ComponentGroup Id="wwwroot_Components" Directory="WWWROOTFOLDER">
-  <Component Id="Companies_cshtml">
-    <File Id="Companies.cshtml" Name="Companies.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Companies.cshtml" />
+<ComponentGroup Id="wwwroot__Components" Directory="WWWROOTFOLDER">
+  <Component Id="_Companies_cshtml">
+    <File Id="_Companies.cshtml" Name="Companies.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Companies.cshtml" />
   </Component>
-  <Component Id="ConnectionProfiles_cshtml">
-    <File Id="ConnectionProfiles.cshtml" Name="ConnectionProfiles.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfiles.cshtml" />
+  <Component Id="_ConnectionProfiles_cshtml">
+    <File Id="_ConnectionProfiles.cshtml" Name="ConnectionProfiles.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfiles.cshtml" />
   </Component>
-  <Component Id="ConnectionProfileTasks_cshtml">
-    <File Id="ConnectionProfileTasks.cshtml" Name="ConnectionProfileTasks.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfileTasks.cshtml" />
+  <Component Id="_ConnectionProfileTasks_cshtml">
+    <File Id="_ConnectionProfileTasks.cshtml" Name="ConnectionProfileTasks.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfileTasks.cshtml" />
   </Component>
-  <Component Id="Devices_cshtml">
-    <File Id="Devices.cshtml" Name="Devices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Devices.cshtml" />
+  <Component Id="_Devices_cshtml">
+    <File Id="_Devices.cshtml" Name="Devices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Devices.cshtml" />
   </Component>
-  <Component Id="Groups_cshtml">
-    <File Id="Groups.cshtml" Name="Groups.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Groups.cshtml" />
+  <Component Id="_DirectoryBrowser_cshtml">
+    <File Id="_DirectoryBrowser.cshtml" Name="DirectoryBrowser.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\DirectoryBrowser.cshtml" />
   </Component>
-  <Component Id="Help_cshtml">
-    <File Id="Help.cshtml" Name="Help.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Help.cshtml" />
+  <Component Id="_GraphMeasurements_cshtml">
+    <File Id="_GraphMeasurements.cshtml" Name="GraphMeasurements.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurements.cshtml" />
   </Component>
-  <Component Id="index_cshtml">
-    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
+  <Component Id="_GraphMeasurementsPopup_cshtml">
+    <File Id="_GraphMeasurementsPopup.cshtml" Name="GraphMeasurementsPopup.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurementsPopup.cshtml" />
   </Component>
-  <Component Id="Layout_cshtml">
-    <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
+  <Component Id="_Groups_cshtml">
+    <File Id="_Groups.cshtml" Name="Groups.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Groups.cshtml" />
   </Component>
-  <Component Id="PagedViewModel_cshtml">
-    <File Id="PagedViewModel.cshtml" Name="PagedViewModel.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\PagedViewModel.cshtml" />
+  <Component Id="_Help_cshtml">
+    <File Id="_Help.cshtml" Name="Help.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Help.cshtml" />
   </Component>
-  <Component Id="RemoteConsole_cshtml">
-    <File Id="RemoteConsole.cshtml" Name="RemoteConsole.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\RemoteConsole.cshtml" />
+  <Component Id="_index_cshtml">
+    <File Id="_index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
   </Component>
-  <Component Id="SelectTheme_cshtml">
-    <File Id="SelectTheme.cshtml" Name="SelectTheme.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SelectTheme.cshtml" />
+  <Component Id="_Layout_cshtml">
+    <File Id="_Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
   </Component>
-  <Component Id="Status_cshtml">
-    <File Id="Status.cshtml" Name="Status.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Status.cshtml" />
+  <Component Id="_ModbusConfig_cshtml">
+    <File Id="_ModbusConfig.cshtml" Name="ModbusConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfig.cshtml" />
   </Component>
-  <Component Id="Test_cshtml">
-    <File Id="Test.cshtml" Name="Test.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Test.cshtml" />
+  <Component Id="_RemoteConsole_cshtml">
+    <File Id="_RemoteConsole.cshtml" Name="RemoteConsole.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\RemoteConsole.cshtml" />
   </Component>
-  <Component Id="Users_cshtml">
-    <File Id="Users.cshtml" Name="Users.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Users.cshtml" />
+  <Component Id="_ReorderableCollapsableSectionsTemplate_cshtml">
+    <File Id="_ReorderableCollapsableSectionsTemplate.cshtml" Name="ReorderableCollapsableSectionsTemplate.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ReorderableCollapsableSectionsTemplate.cshtml" />
   </Component>
-  <Component Id="VendorDevices_cshtml">
-    <File Id="VendorDevices.cshtml" Name="VendorDevices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\VendorDevices.cshtml" />
+  <Component Id="_SelectTheme_cshtml">
+    <File Id="_SelectTheme.cshtml" Name="SelectTheme.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SelectTheme.cshtml" />
   </Component>
-  <Component Id="Vendors_cshtml">
-    <File Id="Vendors.cshtml" Name="Vendors.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Vendors.cshtml" />
+  <Component Id="_Status_cshtml">
+    <File Id="_Status.cshtml" Name="Status.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Status.cshtml" />
+  </Component>
+  <Component Id="_Test_cshtml">
+    <File Id="_Test.cshtml" Name="Test.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Test.cshtml" />
+  </Component>
+  <Component Id="_Users_cshtml">
+    <File Id="_Users.cshtml" Name="Users.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Users.cshtml" />
+  </Component>
+  <Component Id="_VendorDevices_cshtml">
+    <File Id="_VendorDevices.cshtml" Name="VendorDevices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\VendorDevices.cshtml" />
+  </Component>
+  <Component Id="_Vendors_cshtml">
+    <File Id="_Vendors.cshtml" Name="Vendors.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Vendors.cshtml" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Content_Components" Directory="CONTENTFOLDER">
-  <Component Id="Content__bootstrap_datepicker3_css">
-    <File Id="Content__bootstrap_datepicker3.css" Name="bootstrap-datepicker3.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-datepicker3.css" />
+  <Component Id="Content_bootstrap_datepicker3_css">
+    <File Id="Content_bootstrap_datepicker3.css" Name="bootstrap-datepicker3.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-datepicker3.css" />
   </Component>
-  <Component Id="Content__bootstrap_datepicker3_min_css">
-    <File Id="Content__bootstrap_datepicker3.min.css" Name="bootstrap-datepicker3.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-datepicker3.min.css" />
+  <Component Id="Content_bootstrap_datepicker3_min_css">
+    <File Id="Content_bootstrap_datepicker3.min.css" Name="bootstrap-datepicker3.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-datepicker3.min.css" />
   </Component>
-  <Component Id="Content__bootstrap_sidebar_css">
-    <File Id="Content__bootstrap_sidebar.css" Name="bootstrap-sidebar.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-sidebar.css" />
+  <Component Id="Content_bootstrap_sidebar_css">
+    <File Id="Content_bootstrap_sidebar.css" Name="bootstrap-sidebar.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-sidebar.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_cerulean_css">
-    <File Id="Content__bootstrap_theme_cerulean.css" Name="bootstrap-theme-cerulean.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cerulean.css" />
+  <Component Id="Content_bootstrap_theme_cerulean_css">
+    <File Id="Content_bootstrap_theme_cerulean.css" Name="bootstrap-theme-cerulean.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cerulean.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_cosmo_css">
-    <File Id="Content__bootstrap_theme_cosmo.css" Name="bootstrap-theme-cosmo.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cosmo.css" />
+  <Component Id="Content_bootstrap_theme_cosmo_css">
+    <File Id="Content_bootstrap_theme_cosmo.css" Name="bootstrap-theme-cosmo.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cosmo.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_cyborg_css">
-    <File Id="Content__bootstrap_theme_cyborg.css" Name="bootstrap-theme-cyborg.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cyborg.css" />
+  <Component Id="Content_bootstrap_theme_cyborg_css">
+    <File Id="Content_bootstrap_theme_cyborg.css" Name="bootstrap-theme-cyborg.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-cyborg.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_readable_css">
-    <File Id="Content__bootstrap_theme_readable.css" Name="bootstrap-theme-readable.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-readable.css" />
+  <Component Id="Content_bootstrap_theme_readable_css">
+    <File Id="Content_bootstrap_theme_readable.css" Name="bootstrap-theme-readable.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-readable.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_sandstone_css">
-    <File Id="Content__bootstrap_theme_sandstone.css" Name="bootstrap-theme-sandstone.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-sandstone.css" />
+  <Component Id="Content_bootstrap_theme_sandstone_css">
+    <File Id="Content_bootstrap_theme_sandstone.css" Name="bootstrap-theme-sandstone.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-sandstone.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_slate_css">
-    <File Id="Content__bootstrap_theme_slate.css" Name="bootstrap-theme-slate.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-slate.css" />
+  <Component Id="Content_bootstrap_theme_slate_css">
+    <File Id="Content_bootstrap_theme_slate.css" Name="bootstrap-theme-slate.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-slate.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_united_css">
-    <File Id="Content__bootstrap_theme_united.css" Name="bootstrap-theme-united.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-united.css" />
+  <Component Id="Content_bootstrap_theme_united_css">
+    <File Id="Content_bootstrap_theme_united.css" Name="bootstrap-theme-united.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme-united.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_css">
-    <File Id="Content__bootstrap_theme.css" Name="bootstrap-theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.css" />
+  <Component Id="Content_bootstrap_theme_css">
+    <File Id="Content_bootstrap_theme.css" Name="bootstrap-theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_css_map">
-    <File Id="Content__bootstrap_theme.css.map" Name="bootstrap-theme.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.css.map" />
+  <Component Id="Content_bootstrap_theme_css_map">
+    <File Id="Content_bootstrap_theme.css.map" Name="bootstrap-theme.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.css.map" />
   </Component>
-  <Component Id="Content__bootstrap_theme_min_css">
-    <File Id="Content__bootstrap_theme.min.css" Name="bootstrap-theme.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.min.css" />
+  <Component Id="Content_bootstrap_theme_min_css">
+    <File Id="Content_bootstrap_theme.min.css" Name="bootstrap-theme.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.min.css" />
   </Component>
-  <Component Id="Content__bootstrap_theme_min_css_map">
-    <File Id="Content__bootstrap_theme.min.css.map" Name="bootstrap-theme.min.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.min.css.map" />
+  <Component Id="Content_bootstrap_theme_min_css_map">
+    <File Id="Content_bootstrap_theme.min.css.map" Name="bootstrap-theme.min.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-theme.min.css.map" />
   </Component>
-  <Component Id="Content__bootstrap_css">
-    <File Id="Content__bootstrap.css" Name="bootstrap.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.css" />
+  <Component Id="Content_bootstrap_css">
+    <File Id="Content_bootstrap.css" Name="bootstrap.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.css" />
   </Component>
-  <Component Id="Content__bootstrap_css_map">
-    <File Id="Content__bootstrap.css.map" Name="bootstrap.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.css.map" />
+  <Component Id="Content_bootstrap_css_map">
+    <File Id="Content_bootstrap.css.map" Name="bootstrap.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.css.map" />
   </Component>
-  <Component Id="Content__bootstrap_min_css">
-    <File Id="Content__bootstrap.min.css" Name="bootstrap.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.min.css" />
+  <Component Id="Content_bootstrap_min_css">
+    <File Id="Content_bootstrap.min.css" Name="bootstrap.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.min.css" />
   </Component>
-  <Component Id="Content__bootstrap_min_css_map">
-    <File Id="Content__bootstrap.min.css.map" Name="bootstrap.min.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.min.css.map" />
+  <Component Id="Content_bootstrap_min_css_map">
+    <File Id="Content_bootstrap.min.css.map" Name="bootstrap.min.css.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap.min.css.map" />
   </Component>
-  <Component Id="Content__fileinput_css">
-    <File Id="Content__fileinput.css" Name="fileinput.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\fileinput.css" />
+  <Component Id="Content_fileinput_css">
+    <File Id="Content_fileinput.css" Name="fileinput.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\fileinput.css" />
   </Component>
-  <Component Id="Content__font_awesome_css">
-    <File Id="Content__font_awesome.css" Name="font-awesome.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\font-awesome.css" />
+  <Component Id="Content_font_awesome_css">
+    <File Id="Content_font_awesome.css" Name="font-awesome.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\font-awesome.css" />
   </Component>
-  <Component Id="Content__font_awesome_min_css">
-    <File Id="Content__font_awesome.min.css" Name="font-awesome.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\font-awesome.min.css" />
+  <Component Id="Content_font_awesome_min_css">
+    <File Id="Content_font_awesome.min.css" Name="font-awesome.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\font-awesome.min.css" />
   </Component>
-  <Component Id="Content__jquery_ui_css">
-    <File Id="Content__jquery_ui.css" Name="jquery-ui.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.css" />
+  <Component Id="Content_jquery_ui_css">
+    <File Id="Content_jquery_ui.css" Name="jquery-ui.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.css" />
   </Component>
-  <Component Id="Content__jquery_ui_min_css">
-    <File Id="Content__jquery_ui.min.css" Name="jquery-ui.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.min.css" />
+  <Component Id="Content_jquery_ui_min_css">
+    <File Id="Content_jquery_ui.min.css" Name="jquery-ui.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.min.css" />
   </Component>
-  <Component Id="Content__jquery_ui_structure_css">
-    <File Id="Content__jquery_ui.structure.css" Name="jquery-ui.structure.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.structure.css" />
+  <Component Id="Content_jquery_ui_structure_css">
+    <File Id="Content_jquery_ui.structure.css" Name="jquery-ui.structure.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.structure.css" />
   </Component>
-  <Component Id="Content__jquery_ui_structure_min_css">
-    <File Id="Content__jquery_ui.structure.min.css" Name="jquery-ui.structure.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.structure.min.css" />
+  <Component Id="Content_jquery_ui_structure_min_css">
+    <File Id="Content_jquery_ui.structure.min.css" Name="jquery-ui.structure.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.structure.min.css" />
   </Component>
-  <Component Id="Content__jquery_ui_theme_css">
-    <File Id="Content__jquery_ui.theme.css" Name="jquery-ui.theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.theme.css" />
+  <Component Id="Content_jquery_ui_theme_css">
+    <File Id="Content_jquery_ui.theme.css" Name="jquery-ui.theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.theme.css" />
   </Component>
-  <Component Id="Content__jquery_ui_theme_min_css">
-    <File Id="Content__jquery_ui.theme.min.css" Name="jquery-ui.theme.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.theme.min.css" />
+  <Component Id="Content_jquery_ui_theme_min_css">
+    <File Id="Content_jquery_ui.theme.min.css" Name="jquery-ui.theme.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.theme.min.css" />
   </Component>
-  <Component Id="Content__Popup_css">
-    <File Id="Content__Popup.css" Name="Popup.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Popup.css" />
+  <Component Id="Content_Popup_css">
+    <File Id="Content_Popup.css" Name="Popup.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Popup.css" />
   </Component>
-  <Component Id="Content__primeui_theme_css">
-    <File Id="Content__primeui_theme.css" Name="primeui-theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\primeui-theme.css" />
+  <Component Id="Content_primeui_theme_css">
+    <File Id="Content_primeui_theme.css" Name="primeui-theme.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\primeui-theme.css" />
   </Component>
-  <Component Id="Content__primeui_css">
-    <File Id="Content__primeui.css" Name="primeui.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\primeui.css" />
+  <Component Id="Content_primeui_css">
+    <File Id="Content_primeui.css" Name="primeui.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\primeui.css" />
   </Component>
-  <Component Id="Content__primeui_min_css">
-    <File Id="Content__primeui.min.css" Name="primeui.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\primeui.min.css" />
+  <Component Id="Content_primeui_min_css">
+    <File Id="Content_primeui.min.css" Name="primeui.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\primeui.min.css" />
   </Component>
-  <Component Id="Content__Site_css">
-    <File Id="Content__Site.css" Name="Site.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Site.css" />
+  <Component Id="Content_Site_css">
+    <File Id="Content_Site.css" Name="Site.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Site.css" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Content_images_Components" Directory="CONTENTIMAGESFOLDER">
-  <Component Id="Content_images__loading_sm_gif">
-    <File Id="Content_images__loading_sm.gif" Name="loading-sm.gif" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\loading-sm.gif" />
+  <Component Id="Content_images_loading_sm_gif">
+    <File Id="Content_images_loading_sm.gif" Name="loading-sm.gif" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\loading-sm.gif" />
   </Component>
-  <Component Id="Content_images__loading_gif">
-    <File Id="Content_images__loading.gif" Name="loading.gif" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\loading.gif" />
+  <Component Id="Content_images_loading_gif">
+    <File Id="Content_images_loading.gif" Name="loading.gif" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\loading.gif" />
   </Component>
-  <Component Id="Content_images__ui_bg_glass_55_fbf9ee_1x400_png">
-    <File Id="Content_images__ui_bg_glass_55_fbf9ee_1x400.png" Name="ui-bg_glass_55_fbf9ee_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+  <Component Id="Content_images_ui_bg_glass_55_fbf9ee_1x400_png">
+    <File Id="Content_images_ui_bg_glass_55_fbf9ee_1x400.png" Name="ui-bg_glass_55_fbf9ee_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_55_fbf9ee_1x400.png" />
   </Component>
-  <Component Id="Content_images__ui_bg_glass_65_ffffff_1x400_png">
-    <File Id="Content_images__ui_bg_glass_65_ffffff_1x400.png" Name="ui-bg_glass_65_ffffff_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_65_ffffff_1x400.png" />
+  <Component Id="Content_images_ui_bg_glass_65_ffffff_1x400_png">
+    <File Id="Content_images_ui_bg_glass_65_ffffff_1x400.png" Name="ui-bg_glass_65_ffffff_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_65_ffffff_1x400.png" />
   </Component>
-  <Component Id="Content_images__ui_bg_glass_75_dadada_1x400_png">
-    <File Id="Content_images__ui_bg_glass_75_dadada_1x400.png" Name="ui-bg_glass_75_dadada_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_75_dadada_1x400.png" />
+  <Component Id="Content_images_ui_bg_glass_75_dadada_1x400_png">
+    <File Id="Content_images_ui_bg_glass_75_dadada_1x400.png" Name="ui-bg_glass_75_dadada_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_75_dadada_1x400.png" />
   </Component>
-  <Component Id="Content_images__ui_bg_glass_75_e6e6e6_1x400_png">
-    <File Id="Content_images__ui_bg_glass_75_e6e6e6_1x400.png" Name="ui-bg_glass_75_e6e6e6_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+  <Component Id="Content_images_ui_bg_glass_75_e6e6e6_1x400_png">
+    <File Id="Content_images_ui_bg_glass_75_e6e6e6_1x400.png" Name="ui-bg_glass_75_e6e6e6_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_75_e6e6e6_1x400.png" />
   </Component>
-  <Component Id="Content_images__ui_bg_glass_95_fef1ec_1x400_png">
-    <File Id="Content_images__ui_bg_glass_95_fef1ec_1x400.png" Name="ui-bg_glass_95_fef1ec_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_95_fef1ec_1x400.png" />
+  <Component Id="Content_images_ui_bg_glass_95_fef1ec_1x400_png">
+    <File Id="Content_images_ui_bg_glass_95_fef1ec_1x400.png" Name="ui-bg_glass_95_fef1ec_1x400.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_glass_95_fef1ec_1x400.png" />
   </Component>
-  <Component Id="Content_images__ui_bg_highlight_soft_75_cccccc_1x100_png">
-    <File Id="Content_images__ui_bg_highlight_soft_75_cccccc_1x100.png" Name="ui-bg_highlight-soft_75_cccccc_1x100.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+  <Component Id="Content_images_ui_bg_highlight_soft_75_cccccc_1x100_png">
+    <File Id="Content_images_ui_bg_highlight_soft_75_cccccc_1x100.png" Name="ui-bg_highlight-soft_75_cccccc_1x100.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
   </Component>
-  <Component Id="Content_images__ui_icons_222222_256x240_png">
-    <File Id="Content_images__ui_icons_222222_256x240.png" Name="ui-icons_222222_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_222222_256x240.png" />
+  <Component Id="Content_images_ui_icons_222222_256x240_png">
+    <File Id="Content_images_ui_icons_222222_256x240.png" Name="ui-icons_222222_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_222222_256x240.png" />
   </Component>
-  <Component Id="Content_images__ui_icons_2e83ff_256x240_png">
-    <File Id="Content_images__ui_icons_2e83ff_256x240.png" Name="ui-icons_2e83ff_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_2e83ff_256x240.png" />
+  <Component Id="Content_images_ui_icons_2e83ff_256x240_png">
+    <File Id="Content_images_ui_icons_2e83ff_256x240.png" Name="ui-icons_2e83ff_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_2e83ff_256x240.png" />
   </Component>
-  <Component Id="Content_images__ui_icons_333333_256x240_png">
-    <File Id="Content_images__ui_icons_333333_256x240.png" Name="ui-icons_333333_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_333333_256x240.png" />
+  <Component Id="Content_images_ui_icons_333333_256x240_png">
+    <File Id="Content_images_ui_icons_333333_256x240.png" Name="ui-icons_333333_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_333333_256x240.png" />
   </Component>
-  <Component Id="Content_images__ui_icons_454545_256x240_png">
-    <File Id="Content_images__ui_icons_454545_256x240.png" Name="ui-icons_454545_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_454545_256x240.png" />
+  <Component Id="Content_images_ui_icons_454545_256x240_png">
+    <File Id="Content_images_ui_icons_454545_256x240.png" Name="ui-icons_454545_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_454545_256x240.png" />
   </Component>
-  <Component Id="Content_images__ui_icons_888888_256x240_png">
-    <File Id="Content_images__ui_icons_888888_256x240.png" Name="ui-icons_888888_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_888888_256x240.png" />
+  <Component Id="Content_images_ui_icons_888888_256x240_png">
+    <File Id="Content_images_ui_icons_888888_256x240.png" Name="ui-icons_888888_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_888888_256x240.png" />
   </Component>
-  <Component Id="Content_images__ui_icons_cd0a0a_256x240_png">
-    <File Id="Content_images__ui_icons_cd0a0a_256x240.png" Name="ui-icons_cd0a0a_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_cd0a0a_256x240.png" />
+  <Component Id="Content_images_ui_icons_cd0a0a_256x240_png">
+    <File Id="Content_images_ui_icons_cd0a0a_256x240.png" Name="ui-icons_cd0a0a_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_cd0a0a_256x240.png" />
   </Component>
-  <Component Id="Content_images__ui_icons_ffffff_256x240_png">
-    <File Id="Content_images__ui_icons_ffffff_256x240.png" Name="ui-icons_ffffff_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_ffffff_256x240.png" />
+  <Component Id="Content_images_ui_icons_ffffff_256x240_png">
+    <File Id="Content_images_ui_icons_ffffff_256x240.png" Name="ui-icons_ffffff_256x240.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\images\ui-icons_ffffff_256x240.png" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_fonts_Components" Directory="FONTSFOLDER">
-  <Component Id="fonts__fontawesome_webfont_eot">
-    <File Id="fonts__fontawesome_webfont.eot" Name="fontawesome-webfont.eot" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.eot" />
+  <Component Id="fonts_fontawesome_webfont_eot">
+    <File Id="fonts_fontawesome_webfont.eot" Name="fontawesome-webfont.eot" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.eot" />
   </Component>
-  <Component Id="fonts__fontawesome_webfont_svg">
-    <File Id="fonts__fontawesome_webfont.svg" Name="fontawesome-webfont.svg" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.svg" />
+  <Component Id="fonts_fontawesome_webfont_svg">
+    <File Id="fonts_fontawesome_webfont.svg" Name="fontawesome-webfont.svg" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.svg" />
   </Component>
-  <Component Id="fonts__fontawesome_webfont_ttf">
-    <File Id="fonts__fontawesome_webfont.ttf" Name="fontawesome-webfont.ttf" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.ttf" />
+  <Component Id="fonts_fontawesome_webfont_ttf">
+    <File Id="fonts_fontawesome_webfont.ttf" Name="fontawesome-webfont.ttf" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.ttf" />
   </Component>
-  <Component Id="fonts__fontawesome_webfont_woff">
-    <File Id="fonts__fontawesome_webfont.woff" Name="fontawesome-webfont.woff" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.woff" />
+  <Component Id="fonts_fontawesome_webfont_woff">
+    <File Id="fonts_fontawesome_webfont.woff" Name="fontawesome-webfont.woff" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.woff" />
   </Component>
-  <Component Id="fonts__fontawesome_webfont_woff2">
-    <File Id="fonts__fontawesome_webfont.woff2" Name="fontawesome-webfont.woff2" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.woff2" />
+  <Component Id="fonts_fontawesome_webfont_woff2">
+    <File Id="fonts_fontawesome_webfont.woff2" Name="fontawesome-webfont.woff2" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\fontawesome-webfont.woff2" />
   </Component>
-  <Component Id="fonts__FontAwesome_otf">
-    <File Id="fonts__FontAwesome.otf" Name="FontAwesome.otf" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\FontAwesome.otf" />
+  <Component Id="fonts_FontAwesome_otf">
+    <File Id="fonts_FontAwesome.otf" Name="FontAwesome.otf" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\FontAwesome.otf" />
   </Component>
-  <Component Id="fonts__glyphicons_halflings_regular_eot">
-    <File Id="fonts__glyphicons_halflings_regular.eot" Name="glyphicons-halflings-regular.eot" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.eot" />
+  <Component Id="fonts_glyphicons_halflings_regular_eot">
+    <File Id="fonts_glyphicons_halflings_regular.eot" Name="glyphicons-halflings-regular.eot" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.eot" />
   </Component>
-  <Component Id="fonts__glyphicons_halflings_regular_svg">
-    <File Id="fonts__glyphicons_halflings_regular.svg" Name="glyphicons-halflings-regular.svg" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.svg" />
+  <Component Id="fonts_glyphicons_halflings_regular_svg">
+    <File Id="fonts_glyphicons_halflings_regular.svg" Name="glyphicons-halflings-regular.svg" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.svg" />
   </Component>
-  <Component Id="fonts__glyphicons_halflings_regular_ttf">
-    <File Id="fonts__glyphicons_halflings_regular.ttf" Name="glyphicons-halflings-regular.ttf" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.ttf" />
+  <Component Id="fonts_glyphicons_halflings_regular_ttf">
+    <File Id="fonts_glyphicons_halflings_regular.ttf" Name="glyphicons-halflings-regular.ttf" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.ttf" />
   </Component>
-  <Component Id="fonts__glyphicons_halflings_regular_woff">
-    <File Id="fonts__glyphicons_halflings_regular.woff" Name="glyphicons-halflings-regular.woff" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.woff" />
+  <Component Id="fonts_glyphicons_halflings_regular_woff">
+    <File Id="fonts_glyphicons_halflings_regular.woff" Name="glyphicons-halflings-regular.woff" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.woff" />
   </Component>
-  <Component Id="fonts__glyphicons_halflings_regular_woff2">
-    <File Id="fonts__glyphicons_halflings_regular.woff2" Name="glyphicons-halflings-regular.woff2" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.woff2" />
+  <Component Id="fonts_glyphicons_halflings_regular_woff2">
+    <File Id="fonts_glyphicons_halflings_regular.woff2" Name="glyphicons-halflings-regular.woff2" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\fonts\glyphicons-halflings-regular.woff2" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_Components" Directory="IMAGESFOLDER">
-  <Component Id="Images__gpa_lock_png">
-    <File Id="Images__gpa_lock.png" Name="gpa-lock.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\gpa-lock.png" />
+  <Component Id="Images_gpa_lock_png">
+    <File Id="Images_gpa_lock.png" Name="gpa-lock.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\gpa-lock.png" />
   </Component>
-  <Component Id="Images__gpa_smalllock_png">
-    <File Id="Images__gpa_smalllock.png" Name="gpa-smalllock.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\gpa-smalllock.png" />
+  <Component Id="Images_gpa_smalllock_png">
+    <File Id="Images_gpa_smalllock.png" Name="gpa-smalllock.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\gpa-smalllock.png" />
   </Component>
-  <Component Id="Images__openMIC_png">
-    <File Id="Images__openMIC.png" Name="openMIC.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\openMIC.png" />
+  <Component Id="Images_openMIC_png">
+    <File Id="Images_openMIC.png" Name="openMIC.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\openMIC.png" />
   </Component>
-  <Component Id="Images__openMICBanner_png">
-    <File Id="Images__openMICBanner.png" Name="openMICBanner.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\openMICBanner.png" />
+  <Component Id="Images_openMICBanner_png">
+    <File Id="Images_openMICBanner.png" Name="openMICBanner.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\openMICBanner.png" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_Icons_Components" Directory="IMAGESICONSFOLDER">
-  <Component Id="Images_Icons__apple_touch_icon_114x114_png">
-    <File Id="Images_Icons__apple_touch_icon_114x114.png" Name="apple-touch-icon-114x114.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-114x114.png" />
+  <Component Id="Images_Icons_apple_touch_icon_114x114_png">
+    <File Id="Images_Icons_apple_touch_icon_114x114.png" Name="apple-touch-icon-114x114.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-114x114.png" />
   </Component>
-  <Component Id="Images_Icons__apple_touch_icon_120x120_png">
-    <File Id="Images_Icons__apple_touch_icon_120x120.png" Name="apple-touch-icon-120x120.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-120x120.png" />
+  <Component Id="Images_Icons_apple_touch_icon_120x120_png">
+    <File Id="Images_Icons_apple_touch_icon_120x120.png" Name="apple-touch-icon-120x120.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-120x120.png" />
   </Component>
-  <Component Id="Images_Icons__apple_touch_icon_144x144_png">
-    <File Id="Images_Icons__apple_touch_icon_144x144.png" Name="apple-touch-icon-144x144.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-144x144.png" />
+  <Component Id="Images_Icons_apple_touch_icon_144x144_png">
+    <File Id="Images_Icons_apple_touch_icon_144x144.png" Name="apple-touch-icon-144x144.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-144x144.png" />
   </Component>
-  <Component Id="Images_Icons__apple_touch_icon_152x152_png">
-    <File Id="Images_Icons__apple_touch_icon_152x152.png" Name="apple-touch-icon-152x152.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-152x152.png" />
+  <Component Id="Images_Icons_apple_touch_icon_152x152_png">
+    <File Id="Images_Icons_apple_touch_icon_152x152.png" Name="apple-touch-icon-152x152.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-152x152.png" />
   </Component>
-  <Component Id="Images_Icons__apple_touch_icon_57x57_png">
-    <File Id="Images_Icons__apple_touch_icon_57x57.png" Name="apple-touch-icon-57x57.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-57x57.png" />
+  <Component Id="Images_Icons_apple_touch_icon_57x57_png">
+    <File Id="Images_Icons_apple_touch_icon_57x57.png" Name="apple-touch-icon-57x57.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-57x57.png" />
   </Component>
-  <Component Id="Images_Icons__apple_touch_icon_60x60_png">
-    <File Id="Images_Icons__apple_touch_icon_60x60.png" Name="apple-touch-icon-60x60.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-60x60.png" />
+  <Component Id="Images_Icons_apple_touch_icon_60x60_png">
+    <File Id="Images_Icons_apple_touch_icon_60x60.png" Name="apple-touch-icon-60x60.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-60x60.png" />
   </Component>
-  <Component Id="Images_Icons__apple_touch_icon_72x72_png">
-    <File Id="Images_Icons__apple_touch_icon_72x72.png" Name="apple-touch-icon-72x72.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-72x72.png" />
+  <Component Id="Images_Icons_apple_touch_icon_72x72_png">
+    <File Id="Images_Icons_apple_touch_icon_72x72.png" Name="apple-touch-icon-72x72.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-72x72.png" />
   </Component>
-  <Component Id="Images_Icons__apple_touch_icon_76x76_png">
-    <File Id="Images_Icons__apple_touch_icon_76x76.png" Name="apple-touch-icon-76x76.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-76x76.png" />
+  <Component Id="Images_Icons_apple_touch_icon_76x76_png">
+    <File Id="Images_Icons_apple_touch_icon_76x76.png" Name="apple-touch-icon-76x76.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\apple-touch-icon-76x76.png" />
   </Component>
-  <Component Id="Images_Icons__favicon_128_png">
-    <File Id="Images_Icons__favicon_128.png" Name="favicon-128.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-128.png" />
+  <Component Id="Images_Icons_favicon_128_png">
+    <File Id="Images_Icons_favicon_128.png" Name="favicon-128.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-128.png" />
   </Component>
-  <Component Id="Images_Icons__favicon_16x16_png">
-    <File Id="Images_Icons__favicon_16x16.png" Name="favicon-16x16.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-16x16.png" />
+  <Component Id="Images_Icons_favicon_16x16_png">
+    <File Id="Images_Icons_favicon_16x16.png" Name="favicon-16x16.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-16x16.png" />
   </Component>
-  <Component Id="Images_Icons__favicon_196x196_png">
-    <File Id="Images_Icons__favicon_196x196.png" Name="favicon-196x196.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-196x196.png" />
+  <Component Id="Images_Icons_favicon_196x196_png">
+    <File Id="Images_Icons_favicon_196x196.png" Name="favicon-196x196.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-196x196.png" />
   </Component>
-  <Component Id="Images_Icons__favicon_32x32_png">
-    <File Id="Images_Icons__favicon_32x32.png" Name="favicon-32x32.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-32x32.png" />
+  <Component Id="Images_Icons_favicon_32x32_png">
+    <File Id="Images_Icons_favicon_32x32.png" Name="favicon-32x32.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-32x32.png" />
   </Component>
-  <Component Id="Images_Icons__favicon_96x96_png">
-    <File Id="Images_Icons__favicon_96x96.png" Name="favicon-96x96.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-96x96.png" />
+  <Component Id="Images_Icons_favicon_96x96_png">
+    <File Id="Images_Icons_favicon_96x96.png" Name="favicon-96x96.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon-96x96.png" />
   </Component>
-  <Component Id="Images_Icons__favicon_ico">
-    <File Id="Images_Icons__favicon.ico" Name="favicon.ico" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon.ico" />
+  <Component Id="Images_Icons_favicon_ico">
+    <File Id="Images_Icons_favicon.ico" Name="favicon.ico" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\favicon.ico" />
   </Component>
-  <Component Id="Images_Icons__mstile_144x144_png">
-    <File Id="Images_Icons__mstile_144x144.png" Name="mstile-144x144.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-144x144.png" />
+  <Component Id="Images_Icons_mstile_144x144_png">
+    <File Id="Images_Icons_mstile_144x144.png" Name="mstile-144x144.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-144x144.png" />
   </Component>
-  <Component Id="Images_Icons__mstile_150x150_png">
-    <File Id="Images_Icons__mstile_150x150.png" Name="mstile-150x150.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-150x150.png" />
+  <Component Id="Images_Icons_mstile_150x150_png">
+    <File Id="Images_Icons_mstile_150x150.png" Name="mstile-150x150.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-150x150.png" />
   </Component>
-  <Component Id="Images_Icons__mstile_310x150_png">
-    <File Id="Images_Icons__mstile_310x150.png" Name="mstile-310x150.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-310x150.png" />
+  <Component Id="Images_Icons_mstile_310x150_png">
+    <File Id="Images_Icons_mstile_310x150.png" Name="mstile-310x150.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-310x150.png" />
   </Component>
-  <Component Id="Images_Icons__mstile_310x310_png">
-    <File Id="Images_Icons__mstile_310x310.png" Name="mstile-310x310.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-310x310.png" />
+  <Component Id="Images_Icons_mstile_310x310_png">
+    <File Id="Images_Icons_mstile_310x310.png" Name="mstile-310x310.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-310x310.png" />
   </Component>
-  <Component Id="Images_Icons__mstile_70x70_png">
-    <File Id="Images_Icons__mstile_70x70.png" Name="mstile-70x70.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-70x70.png" />
+  <Component Id="Images_Icons_mstile_70x70_png">
+    <File Id="Images_Icons_mstile_70x70.png" Name="mstile-70x70.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\mstile-70x70.png" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_StatusLights_Components" Directory="IMAGESSTATUSLIGHTSFOLDER">
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_StatusLights_Large_Components" Directory="IMAGESSTATUSLIGHTSLARGEFOLDER">
-  <Component Id="Images_StatusLights_Large__amberlight_png">
-    <File Id="Images_StatusLights_Large__amberlight.png" Name="amberlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\amberlight.png" />
+  <Component Id="Images_StatusLights_Large_amberlight_png">
+    <File Id="Images_StatusLights_Large_amberlight.png" Name="amberlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\amberlight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Large__blacklight_png">
-    <File Id="Images_StatusLights_Large__blacklight.png" Name="blacklight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\blacklight.png" />
+  <Component Id="Images_StatusLights_Large_blacklight_png">
+    <File Id="Images_StatusLights_Large_blacklight.png" Name="blacklight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\blacklight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Large__bluelight_png">
-    <File Id="Images_StatusLights_Large__bluelight.png" Name="bluelight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\bluelight.png" />
+  <Component Id="Images_StatusLights_Large_bluelight_png">
+    <File Id="Images_StatusLights_Large_bluelight.png" Name="bluelight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\bluelight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Large__disabledlight_png">
-    <File Id="Images_StatusLights_Large__disabledlight.png" Name="disabledlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\disabledlight.png" />
+  <Component Id="Images_StatusLights_Large_disabledlight_png">
+    <File Id="Images_StatusLights_Large_disabledlight.png" Name="disabledlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\disabledlight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Large__greenlight_png">
-    <File Id="Images_StatusLights_Large__greenlight.png" Name="greenlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\greenlight.png" />
+  <Component Id="Images_StatusLights_Large_greenlight_png">
+    <File Id="Images_StatusLights_Large_greenlight.png" Name="greenlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\greenlight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Large__greylight_png">
-    <File Id="Images_StatusLights_Large__greylight.png" Name="greylight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\greylight.png" />
+  <Component Id="Images_StatusLights_Large_greylight_png">
+    <File Id="Images_StatusLights_Large_greylight.png" Name="greylight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\greylight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Large__magentalight_png">
-    <File Id="Images_StatusLights_Large__magentalight.png" Name="magentalight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\magentalight.png" />
+  <Component Id="Images_StatusLights_Large_magentalight_png">
+    <File Id="Images_StatusLights_Large_magentalight.png" Name="magentalight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\magentalight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Large__redlight_png">
-    <File Id="Images_StatusLights_Large__redlight.png" Name="redlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\redlight.png" />
+  <Component Id="Images_StatusLights_Large_redlight_png">
+    <File Id="Images_StatusLights_Large_redlight.png" Name="redlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\redlight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Large__yellowlight_png">
-    <File Id="Images_StatusLights_Large__yellowlight.png" Name="yellowlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\yellowlight.png" />
+  <Component Id="Images_StatusLights_Large_yellowlight_png">
+    <File Id="Images_StatusLights_Large_yellowlight.png" Name="yellowlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Large\yellowlight.png" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_StatusLights_Small_Components" Directory="IMAGESSTATUSLIGHTSSMALLFOLDER">
-  <Component Id="Images_StatusLights_Small__amberlight_png">
-    <File Id="Images_StatusLights_Small__amberlight.png" Name="amberlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\amberlight.png" />
+  <Component Id="Images_StatusLights_Small_amberlight_png">
+    <File Id="Images_StatusLights_Small_amberlight.png" Name="amberlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\amberlight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Small__blacklight_png">
-    <File Id="Images_StatusLights_Small__blacklight.png" Name="blacklight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\blacklight.png" />
+  <Component Id="Images_StatusLights_Small_blacklight_png">
+    <File Id="Images_StatusLights_Small_blacklight.png" Name="blacklight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\blacklight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Small__bluelight_png">
-    <File Id="Images_StatusLights_Small__bluelight.png" Name="bluelight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\bluelight.png" />
+  <Component Id="Images_StatusLights_Small_bluelight_png">
+    <File Id="Images_StatusLights_Small_bluelight.png" Name="bluelight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\bluelight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Small__disabledlight_png">
-    <File Id="Images_StatusLights_Small__disabledlight.png" Name="disabledlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\disabledlight.png" />
+  <Component Id="Images_StatusLights_Small_disabledlight_png">
+    <File Id="Images_StatusLights_Small_disabledlight.png" Name="disabledlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\disabledlight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Small__greenlight_png">
-    <File Id="Images_StatusLights_Small__greenlight.png" Name="greenlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\greenlight.png" />
+  <Component Id="Images_StatusLights_Small_greenlight_png">
+    <File Id="Images_StatusLights_Small_greenlight.png" Name="greenlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\greenlight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Small__greylight_png">
-    <File Id="Images_StatusLights_Small__greylight.png" Name="greylight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\greylight.png" />
+  <Component Id="Images_StatusLights_Small_greylight_png">
+    <File Id="Images_StatusLights_Small_greylight.png" Name="greylight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\greylight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Small__magentalight_png">
-    <File Id="Images_StatusLights_Small__magentalight.png" Name="magentalight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\magentalight.png" />
+  <Component Id="Images_StatusLights_Small_magentalight_png">
+    <File Id="Images_StatusLights_Small_magentalight.png" Name="magentalight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\magentalight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Small__redlight_png">
-    <File Id="Images_StatusLights_Small__redlight.png" Name="redlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\redlight.png" />
+  <Component Id="Images_StatusLights_Small_redlight_png">
+    <File Id="Images_StatusLights_Small_redlight.png" Name="redlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\redlight.png" />
   </Component>
-  <Component Id="Images_StatusLights_Small__yellowlight_png">
-    <File Id="Images_StatusLights_Small__yellowlight.png" Name="yellowlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\yellowlight.png" />
+  <Component Id="Images_StatusLights_Small_yellowlight_png">
+    <File Id="Images_StatusLights_Small_yellowlight.png" Name="yellowlight.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\Small\yellowlight.png" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_ModbusConfigs_Components" Directory="MODBUSCONFIGSFOLDER">
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_ModbusConfigs_CellWatch_Components" Directory="MODBUSCONFIGSCELLWATCHFOLDER">
+  <Component Id="ModbusConfigs_CellWatch_Scripts_py">
+    <File Id="ModbusConfigs_CellWatch_Scripts.py" Name="Scripts.py" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\Scripts.py" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_ModbusConfigs_CellWatch_Global_Information_Components" Directory="MODBUSCONFIGSCELLWATCHGLOBALINFORMATIONFOLDER">
+  <Component Id="ModbusConfigs_CellWatch_GlobalInformation_Battery1_json">
+    <File Id="ModbusConfigs_CellWatch_GlobalInformation_Battery1.json" Name="Battery 1.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\Global Information\Battery 1.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_GlobalInformation_Battery2_json">
+    <File Id="ModbusConfigs_CellWatch_GlobalInformation_Battery2.json" Name="Battery 2.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\Global Information\Battery 2.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_GlobalInformation_Battery3_json">
+    <File Id="ModbusConfigs_CellWatch_GlobalInformation_Battery3.json" Name="Battery 3.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\Global Information\Battery 3.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_GlobalInformation_Battery4_json">
+    <File Id="ModbusConfigs_CellWatch_GlobalInformation_Battery4.json" Name="Battery 4.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\Global Information\Battery 4.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_GlobalInformation_PhysicalCT_json">
+    <File Id="ModbusConfigs_CellWatch_GlobalInformation_PhysicalCT.json" Name="Physical CT.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\Global Information\Physical CT.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_GlobalInformation_SystemSummary_json">
+    <File Id="ModbusConfigs_CellWatch_GlobalInformation_SystemSummary.json" Name="System Summary.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\Global Information\System Summary.json" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_ModbusConfigs_CellWatch_String_Dependent_Information_Components" Directory="MODBUSCONFIGSCELLWATCHSTRINGDEPENDENTINFORMATIONFOLDER">
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_CellWatchPoC_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_CellWatchPoC.json" Name="CellWatch PoC.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\CellWatch PoC.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_SelectB136500186_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_SelectB136500186.json" Name="Select Battery and String.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\Select Battery and String.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_StringInputBit1_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_StringInputBit1.json" Name="String Input Bit 1.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Input Bit 1.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_StringInputBit2_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_StringInputBit2.json" Name="String Input Bit 2.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Input Bit 2.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_StringInputBit3_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_StringInputBit3.json" Name="String Input Bit 3.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Input Bit 3.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_StringInputBit4_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_StringInputBit4.json" Name="String Input Bit 4.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Input Bit 4.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_String3013371460_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_String3013371460.json" Name="String Logical Current.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Logical Current.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_StringStatus_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_StringStatus.json" Name="String Status.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Status.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_String2764838724_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_String2764838724.json" Name="String Temperature Probe 1.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Temperature Probe 1.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_String1036338942_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_String1036338942.json" Name="String Temperature Probe 2.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Temperature Probe 2.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_String1254258280_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_String1254258280.json" Name="String Temperature Probe 3.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Temperature Probe 3.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_String3567707083_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_String3567707083.json" Name="String Temperature Probe 4.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\String Temperature Probe 4.json" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_ModbusConfigs_CellWatch_String_Dependent_In3045251445_Components" Directory="MODBUSCONFIGSCELLWATCHSTRINGDEPENDENTINFORMATION256VALSFOLDER">
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1785898798_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1785898798.json" Name="String FED Electrolyte Alarm Enabled.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String FED Electrolyte Alarm Enabled.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1784970126_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1784970126.json" Name="String FED Electrolyte Level Status.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String FED Electrolyte Level Status.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val3000330745_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val3000330745.json" Name="String Ohmic Value Average Counts.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Average Counts.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2493267479_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2493267479.json" Name="String Ohmic Value Average.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Average.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2367361699_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2367361699.json" Name="String Ohmic Value High Limit.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value High Limit.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val3169402217_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val3169402217.json" Name="String Ohmic Value Hysteresis.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Hysteresis.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2845954929_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2845954929.json" Name="String Ohmic Value Last Measurement Day.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Last Measurement Day.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2808070746_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2808070746.json" Name="String Ohmic Value Last Measurement Hour.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Last Measurement Hour.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1605773519_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1605773519.json" Name="String Ohmic Value Last Measurement Minute.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Last Measurement Minute.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2495317416_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2495317416.json" Name="String Ohmic Value Last Measurement Month.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Last Measurement Month.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2271973907_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2271973907.json" Name="String Ohmic Value Last Measurement Second.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Last Measurement Second.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1824759843_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1824759843.json" Name="String Ohmic Value Last Measurement Year.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Last Measurement Year.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1542965471_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1542965471.json" Name="String Ohmic Value Low Limit.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Low Limit.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2083191799_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2083191799.json" Name="String Ohmic Value Status.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value Status.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals896390228_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals896390228.json" Name="String Ohmic Value.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Ohmic Value.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2473599799_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2473599799.json" Name="String Temperature (DCM) Average Count.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Temperature (DCM) Average Count.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1357253108_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1357253108.json" Name="String Temperature (DCM) Average.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Temperature (DCM) Average.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1089852409_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1089852409.json" Name="String Temperature (DCM) High Limit.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Temperature (DCM) High Limit.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals932866882_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals932866882.json" Name="String Temperature (DCM) Hysteresis.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Temperature (DCM) Hysteresis.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1647313194_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1647313194.json" Name="String Temperature (DCM) Low Limit.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Temperature (DCM) Low Limit.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1733795854_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1733795854.json" Name="String Temperature (DCM) Status.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Temperature (DCM) Status.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals727067124_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals727067124.json" Name="String Temperature (DCM) Thermal Runaway Limit.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Temperature (DCM) Thermal Runaway Limit.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals651372645_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals651372645.json" Name="String Temperature (DCM) Value.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Temperature (DCM) Value.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val3244742319_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val3244742319.json" Name="String Thermal Runaway Channel Duration.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Thermal Runaway Channel Duration.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1554538822_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1554538822.json" Name="String Thermal Runaway Channel Status.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Thermal Runaway Channel Status.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1027987403_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1027987403.json" Name="String Thermal Runaway Channel Timestamp, Day.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Thermal Runaway Channel Timestamp, Day.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2357165260_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2357165260.json" Name="String Thermal Runaway Channel Timestamp, Hour.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Thermal Runaway Channel Timestamp, Hour.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1416933624_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1416933624.json" Name="String Thermal Runaway Channel Timestamp, Minute.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Thermal Runaway Channel Timestamp, Minute.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2382140263_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2382140263.json" Name="String Thermal Runaway Channel Timestamp, Month.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Thermal Runaway Channel Timestamp, Month.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2359888420_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2359888420.json" Name="String Thermal Runaway Channel Timestamp, Second.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Thermal Runaway Channel Timestamp, Second.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1206066869_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1206066869.json" Name="String Thermal Runaway Channel Timestamp, Year.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Thermal Runaway Channel Timestamp, Year.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2790139235_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2790139235.json" Name="String Voltage Average Count.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Voltage Average Count.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals743934472_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals743934472.json" Name="String Voltage Average.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Voltage Average.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2353910627_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2353910627.json" Name="String Voltage High Limit.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Voltage High Limit.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals663529752_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals663529752.json" Name="String Voltage Hysteresis.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Voltage Hysteresis.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1986194738_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val1986194738.json" Name="String Voltage Low Discharge Limit.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Voltage Low Discharge Limit.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val3594981022_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val3594981022.json" Name="String Voltage Low Limit.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Voltage Low Limit.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals171699136_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Vals171699136.json" Name="String Voltage Status.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Voltage Status.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val4084271417_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val4084271417.json" Name="String Voltage Thermal Runaway Limit.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Voltage Thermal Runaway Limit.json" />
+  </Component>
+  <Component Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2541489520_json">
+    <File Id="ModbusConfigs_CellWatch_StringDependentInformation_256Val2541489520.json" Name="String Voltage Value.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\CellWatch\String Dependent Information\256 Vals\String Voltage Value.json" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_ModbusConfigs_KelmanTransformerDGA_Components" Directory="MODBUSCONFIGSKELMANTRANSFORMERDGAFOLDER">
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput1Alarm1_2_an818649839_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput1Alarm1_2_an818649839.json" Name="Analog Input 1 Alarm 1, 2, and 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 1 Alarm 1, 2, and 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput1LastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput1LastRecord.json" Name="Analog Input 1 Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 1 Last Record.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput2Alarm1_2_an162740143_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput2Alarm1_2_an162740143.json" Name="Analog Input 2 Alarm 1, 2, and 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 2 Alarm 1, 2, and 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput2LastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput2LastRecord.json" Name="Analog Input 2 Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 2 Last Record.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput3Alarm1_2_an513495919_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput3Alarm1_2_an513495919.json" Name="Analog Input 3 Alarm 1, 2, and 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 3 Alarm 1, 2, and 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput3LastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput3LastRecord.json" Name="Analog Input 3 Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 3 Last Record.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput4Alarm1_2_a2067950895_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput4Alarm1_2_a2067950895.json" Name="Analog Input 4 Alarm 1, 2, and 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 4 Alarm 1, 2, and 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput4LastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput4LastRecord.json" Name="Analog Input 4 Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 4 Last Record.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput5Alarm1_2_a1818888687_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput5Alarm1_2_a1818888687.json" Name="Analog Input 5 Alarm 1, 2, and 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 5 Alarm 1, 2, and 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput5LastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput5LastRecord.json" Name="Analog Input 5 Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 5 Last Record.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput6Alarm1_2_a1427285167_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput6Alarm1_2_a1427285167.json" Name="Analog Input 6 Alarm 1, 2, and 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 6 Alarm 1, 2, and 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput6LastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_AnalogInput6LastRecord.json" Name="Analog Input 6 Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Analog Input 6 Last Record.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput1Alarm1_2_2812489636_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput1Alarm1_2_2812489636.json" Name="Digital Input 1 Alarm 1, 2, and 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Digital Input 1 Alarm 1, 2, and 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput1LastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput1LastRecord.json" Name="Digital Input 1 Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Digital Input 1 Last Record.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput2Alarm1_2_2665186020_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput2Alarm1_2_2665186020.json" Name="Digital Input 2 Alarm 1, 2, and 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Digital Input 2 Alarm 1, 2, and 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput2LastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput2LastRecord.json" Name="Digital Input 2 Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Digital Input 2 Last Record.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput3Alarm1_2_2314462756_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput3Alarm1_2_2314462756.json" Name="Digital Input 3 Alarm 1, 2, and 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Digital Input 3 Alarm 1, 2, and 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput3LastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_DigitalInput3LastRecord.json" Name="Digital Input 3 Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Digital Input 3 Last Record.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_GeneralInformation_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_GeneralInformation.json" Name="General Information.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\General Information.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_KelmanMapping_py">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_KelmanMapping.py" Name="Kelman Mapping.py" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Kelman Mapping.py" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm1Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm1Settings.json" Name="Oil Source A Alarm 1 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Alarm 1 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm2Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm2Settings.json" Name="Oil Source A Alarm 2 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Alarm 2 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm3Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm3Settings.json" Name="Oil Source A Alarm 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Alarm 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm4Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm4Settings.json" Name="Oil Source A Alarm 4 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Alarm 4 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm5Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm5Settings.json" Name="Oil Source A Alarm 5 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Alarm 5 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm6Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceAAlarm6Settings.json" Name="Oil Source A Alarm 6 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Alarm 6 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceALastRecord_Float_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceALastRecord_Float.json" Name="Oil Source A Last Record (Float).json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Last Record (Float).json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceALastRecord_Int_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceALastRecord_Int.json" Name="Oil Source A Last Record (Int).json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Last Record (Int).json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio1Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio1Settings.json" Name="Oil Source A Ratio 1 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Ratio 1 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio2Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio2Settings.json" Name="Oil Source A Ratio 2 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Ratio 2 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio3Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio3Settings.json" Name="Oil Source A Ratio 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Ratio 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio4Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio4Settings.json" Name="Oil Source A Ratio 4 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Ratio 4 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio5Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARatio5Settings.json" Name="Oil Source A Ratio 5 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Ratio 5 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARelativeSatu1130468032_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceARelativeSatu1130468032.json" Name="Oil Source A Relative Saturation Alarm Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Relative Saturation Alarm Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceASettings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceASettings.json" Name="Oil Source A Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source A Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm1Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm1Settings.json" Name="Oil Source B Alarm 1 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Alarm 1 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm2Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm2Settings.json" Name="Oil Source B Alarm 2 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Alarm 2 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm3Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm3Settings.json" Name="Oil Source B Alarm 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Alarm 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm4Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm4Settings.json" Name="Oil Source B Alarm 4 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Alarm 4 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm5Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm5Settings.json" Name="Oil Source B Alarm 5 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Alarm 5 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm6Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBAlarm6Settings.json" Name="Oil Source B Alarm 6 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Alarm 6 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBLastRecord_Float_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBLastRecord_Float.json" Name="Oil Source B Last Record (Float).json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Last Record (Float).json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBLastRecord_Int_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBLastRecord_Int.json" Name="Oil Source B Last Record (Int).json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Last Record (Int).json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio1Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio1Settings.json" Name="Oil Source B Ratio 1 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Ratio 1 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio2Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio2Settings.json" Name="Oil Source B Ratio 2 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Ratio 2 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio3Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio3Settings.json" Name="Oil Source B Ratio 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Ratio 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio4Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio4Settings.json" Name="Oil Source B Ratio 4 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Ratio 4 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio5Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRatio5Settings.json" Name="Oil Source B Ratio 5 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Ratio 5 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRelativeSatu2323552895_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBRelativeSatu2323552895.json" Name="Oil Source B Relative Saturation Alarm Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Relative Saturation Alarm Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBSettings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceBSettings.json" Name="Oil Source B Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source B Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm1Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm1Settings.json" Name="Oil Source C Alarm 1 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Alarm 1 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm2Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm2Settings.json" Name="Oil Source C Alarm 2 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Alarm 2 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm3Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm3Settings.json" Name="Oil Source C Alarm 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Alarm 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm4Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm4Settings.json" Name="Oil Source C Alarm 4 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Alarm 4 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm5Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm5Settings.json" Name="Oil Source C Alarm 5 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Alarm 5 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm6Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCAlarm6Settings.json" Name="Oil Source C Alarm 6 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Alarm 6 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCLastRecord_Float_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCLastRecord_Float.json" Name="Oil Source C Last Record (Float).json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Last Record (Float).json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCLastRecord_Int_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCLastRecord_Int.json" Name="Oil Source C Last Record (Int).json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Last Record (Int).json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio1Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio1Settings.json" Name="Oil Source C Ratio 1 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Ratio 1 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio2Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio2Settings.json" Name="Oil Source C Ratio 2 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Ratio 2 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio3Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio3Settings.json" Name="Oil Source C Ratio 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Ratio 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio4Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio4Settings.json" Name="Oil Source C Ratio 4 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Ratio 4 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio5Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRatio5Settings.json" Name="Oil Source C Ratio 5 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Ratio 5 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRelativeSatu2074386389_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCRelativeSatu2074386389.json" Name="Oil Source C Relative Saturation Alarm Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Relative Saturation Alarm Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCSettings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_OilSourceCSettings.json" Name="Oil Source C Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Oil Source C Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_PeripheralDeviceSchedu2815647628_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_PeripheralDeviceSchedu2815647628.json" Name="Peripheral Device Scheduler Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Peripheral Device Scheduler Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_PreSensO2Sensor1and2Co3971198862_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_PreSensO2Sensor1and2Co3971198862.json" Name="PreSens O2 Sensor 1 and 2 Configuration Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\PreSens O2 Sensor 1 and 2 Configuration Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_Time_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_Time.json" Name="Time.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\Time.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_TransOptoAlarm1Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_TransOptoAlarm1Settings.json" Name="TransOpto Alarm 1 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\TransOpto Alarm 1 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_TransOptoAlarm2Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_TransOptoAlarm2Settings.json" Name="TransOpto Alarm 2 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\TransOpto Alarm 2 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_TransOptoAlarm3Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_TransOptoAlarm3Settings.json" Name="TransOpto Alarm 3 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\TransOpto Alarm 3 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_TransOptoAlarm4Settings_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_TransOptoAlarm4Settings.json" Name="TransOpto Alarm 4 Settings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\TransOpto Alarm 4 Settings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_KelmanTransformerDGA_TransOptoLastRecord_json">
+    <File Id="ModbusConfigs_KelmanTransformerDGA_TransOptoLastRecord.json" Name="TransOpto Last Record.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\KelmanTransformerDGA\TransOpto Last Record.json" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_ModbusConfigs_PQube_Components" Directory="MODBUSCONFIGSPQUBEFOLDER">
+  <Component Id="ModbusConfigs_PQube_Mappings_json">
+    <File Id="ModbusConfigs_PQube_Mappings.json" Name="Mappings.json" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\PQube\Mappings.json" />
+  </Component>
+  <Component Id="ModbusConfigs_PQube_PQubeScript_py">
+    <File Id="ModbusConfigs_PQube_PQubeScript.py" Name="PQubeScript.py" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfigs\PQube\PQubeScript.py" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Scripts_Components" Directory="SCRIPTSFOLDER">
-  <Component Id="Scripts__bootstrap_datepicker_js">
-    <File Id="Scripts__bootstrap_datepicker.js" Name="bootstrap-datepicker.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-datepicker.js" />
+  <Component Id="Scripts_bootstrap_datepicker_js">
+    <File Id="Scripts_bootstrap_datepicker.js" Name="bootstrap-datepicker.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-datepicker.js" />
   </Component>
-  <Component Id="Scripts__bootstrap_datepicker_min_js">
-    <File Id="Scripts__bootstrap_datepicker.min.js" Name="bootstrap-datepicker.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-datepicker.min.js" />
+  <Component Id="Scripts_bootstrap_datepicker_min_js">
+    <File Id="Scripts_bootstrap_datepicker.min.js" Name="bootstrap-datepicker.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-datepicker.min.js" />
   </Component>
-  <Component Id="Scripts__bootstrap_toolkit_js">
-    <File Id="Scripts__bootstrap_toolkit.js" Name="bootstrap-toolkit.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-toolkit.js" />
+  <Component Id="Scripts_bootstrap_multiselect_js">
+    <File Id="Scripts_bootstrap_multiselect.js" Name="bootstrap-multiselect.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-multiselect.js" />
   </Component>
-  <Component Id="Scripts__bootstrap_toolkit_min_js">
-    <File Id="Scripts__bootstrap_toolkit.min.js" Name="bootstrap-toolkit.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-toolkit.min.js" />
+  <Component Id="Scripts_bootstrap_toolkit_js">
+    <File Id="Scripts_bootstrap_toolkit.js" Name="bootstrap-toolkit.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-toolkit.js" />
   </Component>
-  <Component Id="Scripts__bootstrap_js">
-    <File Id="Scripts__bootstrap.js" Name="bootstrap.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap.js" />
+  <Component Id="Scripts_bootstrap_toolkit_min_js">
+    <File Id="Scripts_bootstrap_toolkit.min.js" Name="bootstrap-toolkit.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-toolkit.min.js" />
   </Component>
-  <Component Id="Scripts__bootstrap_min_js">
-    <File Id="Scripts__bootstrap.min.js" Name="bootstrap.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap.min.js" />
+  <Component Id="Scripts_bootstrap_js">
+    <File Id="Scripts_bootstrap.js" Name="bootstrap.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap.js" />
   </Component>
-  <Component Id="Scripts__fileinput_js">
-    <File Id="Scripts__fileinput.js" Name="fileinput.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\fileinput.js" />
+  <Component Id="Scripts_bootstrap_min_js">
+    <File Id="Scripts_bootstrap.min.js" Name="bootstrap.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap.min.js" />
   </Component>
-  <Component Id="Scripts__fileinput_min_js">
-    <File Id="Scripts__fileinput.min.js" Name="fileinput.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\fileinput.min.js" />
+  <Component Id="Scripts_fileinput_js">
+    <File Id="Scripts_fileinput.js" Name="fileinput.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\fileinput.js" />
   </Component>
-  <Component Id="Scripts__gsf_web_client_js">
-    <File Id="Scripts__gsf.web.client.js" Name="gsf.web.client.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\gsf.web.client.js" />
+  <Component Id="Scripts_fileinput_min_js">
+    <File Id="Scripts_fileinput.min.js" Name="fileinput.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\fileinput.min.js" />
   </Component>
-  <Component Id="Scripts__gsf_web_primeui_js">
-    <File Id="Scripts__gsf.web.primeui.js" Name="gsf.web.primeui.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\gsf.web.primeui.js" />
+  <Component Id="Scripts_ie10_viewport_bug_workaround_js">
+    <File Id="Scripts_ie10_viewport_bug_workaround.js" Name="ie10-viewport-bug-workaround.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ie10-viewport-bug-workaround.js" />
   </Component>
-  <Component Id="Scripts__ie10_viewport_bug_workaround_js">
-    <File Id="Scripts__ie10_viewport_bug_workaround.js" Name="ie10-viewport-bug-workaround.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ie10-viewport-bug-workaround.js" />
+  <Component Id="Scripts_jquery_2_2_1_js">
+    <File Id="Scripts_jquery_2.2.1.js" Name="jquery-2.2.1.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.1.js" />
   </Component>
-  <Component Id="Scripts__jquery_2_2_1_js">
-    <File Id="Scripts__jquery_2.2.1.js" Name="jquery-2.2.1.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.1.js" />
+  <Component Id="Scripts_jquery_2_2_1_min_js">
+    <File Id="Scripts_jquery_2.2.1.min.js" Name="jquery-2.2.1.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.1.min.js" />
   </Component>
-  <Component Id="Scripts__jquery_2_2_1_min_js">
-    <File Id="Scripts__jquery_2.2.1.min.js" Name="jquery-2.2.1.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.1.min.js" />
+  <Component Id="Scripts_jquery_2_2_1_min_map">
+    <File Id="Scripts_jquery_2.2.1.min.map" Name="jquery-2.2.1.min.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.1.min.map" />
   </Component>
-  <Component Id="Scripts__jquery_2_2_1_min_map">
-    <File Id="Scripts__jquery_2.2.1.min.map" Name="jquery-2.2.1.min.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.1.min.map" />
+  <Component Id="Scripts_jquery_2_2_2_intellisense_js">
+    <File Id="Scripts_jquery_2.2.2.intellisense.js" Name="jquery-2.2.2.intellisense.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.2.intellisense.js" />
   </Component>
-  <Component Id="Scripts__jquery_2_2_2_intellisense_js">
-    <File Id="Scripts__jquery_2.2.2.intellisense.js" Name="jquery-2.2.2.intellisense.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-2.2.2.intellisense.js" />
+  <Component Id="Scripts_jquery_ui_js">
+    <File Id="Scripts_jquery_ui.js" Name="jquery-ui.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-ui.js" />
   </Component>
-  <Component Id="Scripts__jquery_ui_js">
-    <File Id="Scripts__jquery_ui.js" Name="jquery-ui.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-ui.js" />
+  <Component Id="Scripts_jquery_ui_min_js">
+    <File Id="Scripts_jquery_ui.min.js" Name="jquery-ui.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-ui.min.js" />
   </Component>
-  <Component Id="Scripts__jquery_ui_min_js">
-    <File Id="Scripts__jquery_ui.min.js" Name="jquery-ui.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-ui.min.js" />
+  <Component Id="Scripts_jquery_signalR_2_2_0_js">
+    <File Id="Scripts_jquery.signalR_2.2.0.js" Name="jquery.signalR-2.2.0.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.signalR-2.2.0.js" />
   </Component>
-  <Component Id="Scripts__jquery_signalR_2_2_0_js">
-    <File Id="Scripts__jquery.signalR_2.2.0.js" Name="jquery.signalR-2.2.0.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.signalR-2.2.0.js" />
+  <Component Id="Scripts_jquery_signalR_2_2_0_min_js">
+    <File Id="Scripts_jquery.signalR_2.2.0.min.js" Name="jquery.signalR-2.2.0.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.signalR-2.2.0.min.js" />
   </Component>
-  <Component Id="Scripts__jquery_signalR_2_2_0_min_js">
-    <File Id="Scripts__jquery.signalR_2.2.0.min.js" Name="jquery.signalR-2.2.0.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.signalR-2.2.0.min.js" />
+  <Component Id="Scripts_jquery_validate_vsdoc_js">
+    <File Id="Scripts_jquery.validate_vsdoc.js" Name="jquery.validate-vsdoc.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate-vsdoc.js" />
   </Component>
-  <Component Id="Scripts__jquery_validate_vsdoc_js">
-    <File Id="Scripts__jquery.validate_vsdoc.js" Name="jquery.validate-vsdoc.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate-vsdoc.js" />
+  <Component Id="Scripts_jquery_validate_js">
+    <File Id="Scripts_jquery.validate.js" Name="jquery.validate.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.js" />
   </Component>
-  <Component Id="Scripts__jquery_validate_js">
-    <File Id="Scripts__jquery.validate.js" Name="jquery.validate.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.js" />
+  <Component Id="Scripts_jquery_validate_min_js">
+    <File Id="Scripts_jquery.validate.min.js" Name="jquery.validate.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.min.js" />
   </Component>
-  <Component Id="Scripts__jquery_validate_min_js">
-    <File Id="Scripts__jquery.validate.min.js" Name="jquery.validate.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.min.js" />
+  <Component Id="Scripts_jquery_validate_unobtrusive_js">
+    <File Id="Scripts_jquery.validate.unobtrusive.js" Name="jquery.validate.unobtrusive.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.unobtrusive.js" />
   </Component>
-  <Component Id="Scripts__jquery_validate_unobtrusive_js">
-    <File Id="Scripts__jquery.validate.unobtrusive.js" Name="jquery.validate.unobtrusive.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.unobtrusive.js" />
+  <Component Id="Scripts_jquery_validate_unobtrusive_min_js">
+    <File Id="Scripts_jquery.validate.unobtrusive.min.js" Name="jquery.validate.unobtrusive.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
   </Component>
-  <Component Id="Scripts__jquery_validate_unobtrusive_min_js">
-    <File Id="Scripts__jquery.validate.unobtrusive.min.js" Name="jquery.validate.unobtrusive.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
+  <Component Id="Scripts_knockout_3_4_0_debug_js">
+    <File Id="Scripts_knockout_3.4.0.debug.js" Name="knockout-3.4.0.debug.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout-3.4.0.debug.js" />
   </Component>
-  <Component Id="Scripts__js_cookie_js">
-    <File Id="Scripts__js.cookie.js" Name="js.cookie.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\js.cookie.js" />
+  <Component Id="Scripts_knockout_3_4_0_js">
+    <File Id="Scripts_knockout_3.4.0.js" Name="knockout-3.4.0.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout-3.4.0.js" />
   </Component>
-  <Component Id="Scripts__knockout_3_4_0_debug_js">
-    <File Id="Scripts__knockout_3.4.0.debug.js" Name="knockout-3.4.0.debug.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout-3.4.0.debug.js" />
+  <Component Id="Scripts_knockout_mapping_latest_debug_js">
+    <File Id="Scripts_knockout.mapping_latest.debug.js" Name="knockout.mapping-latest.debug.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.mapping-latest.debug.js" />
   </Component>
-  <Component Id="Scripts__knockout_3_4_0_js">
-    <File Id="Scripts__knockout_3.4.0.js" Name="knockout-3.4.0.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout-3.4.0.js" />
+  <Component Id="Scripts_knockout_mapping_latest_js">
+    <File Id="Scripts_knockout.mapping_latest.js" Name="knockout.mapping-latest.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.mapping-latest.js" />
   </Component>
-  <Component Id="Scripts__knockout_mapping_latest_debug_js">
-    <File Id="Scripts__knockout.mapping_latest.debug.js" Name="knockout.mapping-latest.debug.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.mapping-latest.debug.js" />
+  <Component Id="Scripts_knockout_validation_js">
+    <File Id="Scripts_knockout.validation.js" Name="knockout.validation.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.js" />
   </Component>
-  <Component Id="Scripts__knockout_mapping_latest_js">
-    <File Id="Scripts__knockout.mapping_latest.js" Name="knockout.mapping-latest.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.mapping-latest.js" />
+  <Component Id="Scripts_knockout_validation_min_js">
+    <File Id="Scripts_knockout.validation.min.js" Name="knockout.validation.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.min.js" />
   </Component>
-  <Component Id="Scripts__knockout_validation_js">
-    <File Id="Scripts__knockout.validation.js" Name="knockout.validation.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.js" />
+  <Component Id="Scripts_knockout_validation_min_js_map">
+    <File Id="Scripts_knockout.validation.min.js.map" Name="knockout.validation.min.js.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.min.js.map" />
   </Component>
-  <Component Id="Scripts__knockout_validation_min_js">
-    <File Id="Scripts__knockout.validation.min.js" Name="knockout.validation.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.min.js" />
+  <Component Id="Scripts_modernizr_2_8_3_js">
+    <File Id="Scripts_modernizr_2.8.3.js" Name="modernizr-2.8.3.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\modernizr-2.8.3.js" />
   </Component>
-  <Component Id="Scripts__knockout_validation_min_js_map">
-    <File Id="Scripts__knockout.validation.min.js.map" Name="knockout.validation.min.js.map" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout.validation.min.js.map" />
+  <Component Id="Scripts_mustache_min_js">
+    <File Id="Scripts_mustache.min.js" Name="mustache.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\mustache.min.js" />
   </Component>
-  <Component Id="Scripts__ko_reactor_js">
-    <File Id="Scripts__ko_reactor.js" Name="ko-reactor.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ko-reactor.js" />
+  <Component Id="Scripts_plugins_all_js">
+    <File Id="Scripts_plugins_all.js" Name="plugins-all.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\plugins-all.js" />
   </Component>
-  <Component Id="Scripts__ko_reactor_min_js">
-    <File Id="Scripts__ko_reactor.min.js" Name="ko-reactor.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ko-reactor.min.js" />
+  <Component Id="Scripts_primeui_js">
+    <File Id="Scripts_primeui.js" Name="primeui.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\primeui.js" />
   </Component>
-  <Component Id="Scripts__ko_observableDictionary_js">
-    <File Id="Scripts__ko.observableDictionary.js" Name="ko.observableDictionary.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ko.observableDictionary.js" />
+  <Component Id="Scripts_primeui_min_js">
+    <File Id="Scripts_primeui.min.js" Name="primeui.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\primeui.min.js" />
   </Component>
-  <Component Id="Scripts__modernizr_2_8_3_js">
-    <File Id="Scripts__modernizr_2.8.3.js" Name="modernizr-2.8.3.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\modernizr-2.8.3.js" />
+  <Component Id="Scripts_respond_js">
+    <File Id="Scripts_respond.js" Name="respond.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.js" />
   </Component>
-  <Component Id="Scripts__mustache_min_js">
-    <File Id="Scripts__mustache.min.js" Name="mustache.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\mustache.min.js" />
+  <Component Id="Scripts_respond_matchmedia_addListener_js">
+    <File Id="Scripts_respond.matchmedia.addListener.js" Name="respond.matchmedia.addListener.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.matchmedia.addListener.js" />
   </Component>
-  <Component Id="Scripts__pagedViewModel_js">
-    <File Id="Scripts__pagedViewModel.js" Name="pagedViewModel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\pagedViewModel.js" />
+  <Component Id="Scripts_respond_matchmedia_addListener_min_js">
+    <File Id="Scripts_respond.matchmedia.addListener.min.js" Name="respond.matchmedia.addListener.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.matchmedia.addListener.min.js" />
   </Component>
-  <Component Id="Scripts__plugins_all_js">
-    <File Id="Scripts__plugins_all.js" Name="plugins-all.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\plugins-all.js" />
+  <Component Id="Scripts_respond_min_js">
+    <File Id="Scripts_respond.min.js" Name="respond.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.min.js" />
   </Component>
-  <Component Id="Scripts__primeui_js">
-    <File Id="Scripts__primeui.js" Name="primeui.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\primeui.js" />
+  <Component Id="Scripts_Site_js">
+    <File Id="Scripts_Site.js" Name="Site.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\Site.js" />
   </Component>
-  <Component Id="Scripts__primeui_min_js">
-    <File Id="Scripts__primeui.min.js" Name="primeui.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\primeui.min.js" />
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_Scripts_flot_Components" Directory="SCRIPTSFLOTFOLDER">
+  <Component Id="Scripts_flot_API_md">
+    <File Id="Scripts_flot_API.md" Name="API.md" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\API.md" />
   </Component>
-  <Component Id="Scripts__respond_js">
-    <File Id="Scripts__respond.js" Name="respond.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.js" />
+  <Component Id="Scripts_flot_CONTRIBUTING_md">
+    <File Id="Scripts_flot_CONTRIBUTING.md" Name="CONTRIBUTING.md" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\CONTRIBUTING.md" />
   </Component>
-  <Component Id="Scripts__respond_matchmedia_addListener_js">
-    <File Id="Scripts__respond.matchmedia.addListener.js" Name="respond.matchmedia.addListener.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.matchmedia.addListener.js" />
+  <Component Id="Scripts_flot_excanvas_js">
+    <File Id="Scripts_flot_excanvas.js" Name="excanvas.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\excanvas.js" />
   </Component>
-  <Component Id="Scripts__respond_matchmedia_addListener_min_js">
-    <File Id="Scripts__respond.matchmedia.addListener.min.js" Name="respond.matchmedia.addListener.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.matchmedia.addListener.min.js" />
+  <Component Id="Scripts_flot_excanvas_min_js">
+    <File Id="Scripts_flot_excanvas.min.js" Name="excanvas.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\excanvas.min.js" />
   </Component>
-  <Component Id="Scripts__respond_min_js">
-    <File Id="Scripts__respond.min.js" Name="respond.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\respond.min.js" />
+  <Component Id="Scripts_flot_FAQ_md">
+    <File Id="Scripts_flot_FAQ.md" Name="FAQ.md" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\FAQ.md" />
   </Component>
-  <Component Id="Scripts__Site_js">
-    <File Id="Scripts__Site.js" Name="Site.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\Site.js" />
+  <Component Id="Scripts_flot_jquery_colorhelpers_js">
+    <File Id="Scripts_flot_jquery.colorhelpers.js" Name="jquery.colorhelpers.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.colorhelpers.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_colorhelpers_min_js">
+    <File Id="Scripts_flot_jquery.colorhelpers.min.js" Name="jquery.colorhelpers.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.colorhelpers.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_axislabels_js">
+    <File Id="Scripts_flot_jquery.flot.axislabels.js" Name="jquery.flot.axislabels.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.axislabels.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_canvas_js">
+    <File Id="Scripts_flot_jquery.flot.canvas.js" Name="jquery.flot.canvas.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.canvas.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_canvas_min_js">
+    <File Id="Scripts_flot_jquery.flot.canvas.min.js" Name="jquery.flot.canvas.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.canvas.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_categories_js">
+    <File Id="Scripts_flot_jquery.flot.categories.js" Name="jquery.flot.categories.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.categories.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_categories_min_js">
+    <File Id="Scripts_flot_jquery.flot.categories.min.js" Name="jquery.flot.categories.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.categories.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_crosshair_js">
+    <File Id="Scripts_flot_jquery.flot.crosshair.js" Name="jquery.flot.crosshair.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.crosshair.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_crosshair_min_js">
+    <File Id="Scripts_flot_jquery.flot.crosshair.min.js" Name="jquery.flot.crosshair.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.crosshair.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_errorbars_js">
+    <File Id="Scripts_flot_jquery.flot.errorbars.js" Name="jquery.flot.errorbars.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.errorbars.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_errorbars_min_js">
+    <File Id="Scripts_flot_jquery.flot.errorbars.min.js" Name="jquery.flot.errorbars.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.errorbars.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_fillbetween_js">
+    <File Id="Scripts_flot_jquery.flot.fillbetween.js" Name="jquery.flot.fillbetween.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.fillbetween.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_fillbetween_min_js">
+    <File Id="Scripts_flot_jquery.flot.fillbetween.min.js" Name="jquery.flot.fillbetween.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.fillbetween.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_image_js">
+    <File Id="Scripts_flot_jquery.flot.image.js" Name="jquery.flot.image.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.image.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_image_min_js">
+    <File Id="Scripts_flot_jquery.flot.image.min.js" Name="jquery.flot.image.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.image.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_js">
+    <File Id="Scripts_flot_jquery.flot.js" Name="jquery.flot.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_min_js">
+    <File Id="Scripts_flot_jquery.flot.min.js" Name="jquery.flot.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_navigate_js">
+    <File Id="Scripts_flot_jquery.flot.navigate.js" Name="jquery.flot.navigate.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.navigate.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_navigate_min_js">
+    <File Id="Scripts_flot_jquery.flot.navigate.min.js" Name="jquery.flot.navigate.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.navigate.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_pie_js">
+    <File Id="Scripts_flot_jquery.flot.pie.js" Name="jquery.flot.pie.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.pie.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_pie_min_js">
+    <File Id="Scripts_flot_jquery.flot.pie.min.js" Name="jquery.flot.pie.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.pie.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_resize_js">
+    <File Id="Scripts_flot_jquery.flot.resize.js" Name="jquery.flot.resize.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.resize.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_resize_min_js">
+    <File Id="Scripts_flot_jquery.flot.resize.min.js" Name="jquery.flot.resize.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.resize.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_selection_js">
+    <File Id="Scripts_flot_jquery.flot.selection.js" Name="jquery.flot.selection.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.selection.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_selection_min_js">
+    <File Id="Scripts_flot_jquery.flot.selection.min.js" Name="jquery.flot.selection.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.selection.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_stack_js">
+    <File Id="Scripts_flot_jquery.flot.stack.js" Name="jquery.flot.stack.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.stack.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_stack_min_js">
+    <File Id="Scripts_flot_jquery.flot.stack.min.js" Name="jquery.flot.stack.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.stack.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_symbol_js">
+    <File Id="Scripts_flot_jquery.flot.symbol.js" Name="jquery.flot.symbol.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.symbol.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_symbol_min_js">
+    <File Id="Scripts_flot_jquery.flot.symbol.min.js" Name="jquery.flot.symbol.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.symbol.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_threshold_js">
+    <File Id="Scripts_flot_jquery.flot.threshold.js" Name="jquery.flot.threshold.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.threshold.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_threshold_min_js">
+    <File Id="Scripts_flot_jquery.flot.threshold.min.js" Name="jquery.flot.threshold.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.threshold.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_time_js">
+    <File Id="Scripts_flot_jquery.flot.time.js" Name="jquery.flot.time.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.time.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_flot_time_min_js">
+    <File Id="Scripts_flot_jquery.flot.time.min.js" Name="jquery.flot.time.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.flot.time.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_js">
+    <File Id="Scripts_flot_jquery.js" Name="jquery.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.js" />
+  </Component>
+  <Component Id="Scripts_flot_jquery_min_js">
+    <File Id="Scripts_flot_jquery.min.js" Name="jquery.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\jquery.min.js" />
+  </Component>
+  <Component Id="Scripts_flot_LICENSE_txt">
+    <File Id="Scripts_flot_LICENSE.txt" Name="LICENSE.txt" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\LICENSE.txt" />
+  </Component>
+  <Component Id="Scripts_flot_Makefile">
+    <File Id="Scripts_flot_Makefile" Name="Makefile" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\Makefile" />
+  </Component>
+  <Component Id="Scripts_flot_NEWS_md">
+    <File Id="Scripts_flot_NEWS.md" Name="NEWS.md" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\flot\NEWS.md" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_Scripts_ModbusConfig_Components" Directory="SCRIPTSMODBUSCONFIGFOLDER">
+  <Component Id="Scripts_ModbusConfig_MapViewModel_js">
+    <File Id="Scripts_ModbusConfig_MapViewModel.js" Name="MapViewModel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ModbusConfig\MapViewModel.js" />
+  </Component>
+  <Component Id="Scripts_ModbusConfig_RecordViewModel_js">
+    <File Id="Scripts_ModbusConfig_RecordViewModel.js" Name="RecordViewModel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ModbusConfig\RecordViewModel.js" />
+  </Component>
+  <Component Id="Scripts_ModbusConfig_SequenceViewModel_js">
+    <File Id="Scripts_ModbusConfig_SequenceViewModel.js" Name="SequenceViewModel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\ModbusConfig\SequenceViewModel.js" />
   </Component>
 </ComponentGroup>
 </Include>

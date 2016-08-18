@@ -11,6 +11,19 @@
       <Directory Id="IMAGESSTATUSLIGHTSSMALLFOLDER" Name="Small" />
     </Directory>
   </Directory>
-  <Directory Id="SCRIPTSFOLDER" Name="Scripts" />
+  <Directory Id="MODBUSCONFIGSFOLDER" Name="ModbusConfigs">
+    <Directory Id="MODBUSCONFIGSCELLWATCHFOLDER" Name="CellWatch">
+      <Directory Id="MODBUSCONFIGSCELLWATCHGLOBALINFORMATIONFOLDER" Name="Global Information" />
+      <Directory Id="MODBUSCONFIGSCELLWATCHSTRINGDEPENDENTINFORMATIONFOLDER" Name="String Dependent Information">
+        <Directory Id="MODBUSCONFIGSCELLWATCHSTRINGDEPENDENTINFORMATION256VALSFOLDER" Name="256 Vals" />
+      </Directory>
+    </Directory>
+    <Directory Id="MODBUSCONFIGSKELMANTRANSFORMERDGAFOLDER" Name="KelmanTransformerDGA" />
+    <Directory Id="MODBUSCONFIGSPQUBEFOLDER" Name="PQube" />
+  </Directory>
+  <Directory Id="SCRIPTSFOLDER" Name="Scripts">
+    <Directory Id="SCRIPTSFLOTFOLDER" Name="flot" />
+    <Directory Id="SCRIPTSMODBUSCONFIGFOLDER" Name="ModbusConfig" />
+  </Directory>
 </Directory>
 </Include>
