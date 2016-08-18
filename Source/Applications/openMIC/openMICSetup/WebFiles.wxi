@@ -1,64 +1,64 @@
 <Include>
 <ComponentGroup Id="wwwroot_Components" Directory="WWWROOTFOLDER">
-  <Component Id="_Companies_cshtml">
-    <File Id="_Companies.cshtml" Name="Companies.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Companies.cshtml" />
+  <Component Id="Companies_cshtml">
+    <File Id="Companies.cshtml" Name="Companies.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Companies.cshtml" />
   </Component>
-  <Component Id="_ConnectionProfiles_cshtml">
-    <File Id="_ConnectionProfiles.cshtml" Name="ConnectionProfiles.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfiles.cshtml" />
+  <Component Id="ConnectionProfiles_cshtml">
+    <File Id="ConnectionProfiles.cshtml" Name="ConnectionProfiles.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfiles.cshtml" />
   </Component>
-  <Component Id="_ConnectionProfileTasks_cshtml">
-    <File Id="_ConnectionProfileTasks.cshtml" Name="ConnectionProfileTasks.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfileTasks.cshtml" />
+  <Component Id="ConnectionProfileTasks_cshtml">
+    <File Id="ConnectionProfileTasks.cshtml" Name="ConnectionProfileTasks.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfileTasks.cshtml" />
   </Component>
-  <Component Id="_Devices_cshtml">
-    <File Id="_Devices.cshtml" Name="Devices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Devices.cshtml" />
+  <Component Id="Devices_cshtml">
+    <File Id="Devices.cshtml" Name="Devices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Devices.cshtml" />
   </Component>
-  <Component Id="_DirectoryBrowser_cshtml">
-    <File Id="_DirectoryBrowser.cshtml" Name="DirectoryBrowser.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\DirectoryBrowser.cshtml" />
+  <Component Id="DirectoryBrowser_cshtml">
+    <File Id="DirectoryBrowser.cshtml" Name="DirectoryBrowser.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\DirectoryBrowser.cshtml" />
   </Component>
-  <Component Id="_GraphMeasurements_cshtml">
-    <File Id="_GraphMeasurements.cshtml" Name="GraphMeasurements.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurements.cshtml" />
+  <Component Id="GraphMeasurements_cshtml">
+    <File Id="GraphMeasurements.cshtml" Name="GraphMeasurements.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurements.cshtml" />
   </Component>
-  <Component Id="_GraphMeasurementsPopup_cshtml">
-    <File Id="_GraphMeasurementsPopup.cshtml" Name="GraphMeasurementsPopup.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurementsPopup.cshtml" />
+  <Component Id="GraphMeasurementsPopup_cshtml">
+    <File Id="GraphMeasurementsPopup.cshtml" Name="GraphMeasurementsPopup.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurementsPopup.cshtml" />
   </Component>
-  <Component Id="_Groups_cshtml">
-    <File Id="_Groups.cshtml" Name="Groups.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Groups.cshtml" />
+  <Component Id="Groups_cshtml">
+    <File Id="Groups.cshtml" Name="Groups.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Groups.cshtml" />
   </Component>
-  <Component Id="_Help_cshtml">
-    <File Id="_Help.cshtml" Name="Help.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Help.cshtml" />
+  <Component Id="Help_cshtml">
+    <File Id="Help.cshtml" Name="Help.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Help.cshtml" />
   </Component>
-  <Component Id="_index_cshtml">
-    <File Id="_index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
+  <Component Id="index_cshtml">
+    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
   </Component>
-  <Component Id="_Layout_cshtml">
-    <File Id="_Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
+  <Component Id="Layout_cshtml">
+    <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
   </Component>
-  <Component Id="_ModbusConfig_cshtml">
-    <File Id="_ModbusConfig.cshtml" Name="ModbusConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfig.cshtml" />
+  <Component Id="ModbusConfig_cshtml">
+    <File Id="ModbusConfig.cshtml" Name="ModbusConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfig.cshtml" />
   </Component>
-  <Component Id="_RemoteConsole_cshtml">
-    <File Id="_RemoteConsole.cshtml" Name="RemoteConsole.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\RemoteConsole.cshtml" />
+  <Component Id="RemoteConsole_cshtml">
+    <File Id="RemoteConsole.cshtml" Name="RemoteConsole.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\RemoteConsole.cshtml" />
   </Component>
-  <Component Id="_ReorderableCollapsableSectionsTemplate_cshtml">
-    <File Id="_ReorderableCollapsableSectionsTemplate.cshtml" Name="ReorderableCollapsableSectionsTemplate.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ReorderableCollapsableSectionsTemplate.cshtml" />
+  <Component Id="ReorderableCollapsableSectionsTemplate_cshtml">
+    <File Id="ReorderableCollapsableSectionsTemplate.cshtml" Name="ReorderableCollapsableSectionsTemplate.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ReorderableCollapsableSectionsTemplate.cshtml" />
   </Component>
-  <Component Id="_SelectTheme_cshtml">
-    <File Id="_SelectTheme.cshtml" Name="SelectTheme.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SelectTheme.cshtml" />
+  <Component Id="SelectTheme_cshtml">
+    <File Id="SelectTheme.cshtml" Name="SelectTheme.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SelectTheme.cshtml" />
   </Component>
-  <Component Id="_Status_cshtml">
-    <File Id="_Status.cshtml" Name="Status.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Status.cshtml" />
+  <Component Id="Status_cshtml">
+    <File Id="Status.cshtml" Name="Status.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Status.cshtml" />
   </Component>
-  <Component Id="_Test_cshtml">
-    <File Id="_Test.cshtml" Name="Test.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Test.cshtml" />
+  <Component Id="Test_cshtml">
+    <File Id="Test.cshtml" Name="Test.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Test.cshtml" />
   </Component>
-  <Component Id="_Users_cshtml">
-    <File Id="_Users.cshtml" Name="Users.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Users.cshtml" />
+  <Component Id="Users_cshtml">
+    <File Id="Users.cshtml" Name="Users.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Users.cshtml" />
   </Component>
-  <Component Id="_VendorDevices_cshtml">
-    <File Id="_VendorDevices.cshtml" Name="VendorDevices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\VendorDevices.cshtml" />
+  <Component Id="VendorDevices_cshtml">
+    <File Id="VendorDevices.cshtml" Name="VendorDevices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\VendorDevices.cshtml" />
   </Component>
-  <Component Id="_Vendors_cshtml">
-    <File Id="_Vendors.cshtml" Name="Vendors.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Vendors.cshtml" />
+  <Component Id="Vendors_cshtml">
+    <File Id="Vendors.cshtml" Name="Vendors.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Vendors.cshtml" />
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Content_Components" Directory="CONTENTFOLDER">

@@ -214,7 +214,7 @@ namespace WixFolderGen
 
             path = new Regex("[^a-zA-Z0-9_.]").Replace(path, "_");
 
-            path = path.RemoveDuplicates("_").TrimEnd('_');
+            path = path.RemoveDuplicates("_").TrimEnd('_').TrimStart('_');
 
             if (removeUnderscores)
                 path = path.Replace("_", "");
