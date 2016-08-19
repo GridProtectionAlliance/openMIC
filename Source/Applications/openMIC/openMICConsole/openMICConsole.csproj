@@ -138,8 +138,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="openMICConsole.ico" />
   </ItemGroup>
   <ItemGroup>

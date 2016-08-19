@@ -100,14 +100,14 @@ namespace openMIC
                     break;
             }
             
-            HubScript?.connectionStatusUpdate(message, color);
+            ClientScript?.connectionStatusUpdate(message, color);
         }
 
         public void Disconnect()
         {
             DisposeConnections();
 
-            HubScript?.connectionTerminated();
+            ClientScript?.connectionTerminated();
             UpdateStatus("Device disconnected.", UpdateType.Warning);
         }
 
@@ -192,7 +192,7 @@ namespace openMIC
                 }
                 catch (Exception ex)
                 {
-                    HubScript?.connectionFailed();
+                    ClientScript?.connectionFailed();
                     UpdateStatus($"Failed to connect to device: {ex.Message}", UpdateType.Alarm);
                 }
 
@@ -268,19 +268,19 @@ namespace openMIC
 
         private void AttemptingConnection(string type)
         {
-            HubScript?.attemptingConnection();
+            ClientScript?.attemptingConnection();
             UpdateStatus($"Attempting to connect to device using {type}...", UpdateType.Information);
         }
 
         private void ConnectionSucceeded(string type)
         {
-            HubScript?.connectionSucceeded();
+            ClientScript?.connectionSucceeded();
             UpdateStatus($"Connected to device using {type}", UpdateType.Information);
         }
 
         private void ConnectionFailed(string type, string exceptionMessage)
         {
-            HubScript?.connectionFailed();
+            ClientScript?.connectionFailed();
             UpdateStatus($"Failed to connect to device using {type}: {exceptionMessage}", UpdateType.Alarm);
         }
 

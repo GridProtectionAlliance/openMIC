@@ -396,7 +396,7 @@ namespace openMIC
                 }
             }
 
-            HubScript?.metaDataReceived();
+            ClientScript?.metaDataReceived();
         }
 
         private void StatisticSubscriptionNewMeasurements(object sender, EventArgs<ICollection<IMeasurement>> e)
