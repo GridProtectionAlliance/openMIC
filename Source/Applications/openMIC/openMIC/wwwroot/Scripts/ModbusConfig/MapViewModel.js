@@ -132,7 +132,20 @@ function MapViewModel() {
         owner: self
     });
 
-    self.deviceName.extend({ required: true }).extend({ pattern: { message: "Only upper case letters, numbers, '!', '-', '@', '#', '_' , '.'and '$' are allowed.", params: "^[A-Z0-9\\-!_\\.@#\\$]+$" } });
+    self.deviceConnectionValues = ko.validatedObservable({
+        deviceName: self.deviceName.extend({
+            required: true,
+            pattern: { 
+                message: "Only upper case letters, numbers, '!', '-', '@', '#', '_' , '.'and '$' are allowed.", 
+                params: "^[A-Z0-9\\-!_\\.@#\\$]+$"
+            }
+        })}, {
+        adapterConnectionString: self.adapterConnectionString.extend({
+            required: true
+        })}, {
+        sequences: self.sequences
+        }
+    );
 
     // Delegates
     self.reorderSequencePanels = function() { };

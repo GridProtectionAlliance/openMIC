@@ -64,7 +64,8 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
     self.mapped = ko.observable(false);
         
     // Internal fields
-    self._tagName = ko.observable("");    
+    self._tagName = ko.observable("");
+    self._tagDescription = ko.observable("");
 
     // If provided, construct from existing deserialized record
     if (deserializedRecord) {
@@ -241,6 +242,7 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
     self.tagNameFormat = ko.pureComputed({
         read: function() {
             if (self.recordType() === RecordType.DerivedValue) {
+                // Format derived values like: {DeviceName}-{RecordTypeCode}!{upper(DerivedType)}@{Address0}#{Address1}[...#{Address(n)}]
                 const address = self.address().replaceAll("(", "@").replaceAll(",", "#").trim().toUpperCase();
                 return "{0}-" + String.format("{0}!{1}", getRecordTypeCode(self.recordType()), address.substr(0, address.length - 1));
             }
@@ -253,19 +255,45 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
     self.tagName = ko.pureComputed({
         read: function() {
             if (isEmpty(self._tagName()))
-                return String.format(self.tagNameFormat(), viewModel.deviceName());
+                return String.format(self.tagNameFormat(), notNull(viewModel.deviceName(), "<DeviceName>"));
 
-            return self._tagName();
+            return self._tagName().toUpperCase();
         },
         write: function(value) {
-            self._tagName(value);
+            self._tagName(notNull(value).toUpperCase());
         },
         owner: self
     });
 
+    self.tagDescription = ko.pureComputed({
+        read: function() {
+            if (isEmpty(self._tagDescription()))
+                return String.format("{0} {1}", notNull(viewModel.deviceName(), "<DeviceName>"), notNull(self.description()));
+
+            return self._tagDescription();
+        },
+        write: function(value) {
+            self._tagDescription(notNull(value));
+        },
+        owner: self
+    });
+
+    self.deviceConnectionValues = ko.validatedObservable({
+        tagName: self.tagName.extend({
+            required: true,
+            pattern: { 
+                message: "Only upper case letters, numbers, '!', '-', '@', '#', '_' , '.'and '$' are allowed.", 
+                params: "^[A-Z0-9\\-!_\\.@#\\$]+$"
+            }
+        })}, {
+        tagDescription: self.tagDescription.extend({
+            required: true
+        })}
+    );
+
     self.signalReference = ko.pureComputed({
         read: function() {
-            return String.format(self.tagNameFormat(), viewModel.deviceName());
+            return String.format(self.tagNameFormat(), notNull(viewModel.deviceName(), "<DeviceName>"));
         },
         owner: self
     });

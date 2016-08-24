@@ -802,12 +802,18 @@
             reorderSequencePanels();
         }
 
-        function expandAllSequences() {
-            $("li.panel div.collapse").collapse("show");
+        function expandAllSequences(restriction) {
+            if (restriction)
+                $(String.format("#{0} li.panel div.collapse", restriction)).collapse("show");
+            else
+                $("li.panel div.collapse").collapse("show");
         }
 
-        function collapseAllSequences() {
-            $("li.panel div.collapse").collapse("hide");
+        function collapseAllSequences(restriction) {
+            if (restriction)
+                $(String.format("#{0} li.panel div.collapse", restriction)).collapse("hide");
+            else
+                $("li.panel div.collapse").collapse("hide");
         }
 
         function createNewMappingFile() {
@@ -904,21 +910,21 @@
                     const pointCount = group.stop - group.start + 1;
                     
                     if (group.type === RecordType.DerivedValue) {
-                        sequenceConnectionString.set("groupDerivedCount" + i, pointCount);
+                        sequenceConnectionString.set("derivedCount", pointCount);
                         sequenceConnectionString.set("groupCount", groups.length - 1);
                         derivedStart = group.start;
                         derivedStop = group.stop;
                     }
                     else {
-                        sequenceConnectionString.set("groupType" + i, getRecordTypeCode(group.type));
-                        sequenceConnectionString.set("groupStartAddress" + i, records[group.start].address());
-                        sequenceConnectionString.set("groupPointCount" + i, pointCount);
+                        sequenceConnectionString.set("groupType" + j, getRecordTypeCode(group.type));
+                        sequenceConnectionString.set("groupStartAddress" + j, records[group.start].address());
+                        sequenceConnectionString.set("groupPointCount" + j, pointCount);
                     }
                 }
 
                 adapterConnectionString.set(sequenceKey, sequenceConnectionString.joinKeyValuePairs());
 
-                // Handle up-mapping of derived inputs
+                // Handle un-mapping of points that are part of derived values
                 if (derivedStart > -1 && derivedStop > -1) {
                     for (let j = derivedStart; j <= derivedStop; j++) {
                         const record = records[j];
@@ -948,6 +954,7 @@
 
             viewModel.adapterConnectionString(adapterConnectionString.joinKeyValuePairs());        
 
+            expandAllSequences("deviceConnectionSequences");
             $("#saveDeviceConnectionDialog").show();
             $("#inputDeviceName").focus();
         }
@@ -957,6 +964,18 @@
 
             if (hubIsConnected) {
                 // Save device and measurement records...
+                dataHub.newDevice().done(function(device) {
+                    device.Acronym = viewModel.deviceName();
+                    device.Name = viewModel.deviceName();
+                    device.ConnectionString = viewModel.adapterConnectionString();
+
+                    dataHub.addNewDevice(device).done(function() {
+                        showInfoMessage("Saved device connection for " + viewModel.deviceName());
+
+                        // Get newly added device
+                        // Loop through and add measurements
+                    });
+                });
             } else {
                 showErrorMessage("Cannot save device connection, cannot connect to server.", -1);
             }
@@ -1443,8 +1462,8 @@
                         </div>
                     </div>
                     <div class="col-md-4 top-padding">
-                        <button type="button" class="btn btn-primary pull-right" style="margin-left: 5px" onclick="connectToDevice()" hub-dependent><strong id="connectButtonLabel">Connect</strong>&nbsp;</button>
-                        <button type="button" class="btn btn-default pull-right" onclick="showSaveDeviceConnectionDialog()" hub-dependent>Save&nbsp;Connection</button>
+                        <button type="button" class="btn btn-primary pull-right" style="margin-left: 5px" onclick="connectToDevice()" title="Connect to Device" hub-dependent><span class="glyphicon glyphicon-transfer" style="vertical-align: text-top"></span> <strong id="connectButtonLabel">Connect</strong>&nbsp;</button>
+                        <button type="button" class="btn btn-default pull-right" onclick="showSaveDeviceConnectionDialog()" title="Define Tags from Sequence Mapping and Add New Device Connection" hub-dependent><span class="glyphicon glyphicon-link glyphicon-action-button"></span> Add&nbsp;Device</button>
                     </div>
                 </div>
             </div>
@@ -1546,7 +1565,7 @@
                             <tr style="cursor: move" data-bind="style: { backgroundColor:  isDuplicate() ? 'yellow' : undefined }">
                                 <td style="text-align: center; vertical-align: middle" width="5%" data-bind="style: groupBorders()"><div data-bind="if: isGroupFirst"><span class="sequence-group-count" data-bind="applyVerticalText: groupCount"></span></div><span data-bind="text: getRecordTypeCode(recordType())"></span></td>
                                 <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
-                                    <input type="checkbox" draggable="true" data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
+                                    <input type="checkbox" draggable="true" style="cursor: copy" title="Drag check box to copy checked state across multiple rows..." data-bind="checked: selected, visible: recordType() === RecordType.InputRegister || recordType() === RecordType.HoldingRegister, enable: !isEmpty(address()), attr: { 'onclick': 'selectedSequenceRecordsChanged(' + $parent.domIndex + ', ' + $index() + ')' }">
                                 </td>
                                 <td width="20%">
                                     <div class="form-group" style="padding: 0; margin: 0" data-bind="validationElement: address, css: checkValidation()">
@@ -1747,53 +1766,60 @@
                         <textarea class="form-control" id="textConnectionString" rows="4" data-bind="textInput: adapterConnectionString"></textarea>
                     </div>
                 </form>
-                <ul class="list-unstyled" data-bind="foreach: sequences">
+                <button type="button" class="btn btn-xs btn-collapsable" onclick="collapseAllSequences('deviceConnectionSequences')" title="Collapse All Sequences" style="top: -6px; right: 0"></button>
+                <button type="button" class="btn btn-xs btn-collapsable collapsed" onclick="expandAllSequences('deviceConnectionSequences')" title="Expand All Sequences" style="top: -6px; right: 2px; margin-left: 5px"></button>
+                <hr class="thick-spacer" />
+                <label for="deviceConnectionSequences" style="margin-bottom: 0">Define Device Tags:</label>
+                <ul class="list-unstyled" data-bind="foreach: sequences" id="deviceConnectionSequences">
                     <li class="panel" data-bind="css: { '@ReadSequencePanelType': sequenceType === SequenceType.Read, '@WriteSequencePanelType': sequenceType === SequenceType.Write }">
-                        <div class="panel-heading clearfix">
-                            <span data-bind="text: sequenceName"></span>
+                        <div class="panel-heading clearfix" style="padding-bottom: 0">
+                            <strong><span data-bind="text: sequenceName"></span></strong>
+                            <div class="form-group pull-right" style="padding: 0">
+                                <button type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-bind="attr: { 'data-target': '#deviceConnectionSequenceContent' + domIndex }"></button>
+                            </div>
                         </div>
-                        <div class="panel-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-striped table-condensed">
-                                    <thead>
-                                    <tr>
-                                        <th style="text-align: center">Type</th>
-                                        <th data-bind="if: sequenceType === SequenceType.Read"></th>
-                                        <th data-bind="if: sequenceType === SequenceType.Read">Tag Name</th>
-                                        <th>Address</th>
-                                        <th>Description</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody data-bind="foreach: sequenceRecords">
-                                    <tr style="cursor: move" data-bind="style: { backgroundColor:  isDuplicate() ? 'yellow' : undefined }">
-                                        <td style="text-align: center; vertical-align: middle" width="5%" data-bind="style: groupBorders()">
-                                            <div data-bind="if: isGroupFirst"><span class="sequence-group-count" data-bind="applyVerticalText: groupCount"></span></div>
-                                            <span data-bind="text: getRecordTypeCode(recordType())"></span>
-                                        </td>
-                                        <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
-                                            <input type="checkbox" data-bind="checked: mapped, enable: !isEmpty(address())">
-                                        </td>
-                                        <td style="text-align: center; vertical-align: middle" width="30%" data-bind="if: $parent.sequenceType === SequenceType.Read">
-                                            <input type="text" data-bind="textInput: tagName, enable: !isEmpty(address())">
-                                        </td>
-                                        <td width="15%">
-                                            <div class="form-group" style="padding: 0; margin: 0">
-                                                <span data-bind="text: address"></span>
-                                            </div>
-                                        </td>
-                                        <td data-bind="attr: { 'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%' }">
-                                            <span data-bind="text: description"></span>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                        <div class="collapse in" data-bind="attr: { 'id': 'deviceConnectionSequenceContent' + domIndex }">
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped table-condensed">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align: center">Type</th>
+                                                <th data-bind="if: sequenceType === SequenceType.Read"></th>
+                                                <th data-bind="if: sequenceType === SequenceType.Read">Tag Name</th>
+                                                <th>Address</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach: sequenceRecords">
+                                            <tr style="cursor: move" data-bind="style: { backgroundColor:  isDuplicate() ? 'yellow' : undefined }">
+                                                <td style="text-align: center; vertical-align: middle" width="5%" data-bind="style: groupBorders()">
+                                                    <div data-bind="if: isGroupFirst"><span class="sequence-group-count" data-bind="applyVerticalText: groupCount"></span></div>
+                                                    <span data-bind="text: getRecordTypeCode(recordType())"></span>
+                                                </td>
+                                                <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
+                                                    <input type="checkbox" data-bind="checked: mapped, enable: !isEmpty(address())">
+                                                </td>
+                                                <td style="text-align: center; vertical-align: middle" width="30%" data-bind="if: $parent.sequenceType === SequenceType.Read">
+                                                    <input type="text" class="form-control" data-bind="textInput: tagName, enable: mapped() && !isEmpty(address())">
+                                                </td>
+                                                <td width="15%" class="valign-middle">
+                                                    <span data-bind="text: String(address()).truncate(25), attr: { title: address }"></span>
+                                                </td>
+                                                <td data-bind="attr: { 'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%' }">
+                                                    <input type="text" class="form-control" placeholder="Description..." data-bind="textInput: tagDescription, enable: mapped() && !isEmpty(address())">
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </li>
                 </ul>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary" onclick="saveDeviceConnection()" hub-dependent>Save</button>
+                <button type="button" class="btn btn-primary" onclick="saveDeviceConnection()" data-bind="enable: deviceConnectionValues.isValid() && totalSequenceGroups() > 0" hub-dependent>Save</button>
                 <button type="button" class="btn btn-default" onclick="$('#saveDeviceConnectionDialog').hide()">Cancel</button>
             </div>
         </div>
