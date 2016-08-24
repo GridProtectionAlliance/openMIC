@@ -65,7 +65,6 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
     // If provided, construct from existing deserialized record
     if (deserializedRecord) {
         self.recordType(deserializedRecord.recordType);
-        self.selected(deserializedRecord.selected);
         self.address(deserializedRecord.address);
         self.description(deserializedRecord.description);
         self.dataValue(deserializedRecord.dataValue);
