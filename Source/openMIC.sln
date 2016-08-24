@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Applications", "Applications", "{BD933E0E-B3FD-470B-B53B-56DA8BC27467}"
 EndProject
@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{E7006E3E-A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL Server", "SQL Server", "{9A59B9E0-A36F-4C52-8568-CB004B20885B}"
 	ProjectSection(SolutionItems) = preProject
+		Data\SQL Server\_InitialDataSet.sql = Data\SQL Server\_InitialDataSet.sql
+		Data\SQL Server\_openMIC.sql = Data\SQL Server\_openMIC.sql
 		Data\SQL Server\AuditLog.sql = Data\SQL Server\AuditLog.sql
 		Data\SQL Server\InitialDataSet.sql = Data\SQL Server\InitialDataSet.sql
 		NonGSFContent.sql = NonGSFContent.sql
@@ -38,6 +40,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL Server", "SQL Server", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MySql", "MySql", "{B1AC9848-2909-4A7B-9541-8EA4E89E72F1}"
 	ProjectSection(SolutionItems) = preProject
+		Data\MySQL\_InitialDataSet.sql = Data\MySQL\_InitialDataSet.sql
+		Data\MySQL\_openMIC.sql = Data\MySQL\_openMIC.sql
 		Data\MySQL\AuditLog.sql = Data\MySQL\AuditLog.sql
 		Data\MySQL\InitialDataSet.sql = Data\MySQL\InitialDataSet.sql
 		Data\MySQL\openMIC.sql = Data\MySQL\openMIC.sql
@@ -116,6 +120,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Help Me Choose Diagrams", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLite", "SQLite", "{53255BB7-2046-4606-BF76-7B5C13F49819}"
 	ProjectSection(SolutionItems) = preProject
+		Data\SQLite\_InitialDataSet.sql = Data\SQLite\_InitialDataSet.sql
+		Data\SQLite\_openMIC.sql = Data\SQLite\_openMIC.sql
+		Data\SQLite\db-update.bat = Data\SQLite\db-update.bat
 		Data\SQLite\InitialDataSet.sql = Data\SQLite\InitialDataSet.sql
 		Data\SQLite\openMIC-InitialDataSet.db = Data\SQLite\openMIC-InitialDataSet.db
 		Data\SQLite\openMIC-SampleDataSet.db = Data\SQLite\openMIC-SampleDataSet.db
@@ -132,6 +139,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQLite", "SQLite", "{44A76C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Oracle", "Oracle", "{051BD028-6567-442A-B7C5-A5DD9F70B357}"
 	ProjectSection(SolutionItems) = preProject
+		Data\Oracle\_InitialDataSet.sql = Data\Oracle\_InitialDataSet.sql
+		Data\Oracle\_openMIC.sql = Data\Oracle\_openMIC.sql
 		Data\Oracle\AuditLog.sql = Data\Oracle\AuditLog.sql
 		Data\Oracle\InitialDataSet.sql = Data\Oracle\InitialDataSet.sql
 		Data\Oracle\openMIC.sql = Data\Oracle\openMIC.sql
@@ -288,6 +297,15 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openMICShell", "Applications\openMIC\openMICShell\openMICShell.csproj", "{5D7F9600-E7F9-491C-AD0C-CECBA54F7083}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WixFolderGen", "Applications\openMIC\WixFolderGen\WixFolderGen.csproj", "{674F09A7-4477-4CED-90F6-B7512886BC74}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostgreSQL", "PostgreSQL", "{011A01C9-BACD-43FD-8AF0-958EAC35A85C}"
+	ProjectSection(SolutionItems) = preProject
+		Data\PostgreSQL\_InitialDataSet.sql = Data\PostgreSQL\_InitialDataSet.sql
+		Data\PostgreSQL\_openMIC.sql = Data\PostgreSQL\_openMIC.sql
+		Data\PostgreSQL\InitialDataSet.sql = Data\PostgreSQL\InitialDataSet.sql
+		Data\PostgreSQL\openMIC.sql = Data\PostgreSQL\openMIC.sql
+		Data\PostgreSQL\SampleDataSet.sql = Data\PostgreSQL\SampleDataSet.sql
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -453,5 +471,6 @@ Global
 		{6CFC0EB9-8610-4200-806B-E2B62B63F8B3} = {A19659A8-EA00-4D5E-90C5-E8ABE7F4FB1C}
 		{5D7F9600-E7F9-491C-AD0C-CECBA54F7083} = {CE260396-797B-45DF-AC53-E4FC553B57C0}
 		{674F09A7-4477-4CED-90F6-B7512886BC74} = {CE260396-797B-45DF-AC53-E4FC553B57C0}
+		{011A01C9-BACD-43FD-8AF0-958EAC35A85C} = {E7006E3E-A430-4AB2-A6CA-7653D7F62D4B}
 	EndGlobalSection
 EndGlobal
