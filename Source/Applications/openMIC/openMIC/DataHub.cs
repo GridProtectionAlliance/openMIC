@@ -52,7 +52,7 @@ namespace openMIC
 
         #region [ Constructors ]
 
-        public DataHub() : base(null, Program.Host.LogStatusMessage, Program.Host.LogException)
+        public DataHub() : base(Program.Host.LogStatusMessage, Program.Host.LogException)
         {
             Action<string, UpdateType> logStatusMessage = (message, updateType) => LogStatusMessage(message, updateType);
             Action<Exception> logException = ex => LogException(ex);

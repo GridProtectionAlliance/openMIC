@@ -21,7 +21,6 @@
 //
 //*****************************************************************************************************@
 @using openMIC.Model
-@using RazorEngine.Templating
 @using GSF.Web.Model
 @inherits ExtendedTemplateBase<AppModel>
 @{
@@ -516,12 +515,18 @@
 
             return address;
         }
+        
+        function getDerivedValueAddresses(sequence, expression) {
+            const indexOfParen = expression.indexOf("(");
+            const addressRefs = expression.substring(indexOfParen + 1, expression.length - 1);
+            return addressRefs.split(",");
+        }
 
         function parseDerivedValueAddressExpression(sequence, expression) {
             const indexOfParen = expression.indexOf("(");
             const derivedType = expression.substring(0, indexOfParen).toUpperCase();
-            const addressRefs = expression.substring(indexOfParen + 1, expression.length - 1);
-            const addressList = addressRefs.split(",");
+            const addressList = getDerivedValueAddresses(sequence, expression);
+
             const parsedValue = {
                 type: derivedType,
                 values: []  
@@ -863,6 +868,97 @@
                     $("#serialBuilderDialog").show();
                     $("#inputSerialPort").focus();
                     break;
+            }
+        }
+
+        function showSaveDeviceConnectionDialog() {
+            // Define adapter connection string
+            const adapterConnectionString = new Dictionary(viewModel.connectionString().parseKeyValuePairs());
+
+            adapterConnectionString.set("unitID", viewModel.unitID());
+            adapterConnectionString.set("pollingRate", viewModel.pollingRate());
+            adapterConnectionString.set("interSequenceGroupPollDelay", viewModel.interSequenceGroupPollDelay());
+
+            const sequences = viewModel.sequences();
+            
+            adapterConnectionString.set("sequenceCount", sequences.length);
+            
+            for (let i = 0; i < sequences.length; i++) {
+                const sequence = sequences[i];
+                const sequenceKey = "sequence" + i;
+                const sequenceConnectionString = new Dictionary();
+                const records = sequence.sequenceRecords();
+                const groups = sequence.sequenceGroups();
+                var derivedStart = -1;
+                var derivedStop = -1;
+
+                sequenceConnectionString.set("groupCount", groups.length);
+                
+                // Pre-select all mappings
+                for (let j = 0; j < records.length; j++) {
+                    records[j].mapped(true);
+                }
+
+                for (let j = 0; j < groups.length; j++) {
+                    const group = groups[j];
+                    const pointCount = group.stop - group.start + 1;
+                    
+                    if (group.type === RecordType.DerivedValue) {
+                        sequenceConnectionString.set("groupDerivedCount" + i, pointCount);
+                        sequenceConnectionString.set("groupCount", groups.length - 1);
+                        derivedStart = group.start;
+                        derivedStop = group.stop;
+                    }
+                    else {
+                        sequenceConnectionString.set("groupType" + i, getRecordTypeCode(group.type));
+                        sequenceConnectionString.set("groupStartAddress" + i, records[group.start].address());
+                        sequenceConnectionString.set("groupPointCount" + i, pointCount);
+                    }
+                }
+
+                adapterConnectionString.set(sequenceKey, sequenceConnectionString.joinKeyValuePairs());
+
+                // Handle up-mapping of derived inputs
+                if (derivedStart > -1 && derivedStop > -1) {
+                    for (let j = derivedStart; j <= derivedStop; j++) {
+                        const record = records[j];
+                        const addressList = getDerivedValueAddresses(sequence, record.address());
+
+                        for (let k = 0; k < addressList.length; k++) {
+                            const addressID = addressList[k].trim();
+                            const recordType = addressID.substring(0, 2).toUpperCase();
+                            const address = parseInt(addressID.substring(2, addressID.length));
+                            let record = null;
+
+                            switch (recordType) {
+                                case "IR":
+                                    record = sequence.findSequenceRecord(RecordType.InputRegister, address);
+                                    break;
+                                case "HR":
+                                    record = sequence.findSequenceRecord(RecordType.HoldingRegister, address);
+                                    break;
+                            }
+
+                            if (record)
+                                record.mapped(false);
+                        }
+                    }
+                }
+            }
+
+            viewModel.adapterConnectionString(adapterConnectionString.joinKeyValuePairs());        
+
+            $("#saveDeviceConnectionDialog").show();
+            $("#inputDeviceName").focus();
+        }
+        
+        function saveDeviceConnection() {
+            $('#saveDeviceConnectionDialog').hide();
+
+            if (hubIsConnected) {
+                // Save device and measurement records...
+            } else {
+                showErrorMessage("Cannot save device connection, cannot connect to server.", -1);
             }
         }
 
@@ -1237,6 +1333,12 @@
                 keyboard: false
             });
 
+            $("#saveDeviceConnectionDialog").modal({
+                show: false,
+                backdrop: "static",
+                keyboard: false
+            });
+
             $("#inputTcpHostName").focus(function() {
                 $(this).select();
             });
@@ -1258,6 +1360,10 @@
             });
 
             $("#inputSerialDataBits").focus(function() {
+                $(this).select();
+            });
+
+            $("#inputDeviceName").focus(function() {
                 $(this).select();
             });
         });
@@ -1337,7 +1443,8 @@
                         </div>
                     </div>
                     <div class="col-md-4 top-padding">
-                        <button type="button" class="btn btn-primary pull-right" onclick="connectToDevice()" hub-dependent><strong id="connectButtonLabel">Connect</strong>&nbsp;</button>
+                        <button type="button" class="btn btn-primary pull-right" style="margin-left: 5px" onclick="connectToDevice()" hub-dependent><strong id="connectButtonLabel">Connect</strong>&nbsp;</button>
+                        <button type="button" class="btn btn-default pull-right" onclick="showSaveDeviceConnectionDialog()" hub-dependent>Save&nbsp;Connection</button>
                     </div>
                 </div>
             </div>
@@ -1620,4 +1727,75 @@
             </div>
         </div>
     </div>
+</div>
+@* Save Device Connection Dialog *@
+<div id="saveDeviceConnectionDialog" class="modal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="$('#saveDeviceConnectionDialog').hide()">&times;</button>
+                <h4 class="modal-title">Save Device Connection</h4>
+            </div>
+            <div class="modal-body" style="max-height: calc(100vh - 212px); overflow-y: auto;">
+                <form role="form">
+                    <div class="form-group" data-bind="validationElement: deviceName">
+                        <label for="inputDeviceName">Device Name:</label>
+                        <input type="text" class="form-control" id="inputDeviceName" maxlength="200" size="15" data-bind="textInput: deviceName">
+                    </div>
+                    <div class="form-group" data-bind="validationElement: adapterConnectionString">
+                        <label for="textConnectionString">Connection String:</label>
+                        <textarea class="form-control" id="textConnectionString" rows="4" data-bind="textInput: adapterConnectionString"></textarea>
+                    </div>
+                </form>
+                <ul class="list-unstyled" data-bind="foreach: sequences">
+                    <li class="panel" data-bind="css: { '@ReadSequencePanelType': sequenceType === SequenceType.Read, '@WriteSequencePanelType': sequenceType === SequenceType.Write }">
+                        <div class="panel-heading clearfix">
+                            <span data-bind="text: sequenceName"></span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped table-condensed">
+                                    <thead>
+                                    <tr>
+                                        <th style="text-align: center">Type</th>
+                                        <th data-bind="if: sequenceType === SequenceType.Read"></th>
+                                        <th data-bind="if: sequenceType === SequenceType.Read">Tag Name</th>
+                                        <th>Address</th>
+                                        <th>Description</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: sequenceRecords">
+                                    <tr style="cursor: move" data-bind="style: { backgroundColor:  isDuplicate() ? 'yellow' : undefined }">
+                                        <td style="text-align: center; vertical-align: middle" width="5%" data-bind="style: groupBorders()">
+                                            <div data-bind="if: isGroupFirst"><span class="sequence-group-count" data-bind="applyVerticalText: groupCount"></span></div>
+                                            <span data-bind="text: getRecordTypeCode(recordType())"></span>
+                                        </td>
+                                        <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
+                                            <input type="checkbox" data-bind="checked: mapped, enable: !isEmpty(address())">
+                                        </td>
+                                        <td style="text-align: center; vertical-align: middle" width="30%" data-bind="if: $parent.sequenceType === SequenceType.Read">
+                                            <input type="text" data-bind="textInput: tagName, enable: !isEmpty(address())">
+                                        </td>
+                                        <td width="15%">
+                                            <div class="form-group" style="padding: 0; margin: 0">
+                                                <span data-bind="text: address"></span>
+                                            </div>
+                                        </td>
+                                        <td data-bind="attr: { 'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%' }">
+                                            <span data-bind="text: description"></span>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" onclick="saveDeviceConnection()" hub-dependent>Save</button>
+                <button type="button" class="btn btn-default" onclick="$('#saveDeviceConnectionDialog').hide()">Cancel</button>
+            </div>
+        </div>
+    </div>    
 </div>

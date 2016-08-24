@@ -39,12 +39,15 @@ function MapViewModel() {
     self.interface = ko.observable("0.0.0.0").extend({ required: true }).extend({ pattern: { message: 'Must be a valid IP address', params: /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/ } });
     self.comPort = ko.observable(1).extend({ required: true }).extend({ number: true }).extend({ min: 1 }).extend({ max: 65535 });
     self.dataBits = ko.observable(8).extend({ required: true }).extend({ number: true }).extend({ min: 5 }).extend({ max: 8 });
+    self.connectionString = ko.observable("").extend({ required: true });
+    self.adapterConnectionString = ko.observable("").extend({ required: true });
 
     // Internal fields
     self._isDirty = ko.observable(false);
     self._frameFormat = ko.observable("TCP");
     self._transport = ko.observable("TCP");
     self._connectionString = ko.observable("");
+    self._deviceName = ko.observable("");
 
     // Properties
     self.isDirty = ko.pureComputed({
@@ -118,6 +121,18 @@ function MapViewModel() {
         },
         owner: self
     });
+
+    self.deviceName = ko.pureComputed({
+        read: function() {
+            return self._deviceName().toUpperCase();
+        },
+        write: function(value) {
+            self._deviceName(notNull(value).toUpperCase());
+        },
+        owner: self
+    });
+
+    self.deviceName.extend({ required: true }).extend({ pattern: { message: "Only upper case letters, numbers, '!', '-', '@', '#', '_' , '.'and '$' are allowed.", params: "^[A-Z0-9\\-!_\\.@#\\$]+$" } });
 
     // Delegates
     self.reorderSequencePanels = function() { };

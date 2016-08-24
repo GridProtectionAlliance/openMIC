@@ -61,6 +61,10 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
     self.address = ko.observable(address);
     self.description = ko.observable("");
     self.dataValue = ko.observable();
+    self.mapped = ko.observable(false);
+        
+    // Internal fields
+    self._tagName = ko.observable("");    
 
     // If provided, construct from existing deserialized record
     if (deserializedRecord) {
@@ -230,6 +234,38 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
             }
 
             return false;
+        },
+        owner: self
+    });
+
+    self.tagNameFormat = ko.pureComputed({
+        read: function() {
+            if (self.recordType() === RecordType.DerivedValue) {
+                const address = self.address().replaceAll("(", "@").replaceAll(",", "#").trim().toUpperCase();
+                return "{0}-" + String.format("{0}!{1}", getRecordTypeCode(self.recordType()), address.substr(0, address.length - 1));
+            }
+
+            return "{0}-" + getRecordTypeCode(self.recordType()) + self.address();
+        },
+        owner: self
+    });
+
+    self.tagName = ko.pureComputed({
+        read: function() {
+            if (isEmpty(self._tagName()))
+                return String.format(self.tagNameFormat(), viewModel.deviceName());
+
+            return self._tagName();
+        },
+        write: function(value) {
+            self._tagName(value);
+        },
+        owner: self
+    });
+
+    self.signalReference = ko.pureComputed({
+        read: function() {
+            return String.format(self.tagNameFormat(), viewModel.deviceName());
         },
         owner: self
     });
