@@ -23,6 +23,10 @@
 
 "use strict";
 
+var SequenceType = {
+    Read: 0,
+    Write: 1
+}
 var sequenceDomIndex = 0;
 
 function MapViewModel() {
@@ -41,6 +45,7 @@ function MapViewModel() {
     self.dataBits = ko.observable(8).extend({ required: true }).extend({ number: true }).extend({ min: 5 }).extend({ max: 8 });
     self.connectionString = ko.observable("").extend({ required: true });
     self.adapterConnectionString = ko.observable("").extend({ required: true });
+    self.exists = ko.observable(false);
 
     // Internal fields
     self._isDirty = ko.observable(false);
@@ -128,6 +133,12 @@ function MapViewModel() {
         },
         write: function(value) {
             self._deviceName(notNull(value).toUpperCase());
+
+            if (hubIsConnected) {
+                dataHub.queryDevice(self._deviceName()).done(function(device) {
+                   self.exists(device.ID > 0); 
+                });
+            }
         },
         owner: self
     });
@@ -247,6 +258,34 @@ function MapViewModel() {
         }
 
         self.isDirty(false);
+    }
+
+    self.readSequences = function() {
+        const sequences = self.sequences();
+        var readSequences = [];
+
+        if (sequences) {
+            sequences.forEach(function(sequence) {
+                if (sequence.sequenceType === SequenceType.Read)
+                    readSequences.push(sequence);
+            });
+        }    
+
+        return readSequences;
+    }
+    
+    self.writeSequences = function() {
+        const sequences = self.sequences();
+        var writeSequences = [];
+
+        if (sequences) {
+            sequences.forEach(function(sequence) {
+                if (sequence.sequenceType === SequenceType.Write)
+                    writeSequences.push(sequence);
+            });
+        }    
+
+        return writeSequences;
     }
 
     self.serializeMapping = function() {

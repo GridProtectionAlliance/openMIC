@@ -389,6 +389,48 @@ namespace openMIC
             OnStatusMessage("Device disconnected.");
         }
 
+        private string[] getDerivedValueAddresses(string expression)
+        {
+            int indexOfParen = expression.IndexOf('(');
+            string addressRefs = expression.Substring(indexOfParen + 1, expression.Length - 1);
+            return addressRefs.Split(',');
+        }
+
+        private void parseDerivedValueAddressExpression(string sequence, string expression)
+        {
+            int indexOfParen = expression.IndexOf('(');
+            string derivedType = expression.Substring(0, indexOfParen).ToUpper();
+            string[] addressList = getDerivedValueAddresses(expression);
+
+            //const parsedValue = {
+            //    type: derivedType,
+            //    values: []
+            //};
+
+            //for (int i = 0; i < addressList.Length; i++) {
+            //    string addressID = addressList[i].Trim();
+            //    string recordType = addressID.substring(0, 2).toUpperCase();
+            //    int address = parseInt(addressID.substring(2, addressID.length));
+            //    var record = null;
+
+            //    switch (recordType) {
+            //        case "IR":
+            //            record = sequence.findSequenceRecord(RecordType.InputRegister, address);
+            //            break;
+            //        case "HR":
+            //            record = sequence.findSequenceRecord(RecordType.HoldingRegister, address);
+            //            break;
+            //    }
+
+            //    if (record) {
+
+            //            parsedValue.values.push(parseInt(record.dataValue()));
+            //    }
+            //}
+
+            //return parsedValue;
+        }
+
         /// <summary>
         /// Gets a short one-line status of this adapter.
         /// </summary>

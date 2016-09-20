@@ -28,6 +28,8 @@
 
     const string ReadSequencePanelType = "panel-success";
     const string WriteSequencePanelType = "panel-warning";
+
+    DataContext dataContext = ViewBag.DataContext;
 }
 @section StyleSheets {
     <style>
@@ -320,6 +322,10 @@
         .btn-collapsable.btn.collapsed:after {
             content: "\e080";
         }
+
+        input[type=text].exists {
+            border: 3px solid #0C0;
+        }
     </style>
     <!--[if IE]>
     <style type="text/css">
@@ -516,7 +522,7 @@
             return address;
         }
         
-        function getDerivedValueAddresses(sequence, expression) {
+        function getDerivedValueAddresses(expression) {
             const indexOfParen = expression.indexOf("(");
             const addressRefs = expression.substring(indexOfParen + 1, expression.length - 1);
             return addressRefs.split(",");
@@ -525,7 +531,7 @@
         function parseDerivedValueAddressExpression(sequence, expression) {
             const indexOfParen = expression.indexOf("(");
             const derivedType = expression.substring(0, indexOfParen).toUpperCase();
-            const addressList = getDerivedValueAddresses(sequence, expression);
+            const addressList = getDerivedValueAddresses(expression);
 
             const parsedValue = {
                 type: derivedType,
@@ -826,19 +832,21 @@
         function loadMappingFile(event) {
             $("#loadingMappingMessage").show();
 
-            const files = event.target.files;
+            setTimeout(function() {
+                const files = event.target.files;
 
-            if (loadAppendMode) {
-                for (let i = 0; i < files.length; i++)
-                    viewModel.loadSequenceMap(files[i], loadAppendMode);
-            } else {
-                viewModel.loadSequenceMap(files[0], loadAppendMode);
+                if (loadAppendMode) {
+                    for (let i = 0; i < files.length; i++)
+                        viewModel.loadSequenceMap(files[i], loadAppendMode);
+                } else {
+                    viewModel.loadSequenceMap(files[0], loadAppendMode);
 
-                if (files.length > 1)
-                    showInfoMessage("Only loaded first file from the selected set. Use \"Append Mapping\" to load multiple mappings into the current configuration.", -1);
-            }
+                    if (files.length > 1)
+                        showInfoMessage("Only loaded first file from the selected set. Use \"Append Mapping\" to load multiple mappings into the current configuration.", -1);
+                }
 
-            $("#loadMappingFileName").val("");
+                $("#loadMappingFileName").val("");
+            }, 100);
         }
 
         function loadMappingComplete() {
@@ -928,7 +936,7 @@
                 if (derivedStart > -1 && derivedStop > -1) {
                     for (let j = derivedStart; j <= derivedStop; j++) {
                         const record = records[j];
-                        const addressList = getDerivedValueAddresses(sequence, record.address());
+                        const addressList = getDerivedValueAddresses(record.address());
 
                         for (let k = 0; k < addressList.length; k++) {
                             const addressID = addressList[k].trim();
@@ -958,27 +966,142 @@
             $("#saveDeviceConnectionDialog").show();
             $("#inputDeviceName").focus();
         }
+
+        function saveDeviceMeasurements(device) {
+            // Loop through and add measurements            
+            const sequences = viewModel.readSequences();
+            var promises = [];
+            
+            for (let i = 0; i < sequences.length; i++) {
+                const sequence = sequences[i];
+                const records = sequence.sequenceRecords();
+
+                for (let j = 0; j < records.length; j++) {
+                    const record = records[j];
+
+                    if (isEmpty(record.signalReference()))
+                        continue;
+                    
+                    // Query existing measurement with specified signal reference or create a new one
+                    dataHub.queryMeasurement(record.signalReference()).done(function(measurement) {
+                        measurement.DeviceID = device.ID;
+                        measurement.PointTag = record.tagName();
+                        measurement.SignalReference = record.signalReference();
+                        measurement.Description = record.tagDescription();
+                        measurement.SignalTypeID = record.signalType();
+                        measurement.Internal = true;
+                        measurement.Enabled = record.mapped();
+                                                                                                
+                        if (measurement.PointID === 0) {
+                            if (measurement.Enabled)
+                                promises.push(dataHub.addNewMeasurement(measurement));
+                        }
+                        else {
+                            promises.push(dataHub.updateMeasurement(measurement));
+                        }
+                    }).fail(function(error) {
+                        showErrorMessage("Failed while saving device " + viewModel.deviceName() + " measurement - could not create new or lookup existing measurement: " + error);
+                    });                    
+                }
+            }
+
+            $(promises).whenAll().done(function() {
+                showInfoMessage("Save complete for device " + viewModel.deviceName() + ".");
+            }).fail(function(error) {
+                showErrorMessage("Failed while saving device " + viewModel.deviceName() + " measurements: " + error);
+            });
+        }
         
         function saveDeviceConnection() {
-            $('#saveDeviceConnectionDialog').hide();
+            $("#saveDeviceConnectionDialog").hide();
 
             if (hubIsConnected) {
-                // Save device and measurement records...
-                dataHub.newDevice().done(function(device) {
+                showInfoMessage("Saving device connection and new measurements, please wait...", 5000);
+
+                // Query existing device with specified acronym or create a new onw
+                dataHub.queryDevice(viewModel.deviceName()).done(function(device) {
                     device.Acronym = viewModel.deviceName();
-                    device.Name = viewModel.deviceName();
+                    device.Name = device.Acronym + " (Modbus)";
                     device.ConnectionString = viewModel.adapterConnectionString();
+                    
+                    dataHub.getModbusProtocolID().done(function(protocolID) {
+                        device.ProtocolID = protocolID;
 
-                    dataHub.addNewDevice(device).done(function() {
-                        showInfoMessage("Saved device connection for " + viewModel.deviceName());
-
-                        // Get newly added device
-                        // Loop through and add measurements
+                        if (device.ID === 0) {
+                            dataHub.addNewDevice(device).done(function() {
+                                // Get newly added device (gets device ID)
+                                dataHub.queryDevice(device.Acronym).done(function(newDevice) {
+                                    // Save device measurement records...
+                                    saveDeviceMeasurements(newDevice);
+                                }).fail(function(error) {
+                                    showErrorMessage("Failed while querying new device " + viewModel.deviceName() + " - no measurements saved: " + error);
+                                }); 
+                            }).fail(function(error) {
+                                showErrorMessage("Save failed for new device " + viewModel.deviceName() + ": " + error);
+                            });
+                        }
+                        else {
+                            dataHub.updateDevice(device).done(function() {
+                                // Save device measurement records...
+                                saveDeviceMeasurements(device);
+                            }).fail(function(error) {
+                                showErrorMessage("Update failed for existing device " + viewModel.deviceName() + " - no measurements updated: " + error);
+                            });
+                        }
+                    }).fail(function(error) {
+                        showErrorMessage("Save failed for new device " + viewModel.deviceName() + " - could not lookup Modbus protocol ID: " + error);
                     });
+                }).fail(function(error) {
+                    showErrorMessage("Save failed for new device " + viewModel.deviceName() + " - could not create new or lookup existing device: " + error);
                 });
             } else {
                 showErrorMessage("Cannot save device connection, cannot connect to server.", -1);
             }
+        }
+
+        function loadTagData() {
+            if (!hubIsConnected)
+                return;
+
+            dataHub.queryDevice(viewModel.deviceName()).done(function(device) {
+               if (device.ID < 1)
+                   return;
+
+                $("#loadingTagDataMessage").show();
+
+                // Loop through and query measurements            
+                const sequences = viewModel.readSequences();
+                var promises = [];
+            
+                for (let i = 0; i < sequences.length; i++) {
+                    const sequence = sequences[i];
+                    const records = sequence.sequenceRecords();
+
+                    for (let j = 0; j < records.length; j++) {
+                        const record = records[j];
+
+                        if (isEmpty(record.signalReference()))
+                            continue;
+                    
+                        // Query existing measurement with specified signal reference
+                        promises.push(dataHub.queryMeasurement(record.signalReference()).done(function(measurement) {                                             
+                            if (measurement.PointID > 0) {
+                                record.tagName(measurement.PointTag);
+                                record.tagDescription(measurement.Description);
+                                record.signalType(measurement.SignalTypeID);
+                                record.mapped(measurement.Enabled);
+                            }
+                        }));         
+                    }
+                }
+
+                $(promises).whenAll().done(function() {
+                    $("#loadingTagDataMessage").hide();
+                }).fail(function(error) {
+                    showErrorMessage("Failed while loading tag data: " + error);
+                    $("#loadingTagDataMessage").hide();
+                });
+            });
         }
 
         function applyTcpConnectionSettings() {
@@ -1758,8 +1881,13 @@
             <div class="modal-body" style="max-height: calc(100vh - 212px); overflow-y: auto;">
                 <form role="form">
                     <div class="form-group" data-bind="validationElement: deviceName">
-                        <label for="inputDeviceName">Device Name:</label>
-                        <input type="text" class="form-control" id="inputDeviceName" maxlength="200" size="15" data-bind="textInput: deviceName">
+                        <label for="inputDeviceName">Device Name:<span class="pull-right" style="margin-top: -1px" data-bind="visible: exists">&nbsp;&nbsp;<button type="button" class="btn btn-xs" onclick="loadTagData()"><b>Load Tag Data</b></button></span><span class="pull-right" data-bind="visible: exists">&nbsp;&nbsp;&nbsp;&nbsp;<i>Device already exists</i></span></label>
+                        <input type="text" class="form-control" id="inputDeviceName" maxlength="200" size="15" data-bind="textInput: deviceName, css: { 'exists': exists }">
+                    </div>
+                    <div id="loadingTagDataMessage" class="top-margin bottom-margin clearfix" style="display: none">
+                        <div class="pull-right" style="font-weight: bold">
+                            Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+                        </div>
                     </div>
                     <div class="form-group" data-bind="validationElement: adapterConnectionString">
                         <label for="textConnectionString">Connection String:</label>
@@ -1770,8 +1898,8 @@
                 <button type="button" class="btn btn-xs btn-collapsable collapsed" onclick="expandAllSequences('deviceConnectionSequences')" title="Expand All Sequences" style="top: -6px; right: 2px; margin-left: 5px"></button>
                 <hr class="thick-spacer" />
                 <label for="deviceConnectionSequences" style="margin-bottom: 0">Define Device Tags:</label>
-                <ul class="list-unstyled" data-bind="foreach: sequences" id="deviceConnectionSequences">
-                    <li class="panel" data-bind="css: { '@ReadSequencePanelType': sequenceType === SequenceType.Read, '@WriteSequencePanelType': sequenceType === SequenceType.Write }">
+                <ul class="list-unstyled" data-bind="foreach: readSequences()" id="deviceConnectionSequences">
+                    <li class="panel @ReadSequencePanelType">
                         <div class="panel-heading clearfix" style="padding-bottom: 0">
                             <strong><span data-bind="text: sequenceName"></span></strong>
                             <div class="form-group pull-right" style="padding: 0">
@@ -1785,9 +1913,10 @@
                                         <thead>
                                             <tr>
                                                 <th style="text-align: center">Type</th>
-                                                <th data-bind="if: sequenceType === SequenceType.Read"></th>
-                                                <th data-bind="if: sequenceType === SequenceType.Read">Tag Name</th>
-                                                <th>Address</th>
+                                                <th></th>
+                                                <th>Tag&nbsp;Name</th>
+                                                <th>Signal&nbsp;Type</th>
+                                                <th style="text-align: center">Address</th>
                                                 <th>Description</th>
                                             </tr>
                                         </thead>
@@ -1797,16 +1926,25 @@
                                                     <div data-bind="if: isGroupFirst"><span class="sequence-group-count" data-bind="applyVerticalText: groupCount"></span></div>
                                                     <span data-bind="text: getRecordTypeCode(recordType())"></span>
                                                 </td>
-                                                <td style="text-align: center; vertical-align: middle" width="5%" data-bind="if: $parent.sequenceType === SequenceType.Read">
+                                                <td style="text-align: center; vertical-align: middle" width="5%">
                                                     <input type="checkbox" data-bind="checked: mapped, enable: !isEmpty(address())">
                                                 </td>
-                                                <td style="text-align: center; vertical-align: middle" width="30%" data-bind="if: $parent.sequenceType === SequenceType.Read">
+                                                <td style="text-align: center; vertical-align: middle" width="25%">
                                                     <input type="text" class="form-control" data-bind="textInput: tagName, enable: mapped() && !isEmpty(address())">
                                                 </td>
-                                                <td width="15%" class="valign-middle">
-                                                    <span data-bind="text: String(address()).truncate(25), attr: { title: address }"></span>
+                                                <td style="text-align: center; vertical-align: middle" width="25%">
+                                                    <select class="form-control" data-bind="value: signalType, valueAllowUnset: false" required>
+                                                    @{
+                                                        foreach (SignalType record in dataContext.Table<SignalType>().QueryRecords()) {
+                                                            <option value="@record.ID">@(string.Format("{0}: {1}",record.Acronym, record.Name))</option>
+                                                        }
+                                                    }
+                                                    </select>
                                                 </td>
-                                                <td data-bind="attr: { 'width': $parent.sequenceType === SequenceType.Read ? '45%' : '50%' }">
+                                                <td style="text-align: center; vertical-align: middle" width="10%">
+                                                    <span data-bind="text: String(address()).truncate(15), attr: { title: address }"></span>
+                                                </td>
+                                                <td style="text-align: center; vertical-align: middle" width="30%">
                                                     <input type="text" class="form-control" placeholder="Description..." data-bind="textInput: tagDescription, enable: mapped() && !isEmpty(address())">
                                                 </td>
                                             </tr>

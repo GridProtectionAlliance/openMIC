@@ -23,11 +23,6 @@
 
 "use strict";
 
-var SequenceType = {
-    Read: 0,
-    Write: 1
-}
-
 // Define view model for sequences
 function SequenceViewModel(sequenceType, domIndex, index, expanded) {
     const self = this;

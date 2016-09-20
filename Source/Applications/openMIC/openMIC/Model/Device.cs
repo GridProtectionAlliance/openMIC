@@ -4,6 +4,7 @@ using GSF.Data.Model;
 
 namespace openMIC.Model
 {
+    [PrimaryLabel("Acronym")]
     public class Device
     {
         public Guid NodeID

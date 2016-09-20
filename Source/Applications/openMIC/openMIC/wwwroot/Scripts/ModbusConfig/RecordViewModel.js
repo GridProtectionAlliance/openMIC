@@ -61,6 +61,7 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
     self.address = ko.observable(address);
     self.description = ko.observable("");
     self.dataValue = ko.observable();
+    self.signalType = ko.observable(7);
     self.mapped = ko.observable(false);
         
     // Internal fields
@@ -239,7 +240,7 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
         owner: self
     });
 
-    self.tagNameFormat = ko.pureComputed({
+    self.signalReferenceFormat = ko.pureComputed({
         read: function() {
             if (self.recordType() === RecordType.DerivedValue) {
                 // Format derived values like: {DeviceName}-{RecordTypeCode}!{upper(DerivedType)}@{Address0}#{Address1}[...#{Address(n)}]
@@ -251,11 +252,18 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
         },
         owner: self
     });
+    
+    self.signalReference = ko.pureComputed({
+        read: function() {
+            return String.format(self.signalReferenceFormat(), notNull(viewModel.deviceName(), "<DeviceName>"));
+        },
+        owner: self
+    });
 
     self.tagName = ko.pureComputed({
         read: function() {
             if (isEmpty(self._tagName()))
-                return String.format(self.tagNameFormat(), notNull(viewModel.deviceName(), "<DeviceName>"));
+                return self.signalReference();
 
             return self._tagName().toUpperCase();
         },
@@ -293,7 +301,7 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
 
     self.signalReference = ko.pureComputed({
         read: function() {
-            return String.format(self.tagNameFormat(), notNull(viewModel.deviceName(), "<DeviceName>"));
+            return String.format(self.signalReferenceFormat(), notNull(viewModel.deviceName(), "<DeviceName>"));
         },
         owner: self
     });

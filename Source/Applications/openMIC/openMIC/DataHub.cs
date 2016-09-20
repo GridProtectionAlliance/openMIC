@@ -93,6 +93,7 @@ namespace openMIC
 
         // Static Fields
         private static int s_downloaderProtocolID;
+        private static int s_modbusProtocolID;
 
         // Static Constructor
         static DataHub()
@@ -129,6 +130,15 @@ namespace openMIC
         /// </summary>
         public int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : (s_downloaderProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'"));
 
+        /// <summary>
+        /// Gets protocol ID for "ModbusPoller" adapter.
+        /// </summary>
+        public int ModbusProtocolID => s_modbusProtocolID != 0 ? s_modbusProtocolID : (s_modbusProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='ModbusPoller'"));
+
+        public int GetDownloaderProtocolID() => DownloaderProtocolID;
+
+        public int GetModbusProtocolID() => ModbusProtocolID;
+
         [RecordOperation(typeof(Device), RecordOperation.QueryRecordCount)]
         public int QueryDeviceCount(string filterText)
         {
@@ -152,6 +162,11 @@ namespace openMIC
             return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Enabled <> 0 AND (Acronym LIKE {0} OR Name LIKE {0})", $"%{filterText}%"), limit);
         }
 
+        public Device QueryDevice(string acronym)
+        {
+            return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Acronym = {0}", acronym)).FirstOrDefault() ?? new Device();
+        }
+
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Device), RecordOperation.DeleteRecord)]
         public void DeleteDevice(int id)
@@ -171,7 +186,10 @@ namespace openMIC
         {
             device.NodeID = Program.Host.Model.Global.NodeID;
             device.UniqueID = Guid.NewGuid();
-            device.ProtocolID = DownloaderProtocolID;
+
+            if ((device.ProtocolID ?? 0) == 0)
+                device.ProtocolID = DownloaderProtocolID;
+
             device.CreatedBy = GetCurrentUserID();
             device.CreatedOn = DateTime.UtcNow;
             device.UpdatedBy = device.CreatedBy;
@@ -195,6 +213,74 @@ namespace openMIC
                 device.OriginalSource = device.Acronym;
 
             DataContext.Table<Device>().UpdateRecord(device);
+        }
+
+        #endregion
+
+        #region [ Measurement Table Operations ]
+
+        [RecordOperation(typeof(Measurement), RecordOperation.QueryRecordCount)]
+        public int QueryMeasurementCount(string filterText)
+        {
+            if (string.IsNullOrWhiteSpace(filterText))
+                return DataContext.Table<Measurement>().QueryRecordCount();
+
+            return DataContext.Table<Measurement>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+        }
+
+        [RecordOperation(typeof(Measurement), RecordOperation.QueryRecords)]
+        public IEnumerable<Measurement> QueryMeasurements(string sortField, bool ascending, int page, int pageSize, string filterText)
+        {
+            if (string.IsNullOrWhiteSpace(filterText))
+                return DataContext.Table<Measurement>().QueryRecords(sortField, ascending, page, pageSize);
+
+            return DataContext.Table<Measurement>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+        }
+
+        public IEnumerable<Measurement> QueryMeasurements(int limit, string filterText)
+        {
+            return DataContext.Table<Measurement>().QueryRecords("PointTag", new RecordRestriction("Enabled <> 0 AND (Acronym LIKE {0} OR Name LIKE {0})", $"%{filterText}%"), limit);
+        }
+
+        public Measurement QueryMeasurement(string signalReference)
+        {
+            return DataContext.Table<Measurement>().QueryRecords("SignalReference", new RecordRestriction("SignalReference = {0}", signalReference)).FirstOrDefault() ?? new Measurement();
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Measurement), RecordOperation.DeleteRecord)]
+        public void DeleteMeasurement(int id)
+        {
+            DataContext.Table<Measurement>().DeleteRecord(id);
+        }
+
+        [RecordOperation(typeof(Measurement), RecordOperation.CreateNewRecord)]
+        public Measurement NewMeasurement()
+        {
+            return new Measurement();
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Measurement), RecordOperation.AddNewRecord)]
+        public void AddNewMeasurement(Measurement measurement)
+        {
+            measurement.SignalID = Guid.NewGuid();
+            measurement.CreatedBy = GetCurrentUserID();
+            measurement.CreatedOn = DateTime.UtcNow;
+            measurement.UpdatedBy = measurement.CreatedBy;
+            measurement.UpdatedOn = measurement.CreatedOn;
+
+            DataContext.Table<Measurement>().AddNewRecord(measurement);
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Measurement), RecordOperation.UpdateRecord)]
+        public void UpdateMeasurement(Measurement measurement)
+        {
+            measurement.UpdatedBy = measurement.CreatedBy;
+            measurement.UpdatedOn = measurement.CreatedOn;
+
+            DataContext.Table<Measurement>().UpdateRecord(measurement);
         }
 
         #endregion
@@ -481,6 +567,60 @@ namespace openMIC
             vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
 
             DataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
+        }
+
+        #endregion
+
+        #region [ SignalType Table Operations ]
+
+        [RecordOperation(typeof(SignalType), RecordOperation.QueryRecordCount)]
+        public int QuerySignalTypeCount(string filterText)
+        {
+            if (string.IsNullOrWhiteSpace(filterText))
+                return DataContext.Table<SignalType>().QueryRecordCount();
+
+            return DataContext.Table<SignalType>().QueryRecordCount(new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
+        }
+
+        [RecordOperation(typeof(SignalType), RecordOperation.QueryRecords)]
+        public IEnumerable<SignalType> QuerySignalTypes(string sortField, bool ascending, int page, int pageSize, string filterText)
+        {
+            if (string.IsNullOrWhiteSpace(filterText))
+                return DataContext.Table<SignalType>().QueryRecords(sortField, ascending, page, pageSize);
+
+            return DataContext.Table<SignalType>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
+        }
+
+        public SignalType QuerySignalType(string acronym)
+        {
+            return DataContext.Table<SignalType>().QueryRecords("Acronym", new RecordRestriction("Acronym = {0}", acronym)).FirstOrDefault();
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(SignalType), RecordOperation.DeleteRecord)]
+        public void DeleteSignalType(int id)
+        {
+            DataContext.Table<SignalType>().DeleteRecord(id);
+        }
+
+        [RecordOperation(typeof(SignalType), RecordOperation.CreateNewRecord)]
+        public SignalType NewSignalType()
+        {
+            return new SignalType();
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(SignalType), RecordOperation.AddNewRecord)]
+        public void AddNewSignalType(SignalType vendorDevice)
+        {
+            DataContext.Table<SignalType>().AddNewRecord(vendorDevice);
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(SignalType), RecordOperation.UpdateRecord)]
+        public void UpdateSignalType(SignalType vendorDevice)
+        {
+            DataContext.Table<SignalType>().UpdateRecord(vendorDevice);
         }
 
         #endregion
