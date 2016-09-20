@@ -22,14 +22,17 @@
 //******************************************************************************************************
 
 using System;
-using GSF.TimeSeries;
+using Microsoft.Owin.Hosting;
 using GSF;
 using GSF.Configuration;
 using GSF.IO;
+using GSF.Reflection;
+using GSF.TimeSeries;
 using GSF.Security.Model;
-using Microsoft.Owin.Hosting;
 using GSF.ServiceProcess;
 using GSF.Web.Hosting;
+using GSF.Web.Model;
+using GSF.Web.Model.Handlers;
 using GSF.Web.Security;
 using openMIC.Model;
 
@@ -195,18 +198,20 @@ namespace openMIC
                 webServer.PagedViewModelTypes.TryAdd("Users.cshtml", new Tuple<Type, Type>(typeof(UserAccount), typeof(SecurityHub)));
                 webServer.PagedViewModelTypes.TryAdd("Groups.cshtml", new Tuple<Type, Type>(typeof(SecurityGroup), typeof(SecurityHub)));
 
-                // TODO: Pre-compiling is interfering with Hub role authorizations - so skipping for now...
-                //// Initiate pre-compile of base templates
-                //if (AssemblyInfo.EntryAssembly.Debuggable)
-                //{
-                //    RazorEngine<CSharpDebug>.Default.PreCompile(LogException);
-                //    RazorEngine<VisualBasicDebug>.Default.PreCompile(LogException);
-                //}
-                //else
-                //{
-                //    RazorEngine<CSharp>.Default.PreCompile(LogException);
-                //    RazorEngine<VisualBasic>.Default.PreCompile(LogException);
-                //}
+                // Initiate pre-compile of base templates
+                if (AssemblyInfo.EntryAssembly.Debuggable)
+                {
+                    RazorEngine<CSharpDebug>.Default.PreCompile(LogException);
+                    RazorEngine<VisualBasicDebug>.Default.PreCompile(LogException);
+                }
+                else
+                {
+                    RazorEngine<CSharp>.Default.PreCompile(LogException);
+                    RazorEngine<VisualBasic>.Default.PreCompile(LogException);
+                }
+
+                // Define exception logger for CSV downloader
+                CsvDownloadHandler.LogExceptionHandler = LogException;
 
                 // Create new web application hosting environment
                 m_webAppHost = WebApp.Start<Startup>(systemSettings["WebHostURL"].Value);
