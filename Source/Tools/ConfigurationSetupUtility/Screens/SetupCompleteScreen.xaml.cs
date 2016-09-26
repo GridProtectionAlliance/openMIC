@@ -139,6 +139,9 @@ namespace ConfigurationSetupUtility.Screens
                         bool existing = Convert.ToBoolean(m_state["existing"]);
                         bool migrate = existing && Convert.ToBoolean(m_state["updateConfiguration"]);
 
+                        // Make sure needed assembly bindings exist in config fie (needed for self-hosted web server)
+                        ValidateGrafanaBindings();
+
                         if (migrate)
                         {
                             const string SerializedSchemaPath = "SerializedSchema.bin";
@@ -205,9 +208,6 @@ namespace ConfigurationSetupUtility.Screens
                                 migrationProcess.WaitForExit();
                             }
                         }
-
-                        // Make sure needed assembly bindings exist in config fie (needed for self-hosted web server)
-                        ValidateGrafanaBindings();
 
                         // Always make sure time series startup operations are defined in the database.
                         ValidateTimeSeriesStartupOperations();
