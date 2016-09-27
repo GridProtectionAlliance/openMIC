@@ -139,7 +139,7 @@ namespace ConfigurationSetupUtility.Screens
                         bool existing = Convert.ToBoolean(m_state["existing"]);
                         bool migrate = existing && Convert.ToBoolean(m_state["updateConfiguration"]);
 
-                        // Make sure needed assembly bindings exist in config fie (needed for self-hosted web server)
+                        // Validate needed end-point bindings for Grafana interfaces
                         ValidateGrafanaBindings();
 
                         if (migrate)
