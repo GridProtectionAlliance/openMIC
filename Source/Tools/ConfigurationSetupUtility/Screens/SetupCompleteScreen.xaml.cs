@@ -396,7 +396,7 @@ namespace ConfigurationSetupUtility.Screens
 
             if (configFile.SelectSingleNode("configuration/categorizedSettings/statGrafanaDataService") == null)
             {
-                string archiveBinding = string.Format(GrafanaArchiveBinding, "stat", "http.rest://localhost:6167/api/grafana");
+                string archiveBinding = string.Format(GrafanaArchiveBinding, "stat", "http.rest://localhost:6364/api/grafana");
 
                 XmlDocument grafanaBindingsXml = new XmlDocument();
                 grafanaBindingsXml.LoadXml(archiveBinding);
@@ -426,7 +426,7 @@ namespace ConfigurationSetupUtility.Screens
 
                 if (historianTypeName.ToNonNullString().Equals("HistorianAdapters.LocalOutputAdapter") && configFile.SelectSingleNode($"configuration/categorizedSettings/{historianAcronym}GrafanaDataService") == null)
                 {
-                    string archiveBinding = string.Format(GrafanaArchiveBinding, historianAcronym, "http.rest://localhost:6067/api/grafana");
+                    string archiveBinding = string.Format(GrafanaArchiveBinding, historianAcronym, "http.rest://localhost:6464/api/grafana");
 
                     XmlDocument grafanaBindingsXml = new XmlDocument();
                     grafanaBindingsXml.LoadXml(archiveBinding);
