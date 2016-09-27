@@ -360,9 +360,8 @@ namespace ConfigurationSetupUtility.Screens
         private void ValidateGrafanaBindings()
         {
             string configFileName = Path.Combine(Directory.GetCurrentDirectory(), "openMIC.exe.config");
-            string assemblyBindingsFileName = Path.Combine(Directory.GetCurrentDirectory(), "AssemblyBindings.xml");
 
-            if (!File.Exists(configFileName) || !File.Exists(assemblyBindingsFileName))
+            if (!File.Exists(configFileName))
                 return;
 
             XmlDocument configFile = new XmlDocument();
