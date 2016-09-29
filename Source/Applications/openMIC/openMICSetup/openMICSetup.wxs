@@ -25,6 +25,9 @@
         <ComponentGroupRef Id="SQLiteScriptComponents" />
         <ComponentRef Id="makecert"/>
         <ComponentRef Id="Sample1344"/>
+
+        <!-- Web Files -->
+        <?include WebFeatures.wxi ?>
       </Feature>
 
       <!-- openMIC Manager -->
@@ -68,9 +71,6 @@
         
         <ComponentGroupRef Id="GSFDependencyComponents" />
       </Feature>
-      
-      <!-- Web Files -->
-      <?include WebFeatures.wxi ?>
 
       <ComponentRef Id="InstallFolderPermissions"/>
       <ComponentRef Id="Registry" />
