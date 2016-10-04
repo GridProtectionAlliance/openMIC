@@ -906,6 +906,7 @@
                 var derivedStart = -1;
                 var derivedStop = -1;
 
+                sequenceConnectionString.set("sequenceType", sequence.sequenceType === SequenceType.Read ? "Read" : "Write");
                 sequenceConnectionString.set("groupCount", groups.length);
                 
                 // Pre-select all mappings
@@ -927,6 +928,14 @@
                         sequenceConnectionString.set("groupType" + j, getRecordTypeCode(group.type));
                         sequenceConnectionString.set("groupStartAddress" + j, records[group.start].address());
                         sequenceConnectionString.set("groupPointCount" + j, pointCount);
+                    }
+
+                    // Serialize group data values for write sequences
+                    if (sequence.sequenceType === SequenceType.Write) {
+                        for (let k = 0; k < pointCount; k++) {
+                            const record = records[group.start + k];
+                            sequenceConnectionString.set("group" + j + "DataValue" + k, parseInt(record.dataValue()));
+                        }
                     }
                 }
 
@@ -1511,7 +1520,7 @@
         });
     </script>
 }
-<h3>Modbus Configuration Map Builder</h3>
+<h3>Modbus Configuration Map Builder <img class="pull-right" style="margin-top: -14px" src="Images/ModbusConfigEditor.png"/></h3>
 @* Connection Settings and Status Panel *@
 <div class="panel panel-primary">
     <div class="panel-heading clearfix">

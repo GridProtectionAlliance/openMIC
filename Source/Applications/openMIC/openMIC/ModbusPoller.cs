@@ -24,18 +24,23 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.IO.Ports;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Timers;
 using GSF;
 using GSF.Configuration;
+using GSF.Threading;
 using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
 using GSF.TimeSeries.Statistics;
 using Modbus.Device;
 using Modbus.Utility;
+using Timer = System.Timers.Timer;
 
 namespace openMIC
 {
@@ -46,6 +51,104 @@ namespace openMIC
         #region [ Members ]
 
         // Nested Types
+
+        private enum DerivedType
+        {
+            String,
+            Single,
+            Double,
+            UInt16,
+            Int32,
+            UInt32,
+            Int64,
+            UInt64
+        }
+
+        private enum RecordType
+        {
+            DI, // Discrete Input
+            CO, // Coil
+            IR, // Input Register
+            HR  // Holding Register
+        }
+
+        private enum SequenceType
+        {
+            Read,
+            Write
+        }
+
+        private class AddressRecord
+        {
+            public readonly RecordType Type;
+            public readonly ushort Address;
+
+            public AddressRecord(string recordType, ushort address)
+            {
+                Enum.TryParse(recordType, true, out Type);
+                Address = address;
+            }
+        }
+
+        private class DerivedValue
+        {
+            public readonly DerivedType Type;
+            public readonly List<AddressRecord> AddressRecords;
+
+            public DerivedValue(DerivedType type)
+            {
+                Type = type;
+                AddressRecords = new List<AddressRecord>();
+            }
+
+            public DerivedValue(string derivedType)
+            {
+                Enum.TryParse(derivedType, true, out Type);
+                AddressRecords = new List<AddressRecord>();
+            }
+
+            public ushort[] GetDataValues(Group[] groups)
+            {
+                ushort[] dataValues = new ushort[AddressRecords.Count];
+
+                for (int i = 0; i < dataValues.Length; i++)
+                {
+                    ushort address = AddressRecords[i].Address;
+
+                    foreach (Group group in groups)
+                    {
+                        if (group.HasDataValue(address))
+                        {
+                            dataValues[i] = group.DataValues[address - group.StartAddress];
+                            break;
+                        }
+                    }
+                }
+
+                return dataValues;
+            }
+        }
+
+        private class Group
+        {
+            public RecordType Type;
+            public ushort StartAddress;
+            public ushort PointCount;
+            public ushort[] DataValues;
+
+            public bool HasDataValue(ushort address) => address >= StartAddress && address <= StartAddress + PointCount - 1;
+        }
+
+        private class Sequence
+        {
+            public readonly SequenceType Type;
+            public readonly List<Group> Groups = new List<Group>();
+
+            public Sequence(SequenceType type)
+            {
+                Type = type;
+            }
+        }
 
         // Define a IDevice implementation for to provide daily reports
         private class DeviceProxy : IDevice
@@ -125,6 +228,12 @@ namespace openMIC
         private byte m_unitID;
         private int m_pollingRate;
         private int m_interSequenceGroupPollDelay;
+        private Dictionary<MeasurementKey, DerivedValue> m_derivedValues;
+        private readonly Dictionary<MeasurementKey, string> m_derivedStrings;
+        private List<Sequence> m_sequences;
+        private Timer m_pollingTimer;
+        private ShortSynchronizedOperation m_pollingOperation;
+        private long m_pollOperations;
         private long m_deviceErrors;
         private long m_measurementsReceived;
         private long m_measurementsExpected;
@@ -140,6 +249,7 @@ namespace openMIC
         public ModbusPoller()
         {
             m_deviceProxy = new DeviceProxy(this);
+            m_derivedStrings = new Dictionary<MeasurementKey, string>();
         }
 
         #endregion
@@ -225,16 +335,26 @@ namespace openMIC
                 status.Append(base.Status);
                 status.AppendFormat("                   Unit ID: {0}", UnitID);
                 status.AppendLine();
-                status.AppendFormat("              Polling Rate: {0}ms", PollingRate);
+                status.AppendFormat("              Polling Rate: {0:N0}ms", PollingRate);
                 status.AppendLine();
-                status.AppendFormat("Inter Seq-Group Poll Delay: {0}ms", InterSequenceGroupPollDelay);
+                status.AppendFormat("Inter Seq-Group Poll Delay: {0:N0}ms", InterSequenceGroupPollDelay);
                 status.AppendLine();
-                status.AppendFormat("             Device Errors: {0}", m_deviceErrors);
+                status.AppendFormat("  Executed Poll Operations: {0:N0}", m_pollOperations);
                 status.AppendLine();
-                status.AppendFormat("     Measurements Received: {0}", m_measurementsReceived);
+                status.AppendFormat("             Device Errors: {0:N0}", m_deviceErrors);
                 status.AppendLine();
-                status.AppendFormat("     Measurements Expected: {0}", m_measurementsExpected);
+                status.AppendFormat("     Measurements Received: {0:N0}", m_measurementsReceived);
                 status.AppendLine();
+                status.AppendFormat("     Measurements Expected: {0:N0}", m_measurementsExpected);
+                status.AppendLine();
+                status.AppendFormat("      Last Derived Strings: {0:N0} total", m_derivedStrings.Count);
+                status.AppendLine();
+
+                foreach (KeyValuePair<MeasurementKey, string> item in m_derivedStrings)
+                {
+                    status.AppendFormat("{0} = {1}", item.Key.ToString().PadLeft(10), item.Value);
+                    status.AppendLine();
+                }
 
                 return status.ToString();
             }
@@ -255,7 +375,16 @@ namespace openMIC
                 try
                 {
                     if (disposing)
+                    {
                         DisposeConnections();
+
+                        if ((object)m_pollingTimer != null)
+                        {
+                            m_pollingTimer.Enabled = false;
+                            m_pollingTimer.Elapsed -= m_pollingTimer_Elapsed;
+                            m_pollingTimer.Dispose();
+                        }
+                    }
                 }
                 finally
                 {
@@ -279,12 +408,308 @@ namespace openMIC
         public override void Initialize()
         {
             base.Initialize();
+
             ConnectionStringParser<ConnectionStringParameterAttribute> parser = new ConnectionStringParser<ConnectionStringParameterAttribute>();
             parser.ParseConnectionString(ConnectionString, this);
 
             // Register downloader with the statistics engine
             StatisticsEngine.Register(this, "Modbus", "MOD");
             StatisticsEngine.Register(m_deviceProxy, Name, "Device", "PMU");
+
+            // Attach to output measurements for Modbus device
+            OutputMeasurements = ParseOutputMeasurements(DataSource, false, $"FILTER ActiveMeasurements WHERE Device = '{Name}'");
+
+            // Parse derived value expressions from defined signal reference fields
+            m_derivedValues = OutputMeasurements.Select(measurement => measurement.Key).ToDictionary(key => key, key =>
+            {
+                DataTable measurements = DataSource.Tables["ActiveMeasurements"];
+                DerivedValue derivedValue = null;
+                DataRow[] records = measurements.Select($"ID = '{key}'");
+
+                if (records.Length > 0)
+                    derivedValue = ParseDerivedValue(records[0]["SignalReference"].ToNonNullString());
+
+                return derivedValue;
+            });
+
+            m_sequences = new List<Sequence>();
+
+            Dictionary<string, string> settings = Settings;
+            string setting;
+            int sequenceCount = 0;
+
+            if (settings.TryGetValue("sequenceCount", out setting))
+                int.TryParse(setting, out sequenceCount);
+
+            for (int i = 0; i < sequenceCount; i++)
+            {
+                if (settings.TryGetValue($"sequence{i}", out setting))
+                {
+                    Dictionary<string, string> sequenceSettings = setting.ParseKeyValuePairs();
+                    SequenceType sequenceType = SequenceType.Read;
+
+                    if (sequenceSettings.TryGetValue("sequenceType", out setting))
+                        Enum.TryParse(setting, true, out sequenceType);
+
+                    Sequence sequence = new Sequence(sequenceType);
+                    int groupCount;
+
+                    if (sequenceSettings.TryGetValue("groupCount", out setting) && int.TryParse(setting, out groupCount))
+                    {
+                        for (int j = 0; j < groupCount; j++)
+                        {
+                            Group group = new Group();
+
+                            if (sequenceSettings.TryGetValue($"groupType{j}", out setting))
+                                Enum.TryParse(setting, true, out group.Type);
+
+                            if (sequenceSettings.TryGetValue($"groupStartAddress{j}", out setting))
+                                ushort.TryParse(setting, out group.StartAddress);
+
+                            if (sequenceSettings.TryGetValue($"groupPointCount{j}", out setting))
+                                ushort.TryParse(setting, out group.PointCount);
+
+                            if (group.StartAddress > 0 && group.PointCount > 0)
+                            {
+                                // Load any defined write sequence values
+                                if (sequence.Type == SequenceType.Write)
+                                {
+                                    group.DataValues = new ushort[group.PointCount];
+
+                                    for (int k = 0; k < group.PointCount; k++)
+                                    {
+                                        if (sequenceSettings.TryGetValue($"group{j}DataValue{k}", out setting))
+                                            ushort.TryParse(setting, out group.DataValues[k]);
+                                    }
+                                }
+
+                                sequence.Groups.Add(group);
+                            }
+                        }
+                    }
+
+                    if (sequence.Groups.Count > 0)
+                        m_sequences.Add(sequence);
+                }
+            }
+
+            if (m_sequences.Count == 0)
+                throw new InvalidOperationException("No sequences defined, cannot start Modbus polling.");
+
+            // Define synchronized polling operation
+            m_pollingOperation = new ShortSynchronizedOperation(PollingOperation, OnProcessException);
+
+            // Define polling timer
+            m_pollingTimer = new Timer(m_pollingRate);
+            m_pollingTimer.AutoReset = true;
+            m_pollingTimer.Elapsed += m_pollingTimer_Elapsed;
+        }
+
+        private DerivedValue ParseDerivedValue(string signalReference)
+        {
+            if (string.IsNullOrWhiteSpace(signalReference))
+                return null;
+
+            DerivedValue derivedValue;
+
+            int indexOfType = signalReference.IndexOf("-DV!", StringComparison.OrdinalIgnoreCase);
+
+            if (indexOfType < 0)
+            {
+                // Instantaneous value
+                derivedValue = new DerivedValue(DerivedType.UInt16);
+
+                string addressDefinition = signalReference.Substring(signalReference.IndexOf('-') + 1);
+                string recordType = addressDefinition.Substring(0, 2).ToUpperInvariant();
+                ushort address = ushort.Parse(addressDefinition.Substring(2));
+
+                derivedValue.AddressRecords.Add(new AddressRecord(recordType, address));
+            }
+            else
+            {
+                // Derived type value
+                indexOfType += 4;
+
+                int indexOfAt = signalReference.IndexOf('@', indexOfType);
+                string derivedType = signalReference.Substring(indexOfType, indexOfAt - indexOfType).ToUpperInvariant();
+                string[] addressList = signalReference.Substring(indexOfAt + 1).Split('#');
+
+                derivedValue = new DerivedValue(derivedType);
+
+                for (int i = 0; i < addressList.Length; i++)
+                {
+                    string addressDefinition = addressList[i].Trim();
+                    string recordType = addressDefinition.Substring(0, 2).ToUpperInvariant();
+                    ushort address = ushort.Parse(addressDefinition.Substring(2));
+                    derivedValue.AddressRecords.Add(new AddressRecord(recordType, address));
+                }
+            }
+
+            return derivedValue;
+        }
+
+        private void PollingOperation()
+        {
+            try
+            {
+                Ticks timestamp = DateTime.UtcNow.Ticks;
+                Dictionary<MeasurementKey, Measurement> measurements = OutputMeasurements.Select(measurement => Measurement.Clone(measurement, timestamp)).ToDictionary(measurement => measurement.Key, measurement => measurement);
+                Group[] groups = m_sequences.SelectMany(sequence => sequence.Groups).ToArray();
+                int measurementsReceived = 0;
+
+                // Handle read/write operations for sequence groups
+                try
+                {
+                    foreach (Sequence sequence in m_sequences)
+                    {
+                        foreach (Group group in sequence.Groups)
+                        {
+                            switch (group.Type)
+                            {
+                                case RecordType.DI:
+                                    group.DataValues = ReadDiscreteInputs(group.StartAddress, group.PointCount);
+                                    break;
+                                case RecordType.CO:
+                                    if (sequence.Type == SequenceType.Read)
+                                        group.DataValues = ReadCoils(group.StartAddress, group.PointCount);
+                                    else
+                                        WriteCoils(group.StartAddress, group.DataValues);
+                                    break;
+                                case RecordType.IR:
+                                    group.DataValues = ReadInputRegisters(group.StartAddress, group.PointCount);
+                                    break;
+                                case RecordType.HR:
+                                    if (sequence.Type == SequenceType.Read)
+                                        group.DataValues = ReadHoldingRegisters(group.StartAddress, group.PointCount);
+                                    else
+                                        WriteHoldingRegisters(group.StartAddress, group.DataValues);
+                                    break;
+                            }
+
+                            Thread.Sleep(m_interSequenceGroupPollDelay);
+                        }
+                    }
+                }
+                catch
+                {
+                    m_deviceErrors++;
+                    throw;
+                }
+
+                // Calculate derived values
+                foreach (KeyValuePair<MeasurementKey, DerivedValue> item in m_derivedValues)
+                {
+                    DerivedValue derivedValue = item.Value;
+                    ushort[] dataValues = derivedValue.GetDataValues(groups);
+                    Measurement measurement;
+
+                    if (measurements.TryGetValue(item.Key, out measurement))
+                    {
+                        // TODO: Properly interpret measurement types after GSF data type transport update
+                        switch (derivedValue.Type)
+                        {
+                            case DerivedType.String:
+                                if (derivedValue.AddressRecords.Count > 0)
+                                {
+                                    m_derivedStrings[item.Key] = DeriveString(dataValues);
+                                    measurementsReceived++;
+                                }
+                                else
+                                {
+                                    OnStatusMessage("WARNING: No address records defined for derived String value \"{0}\".", item.Key);
+                                }
+                                break;
+                            case DerivedType.Single:
+                                if (derivedValue.AddressRecords.Count > 1)
+                                {
+                                    measurement.Value = DeriveSingle(dataValues[0], dataValues[1]);
+                                    measurementsReceived++;
+                                }
+                                else
+                                {
+                                    OnStatusMessage("WARNING: {0} address records defined for derived Single value \"{1}\", expected 2.", derivedValue.AddressRecords.Count, item.Key);
+                                }
+                                break;
+                            case DerivedType.Double:
+                                if (derivedValue.AddressRecords.Count > 3)
+                                {
+                                    measurement.Value = DeriveDouble(dataValues[0], dataValues[1], dataValues[2], dataValues[3]);
+                                    measurementsReceived++;
+                                }
+                                else
+                                {
+                                    OnStatusMessage("WARNING: {0} address records defined for derived Double value \"{1}\", expected 4.", derivedValue.AddressRecords.Count, item.Key);
+                                }
+                                break;
+                            case DerivedType.UInt16:
+                                if (derivedValue.AddressRecords.Count > 0)
+                                {
+                                    measurement.Value = dataValues[0];
+                                    measurementsReceived++;
+                                }
+                                else
+                                {
+                                    OnStatusMessage("WARNING: No address records defined for UInt16 value \"{0}\".", item.Key);
+                                }
+                                break;
+                            case DerivedType.Int32:
+                                if (derivedValue.AddressRecords.Count > 1)
+                                {
+                                    measurement.Value = DeriveInt32(dataValues[0], dataValues[1]);
+                                    measurementsReceived++;
+                                }
+                                else
+                                {
+                                    OnStatusMessage("WARNING: {0} address records defined for derived Int32 value \"{1}\", expected 2.", derivedValue.AddressRecords.Count, item.Key);
+                                }
+                                break;
+                            case DerivedType.UInt32:
+                                if (derivedValue.AddressRecords.Count > 1)
+                                {
+                                    measurement.Value = DeriveUInt32(dataValues[0], dataValues[1]);
+                                    measurementsReceived++;
+                                }
+                                else
+                                {
+                                    OnStatusMessage("WARNING: {0} address records defined for derived UInt32 value \"{1}\", expected 2.", derivedValue.AddressRecords.Count, item.Key);
+                                }
+                                break;
+                            case DerivedType.Int64:
+                                if (derivedValue.AddressRecords.Count > 3)
+                                {
+                                    measurement.Value = DeriveInt64(dataValues[0], dataValues[1], dataValues[2], dataValues[3]);
+                                    measurementsReceived++;
+                                }
+                                else
+                                {
+                                    OnStatusMessage("WARNING: {0} address records defined for derived Int64 value \"{1}\", expected 4.", derivedValue.AddressRecords.Count, item.Key);
+                                }
+                                break;
+                            case DerivedType.UInt64:
+                                if (derivedValue.AddressRecords.Count > 3)
+                                {
+                                    measurement.Value = DeriveUInt64(dataValues[0], dataValues[1], dataValues[2], dataValues[3]);
+                                    measurementsReceived++;
+                                }
+                                else
+                                {
+                                    OnStatusMessage("WARNING: {0} address records defined for derived UInt64 value \"{1}\", expected 4.", derivedValue.AddressRecords.Count, item.Key);
+                                }
+                                break;
+                        }
+                    }
+                }
+
+
+                OnNewMeasurements(measurements.Values.Cast<IMeasurement>().ToList());
+
+                m_measurementsReceived += measurementsReceived;
+                m_pollOperations++;
+            }
+            finally
+            {
+                m_measurementsExpected += OutputMeasurements.Length;
+            }
         }
 
         /// <summary>
@@ -338,6 +763,8 @@ namespace openMIC
 
                     m_tcpClient = new TcpClient(hostName, port);
                     m_modbusConnection = ModbusIpMaster.CreateIp(m_tcpClient);
+
+                    m_pollingTimer.Enabled = true;
                     return;
                 }
 
@@ -348,6 +775,8 @@ namespace openMIC
 
                 m_udpClient = new UdpClient(new IPEndPoint(IPAddress.Parse(interfaceIP), port));
                 m_modbusConnection = ModbusIpMaster.CreateIp(m_udpClient);
+
+                m_pollingTimer.Enabled = true;
                 return;
             }
 
@@ -374,6 +803,8 @@ namespace openMIC
 
             m_serialClient = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
             m_modbusConnection = useRTU ? ModbusSerialMaster.CreateRtu(m_serialClient) : ModbusSerialMaster.CreateAscii(m_serialClient);
+
+            m_pollingTimer.Enabled = true;
         }
 
         /// <summary>
@@ -385,50 +816,11 @@ namespace openMIC
         /// </remarks>
         protected override void AttemptDisconnection()
         {
+            if ((object)m_pollingTimer != null)
+                m_pollingTimer.Enabled = false;
+
             DisposeConnections();
             OnStatusMessage("Device disconnected.");
-        }
-
-        private string[] getDerivedValueAddresses(string expression)
-        {
-            int indexOfParen = expression.IndexOf('(');
-            string addressRefs = expression.Substring(indexOfParen + 1, expression.Length - 1);
-            return addressRefs.Split(',');
-        }
-
-        private void parseDerivedValueAddressExpression(string sequence, string expression)
-        {
-            int indexOfParen = expression.IndexOf('(');
-            string derivedType = expression.Substring(0, indexOfParen).ToUpper();
-            string[] addressList = getDerivedValueAddresses(expression);
-
-            //const parsedValue = {
-            //    type: derivedType,
-            //    values: []
-            //};
-
-            //for (int i = 0; i < addressList.Length; i++) {
-            //    string addressID = addressList[i].Trim();
-            //    string recordType = addressID.substring(0, 2).toUpperCase();
-            //    int address = parseInt(addressID.substring(2, addressID.length));
-            //    var record = null;
-
-            //    switch (recordType) {
-            //        case "IR":
-            //            record = sequence.findSequenceRecord(RecordType.InputRegister, address);
-            //            break;
-            //        case "HR":
-            //            record = sequence.findSequenceRecord(RecordType.HoldingRegister, address);
-            //            break;
-            //    }
-
-            //    if (record) {
-
-            //            parsedValue.values.push(parseInt(record.dataValue()));
-            //    }
-            //}
-
-            //return parsedValue;
         }
 
         /// <summary>
@@ -446,14 +838,14 @@ namespace openMIC
             return $"Polling enabled for every {PollingRate:N0}ms".CenterText(maxLength);
         }
 
-        private bool[] ReadDiscreteInputs(ushort startAddress, ushort pointCount)
+        private ushort[] ReadDiscreteInputs(ushort startAddress, ushort pointCount)
         {
-            return m_modbusConnection.ReadInputs(m_unitID, startAddress, pointCount);
+            return m_modbusConnection.ReadInputs(m_unitID, startAddress, pointCount).Select(value => (ushort)(value ? 1 : 0)).ToArray();
         }
 
-        private bool[] ReadCoils(ushort startAddress, ushort pointCount)
+        private ushort[] ReadCoils(ushort startAddress, ushort pointCount)
         {
-            return m_modbusConnection.ReadCoils(m_unitID, startAddress, pointCount);
+            return m_modbusConnection.ReadCoils(m_unitID, startAddress, pointCount).Select(value => (ushort)(value ? 1 : 0)).ToArray();
         }
 
         private ushort[] ReadInputRegisters(ushort startAddress, ushort pointCount)
@@ -466,9 +858,9 @@ namespace openMIC
             return m_modbusConnection.ReadHoldingRegisters(m_unitID, startAddress, pointCount);
         }
 
-        private void WriteCoils(ushort startAddress, bool[] data)
+        private void WriteCoils(ushort startAddress, ushort[] data)
         {
-            m_modbusConnection.WriteMultipleCoilsAsync(m_unitID, startAddress, data);
+            m_modbusConnection.WriteMultipleCoilsAsync(m_unitID, startAddress, data.Select(value => value != 0).ToArray());
         }
 
         private void WriteHoldingRegisters(ushort startAddress, ushort[] data)
@@ -509,6 +901,11 @@ namespace openMIC
         private ulong DeriveUInt64(ushort b3, ushort b2, ushort b1, ushort b0)
         {
             return Word.MakeQuadWord(ModbusUtility.GetUInt32(b3, b2), ModbusUtility.GetUInt32(b1, b0));
+        }
+
+        private void m_pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            m_pollingOperation?.RunOnce();
         }
 
         #endregion

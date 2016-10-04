@@ -133,7 +133,7 @@ namespace openMIC
         /// <summary>
         /// Gets protocol ID for "ModbusPoller" adapter.
         /// </summary>
-        public int ModbusProtocolID => s_modbusProtocolID != 0 ? s_modbusProtocolID : (s_modbusProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='ModbusPoller'"));
+        public int ModbusProtocolID => s_modbusProtocolID != 0 ? s_modbusProtocolID : (s_modbusProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Modbus'"));
 
         public int GetDownloaderProtocolID() => DownloaderProtocolID;
 

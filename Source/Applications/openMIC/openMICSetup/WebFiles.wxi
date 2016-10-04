@@ -248,6 +248,9 @@
   <Component Id="Images_gpa_smalllock_png">
     <File Id="Images_gpa_smalllock.png" Name="gpa-smalllock.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\gpa-smalllock.png" />
   </Component>
+  <Component Id="Images_ModbusConfigEditor_png">
+    <File Id="Images_ModbusConfigEditor.png" Name="ModbusConfigEditor.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\ModbusConfigEditor.png" />
+  </Component>
   <Component Id="Images_openMIC_png">
     <File Id="Images_openMIC.png" Name="openMIC.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\openMIC.png" />
   </Component>

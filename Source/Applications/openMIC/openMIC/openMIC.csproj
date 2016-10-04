@@ -540,6 +540,7 @@
     <Content Include="wwwroot\Images\Icons\mstile-310x150.png" />
     <Content Include="wwwroot\Images\Icons\mstile-310x310.png" />
     <Content Include="wwwroot\Images\Icons\mstile-70x70.png" />
+    <Content Include="wwwroot\Images\ModbusConfigEditor.png" />
     <Content Include="wwwroot\Images\openMIC.png" />
     <Content Include="wwwroot\Images\openMICBanner.png" />
     <Content Include="wwwroot\Images\StatusLights\Large\amberlight.png" />
