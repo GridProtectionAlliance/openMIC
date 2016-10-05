@@ -1058,6 +1058,9 @@
                                 showErrorMessage("Update failed for existing device " + viewModel.deviceName() + " - no measurements updated: " + error);
                             });
                         }
+
+                        // Intialize device after save
+                        serviceHub.sendCommand("initialize " + device.Acronym);
                     }).fail(function(error) {
                         showErrorMessage("Save failed for new device " + viewModel.deviceName() + " - could not lookup Modbus protocol ID: " + error);
                     });
@@ -1068,6 +1071,15 @@
                 showErrorMessage("Cannot save device connection, cannot connect to server.", -1);
             }
         }
+
+        // TODO: Load existin device data
+        //function loadDeviceConnection(deviceName) {
+        //    if (!hubIsConnected)
+        //        return;
+
+        //    dataHub.queryDevice(viewModel.deviceName()).done(function(device) {
+        //    });
+        //}
 
         function loadTagData() {
             if (!hubIsConnected)

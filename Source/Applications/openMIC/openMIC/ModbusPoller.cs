@@ -709,6 +709,12 @@ namespace openMIC
                 m_measurementsReceived += measurementsReceived;
                 m_pollOperations++;
             }
+            catch
+            {
+                // Restart connection cycle when an exception occurs
+                Start();
+                throw;
+            }
             finally
             {
                 m_measurementsExpected += OutputMeasurements.Length;
