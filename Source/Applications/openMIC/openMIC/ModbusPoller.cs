@@ -700,8 +700,7 @@ namespace openMIC
                     }
                 }
 
-
-                OnNewMeasurements(measurements.Values.Cast<IMeasurement>().ToList());
+                OnNewMeasurements(measurements.Values.ToArray());
 
                 m_measurementsReceived += measurementsReceived;
                 m_pollOperations++;

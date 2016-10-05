@@ -244,7 +244,7 @@ namespace openMIC
 
         public Measurement QueryMeasurement(string signalReference)
         {
-            return DataContext.Table<Measurement>().QueryRecords("SignalReference", new RecordRestriction("SignalReference = {0}", signalReference)).FirstOrDefault() ?? new Measurement();
+            return DataContext.Table<Measurement>().QueryRecords("SignalReference", new RecordRestriction("SignalReference = {0}", signalReference)).FirstOrDefault() ?? NewMeasurement();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -257,7 +257,11 @@ namespace openMIC
         [RecordOperation(typeof(Measurement), RecordOperation.CreateNewRecord)]
         public Measurement NewMeasurement()
         {
-            return new Measurement();
+            return new Measurement
+            {
+                Adder = 0.0D,
+                Multiplier = 1.0D
+            };
         }
 
         [AuthorizeHubRole("Administrator, Editor")]

@@ -746,6 +746,7 @@ namespace openMIC
         {
             base.Initialize();
             ConnectionStringParser<ConnectionStringParameterAttribute> parser = new ConnectionStringParser<ConnectionStringParameterAttribute>();
+
             parser.ParseConnectionString(ConnectionString, this);
 
             LoadTasks();
