@@ -164,7 +164,7 @@ namespace openMIC
 
         public Device QueryDevice(string acronym)
         {
-            return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Acronym = {0}", acronym)).FirstOrDefault() ?? new Device();
+            return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Acronym = {0}", acronym)).FirstOrDefault() ?? NewDevice();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -177,7 +177,10 @@ namespace openMIC
         [RecordOperation(typeof(Device), RecordOperation.CreateNewRecord)]
         public Device NewDevice()
         {
-            return new Device();
+            return new Device
+            {
+                FramesPerSecond = 1
+            };
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
