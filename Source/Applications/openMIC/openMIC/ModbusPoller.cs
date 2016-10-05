@@ -512,6 +512,10 @@ namespace openMIC
 
             DerivedValue derivedValue;
 
+            // Remove device name from signal reference
+            if (signalReference.StartsWith(Name, StringComparison.OrdinalIgnoreCase))
+                signalReference = signalReference.Substring(Name.Length);
+
             int indexOfType = signalReference.IndexOf("-DV!", StringComparison.OrdinalIgnoreCase);
 
             if (indexOfType < 0)
