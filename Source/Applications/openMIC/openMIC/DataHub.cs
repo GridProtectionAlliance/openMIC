@@ -164,7 +164,7 @@ namespace openMIC
 
         public Device QueryDevice(string acronym)
         {
-            return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Acronym = {0}", acronym)).FirstOrDefault() ?? new Device();
+            return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Acronym = {0}", acronym)).FirstOrDefault() ?? NewDevice();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -177,7 +177,10 @@ namespace openMIC
         [RecordOperation(typeof(Device), RecordOperation.CreateNewRecord)]
         public Device NewDevice()
         {
-            return new Device();
+            return new Device
+            {
+                FramesPerSecond = 1
+            };
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -244,7 +247,7 @@ namespace openMIC
 
         public Measurement QueryMeasurement(string signalReference)
         {
-            return DataContext.Table<Measurement>().QueryRecords("SignalReference", new RecordRestriction("SignalReference = {0}", signalReference)).FirstOrDefault() ?? new Measurement();
+            return DataContext.Table<Measurement>().QueryRecords("SignalReference", new RecordRestriction("SignalReference = {0}", signalReference)).FirstOrDefault() ?? NewMeasurement();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -257,7 +260,11 @@ namespace openMIC
         [RecordOperation(typeof(Measurement), RecordOperation.CreateNewRecord)]
         public Measurement NewMeasurement()
         {
-            return new Measurement();
+            return new Measurement
+            {
+                Adder = 0.0D,
+                Multiplier = 1.0D
+            };
         }
 
         [AuthorizeHubRole("Administrator, Editor")]

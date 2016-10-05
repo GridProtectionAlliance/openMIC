@@ -1000,7 +1000,7 @@
                         measurement.SignalTypeID = record.signalType();
                         measurement.Internal = true;
                         measurement.Enabled = record.mapped();
-                                                                                                
+
                         if (measurement.PointID === 0) {
                             if (measurement.Enabled)
                                 promises.push(dataHub.addNewMeasurement(measurement));
@@ -1032,6 +1032,7 @@
                     device.Acronym = viewModel.deviceName();
                     device.Name = device.Acronym + " (Modbus)";
                     device.ConnectionString = viewModel.adapterConnectionString();
+                    device.Enabled = true;
                     
                     dataHub.getModbusProtocolID().done(function(protocolID) {
                         device.ProtocolID = protocolID;
@@ -1044,7 +1045,7 @@
                                     saveDeviceMeasurements(newDevice);
                                 }).fail(function(error) {
                                     showErrorMessage("Failed while querying new device " + viewModel.deviceName() + " - no measurements saved: " + error);
-                                }); 
+                                });
                             }).fail(function(error) {
                                 showErrorMessage("Save failed for new device " + viewModel.deviceName() + ": " + error);
                             });
