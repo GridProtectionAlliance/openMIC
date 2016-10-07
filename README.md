@@ -61,7 +61,7 @@ Meter Information Collector
   * SQLite (Not recommended for production use) - included.
 
 ## Downloads
-* Download the lastest stable release [here](https://github.com/GridProtectionAlliance/openMIC/releases).
+* Download the latest stable release [here](https://github.com/GridProtectionAlliance/openMIC/releases).
 * Download the nightly build [here](http://www.gridprotectionalliance.org/nightlybuilds/openMIC/Beta/Setup.zip).
 
 # Contributing
