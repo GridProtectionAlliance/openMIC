@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GSF;
+using GSF.Configuration;
 using GSF.Data.Model;
 using GSF.Identity;
 using GSF.IO;
@@ -94,6 +95,7 @@ namespace openMIC
         // Static Fields
         private static int s_downloaderProtocolID;
         private static int s_modbusProtocolID;
+        private static string s_configurationCachePath;
 
         // Static Constructor
         static DataHub()
@@ -125,18 +127,18 @@ namespace openMIC
 
         #region [ Device Table Operations ]
 
+        private int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : (s_downloaderProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'"));
+
+        private int ModbusProtocolID => s_modbusProtocolID != 0 ? s_modbusProtocolID : (s_modbusProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Modbus'"));
+
         /// <summary>
         /// Gets protocol ID for "Downloader" adapter.
         /// </summary>
-        public int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : (s_downloaderProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'"));
+        public int GetDownloaderProtocolID() => DownloaderProtocolID;
 
         /// <summary>
         /// Gets protocol ID for "ModbusPoller" adapter.
         /// </summary>
-        public int ModbusProtocolID => s_modbusProtocolID != 0 ? s_modbusProtocolID : (s_modbusProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Modbus'"));
-
-        public int GetDownloaderProtocolID() => DownloaderProtocolID;
-
         public int GetModbusProtocolID() => ModbusProtocolID;
 
         [RecordOperation(typeof(Device), RecordOperation.QueryRecordCount)]
@@ -165,6 +167,11 @@ namespace openMIC
         public Device QueryDevice(string acronym)
         {
             return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Acronym = {0}", acronym)).FirstOrDefault() ?? NewDevice();
+        }
+
+        public Device QueryDeviceByID(int deviceID)
+        {
+            return DataContext.Table<Device>().QueryRecords("ID", new RecordRestriction("ID = {0}", deviceID)).FirstOrDefault() ?? NewDevice();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -216,6 +223,58 @@ namespace openMIC
                 device.OriginalSource = device.Acronym;
 
             DataContext.Table<Device>().UpdateRecord(device);
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        public void SaveDeviceConfiguration(string acronym, string configuration)
+        {
+            File.WriteAllText(GetConfigurationCacheFileName(acronym), configuration);
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        public string LoadDeviceConfiguration(string acronym)
+        {
+            string fileName = GetConfigurationCacheFileName(acronym);
+            return File.Exists(fileName) ? File.ReadAllText(fileName) : "";
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        public string GetConfigurationCacheFileName(string acronym)
+        {
+            return Path.Combine(ConfigurationCachePath, $"{acronym}.configuration.json");
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        public string GetConfigurationCachePath()
+        {
+            return ConfigurationCachePath;
+        }
+
+        private static string ConfigurationCachePath
+        {
+            get
+            {
+                // This property will not change during system life-cycle so we cache if for future use
+                if (string.IsNullOrEmpty(s_configurationCachePath))
+                {
+                    // Define default configuration cache directory relative to path of host application
+                    s_configurationCachePath = string.Format("{0}{1}ConfigurationCache{1}", FilePath.GetAbsolutePath(""), Path.DirectorySeparatorChar);
+
+                    // Make sure configuration cache path setting exists within system settings section of config file
+                    ConfigurationFile configFile = ConfigurationFile.Current;
+                    CategorizedSettingsElementCollection systemSettings = configFile.Settings["systemSettings"];
+                    systemSettings.Add("ConfigurationCachePath", s_configurationCachePath, "Defines the path used to cache serialized phasor protocol configurations");
+
+                    // Retrieve configuration cache directory as defined in the config file
+                    s_configurationCachePath = FilePath.AddPathSuffix(systemSettings["ConfigurationCachePath"].Value);
+
+                    // Make sure configuration cache directory exists
+                    if (!Directory.Exists(s_configurationCachePath))
+                        Directory.CreateDirectory(s_configurationCachePath);
+                }
+
+                return s_configurationCachePath;
+            }
         }
 
         #endregion

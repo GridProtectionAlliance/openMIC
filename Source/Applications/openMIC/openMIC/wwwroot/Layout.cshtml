@@ -21,6 +21,8 @@
 //
 //*****************************************************************************************************@
 @using System.Text
+@using System.Threading
+@using GSF.Security
 @using GSF.Web.Model
 @using openMIC.Model
 @using RazorEngine.Templating
@@ -38,6 +40,20 @@
 
     // Define ViewBag.CustomTitle in page code for custom page titles
     string pageTitle = ViewBag.CustomTitle ?? ViewBag.Title;
+
+    bool hidePageTitle = false;
+
+    if (ViewBag.HidePageTitle != null) {
+        hidePageTitle = ViewBag.HidePageTitle;
+    }
+}
+@functions {
+    public bool UserIsAdmin()
+    {
+        SecurityProviderCache.ValidateCurrentProvider();
+        return Thread.CurrentPrincipal.IsInRole("Administrator");
+    }
+
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -171,6 +187,7 @@
                             <li><a href="VendorDevices.cshtml">Vendor Devices</a></li>
                         </ul>
                     </li>
+                    @if (UserIsAdmin()) {
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
                         <ul class="dropdown-menu">
@@ -180,6 +197,7 @@
                             <li><a href="SelectTheme.cshtml">Select Theme</a></li>
                         </ul>
                     </li>
+                    }
                     <li @Raw(pageTitle == "Help" ? "class=\"active\"" : "")><a href="Help.cshtml">Help</a></li>
                 </ul>
                 <p class="nav navbar-text navbar-right">
@@ -212,9 +230,11 @@ else {
                 <span class="sr-only">Error</span>
                 <span id="error-msg-text"></span>
             </div>
+            @if (!hidePageTitle) {
             <h3>
                 @pageTitle <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
             </h3>
+            }
         </div>
         <!-- Page Body for @ViewBag.Request.RequestUri.AbsolutePath -->
         @RenderBody()

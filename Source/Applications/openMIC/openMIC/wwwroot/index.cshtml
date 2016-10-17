@@ -27,6 +27,7 @@
 @using GSF.Identity
 @using GSF.IO
 @using GSF.Reflection
+@using GSF.Security
 @using GSF.Web.Model
 @using openMIC.Model
 @using RazorEngine.Templating
@@ -205,6 +206,12 @@
 
         return Thread.CurrentPrincipal.Identity.Name;
     }
+
+    public bool UserIsAdmin()
+    {
+        SecurityProviderCache.ValidateCurrentProvider();
+        return Thread.CurrentPrincipal.IsInRole("Administrator");
+    }
 }
 <div class="row">
     <div class="col-lg-4 col-md-4 col-sm-5">
@@ -217,7 +224,9 @@
                     <a href="ConnectionProfiles.cshtml" role="button" class="btn btn-default">Connection Profiles</a>
                     <a href="ModbusConfig.cshtml" role="button" class="btn btn-default">Add Modbus Mapping</a>
                     <a href="GraphMeasurements.cshtml" role="button" class="btn btn-default">Graph Measurements</a>
+                    @if (UserIsAdmin()) {
                     <button type="button" class="btn btn-default" id="restartButton" hub-dependent>Restart Service</button>
+                    }                
                 </div>
             </div>
         </div>

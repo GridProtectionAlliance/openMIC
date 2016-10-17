@@ -68,7 +68,7 @@
 }
 @helper BodyRows() {
     <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/Small/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="Images/StatusLights/Small/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
-    <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: $parent.viewPageRecord"></button></td>
+    <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: showViewScreen"></button></td>
     <td width="20%" class="text-center" data-bind="text: notNull(ConnectionString).parseKeyValuePairs().get('schedule')"></td>
     <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" disabled/></td>
     <td width="5%" class="text-center valign-middle" nowrap>
@@ -174,6 +174,9 @@
 
         @Raw(dataContext.RenderViewModelConfiguration<Device, DataHub>(ViewBag, "Acronym"))
 
+        var downloaderProtocolID = 0;
+        var modbusProtocolID = 0;
+
         // Define default connection string keys needed for binding
         const defaultConnectionString = new Dictionary();
 
@@ -259,6 +262,20 @@
                 serviceHub.sendCommand("reloadconfig");
         });
 
+        $(window).on("hubConnected", function() {
+            if (downloaderProtocolID === 0) {
+                dataHub.getDownloaderProtocolID().done(function(protocolID) {
+                    downloaderProtocolID = protocolID;
+                });
+            }
+
+            if (modbusProtocolID === 0) {
+                dataHub.getModbusProtocolID().done(function(protocolID) {
+                    modbusProtocolID = protocolID;
+                });
+            }
+        });
+
         function updateSchedule(schedule) {
             if (viewModel.recordMode() !== RecordMode.View)
                 viewModel.connectionString.get("schedule")(schedule);
@@ -273,5 +290,12 @@
         $("#addNewEditDialog").on("show.bs.modal", function () {
             $("#checkUseDialUp").parent().parent().css("margin", 0);
         });
+
+        function showViewScreen(record) {
+            if (record.ProtocolID === downloaderProtocolID)
+                viewModel.viewPageRecord(record);
+            else if (record.ProtocolID === modbusProtocolID)
+                window.location.href = "/ModbusConfig.cshtml?DeviceID=" + record.ID;
+        }
     </script>
 }

@@ -20,16 +20,33 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using System.Net.Http
+@using System.Security.Principal
+@using System.Threading
+@using GSF.Security
+@using GSF.Web
 @using openMIC.Model
 @using GSF.Web.Model
 @inherits ExtendedTemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
+    ViewBag.HidePageTitle = true;
+    ViewBag.Title = "Modbus Configuration Editor";
 
     const string ReadSequencePanelType = "panel-success";
     const string WriteSequencePanelType = "panel-warning";
 
     DataContext dataContext = ViewBag.DataContext;
+    HttpRequestMessage request = ViewBag.Request;
+    Dictionary<string, string> parameters = request.QueryParameters();
+    string parameter;
+    int deviceID;
+
+    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
+        deviceID = 0;
+    }
+
+    bool userIsEditor = UserIsEditor();
 }
 @section StyleSheets {
     <style>
@@ -375,6 +392,7 @@
     <script>
         "use strict";
 
+        var deviceID = @deviceID;
         var deviceConnected = false;
         var sourceCheckbox = null;
         var loadAppendMode = false;
@@ -1033,37 +1051,42 @@
                     device.Name = device.Acronym + " (Modbus)";
                     device.ConnectionString = viewModel.adapterConnectionString();
                     device.Enabled = true;
-                    
-                    dataHub.getModbusProtocolID().done(function(protocolID) {
-                        device.ProtocolID = protocolID;
 
-                        if (device.ID === 0) {
-                            dataHub.addNewDevice(device).done(function() {
-                                // Get newly added device (gets device ID)
-                                dataHub.queryDevice(device.Acronym).done(function(newDevice) {
-                                    // Save device measurement records...
-                                    saveDeviceMeasurements(newDevice);
+                    // Save serialized mapping to server to it can be easily modified later
+                    dataHub.saveDeviceConfiguration(device.Acronym, JSON.stringify(viewModel.serializeMapping(), null, 4)).done(function() {
+                        dataHub.getModbusProtocolID().done(function(protocolID) {
+                            device.ProtocolID = protocolID;
+
+                            if (device.ID === 0) {
+                                dataHub.addNewDevice(device).done(function() {
+                                    // Get newly added device (gets device ID)
+                                    dataHub.queryDevice(device.Acronym).done(function(newDevice) {
+                                        // Save device measurement records...
+                                        saveDeviceMeasurements(newDevice);
+                                    }).fail(function(error) {
+                                        showErrorMessage("Failed while querying new device " + viewModel.deviceName() + " - no measurements saved: " + error);
+                                    });
                                 }).fail(function(error) {
-                                    showErrorMessage("Failed while querying new device " + viewModel.deviceName() + " - no measurements saved: " + error);
+                                    showErrorMessage("Save failed for new device " + viewModel.deviceName() + ": " + error);
                                 });
-                            }).fail(function(error) {
-                                showErrorMessage("Save failed for new device " + viewModel.deviceName() + ": " + error);
-                            });
-                        }
-                        else {
-                            dataHub.updateDevice(device).done(function() {
-                                // Save device measurement records...
-                                saveDeviceMeasurements(device);
-                            }).fail(function(error) {
-                                showErrorMessage("Update failed for existing device " + viewModel.deviceName() + " - no measurements updated: " + error);
-                            });
-                        }
+                            }
+                            else {
+                                dataHub.updateDevice(device).done(function() {
+                                    // Save device measurement records...
+                                    saveDeviceMeasurements(device);
+                                }).fail(function(error) {
+                                    showErrorMessage("Update failed for existing device " + viewModel.deviceName() + " - no measurements updated: " + error);
+                                });
+                            }
 
-                        // Intialize device after save
-                        serviceHub.sendCommand("initialize " + device.Acronym);
+                            // Intialize device after save
+                            serviceHub.sendCommand("initialize " + device.Acronym);
+                        }).fail(function(error) {
+                            showErrorMessage("Save failed for new device " + viewModel.deviceName() + " - could not lookup Modbus protocol ID: " + error);
+                        });
                     }).fail(function(error) {
-                        showErrorMessage("Save failed for new device " + viewModel.deviceName() + " - could not lookup Modbus protocol ID: " + error);
-                    });
+                        showErrorMessage("Failed to save device " + viewModel.deviceName() + " mapping: " + error);
+                    });                    
                 }).fail(function(error) {
                     showErrorMessage("Save failed for new device " + viewModel.deviceName() + " - could not create new or lookup existing device: " + error);
                 });
@@ -1072,14 +1095,41 @@
             }
         }
 
-        // TODO: Load existin device data
-        //function loadDeviceConnection(deviceName) {
-        //    if (!hubIsConnected)
-        //        return;
+        // Load existing device data
+        function loadDeviceConnection(id) {
+            if (!hubIsConnected)
+                return;
 
-        //    dataHub.queryDevice(viewModel.deviceName()).done(function(device) {
-        //    });
-        //}
+            dataHub.queryDeviceByID(id).done(function(device) {
+                viewModel.connectionString(device.ConnectionString);
+                viewModel.deviceName(device.Acronym);
+                viewModel.exists(true);
+
+                $("#editDeviceName").html("Editing&nbsp;" + device.Acronym);
+
+                // Parse connection string
+                const connectionString = new Dictionary(device.ConnectionString.parseKeyValuePairs());
+
+                viewModel.frameFormat(connectionString.get("frameFormat"));
+                viewModel.transport(connectionString.get("transport"));
+                viewModel.unitID(connectionString.get("unitID"));
+                viewModel.pollingRate(connectionString.get("pollingRate"));
+                viewModel.interSequenceGroupPollDelay(connectionString.get("interSequenceGroupPollDelay"));
+
+                $("#loadingMappingMessage").show();
+
+                setTimeout(function() {
+                    showInfoMessage("Loading existing configuration...");
+                    dataHub.loadDeviceConfiguration(device.Acronym).done(function(mapping) {
+                        viewModel.loadSequenceMap(new Blob([mapping], { type : "application/json" }), false);
+                        $("#loadMappingFileName").val("");
+                        
+                        showInfoMessage("Loading existing tag data...");
+                        setTimeout(loadTagData, 100);
+                    });
+                }, 100);
+            });
+        }
 
         function loadTagData() {
             if (!hubIsConnected)
@@ -1311,6 +1361,13 @@
             scrollConnectionStatusWindowToBottom();
         });
 
+        $(window).on("hubConnected", function(event) {
+            if (deviceID > 0) {
+                loadDeviceConnection(deviceID);
+                deviceID = 0;
+            }
+        });
+
         $(window).on("hubDisconnected", function(event) {
             if (deviceConnected) {
                 dataHubClient.connectionStatusUpdate("Connection to server was terminated, device disconnected.", "red");
@@ -1533,7 +1590,17 @@
         });
     </script>
 }
-<h3>Modbus Configuration Map Builder <img class="pull-right" style="margin-top: -14px" src="Images/ModbusConfigEditor.png"/></h3>
+@functions {
+    // This function simply limits access to UI elements that the user does not have access to, server-side
+    // functions will further validate user rights even if UI restriction was somehow bypassed
+    public bool UserIsEditor()
+    {
+        SecurityProviderCache.ValidateCurrentProvider();
+        IPrincipal principal = Thread.CurrentPrincipal;
+        return principal.IsInRole("Administrator") || principal.IsInRole("Editor");
+    }
+}
+<h3>Modbus Configuration Map Builder <span class="label label-info" id="editDeviceName"></span> <img class="pull-right" style="margin-top: -14px" src="Images/ModbusConfigEditor.png"/></h3>
 @* Connection Settings and Status Panel *@
 <div class="panel panel-primary">
     <div class="panel-heading clearfix">
@@ -1608,7 +1675,7 @@
                     </div>
                     <div class="col-md-4 top-padding">
                         <button type="button" class="btn btn-primary pull-right" style="margin-left: 5px" onclick="connectToDevice()" title="Connect to Device" hub-dependent><span class="glyphicon glyphicon-transfer" style="vertical-align: text-top"></span> <strong id="connectButtonLabel">Connect</strong>&nbsp;</button>
-                        <button type="button" class="btn btn-default pull-right" onclick="showSaveDeviceConnectionDialog()" title="Define Tags from Sequence Mapping and Add New Device Connection" hub-dependent><span class="glyphicon glyphicon-link glyphicon-action-button"></span> Add&nbsp;Device</button>
+                        <button type="button" class="btn btn-default pull-right" onclick="showSaveDeviceConnectionDialog()" title="Define Tags from Sequence Mapping and Add New Device Connection" @(userIsEditor ? "" : "disabled") hub-dependent><span class="glyphicon glyphicon-link glyphicon-action-button"></span> @(deviceID == 0 ? "Add" : "Save")&nbsp;Device</button>
                     </div>
                 </div>
             </div>
@@ -1903,7 +1970,11 @@
             <div class="modal-body" style="max-height: calc(100vh - 212px); overflow-y: auto;">
                 <form role="form">
                     <div class="form-group" data-bind="validationElement: deviceName">
-                        <label for="inputDeviceName">Device Name:<span class="pull-right" style="margin-top: -1px" data-bind="visible: exists">&nbsp;&nbsp;<button type="button" class="btn btn-xs" onclick="loadTagData()"><b>Load Tag Data</b></button></span><span class="pull-right" data-bind="visible: exists">&nbsp;&nbsp;&nbsp;&nbsp;<i>Device already exists</i></span></label>
+                        <label for="inputDeviceName">Device Name:
+                        @if (deviceID == 0) {
+                            <span class="pull-right" style="margin-top: -1px" data-bind="visible: exists">&nbsp;&nbsp;<button type="button" class="btn btn-xs" onclick="loadTagData()"><b>Load Tag Data</b></button></span><span class="pull-right" data-bind="visible: exists">&nbsp;&nbsp;&nbsp;&nbsp;<i>Device already exists</i></span>
+                        }
+                        </label>
                         <input type="text" class="form-control" id="inputDeviceName" maxlength="200" size="15" data-bind="textInput: deviceName, css: { 'exists': exists }">
                     </div>
                     <div id="loadingTagDataMessage" class="top-margin bottom-margin clearfix" style="display: none">
