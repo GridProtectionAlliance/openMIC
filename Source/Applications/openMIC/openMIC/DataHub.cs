@@ -215,7 +215,9 @@ namespace openMIC
         [RecordOperation(typeof(Device), RecordOperation.UpdateRecord)]
         public void UpdateDevice(Device device)
         {
-            device.ProtocolID = DownloaderProtocolID;
+            if ((device.ProtocolID ?? 0) == 0)
+                device.ProtocolID = DownloaderProtocolID;
+
             device.UpdatedBy = device.CreatedBy;
             device.UpdatedOn = device.CreatedOn;
 
