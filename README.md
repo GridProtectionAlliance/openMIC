@@ -7,8 +7,9 @@ Meter Information Collector
 ## What Does it Do?
 
 * Interrogates multiple vendors' DFRs
-  * Via IP
-  * Via Modem (RAS & FTP)
+  * Via IP with FTP for files with event, configuration or trending data
+  * Via Modem RAS with FTP for files with event, configuration or trending data
+  * Via Modbus over IP or Serial for streaming data
 * Schedules calls & organizes returned data
   * Admins can define multiple interrogation schedules - including as-fast-as-possible
   * Output location can be specified on a device-by-device basis
