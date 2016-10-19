@@ -17,6 +17,7 @@ namespace openMIC.Model
         [Required]
         [StringLength(200)]
         [RegularExpression("^[A-Z0-9\\-!_\\.@#\\$]+$", ErrorMessage = "Only upper case letters, numbers, '!', '-', '@', '#', '_' , '.'and '$' are allowed.")]
+        [Searchable]
         public string Acronym
         {
             get;
@@ -25,6 +26,7 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
+        [Searchable]
         public string Name
         {
             get;

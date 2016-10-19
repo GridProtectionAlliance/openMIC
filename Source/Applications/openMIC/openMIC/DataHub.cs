@@ -33,6 +33,7 @@ using GSF.Data.Model;
 using GSF.Identity;
 using GSF.IO;
 using GSF.Web.Hubs;
+using GSF.Web.Model.HubOperations;
 using GSF.Web.Security;
 using Microsoft.AspNet.SignalR;
 using openMIC.Model;
@@ -41,7 +42,7 @@ using RecordRestriction = GSF.Data.Model.RecordRestriction;
 namespace openMIC
 {
     [AuthorizeHubRole]
-    public class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOperations, IModbusOperations
+    public class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOperations, IModbusOperations, IDirectoryBrowserOperations
     {
         #region [ Members ]
 
@@ -100,25 +101,34 @@ namespace openMIC
         // Static Constructor
         static DataHub()
         {
-            Downloader.ProgressUpdated += DownloaderProgressUpdated;
+            Downloader.ProgressUpdated += ProgressUpdated;
+            ModbusPoller.ProgressUpdated += ProgressUpdated;
         }
 
-        private static void DownloaderProgressUpdated(object sender, EventArgs<ProgressUpdate> e)
+        private static void ProgressUpdated(object sender, EventArgs<ProgressUpdate> e)
         {
-            Downloader instance = sender as Downloader;
+            ProgressUpdate update = e.Argument;
 
-            if ((object)instance != null)
+            Downloader downloader = sender as Downloader;
+
+            if ((object)downloader != null)
             {
-                ProgressUpdate update = e.Argument;
-
-                update.DeviceName = instance.Name;
-                update.FilesDownloaded = instance.FilesDownloaded;
-
-                if (!string.IsNullOrEmpty(update.ProgressMessage))
-                    update.ProgressMessage += $"\r\n\r\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}]";
-
-                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(e.Argument);
+                update.DeviceName = downloader.Name;
+                update.FilesDownloaded = downloader.FilesDownloaded;
             }
+
+            ModbusPoller modbusPoller = sender as ModbusPoller;
+
+            if ((object)modbusPoller != null)
+            {
+                update.DeviceName = modbusPoller.Name;
+                update.ValuesProcessed = modbusPoller.MeasurementsReceived;
+            }
+
+            if (!string.IsNullOrEmpty(update.ProgressMessage))
+                update.ProgressMessage += $"\r\n\r\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}]";
+
+            GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(e.Argument);
         }
 
         #endregion
@@ -144,22 +154,20 @@ namespace openMIC
         [RecordOperation(typeof(Device), RecordOperation.QueryRecordCount)]
         public int QueryDeviceCount(string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<Device>().QueryRecordCount();
-
-            return DataContext.Table<Device>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<Device> tableOperations = DataContext.Table<Device>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecordCount(restriction);
         }
 
         [RecordOperation(typeof(Device), RecordOperation.QueryRecords)]
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize);
-
-            return DataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<Device> tableOperations = DataContext.Table<Device>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
         }
 
-        public IEnumerable<Device> QueryDevices(int limit, string filterText)
+        public IEnumerable<Device> QueryEnabledDevices(int limit, string filterText)
         {
             return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Enabled <> 0 AND (Acronym LIKE {0} OR Name LIKE {0})", $"%{filterText}%"), limit);
         }
@@ -218,8 +226,8 @@ namespace openMIC
             if ((device.ProtocolID ?? 0) == 0)
                 device.ProtocolID = DownloaderProtocolID;
 
-            device.UpdatedBy = device.CreatedBy;
-            device.UpdatedOn = device.CreatedOn;
+            device.UpdatedBy = GetCurrentUserID();
+            device.UpdatedOn = DateTime.UtcNow;
 
             if (string.IsNullOrWhiteSpace(device.OriginalSource))
                 device.OriginalSource = device.Acronym;
@@ -286,24 +294,17 @@ namespace openMIC
         [RecordOperation(typeof(Measurement), RecordOperation.QueryRecordCount)]
         public int QueryMeasurementCount(string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<Measurement>().QueryRecordCount();
-
-            return DataContext.Table<Measurement>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<Measurement> tableOperations = DataContext.Table<Measurement>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecordCount(restriction);
         }
 
         [RecordOperation(typeof(Measurement), RecordOperation.QueryRecords)]
         public IEnumerable<Measurement> QueryMeasurements(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<Measurement>().QueryRecords(sortField, ascending, page, pageSize);
-
-            return DataContext.Table<Measurement>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
-        }
-
-        public IEnumerable<Measurement> QueryMeasurements(int limit, string filterText)
-        {
-            return DataContext.Table<Measurement>().QueryRecords("PointTag", new RecordRestriction("Enabled <> 0 AND (Acronym LIKE {0} OR Name LIKE {0})", $"%{filterText}%"), limit);
+            TableOperations<Measurement> tableOperations = DataContext.Table<Measurement>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
         }
 
         public Measurement QueryMeasurement(string signalReference)
@@ -345,8 +346,8 @@ namespace openMIC
         [RecordOperation(typeof(Measurement), RecordOperation.UpdateRecord)]
         public void UpdateMeasurement(Measurement measurement)
         {
-            measurement.UpdatedBy = measurement.CreatedBy;
-            measurement.UpdatedOn = measurement.CreatedOn;
+            measurement.UpdatedBy = GetCurrentUserID();
+            measurement.UpdatedOn = DateTime.UtcNow;
 
             DataContext.Table<Measurement>().UpdateRecord(measurement);
         }
@@ -396,8 +397,8 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.UpdateRecord)]
         public void UpdateConnectionProfile(ConnectionProfile connectionProfile)
         {
-            connectionProfile.UpdatedBy = connectionProfile.CreatedBy;
-            connectionProfile.UpdatedOn = connectionProfile.CreatedOn;
+            connectionProfile.UpdatedBy = GetCurrentUserID();
+            connectionProfile.UpdatedOn = DateTime.UtcNow;
 
             DataContext.Table<ConnectionProfile>().UpdateRecord(connectionProfile);
         }
@@ -460,8 +461,8 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.UpdateRecord)]
         public void UpdateConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
         {
-            connectionProfileTask.UpdatedBy = connectionProfileTask.CreatedBy;
-            connectionProfileTask.UpdatedOn = connectionProfileTask.CreatedOn;
+            connectionProfileTask.UpdatedBy = GetCurrentUserID();
+            connectionProfileTask.UpdatedOn = DateTime.UtcNow;
 
             DataContext.Table<ConnectionProfileTask>().UpdateRecord(connectionProfileTask);
         }
@@ -473,19 +474,17 @@ namespace openMIC
         [RecordOperation(typeof(Company), RecordOperation.QueryRecordCount)]
         public int QueryCompanyCount(string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<Company>().QueryRecordCount();
-
-            return DataContext.Table<Company>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<Company> tableOperations = DataContext.Table<Company>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecordCount(restriction);
         }
 
         [RecordOperation(typeof(Company), RecordOperation.QueryRecords)]
         public IEnumerable<Company> QueryCompanies(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize);
-
-            return DataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<Company> tableOperations = DataContext.Table<Company>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -517,8 +516,8 @@ namespace openMIC
         [RecordOperation(typeof(Company), RecordOperation.UpdateRecord)]
         public void UpdateCompany(Company company)
         {
-            company.UpdatedBy = company.CreatedBy;
-            company.UpdatedOn = company.CreatedOn;
+            company.UpdatedBy = GetCurrentUserID();
+            company.UpdatedOn = DateTime.UtcNow;
 
             DataContext.Table<Company>().UpdateRecord(company);
         }
@@ -530,19 +529,17 @@ namespace openMIC
         [RecordOperation(typeof(Vendor), RecordOperation.QueryRecordCount)]
         public int QueryVendorCount(string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<Vendor>().QueryRecordCount();
-
-            return DataContext.Table<Vendor>().QueryRecordCount(new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<Vendor> tableOperations = DataContext.Table<Vendor>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecordCount(restriction);
         }
 
         [RecordOperation(typeof(Vendor), RecordOperation.QueryRecords)]
         public IEnumerable<Vendor> QueryVendors(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize);
-
-            return DataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Acronym LIKE {0} OR Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<Vendor> tableOperations = DataContext.Table<Vendor>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -574,8 +571,8 @@ namespace openMIC
         [RecordOperation(typeof(Vendor), RecordOperation.UpdateRecord)]
         public void UpdateVendor(Vendor vendor)
         {
-            vendor.UpdatedBy = vendor.CreatedBy;
-            vendor.UpdatedOn = vendor.CreatedOn;
+            vendor.UpdatedBy = GetCurrentUserID();
+            vendor.UpdatedOn = DateTime.UtcNow;
 
             DataContext.Table<Vendor>().UpdateRecord(vendor);
         }
@@ -587,19 +584,17 @@ namespace openMIC
         [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecordCount)]
         public int QueryVendorDeviceCount(string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<VendorDevice>().QueryRecordCount();
-
-            return DataContext.Table<VendorDevice>().QueryRecordCount(new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<VendorDevice> tableOperations = DataContext.Table<VendorDevice>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecordCount(restriction);
         }
 
         [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecords)]
         public IEnumerable<VendorDevice> QueryVendorDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize);
-
-            return DataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<VendorDevice> tableOperations = DataContext.Table<VendorDevice>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -631,8 +626,8 @@ namespace openMIC
         [RecordOperation(typeof(VendorDevice), RecordOperation.UpdateRecord)]
         public void UpdateVendorDevice(VendorDevice vendorDevice)
         {
-            vendorDevice.UpdatedBy = vendorDevice.CreatedBy;
-            vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
+            vendorDevice.UpdatedBy = GetCurrentUserID();
+            vendorDevice.UpdatedOn = DateTime.UtcNow;
 
             DataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
         }
@@ -644,19 +639,17 @@ namespace openMIC
         [RecordOperation(typeof(SignalType), RecordOperation.QueryRecordCount)]
         public int QuerySignalTypeCount(string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<SignalType>().QueryRecordCount();
-
-            return DataContext.Table<SignalType>().QueryRecordCount(new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<SignalType> tableOperations = DataContext.Table<SignalType>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecordCount(restriction);
         }
 
         [RecordOperation(typeof(SignalType), RecordOperation.QueryRecords)]
         public IEnumerable<SignalType> QuerySignalTypes(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            if (string.IsNullOrWhiteSpace(filterText))
-                return DataContext.Table<SignalType>().QueryRecords(sortField, ascending, page, pageSize);
-
-            return DataContext.Table<SignalType>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("Name LIKE {0}", $"%{filterText}%"));
+            TableOperations<SignalType> tableOperations = DataContext.Table<SignalType>();
+            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
+            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
         }
 
         public SignalType QuerySignalType(string acronym)
@@ -679,16 +672,16 @@ namespace openMIC
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(SignalType), RecordOperation.AddNewRecord)]
-        public void AddNewSignalType(SignalType vendorDevice)
+        public void AddNewSignalType(SignalType signalType)
         {
-            DataContext.Table<SignalType>().AddNewRecord(vendorDevice);
+            DataContext.Table<SignalType>().AddNewRecord(signalType);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(SignalType), RecordOperation.UpdateRecord)]
-        public void UpdateSignalType(SignalType vendorDevice)
+        public void UpdateSignalType(SignalType signalType)
         {
-            DataContext.Table<SignalType>().UpdateRecord(vendorDevice);
+            DataContext.Table<SignalType>().UpdateRecord(signalType);
         }
 
         #endregion
@@ -880,46 +873,31 @@ namespace openMIC
 
         #endregion
 
-        #region [ DirectoryBrowser Hub Operations ]
+        #region [ DirectoryBrowser Operations ]
 
         public IEnumerable<string> LoadDirectories(string rootFolder, bool showHidden)
         {
-            if (string.IsNullOrWhiteSpace(rootFolder))
-                return Directory.GetLogicalDrives();
-
-            IEnumerable<string> directories = Directory.GetDirectories(rootFolder);
-
-            if (!showHidden)
-                directories = directories.Where(path => !new DirectoryInfo(path).Attributes.HasFlag(FileAttributes.Hidden));
-
-            return new[] { "..\\" }.Concat(directories.Select(path => FilePath.AddPathSuffix(FilePath.GetLastDirectoryName(path))));
+            return DirectoryBrowserOperations.LoadDirectories(rootFolder, showHidden);
         }
 
         public bool IsLogicalDrive(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-                return false;
-
-            DirectoryInfo info = new DirectoryInfo(path);
-            return info.FullName == info.Root.FullName;
+            return DirectoryBrowserOperations.IsLogicalDrive(path);
         }
 
         public string ResolvePath(string path)
         {
-            if (IsLogicalDrive(path) && Path.GetFullPath(path) == path)
-                return path;
-
-            return Path.GetFullPath(FilePath.GetAbsolutePath(Environment.ExpandEnvironmentVariables(path)));
+            return DirectoryBrowserOperations.ResolvePath(path);
         }
 
         public string CombinePath(string path1, string path2)
         {
-            return Path.Combine(path1, path2);
+            return DirectoryBrowserOperations.CombinePath(path1, path2);
         }
 
         public void CreatePath(string path)
         {
-            Directory.CreateDirectory(path);
+            DirectoryBrowserOperations.CreatePath(path);
         }
 
         #endregion

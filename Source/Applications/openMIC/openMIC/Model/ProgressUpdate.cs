@@ -42,6 +42,12 @@ namespace openMIC.Model
             set;
         }
 
+        public long ValuesProcessed
+        {
+            get;
+            set;
+        }
+
         public long FilesDownloaded
         {
             get;

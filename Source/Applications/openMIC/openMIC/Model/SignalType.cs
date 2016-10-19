@@ -14,6 +14,7 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
+        [Searchable]
         public string Name
         {
             get;
@@ -22,6 +23,7 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(4)]
+        [Searchable]
         public string Acronym
         {
             get;
@@ -46,6 +48,7 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
+        [Searchable]
         public string LongAcronym
         {
             get;

@@ -6,13 +6,17 @@ namespace openMIC.Model
 {
     public class Measurement
     {
+        [Label("Point ID")]
         [PrimaryKey(true)]
+        [Searchable]
         public int PointID
         {
             get;
             set;
         }
 
+        [Label("Unique Signal ID")]
+        [Searchable]
         public Guid SignalID
         {
             get;
@@ -31,32 +35,39 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Tag Name")]
         [Required]
         [StringLength(200)]
+        [Searchable]
         public string PointTag
         {
             get;
             set;
         }
 
+        [Label("Alternate Tag Name")]
+        [Searchable]
         public string AlternateTag
         {
             get;
             set;
         }
 
+        [Label("Signal Type")]
         public int SignalTypeID
         {
             get;
             set;
         }
 
+        [Label("Phasor Source Index")]
         public int? PhasorSourceIndex
         {
             get;
             set;
         }
 
+        [Label("Signal Reference")]
         [Required]
         [StringLength(200)]
         public string SignalReference

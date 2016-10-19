@@ -23,7 +23,6 @@
 @using GSF
 @using GSF.Web.Model
 @using openMIC.Model
-@using RazorEngine.Templating
 @inherits ExtendedTemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
@@ -99,10 +98,12 @@
                     if (i % columns === 0) {
                         if (row)
                             result.push(row);
+
                         row = [];
                     }
 
-                    row.push(self.items()[i]);
+                    if (row)
+                        row.push(self.items()[i]);
                 }
 
                 // Push final row  
@@ -116,7 +117,7 @@
                 if (!hubIsConnected)
                     return;
 
-                dataHub.queryDevices(self.itemLimit(), self.filterText).done(function (devices) {
+                dataHub.queryEnabledDevices(self.itemLimit(), self.filterText).done(function (devices) {
                     self.items.removeAll();
                     self.items(devices);
                 });
@@ -140,7 +141,10 @@
                 if (notNull(update.ProgressMessage).length > 0)
                     messageWell.html($("<div />").text(update.ProgressMessage).html().replaceAll("\n", "<br />"));
 
-                $("#" + update.DeviceName + "Heading").text(update.DeviceName + ": " + update.FilesDownloaded.toString() + " Downloads");
+                if (update.FilesDownloaded > 0)
+                    $("#" + update.DeviceName + "Heading").text(update.DeviceName + ": " + update.FilesDownloaded.toLocaleString() + " Downloads");
+                else
+                    $("#" + update.DeviceName + "Heading").text(update.DeviceName + ": " + update.ValuesProcessed.toLocaleString() + " Processed Values");
 
                 const progressBar = $("#" + update.DeviceName + (update.TargetIsOverall ? "Overall" : "Current") + "Progress");
                 const progressValue = Math.ceil(update.ProgressComplete / update.ProgressTotal * 100.0);

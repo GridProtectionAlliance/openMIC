@@ -13,6 +13,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Local Device ID")]
         [PrimaryKey(true)]
         public int ID
         {
@@ -26,6 +27,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Unique Device ID")]
         public Guid UniqueID
         {
             get;
@@ -35,6 +37,7 @@ namespace openMIC.Model
         [Required]
         [StringLength(200)]
         [RegularExpression("^[A-Z0-9\\-!_\\.@#\\$]+$", ErrorMessage = "Only upper case letters, numbers, '!', '-', '@', '#', '_' , '.'and '$' are allowed.")]
+        [Searchable]
         public string Acronym
         {
             get;
@@ -56,6 +59,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Is Concentrator")]
         public bool IsConcentrator
         {
             get;
@@ -70,12 +74,14 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Historian")]
         public int? HistorianID
         {
             get;
             set;
         }
 
+        [Label("Access ID")]
         public int AccessID
         {
             get;
@@ -89,6 +95,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Protocol")]
         public int? ProtocolID
         {
             get;
@@ -107,12 +114,15 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Interconnection")]
+        [InitialValue("1")]
         public int? InterconnectionID
         {
             get;
             set;
         }
 
+        [Label("Connection String")]
         public string ConnectionString
         {
             get;
@@ -126,6 +136,7 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Frames Per Second")]
         public int? FramesPerSecond
         {
             get;
@@ -186,12 +197,14 @@ namespace openMIC.Model
             set;
         }
 
+        [Label("Connect On Demand")]
         public bool ConnectOnDemand
         {
             get;
             set;
         }
 
+        [Label("Contacts")]
         public string ContactList
         {
             get;

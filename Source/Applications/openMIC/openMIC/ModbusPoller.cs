@@ -40,6 +40,8 @@ using GSF.TimeSeries.Adapters;
 using GSF.TimeSeries.Statistics;
 using Modbus.Device;
 using Modbus.Utility;
+using openMIC.Model;
+using Measurement = GSF.TimeSeries.Measurement;
 using Timer = System.Timers.Timer;
 
 namespace openMIC
@@ -311,6 +313,11 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Gets total read or derived measurements over the Modbus poller instance lifetime.
+        /// </summary>
+        public long MeasurementsReceived => m_measurementsReceived;
+
+        /// <summary>
         /// Gets flag that determines if the data input connects asynchronously.
         /// </summary>
         /// <remarks>
@@ -561,6 +568,11 @@ namespace openMIC
                 Group[] groups = m_sequences.SelectMany(sequence => sequence.Groups).ToArray();
                 int measurementsReceived = 0;
 
+                int overallTasksCompleted = 0;
+                int overallTasksCount = m_sequences.Count + 1;
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, "Starting polling operation...", overallTasksCompleted, overallTasksCount));
+                OnStatusMessage($"Executing poll operation {m_pollOperations + 1}.");
+
                 // Handle read/write operations for sequence groups
                 try
                 {
@@ -568,6 +580,8 @@ namespace openMIC
                     {
                         foreach (Group group in sequence.Groups)
                         {
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Executing poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\"...", 0, group.PointCount));
+
                             switch (group.Type)
                             {
                                 case RecordType.DI:
@@ -590,8 +604,11 @@ namespace openMIC
                                     break;
                             }
 
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Completed poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\".", group.PointCount, group.PointCount));
                             Thread.Sleep(m_interSequenceGroupPollDelay);
                         }
+
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++overallTasksCompleted, overallTasksCount));
                     }
                 }
                 catch
@@ -599,6 +616,8 @@ namespace openMIC
                     m_deviceErrors++;
                     throw;
                 }
+
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, "Processing derived values...", 0, m_derivedValues.Count));
 
                 // Calculate derived values
                 foreach (KeyValuePair<MeasurementKey, DerivedValue> item in m_derivedValues)
@@ -702,15 +721,23 @@ namespace openMIC
                                 break;
                         }
                     }
+
+                    if (measurementsReceived % 20 == 0)
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, null, measurementsReceived, m_derivedValues.Count));
                 }
+
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, "Completed derived value processing.", m_derivedValues.Count, m_derivedValues.Count));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, "Polling operation complete.", overallTasksCount, overallTasksCount));
 
                 OnNewMeasurements(measurements.Values.ToArray());
 
                 m_measurementsReceived += measurementsReceived;
                 m_pollOperations++;
             }
-            catch
+            catch (Exception ex)
             {
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed during poll operation: {ex.Message}", 0, 1));
+
                 // Restart connection cycle when an exception occurs
                 Start();
                 throw;
@@ -847,6 +874,15 @@ namespace openMIC
             return $"Polling enabled for every {PollingRate:N0}ms".CenterText(maxLength);
         }
 
+        /// <summary>
+        /// Queues polling operation for immediate execution.
+        /// </summary>
+        [AdapterCommand("Queues polling operation for immediate execution.", "Administrator", "Editor")]
+        public void QueueTasks()
+        {
+            m_pollingOperation?.RunOnceAsync();
+        }
+
         private ushort[] ReadDiscreteInputs(ushort startAddress, ushort pointCount)
         {
             return m_modbusConnection.ReadInputs(m_unitID, startAddress, pointCount).Select(value => (ushort)(value ? 1 : 0)).ToArray();
@@ -915,6 +951,24 @@ namespace openMIC
         private void m_pollingTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             m_pollingOperation?.RunOnce();
+        }
+
+        #endregion
+
+        #region [ Static ]
+
+        // Static Events
+
+        /// <summary>
+        /// Raised when there is a Modbus data operation in progress notification for any downloader instance.
+        /// </summary>
+        public static event EventHandler<EventArgs<ProgressUpdate>> ProgressUpdated;
+
+        // Static Methods
+
+        private static void OnProgressUpdated(ModbusPoller instance, ProgressUpdate update)
+        {
+            ProgressUpdated?.Invoke(instance, new EventArgs<ProgressUpdate>(update));
         }
 
         #endregion

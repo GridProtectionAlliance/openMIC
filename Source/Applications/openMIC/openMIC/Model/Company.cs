@@ -6,6 +6,8 @@ namespace openMIC.Model
 {
     public class Company
     {
+        private string m_mapAcronym;
+
         [PrimaryKey(true)]
         public int ID
         {
@@ -16,6 +18,7 @@ namespace openMIC.Model
         [Required]
         [StringLength(200)]
         [RegularExpression("^[A-Z0-9\\-!_\\.@#\\$]+$", ErrorMessage = "Only upper case letters, numbers, '!', '-', '@', '#', '_' , '.'and '$' are allowed.")]
+        [Searchable]
         public string Acronym
         {
             get;
@@ -23,16 +26,23 @@ namespace openMIC.Model
         }
 
         [Required]
-        [StringLength(3)]
+        [StringLength(10)]
         [RegularExpression("^[A-Z0-9]+$", ErrorMessage = "Only three upper case letters or numbers are allowed.")]
         public string MapAcronym
         {
-            get;
-            set;
+            get
+            {
+                return m_mapAcronym;
+            }
+            set
+            {
+                m_mapAcronym = value?.Trim();
+            }
         }
 
         [Required]
         [StringLength(200)]
+        [Searchable]
         public string Name
         {
             get;
