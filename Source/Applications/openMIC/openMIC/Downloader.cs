@@ -130,6 +130,15 @@ namespace openMIC
             }
 
             [ConnectionStringParameter,
+            Description("Determines if remote folders should scanned for matching downloads - file structure will be replicated locally."),
+            DefaultValue(false)]
+            public bool RecursiveDownload
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
             Description("Determines if remote files should be deleted after download."),
             DefaultValue(false)]
             public bool DeleteRemoteFilesAfterDownload
@@ -241,6 +250,24 @@ namespace openMIC
             Description("Defines directory authentication password."),
             DefaultValue("")]
             public string DirectoryAuthPassword
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Determines if an e-mail should be sent if the downloaded files have been updated."),
+            DefaultValue(false)]
+            public bool EmailOnFileUpdate
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Defines the recipient e-mail addresses to use when sending e-mails on file updates."),
+            DefaultValue("")]
+            public string EmailRecipients
             {
                 get;
                 set;
@@ -944,19 +971,46 @@ namespace openMIC
 
         private void ProcessFTPTask(ConnectionProfileTaskSettings settings, FtpClient client)
         {
-            if (string.IsNullOrWhiteSpace(settings.RemotePath))
+            string remotePath = settings.RemotePath;
+            string localSubPath = Path.DirectorySeparatorChar.ToString();
+
+            ProcessFTPTask(settings, client, remotePath, localSubPath);
+
+            if (settings.RecursiveDownload)
+                ProcessSubDirectories(settings, client, remotePath, localSubPath);
+        }
+
+        private void ProcessSubDirectories(ConnectionProfileTaskSettings settings, FtpClient client, string rootRemotePath, string rootLocalSubPath)
+        {        
+            client.SetCurrentDirectory(rootRemotePath);
+
+            FtpDirectory[] directories = client.CurrentDirectory.SubDirectories.ToArray();
+
+            foreach (FtpDirectory directory in directories)
+            {
+                string remotePath = $"{rootRemotePath}/{directory.Name}";
+                string localSubPath = Path.Combine(rootLocalSubPath, directory.Name);
+
+                ProcessFTPTask(settings, client, remotePath, localSubPath);
+                ProcessSubDirectories(settings, client, remotePath, localSubPath);
+            }
+        }
+
+        private void ProcessFTPTask(ConnectionProfileTaskSettings settings, FtpClient client, string remotePath, string localSubPath)
+        {
+            if (string.IsNullOrWhiteSpace(remotePath))
             {
                 OnProcessException(new InvalidOperationException($"Cannot process connection profile task \"{settings.Name}\", remote FTP directory path is undefined."));
                 return;
             }
 
-            OnStatusMessage("Attempting to set remote FTP directory path \"{0}\"...", settings.RemotePath);
+            OnStatusMessage("Attempting to set remote FTP directory path \"{0}\"...", remotePath);
 
             try
             {
-                client.SetCurrentDirectory(settings.RemotePath);
+                client.SetCurrentDirectory(remotePath);
 
-                OnStatusMessage("Enumerating remote files in \"{0}\"...", settings.RemotePath);
+                OnStatusMessage("Enumerating remote files in \"{0}\"...", remotePath);
 
                 try
                 {
@@ -989,12 +1043,12 @@ namespace openMIC
 
                                 try
                                 {
-                                    ProcessFile(settings, file);
+                                    ProcessFile(settings, localSubPath, file);
                                     TotalProcessedFiles++;
                                 }
                                 catch (Exception ex)
                                 {
-                                    OnProcessException(new InvalidOperationException($"Failed to process remote file \"{file.Name ?? "undefined"}\" in \"{settings.RemotePath}\": {ex.Message}", ex));
+                                    OnProcessException(new InvalidOperationException($"Failed to process remote file \"{file.Name ?? "undefined"}\" in \"{remotePath}\": {ex.Message}", ex));
                                 }
                             }
                             finally
@@ -1006,16 +1060,16 @@ namespace openMIC
                 }
                 catch (Exception ex)
                 {
-                    OnProcessException(new InvalidOperationException($"Failed to enumerate remote files in \"{settings.RemotePath}\": {ex.Message}", ex));
+                    OnProcessException(new InvalidOperationException($"Failed to enumerate remote files in \"{remotePath}\": {ex.Message}", ex));
                 }
             }
             catch (Exception ex)
             {
-                OnProcessException(new InvalidOperationException($"Failed to set remote FTP directory path \"{settings.RemotePath ?? "undefined"}\": {ex.Message}", ex));
+                OnProcessException(new InvalidOperationException($"Failed to set remote FTP directory path \"{remotePath}\": {ex.Message}", ex));
             }
         }
 
-        private void ProcessFile(ConnectionProfileTaskSettings settings, FtpFile file)
+        private void ProcessFile(ConnectionProfileTaskSettings settings, string localSubPath, FtpFile file)
         {
             if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
             {
@@ -1031,7 +1085,7 @@ namespace openMIC
                 return;
             }
 
-            if (DownloadFile(settings, file) && settings.DeleteRemoteFilesAfterDownload)
+            if (DownloadFile(settings, localSubPath, file) && settings.DeleteRemoteFilesAfterDownload)
             {
                 try
                 {
@@ -1044,7 +1098,7 @@ namespace openMIC
             }
         }
 
-        private bool DownloadFile(ConnectionProfileTaskSettings settings, FtpFile file)
+        private bool DownloadFile(ConnectionProfileTaskSettings settings, string localSubPath, FtpFile file)
         {
             if (string.IsNullOrWhiteSpace(settings.LocalPath) || !Directory.Exists(settings.LocalPath))
             {
@@ -1053,7 +1107,7 @@ namespace openMIC
                 return false;
             }
 
-            string localFileName = GetLocalFileName(settings, file.Name);
+            string localFileName = GetLocalFileName(settings, localSubPath, file.Name);
 
             if (File.Exists(localFileName) && settings.SkipDownloadIfUnchanged)
             {
@@ -1149,7 +1203,7 @@ namespace openMIC
             return false;
         }
 
-        private string GetLocalFileName(ConnectionProfileTaskSettings settings, string fileName)
+        private string GetLocalFileName(ConnectionProfileTaskSettings settings, string localSubPath, string fileName)
         {
             TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
             Dictionary<string, string> substitutions = new Dictionary<string, string>
@@ -1166,7 +1220,7 @@ namespace openMIC
 
             directoryNameExpressionParser.TemplatedExpression = settings.DirectoryNamingExpression.Replace("\\", "\\\\");
 
-            fileName = Path.Combine(settings.LocalPath, $"{directoryNameExpressionParser.Execute(substitutions)}\\", fileName);
+            fileName = Path.Combine(settings.LocalPath, $"{directoryNameExpressionParser.Execute(substitutions)}", localSubPath, fileName);
 
             string directoryName = FilePath.GetDirectoryName(fileName);
 

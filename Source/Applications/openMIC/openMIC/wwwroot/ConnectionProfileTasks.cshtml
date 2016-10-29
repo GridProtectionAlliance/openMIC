@@ -72,6 +72,9 @@
         @Raw(dataContext.AddInputField("get('remotepath')", true, fieldLabel: "Remote Path", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('localpath')", true, fieldLabel: "Local Path", fieldID: "inputLocalPath", groupDataBinding: "with: $root.connectionString", toolTip: string.Format("User \"{0}\" will need rights to this folder or local path authentication will need to be specified >>", UserInfo.CurrentUserID).HtmlEncode(), enableHotLinks: false))
         <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" data-bind="checked: get('recursivedownload'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Recursively download matching files in all sub-folders</label>
+        </div>
+        <div class="checkbox" data-bind="with: $root.connectionString">
             <label><input type="checkbox" data-bind="checked: get('deleteremotefilesafterdownload'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Delete remote files after download</label>
         </div>
         <div class="checkbox" data-bind="with: $root.connectionString">
@@ -92,6 +95,9 @@
         <div class="checkbox" data-bind="with: $root.connectionString">
             <label><input type="checkbox" data-bind="checked: get('synchronizetimestamps'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Synchronize timestamp of local file to remote</label>
         </div>
+        <div class="checkbox" data-bind="with: $root.connectionString">
+            <label><input type="checkbox" data-bind="checked: get('emailonfileupdate'), attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}"> Send e-mail notification if any files have changed</label>
+        </div>
     </div>
     <div class="col-md-6">
         @Raw(dataContext.AddInputField("get('externaloperation')", false, fieldLabel: "External operation application", fieldID: "inputExternalOperation", groupDataBinding: "with: $root.connectionString", toolTip: "External operation application will be provided connection profile task ID for parameter lookup", enableHotLinks: false))
@@ -100,6 +106,7 @@
         @Raw(dataContext.AddInputField("get('directorynamingexpression')", false, inputType: "text", fieldLabel: "Directory Naming Expression", fieldID: "inputDirectoryNamingExpression", groupDataBinding: "with: $root.connectionString", toolTip: "Available template fields include year as <YYYY> or <YY>, month as <MM>, day as <DD>, device name as <DeviceName>, device acronym as <DeviceAcronym>, device folder name as <DeviceFolderName> and connection profile name as <ProfileName>", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('directoryauthusername')", false, fieldLabel: "Local Path Authentication User Name", fieldID: "inputDirectoryAuthUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('directoryauthpassword')", false, inputType: "password", fieldLabel: "Local Path Authentication Password", fieldID: "inputDirectoryAuthPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('emailrecipients')", false, inputType: "text", fieldLabel: "E-mail Notification Recipients", fieldID: "inputEmailRecipients", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('emailonfileupdate')", toolTip: "Comma separate multiple e-mail addresses", enableHotLinks: false))
     </div>
     <div class="col-md-12">
         <div class="form-group">
@@ -121,6 +128,7 @@
         defaultConnectionString.set("fileExtensions", "*.*");
         defaultConnectionString.set("remotePath", "@Raw(Model.Global.DefaultRemotePath.JavaScriptEncode())");
         defaultConnectionString.set("localPath", "@Raw(Model.Global.DefaultLocalPath.JavaScriptEncode())");
+        defaultConnectionString.set("recursiveDownload", false);
         defaultConnectionString.set("deleteRemoteFilesAfterDownload", false);
         defaultConnectionString.set("limitRemoteFileDownloadByAge", false);
         defaultConnectionString.set("deleteOldLocalFiles", false);
@@ -134,6 +142,8 @@
         defaultConnectionString.set("directoryNamingExpression", "<YYYY><MM>\\<DeviceFolderName>");
         defaultConnectionString.set("directoryAuthUserName", "");
         defaultConnectionString.set("directoryAuthPassword", "");
+        defaultConnectionString.set("emailOnFileUpdate", false);
+        defaultConnectionString.set("emailRecipients", "");
 
         // Create an observable key/value pair connection string dictionary
         viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);

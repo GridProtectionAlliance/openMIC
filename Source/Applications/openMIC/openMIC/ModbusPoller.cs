@@ -561,6 +561,9 @@ namespace openMIC
 
         private void PollingOperation()
         {
+            if ((object)m_modbusConnection == null)
+                return;
+
             try
             {
                 Ticks timestamp = DateTime.UtcNow.Ticks;
