@@ -25339,6 +25339,21 @@
             optimizations if for some reason they cause adverse effects on their system.
             </summary>
         </member>
+        <member name="T:GSF.OptimizationOptions.RoutingMethod">
+            <summary>
+            The routing method to use.
+            </summary>
+        </member>
+        <member name="F:GSF.OptimizationOptions.RoutingMethod.Default">
+            <summary>
+            The default method of routing
+            </summary>
+        </member>
+        <member name="F:GSF.OptimizationOptions.RoutingMethod.HighLatencyLowCpu">
+            <summary>
+            A custom implementation that sacrifices overall latency for lower CPU utilization.
+            </summary>
+        </member>
         <member name="T:GSF.Parsing.BinaryImageBase">
             <summary>
             Defines a base class that represents binary images for parsing or generation in terms of a header, body and footer.
@@ -32942,6 +32957,20 @@
             <param name="value">Operand.</param>
             <returns>ComplexNumber representing the result of the operation.</returns>
         </member>
+        <member name="M:GSF.ComplexNumber.op_Implicit(GSF.ComplexNumber)~System.Numerics.Complex">
+            <summary>
+            Implicitly converts a <see cref="T:GSF.ComplexNumber"/> to a .NET <see cref="T:System.Numerics.Complex"/> value.
+            </summary>
+            <param name="value">Operand.</param>
+            <returns>Complex representing the result of the operation.</returns>
+        </member>
+        <member name="M:GSF.ComplexNumber.op_Implicit(System.Numerics.Complex)~GSF.ComplexNumber">
+            <summary>
+            Implicitly converts a .NET <see cref="T:System.Numerics.Complex"/> value to a <see cref="T:GSF.ComplexNumber"/>.
+            </summary>
+            <param name="value">Operand.</param>
+            <returns>Complex representing the result of the operation.</returns>
+        </member>
         <member name="M:GSF.ComplexNumber.op_Equality(GSF.ComplexNumber,GSF.ComplexNumber)">
             <summary>
             Compares the two values for equality.
@@ -40295,6 +40324,13 @@
         <member name="M:GSF.Units.EE.Phasor.op_Implicit(GSF.Units.EE.Phasor)~GSF.ComplexNumber">
             <summary>
             Implicitly converts a <see cref="T:GSF.Units.EE.Phasor"/> to a <see cref="T:GSF.ComplexNumber"/>.
+            </summary>
+            <param name="phasor">Operand.</param>
+            <returns>ComplexNumber representing the result of the operation.</returns>
+        </member>
+        <member name="M:GSF.Units.EE.Phasor.op_Implicit(GSF.Units.EE.Phasor)~System.Numerics.Complex">
+            <summary>
+            Implicitly converts a <see cref="T:GSF.Units.EE.Phasor"/> to a .NET <see cref="T:System.Numerics.Complex"/> value.
             </summary>
             <param name="phasor">Operand.</param>
             <returns>ComplexNumber representing the result of the operation.</returns>
