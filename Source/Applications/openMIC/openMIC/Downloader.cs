@@ -46,6 +46,7 @@ using GSF.Units;
 using GSF.Web.Model;
 using openMIC.Model;
 using System.Data;
+using GSF.Net.Smtp;
 using GSF.Parsing;
 
 // ReSharper disable UnusedMember.Local
@@ -977,10 +978,10 @@ namespace openMIC
             ProcessFTPTask(settings, client, remotePath, localSubPath);
 
             if (settings.RecursiveDownload)
-                ProcessSubDirectories(settings, client, remotePath, localSubPath);
+                ProcessFTPSubDirectories(settings, client, remotePath, localSubPath);
         }
 
-        private void ProcessSubDirectories(ConnectionProfileTaskSettings settings, FtpClient client, string rootRemotePath, string rootLocalSubPath)
+        private void ProcessFTPSubDirectories(ConnectionProfileTaskSettings settings, FtpClient client, string rootRemotePath, string rootLocalSubPath)
         {        
             client.SetCurrentDirectory(rootRemotePath);
 
@@ -992,7 +993,7 @@ namespace openMIC
                 string localSubPath = Path.Combine(rootLocalSubPath, directory.Name);
 
                 ProcessFTPTask(settings, client, remotePath, localSubPath);
-                ProcessSubDirectories(settings, client, remotePath, localSubPath);
+                ProcessFTPSubDirectories(settings, client, remotePath, localSubPath);
             }
         }
 
@@ -1108,6 +1109,7 @@ namespace openMIC
             }
 
             string localFileName = GetLocalFileName(settings, localSubPath, file.Name);
+            bool fileChanged = false;
 
             if (File.Exists(localFileName) && settings.SkipDownloadIfUnchanged)
             {
@@ -1116,10 +1118,10 @@ namespace openMIC
                     FileInfo info = new FileInfo(localFileName);
 
                     // Compare file sizes
-                    if (info.Length == file.Size)
-                    {
-                        bool localEqualsRemote = true;
+                    bool localEqualsRemote = info.Length == file.Size;
 
+                    if (localEqualsRemote)
+                    {
                         // Compare timestamps, if synchronized
                         if (settings.SynchronizeTimestamps)
                             localEqualsRemote = info.LastWriteTime == file.Timestamp;
@@ -1131,6 +1133,8 @@ namespace openMIC
                             return false;
                         }
                     }
+
+                    fileChanged = true;
                 }
                 catch (Exception ex)
                 {
@@ -1174,6 +1178,29 @@ namespace openMIC
                 FilesDownloaded++;
                 BytesDownloaded += file.Size;
                 OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, false, $"Download complete for \"{file.Name}\".", file.Size, file.Size));
+
+                // Send e-mail on file update, if requested
+                if (fileChanged && settings.EmailOnFileUpdate)
+                {
+                    ThreadPool.QueueUserWorkItem(state =>
+                    {
+                        try
+                        {
+                            GlobalSettings global = Program.Host.Model.Global;
+                            string subject = $"File changed for \"{Name}: {settings.Name}\"";
+                            string body = $"<b>File Name = {localFileName}</b></br>";
+
+                            if (string.IsNullOrWhiteSpace(global.SmtpUserName))
+                                Mail.Send(global.FromAddress, settings.EmailRecipients, subject, body, true, global.SmtpServer);
+                            else
+                                Mail.Send(global.FromAddress, settings.EmailRecipients, subject, body, true, global.SmtpServer, global.SmtpUserName, global.SmtpPassword);
+                        }
+                        catch (Exception ex)
+                        {
+                            OnProcessException(new InvalidOperationException($"Failed to send e-mail notification about updated file \"{localFileName}\": {ex.Message}"));
+                        }
+                    });
+                }
 
                 // Synchronize local timestamp to that of remote file if requested
                 if (settings.SynchronizeTimestamps)

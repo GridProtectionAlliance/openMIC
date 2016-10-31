@@ -148,6 +148,10 @@ namespace openMIC
             systemSettings.Add("DefaultLocalPath", "", "Default local path to use for file downloads.");
             systemSettings.Add("MaxRemoteFileAge", "30", "Maximum remote file age, in days, to apply for downloads when limit is enabled.");
             systemSettings.Add("MaxLocalFileAge", "365", "Maximum local file age, in days, to apply for downloads when limit is enabled.");
+            systemSettings.Add("SmtpServer", "localhost", "The SMTP relay server from which to send e-mails.");
+            systemSettings.Add("FromAddress", "openmic@gridprotectionalliance.org", "The from address for e-mails.");
+            systemSettings.Add("SmtpUserName", "", "Username to authenticate to the SMTP server, if any.");
+            systemSettings.Add("SmtpPassword", "", "Password to authenticate to the SMTP server, if any.");
 
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
@@ -176,6 +180,10 @@ namespace openMIC
             Model.Global.MaxRemoteFileAge = int.Parse(systemSettings["MaxRemoteFileAge"].Value);
             Model.Global.MaxLocalFileAge = int.Parse(systemSettings["MaxLocalFileAge"].Value);
             Model.Global.DefaultAppPath = FilePath.GetAbsolutePath("");
+            Model.Global.SmtpServer = systemSettings["SmtpServer"].Value;
+            Model.Global.FromAddress = systemSettings["FromAddress"].Value;
+            Model.Global.SmtpUserName = systemSettings["SmtpUserName"].Value;
+            Model.Global.SmtpPassword = systemSettings["SmtpPassword"].Value;
 
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
             ServiceHelper.LoggedException += LoggedExceptionHandler;

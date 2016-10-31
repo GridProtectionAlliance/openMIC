@@ -159,5 +159,29 @@ namespace openMIC
             get;
             set;
         }
+
+        public string SmtpServer
+        {
+            get;
+            set;
+        }
+
+        public string FromAddress
+        {
+            get;
+            set;
+        }
+
+        public string SmtpUserName
+        {
+            get;
+            set;
+        }
+
+        public string SmtpPassword
+        {
+            get;
+            set;
+        }
     }
 }
