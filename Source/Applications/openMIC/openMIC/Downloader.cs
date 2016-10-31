@@ -989,8 +989,13 @@ namespace openMIC
 
             foreach (FtpDirectory directory in directories)
             {
-                string remotePath = $"{rootRemotePath}/{directory.Name}";
-                string localSubPath = Path.Combine(rootLocalSubPath, directory.Name);
+                string directoryName = directory.Name;
+
+                if (directoryName.StartsWith(".", StringComparison.Ordinal))
+                    continue;
+
+                string remotePath = $"{rootRemotePath}/{directoryName}";
+                string localSubPath = Path.Combine(rootLocalSubPath, directoryName);
 
                 ProcessFTPTask(settings, client, remotePath, localSubPath);
                 ProcessFTPSubDirectories(settings, client, remotePath, localSubPath);
