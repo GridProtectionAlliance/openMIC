@@ -246,15 +246,18 @@ function MapViewModel() {
     }
 
     self.saveSequenceMap = function(fileName) {
-        const data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(self.serializeMapping(), null, 4));
+        const data = JSON.stringify(self.serializeMapping(), null, 4);
         const anchor = $("#saveMappingFileLink");
 
         if (typeof anchor[0].download != "undefined") {
-            anchor.attr("href", data);
+            anchor.attr("href", "data:text/json;charset=utf-8," + encodeURIComponent(data));
             anchor.attr("download", fileName);
             anchor[0].click();
         } else {
-            window.open(data, "_blank", "");
+            if (isIE)
+                window.navigator.msSaveBlob(new Blob([data]), fileName);
+            else
+                window.open("data:text/json;charset=utf-8," + encodeURIComponent(data), "_blank", "");
         }
 
         self.isDirty(false);
