@@ -460,7 +460,12 @@ namespace openMICManager
                     if (m_selectedMeasurement.SignalSuffix == "PA")
                         ChartPlotterDynamic.Visible = DataRect.Create(0, -180, NumberOfPointsToPlot, 180);
                     else if (m_selectedMeasurement.SignalSuffix == "FQ")
-                        ChartPlotterDynamic.Visible = DataRect.Create(0, Convert.ToDouble(IsolatedStorageManager.ReadFromIsolatedStorage("FrequencyRangeMin")), NumberOfPointsToPlot, Convert.ToDouble(IsolatedStorageManager.ReadFromIsolatedStorage("FrequencyRangeMax")));
+                    {
+                        double frequencyMin = Convert.ToDouble(IsolatedStorageManager.ReadFromIsolatedStorage("FrequencyRangeMin"));
+                        double frequencyMax = Convert.ToDouble(IsolatedStorageManager.ReadFromIsolatedStorage("FrequencyRangeMax"));
+
+                        ChartPlotterDynamic.Visible = DataRect.Create(0, Math.Min(frequencyMin, frequencyMax), NumberOfPointsToPlot, Math.Max(frequencyMin, frequencyMax));
+                    }
                 }
             }
             else
