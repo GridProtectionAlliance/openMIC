@@ -46,6 +46,7 @@ using GSF.Units;
 using GSF.Web.Model;
 using openMIC.Model;
 using System.Data;
+using GSF.Data;
 using GSF.Net.Smtp;
 using GSF.Parsing;
 
@@ -1286,7 +1287,17 @@ namespace openMIC
 
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(externalOperationExecutableName, settings.ID.ToString());
+                //TODO: move to initializer
+                int deviceID;
+
+                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                {
+                    TableOperations<Runtime> runtime = new TableOperations<Runtime>(connection);
+                    Runtime record = runtime.QueryRecords("ID", new RecordRestriction("SourceID = {0} and SourceTable = {1}", ID, "Device"), 1).FirstOrDefault();
+                    deviceID = record?.ID ?? 0;
+                }
+
+                ProcessStartInfo startInfo = new ProcessStartInfo(externalOperationExecutableName, $"{deviceID}, {settings.ID}");
                 Process externalOperation = Process.Start(startInfo);
 
                 if ((object)externalOperation == null)
