@@ -81,7 +81,7 @@
         @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus:true, enableHotLinks: false))
         @Raw(dataContext.AddInputField<Device>("Name", enableHotLinks: false))
         @Raw(dataContext.AddInputField<Device>("OriginalSource", enableHotLinks: false))
-        @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP [ <em>:port</em> ]", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionusername')", false, fieldLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionpassword')", false, inputType: "password", fieldLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))

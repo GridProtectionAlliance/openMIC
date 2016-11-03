@@ -696,6 +696,7 @@ namespace openMIC
                 status.AppendLine();
                 status.AppendFormat("               Use dial-up: {0}", UseDialUp);
                 status.AppendLine();
+
                 if (UseDialUp)
                 {
                     status.AppendFormat("        Dial-up entry name: {0}", DialUpEntryName);
@@ -717,6 +718,7 @@ namespace openMIC
                     status.AppendFormat("        Total dial-up time: {0}", new Ticks(TotalDialUpTime).ToElapsedTimeString(3));
                     status.AppendLine();
                 }
+
                 status.AppendFormat(" Connection profiles tasks: {0}", m_connectionProfileTaskSettings.Length);
                 status.AppendLine();
                 status.AppendFormat("          Files downloaded: {0}", FilesDownloaded);
@@ -910,7 +912,19 @@ namespace openMIC
                     else
                     {
                         OnStatusMessage("Attempting connection to FTP server \"{0}@{1}\"...", ConnectionUserName, ConnectionHostName);
-                        client.Server = ConnectionHostName;
+
+                        string[] parts = ConnectionHostName.Split(':');
+
+                        if (parts.Length > 1)
+                        {
+                            client.Server = parts[0];
+                            client.Port = int.Parse(parts[1]);
+                        }
+                        else
+                        {
+                            client.Server = ConnectionHostName;
+                        }
+
                         client.Connect(ConnectionUserName, ConnectionPassword);
                         OnStatusMessage("Connected to FTP server \"{0}@{1}\"", ConnectionUserName, ConnectionHostName);
                     }
@@ -1253,7 +1267,7 @@ namespace openMIC
 
             directoryNameExpressionParser.TemplatedExpression = settings.DirectoryNamingExpression.Replace("\\", "\\\\");
 
-            fileName = Path.Combine(settings.LocalPath, $"{directoryNameExpressionParser.Execute(substitutions)}", localSubPath, fileName);
+            fileName = $"{settings.LocalPath}{Path.DirectorySeparatorChar}{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{localSubPath}{Path.DirectorySeparatorChar}{fileName}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
 
             string directoryName = FilePath.GetDirectoryName(fileName);
 
@@ -1287,17 +1301,7 @@ namespace openMIC
 
             try
             {
-                //TODO: move to initializer
-                int deviceID;
-
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
-                {
-                    TableOperations<Runtime> runtime = new TableOperations<Runtime>(connection);
-                    Runtime record = runtime.QueryRecords("ID", new RecordRestriction("SourceID = {0} and SourceTable = {1}", ID, "Device"), 1).FirstOrDefault();
-                    deviceID = record?.ID ?? 0;
-                }
-
-                ProcessStartInfo startInfo = new ProcessStartInfo(externalOperationExecutableName, $"{deviceID}, {settings.ID}");
+                ProcessStartInfo startInfo = new ProcessStartInfo(externalOperationExecutableName, $"{m_deviceRecord.ID}, {settings.ID}");
                 Process externalOperation = Process.Start(startInfo);
 
                 if ((object)externalOperation == null)
