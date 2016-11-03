@@ -1267,7 +1267,8 @@ namespace openMIC
 
             directoryNameExpressionParser.TemplatedExpression = settings.DirectoryNamingExpression.Replace("\\", "\\\\");
 
-            fileName = $"{settings.LocalPath}{Path.DirectorySeparatorChar}{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{localSubPath}{Path.DirectorySeparatorChar}{fileName}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
+            //         Possible UNC Path                            Sub Directory - duplicate path slashes are removed
+            fileName = FilePath.AddPathSuffix(settings.LocalPath) + "{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{localSubPath}{Path.DirectorySeparatorChar}{fileName}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
 
             string directoryName = FilePath.GetDirectoryName(fileName);
 
