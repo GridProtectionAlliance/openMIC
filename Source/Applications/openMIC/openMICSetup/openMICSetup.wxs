@@ -626,6 +626,10 @@
       <Component Id="System.Web.Razor">
         <File Id="System.Web.Razor.dll" Name="System.Web.Razor.dll" Source="$(var.SolutionDir)Dependencies\Microsoft\System.Web.Razor.dll" />
       </Component>
+      <Component Id="AjaxMin">
+        <File Id="AjaxMin.dll" Name="AjaxMin.dll" Source="$(var.SolutionDir)Dependencies\GSF\AjaxMin.dll" />
+      </Component>
+
     </ComponentGroup>
 
     <!-- SQLite Dependencies -->
