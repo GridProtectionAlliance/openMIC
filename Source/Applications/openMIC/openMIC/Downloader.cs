@@ -1302,7 +1302,8 @@ namespace openMIC
 
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(externalOperationExecutableName, $"{m_deviceRecord.ID}, {settings.ID}");
+                ProcessStartInfo startInfo = new ProcessStartInfo(externalOperationExecutableName, $"{m_deviceRecord.ID} {settings.ID}");
+                startInfo.UseShellExecute = false;
                 Process externalOperation = Process.Start(startInfo);
 
                 if ((object)externalOperation == null)
