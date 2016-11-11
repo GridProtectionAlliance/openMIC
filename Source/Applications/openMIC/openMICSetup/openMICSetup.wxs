@@ -55,6 +55,9 @@
         <Feature Id="ConfigurationEditorFeature" Title="Configuration Editor">
           <ComponentGroupRef Id="ConfigurationEditorComponents" />
         </Feature>
+        <Feature Id="BenDownloaderFeature" Title="Ben Downloader">
+          <ComponentGroupRef Id="BenDownloaderComponents" />
+        </Feature>
         <Feature Id="HistorianPlaybackUtilityFeature" Title="Historian Playback Utility">
           <ComponentGroupRef Id="HistorianPlaybackUtilityComponents" />
         </Feature>
@@ -315,6 +318,7 @@
     <ComponentGroup Id="openMICToolsComponents" Directory="INSTALLFOLDER">
       <ComponentGroupRef Id="ConfigCrypterComponents" />
       <ComponentGroupRef Id="ConfigurationEditorComponents" />
+      <ComponentGroupRef Id="BenDownloaderComponents"/>
       <ComponentGroupRef Id="HistorianPlaybackUtilityComponents" />
       <ComponentGroupRef Id="HistorianViewComponents" />
       <ComponentGroupRef Id="LogFileViewerComponents" />
@@ -347,6 +351,15 @@
       </Component>
       <Component Id="ConfigurationEditorConfig">
         <File Id="ConfigurationEditor.exe.config" Name="ConfigurationEditor.exe.config" Source="$(var.ProjectDir)\ConfigurationEditor.exe.config" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="BenDownloaderComponents" Directory="INSTALLFOLDER">
+      <Component Id="BenDownloader">
+        <File Id="BenDownloader.exe" Name="BenDownloader.exe" Source="$(var.BenDownloader.TargetPath)" />
+      </Component>
+      <Component Id="BenDownloaderConfig">
+        <File Id="BenDownloader.exe.config" Name="BenDownloader.exe.config" Source="$(var.BenDownloader.TargetPath).config" />
       </Component>
     </ComponentGroup>
 
