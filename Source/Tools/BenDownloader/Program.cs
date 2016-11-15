@@ -42,7 +42,7 @@ using Microsoft.VisualBasic.CompilerServices;
 using Microsoft.VisualBasic.FileIO;
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
-namespace OpenMICBenDownloadApp
+namespace BenDownloader
 {
     class Program
     {
@@ -50,6 +50,11 @@ namespace OpenMICBenDownloadApp
 
         static void Main(string[] args)
         {
+//#if DEBUG
+//            Console.Write("Press enter to continue... ");
+//            var name = Console.ReadLine();
+//#endif        
+
             if(args.Length != 2)
             {
                 Console.WriteLine("Please pass two and only two parameters...");
@@ -63,7 +68,7 @@ namespace OpenMICBenDownloadApp
 
         }
 
-        #region [Helper Functions]
+#region [Helper Functions]
         public static string Left(string str, int length)
         {
             str = (str ?? string.Empty);
@@ -76,6 +81,19 @@ namespace OpenMICBenDownloadApp
             return (str.Length >= length)
                 ? str.Substring(str.Length - length, length)
                 : str;
+        }
+
+        public static void Log(string logMessage)
+        {
+            using(StreamWriter w = File.AppendText("BenDownloaderLogFile.txt"))
+            {
+                w.Write("\r\nLog Entry : ");
+                w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
+                    DateTime.Now.ToLongDateString());
+                w.WriteLine("  :");
+                w.WriteLine("  :{0}", logMessage);
+                w.WriteLine("-------------------------------");
+            }
         }
         #endregion
 

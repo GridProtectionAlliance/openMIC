@@ -37,7 +37,7 @@ using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.FileIO;
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
-namespace OpenMICBenDownloadApp
+namespace BenDownloader
 {
     public class BenRunner
     {
@@ -59,20 +59,27 @@ namespace OpenMICBenDownloadApp
         #region [Constructors]
         public BenRunner(int deviceId, int taskId)
         {
-            using (AdoDataConnection conn = new AdoDataConnection("systemSettings"))
+            try
             {
-                string taskSettingsString = conn.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
-                Dictionary<string, string> taskSettings = taskSettingsString.ParseKeyValuePairs();
-                string deviceConnectionString = conn.ExecuteScalar<string>("Select ConnectionString From Device WHERE ID = {0}", deviceId);
-                Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
+                using (AdoDataConnection conn = new AdoDataConnection("systemSettings"))
+                {
+                    string taskSettingsString = conn.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
+                    Dictionary<string, string> taskSettings = taskSettingsString.ParseKeyValuePairs();
+                    string deviceConnectionString = conn.ExecuteScalar<string>("Select ConnectionString From Device WHERE ID = {0}", deviceId);
+                    Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
+                    string folder = conn.ExecuteScalar<string>("Select OriginalSource From Device WHERE ID = {0}", deviceId);
 
-                ipAddress = deviceConnection["connectionHostName"];
-                localPath = taskSettings["localPath"];
-                siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
-                siteID = conn.ExecuteScalar<int>("Select ID From Device WHERE ID = {0}", deviceId);
-                serialNumber = ConfigurationFile.Current.Settings["benMeters"][siteName].Value;
+                    ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
+                    localPath = taskSettings["localPath"] + folder;
+                    siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
+                    siteID = conn.ExecuteScalar<int>("Select ID From Device WHERE ID = {0}", deviceId);
+                    serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
+                }
             }
-
+            catch(Exception ex)
+            {
+                Program.Log(ex.ToString());
+            }
             // look through current diretory to get last file downloaded name and number
 
         }
@@ -89,6 +96,7 @@ namespace OpenMICBenDownloadApp
             catch (Exception ex)
             {
                 Console.WriteLine("Ben5K XferAllFiles (" + siteName + "): " + ex.ToString());
+                Program.Log("Ben5K XferAllFiles (" + siteName + "): " + ex.ToString());
                 return false;
             }
         }
@@ -122,7 +130,10 @@ namespace OpenMICBenDownloadApp
             }
             catch (Exception ex)
             {
+                Program.Log("XFER Error/Site: " + siteName + " - " + ex.ToString());
+
                 throw new System.Exception("XFER Error/Site: " + siteName + " - " + ex.ToString());
+
             }
             finally
             {
@@ -149,6 +160,7 @@ namespace OpenMICBenDownloadApp
             }
             catch (Exception ex)
             {
+                Program.Log("fixcfgFiles error: " + siteName + " - " + ex.ToString());
                 throw new System.Exception("fixcfgFiles error: " + siteName + " - " + ex.ToString());
             }
 
@@ -206,6 +218,7 @@ namespace OpenMICBenDownloadApp
             }
             catch (Exception ex)
             {
+                Program.Log("GetFileList Error: " + siteName + " - " + ex.ToString());
 
                 throw new Exception("GetFileList Error: " + siteName + " - " + ex.ToString());
             }
@@ -239,11 +252,13 @@ namespace OpenMICBenDownloadApp
 
                 }
 
-                //FileSystem.DeleteFile(localPath + "\\benlink.req");
-                //FileSystem.DeleteFile(localPath + "\\benlink.rsp");
+                FileSystem.DeleteFile(localPath + "\\benlink.req");
+                FileSystem.DeleteFile(localPath + "\\benlink.rsp");
             }
             catch (Exception ex)
             {
+                Program.Log("ExecBenCommand error: " + siteName + " - " + ex.ToString());
+
                 throw new Exception("ExecBenCommand error: " + siteName + " - " + ex.ToString());
             }
         }
@@ -307,6 +322,8 @@ namespace OpenMICBenDownloadApp
             }
             catch (Exception ex)
             {
+                Program.Log("BuildBenLinkDLINI error: " + siteName + " - " + ex.ToString());
+
                 throw new System.Exception("BuildBenLinkDLINI error: " + siteName + " - " + ex.ToString());
             }
         }
@@ -348,6 +365,7 @@ namespace OpenMICBenDownloadApp
             }
             catch (Exception ex)
             {
+                Program.Log("BuildBenLinkDirINI error: " + siteName + '-' + ex.ToString());
 
                 throw new SystemException("BuildBenLinkDirINI error: " + siteName + '-' + ex.ToString());
             }
@@ -376,6 +394,8 @@ namespace OpenMICBenDownloadApp
             catch (Exception ex)
             {
                 rslt = DownloadFileNumber();
+                Program.Log("Get File Number (" + siteName + ")- " + ex.ToString());
+
                 throw new Exception("Get File Number (" + siteName + ")- " + ex.ToString());
 
             }
