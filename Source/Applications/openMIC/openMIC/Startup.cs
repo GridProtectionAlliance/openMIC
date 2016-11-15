@@ -49,7 +49,7 @@ namespace openMIC
 
             // Configuration Windows Authentication for self-hosted web service
             HttpListener listener = (HttpListener)app.Properties["System.Net.HttpListener"];
-            listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
+            listener.AuthenticationSchemes = AuthenticationSchemes.Ntlm;
 
             HubConfiguration hubConfig = new HubConfiguration();
             HttpConfiguration httpConfig = new HttpConfiguration();
