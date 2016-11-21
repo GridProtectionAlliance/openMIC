@@ -318,7 +318,9 @@ namespace BenDownloader
 
             try
             {
-                FileSystem.WriteAllText(requestfilename, myINIFile, false, System.Text.Encoding.ASCII);
+                System.IO.FileInfo file = new System.IO.FileInfo(requestfilename);
+                file.Directory.Create();
+                FileSystem.WriteAllText(file.FullName, myINIFile, false, System.Text.Encoding.ASCII);
             }
             catch (Exception ex)
             {
@@ -361,7 +363,9 @@ namespace BenDownloader
 
             try
             {
-                FileSystem.WriteAllText(requestFileName, myINIFile, false, System.Text.Encoding.ASCII);
+                System.IO.FileInfo file = new System.IO.FileInfo(requestFileName);
+                file.Directory.Create();
+                FileSystem.WriteAllText(file.FullName, myINIFile, false, System.Text.Encoding.ASCII);
             }
             catch (Exception ex)
             {
