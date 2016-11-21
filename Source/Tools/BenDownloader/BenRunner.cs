@@ -70,7 +70,7 @@ namespace BenDownloader
                     string folder = conn.ExecuteScalar<string>("Select OriginalSource From Device WHERE ID = {0}", deviceId);
 
                     ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
-                    localPath = taskSettings["localPath"] + folder;
+                    localPath = taskSettings["localPath"]+ '\\' + folder;
                     siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
                     siteID = conn.ExecuteScalar<int>("Select ID From Device WHERE ID = {0}", deviceId);
                     serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
