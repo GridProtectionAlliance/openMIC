@@ -74,6 +74,7 @@ namespace BenDownloader
                     siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
                     siteID = conn.ExecuteScalar<int>("Select ID From Device WHERE ID = {0}", deviceId);
                     serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
+                    lastFileDownloaded = GetLastDownloadedFile();
                 }
             }
             catch(Exception ex)
@@ -254,6 +255,7 @@ namespace BenDownloader
 
                 FileSystem.DeleteFile(localPath + "\\benlink.req");
                 FileSystem.DeleteFile(localPath + "\\benlink.rsp");
+                UpdateTimestamps();
             }
             catch (Exception ex)
             {
@@ -299,14 +301,17 @@ namespace BenDownloader
                     throw new System.Exception("FileID " + currec.rId + " at site " + siteName + " from the future. Fix DFR clock.");
                 }
 
-                myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
-                            "RequestType=2" + System.Environment.NewLine +
-                            "RecordNum=" + currec.rId + System.Environment.NewLine +
-                            "SubBenNum=0" + System.Environment.NewLine +
-                            "Origin=1" + System.Environment.NewLine +
-                            "OptionFlags=1" + System.Environment.NewLine +
-                            "DataPath=" + localPath + System.Environment.NewLine +
-                            "FileName=" + get232FN(currec.rDateTime, serialNumber);
+                if(currec.rDateTime > System.IO.File.GetLastWriteTime(localPath + '\\' + lastFileDownloaded))
+                {
+                    myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
+                                "RequestType=2" + System.Environment.NewLine +
+                                "RecordNum=" + currec.rId + System.Environment.NewLine +
+                                "SubBenNum=0" + System.Environment.NewLine +
+                                "Origin=1" + System.Environment.NewLine +
+                                "OptionFlags=1" + System.Environment.NewLine +
+                                "DataPath=" + localPath + System.Environment.NewLine +
+                                "FileName=" + get232FN(currec.rDateTime, serialNumber);
+                }
                 //"FileName=" +currec.rDateTime.ToString("yyMMdd,HHmmssfff") +"," +tzoffset +"," +Replace(sitename, " ", "_") +"," +siteuser +",TVA"
                 //working "FileName=" +siteuser +"-" +currec.rId +"-" +currec.rDateTime.ToString("yyMMdd-HHmmssfff")
                 //using the property in the site base class for bens.  
@@ -374,6 +379,63 @@ namespace BenDownloader
                 throw new SystemException("BuildBenLinkDirINI error: " + siteName + '-' + ex.ToString());
             }
 
+        }
+
+        private void UpdateTimestamps()
+        {
+            string[] files = System.IO.Directory.GetFiles(localPath);
+
+            foreach (string fileName in files)
+            {
+                System.IO.FileInfo file = new System.IO.FileInfo(localPath + '\\' + fileName);
+                if(file.Extension == "cfg" || file.Extension == "dat")
+                {
+                    try
+                    {
+                        string[] dateFromFileName = fileName.Split(',');
+                        DateTime dateTime = new DateTime(int.Parse(dateFromFileName[0].Substring(0, 2)), int.Parse(dateFromFileName[0].Substring(2, 2)), int.Parse(dateFromFileName[0].Substring(4, 2)), int.Parse(dateFromFileName[1].Substring(0, 2)), int.Parse(dateFromFileName[1].Substring(2, 2)), int.Parse(dateFromFileName[1].Substring(4, 2)), int.Parse(dateFromFileName[1].Substring(6, 3)));
+                        if(dateTime != file.LastWriteTime)
+                        {
+                            System.IO.File.SetLastWriteTime(file.FullName, dateTime);
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        Program.Log("File timestamp update error: " + file.Name + '-' + ex.ToString());
+
+                        throw new SystemException("File timestamp update error: " + file.Name + '-' + ex.ToString());
+                    }
+                }
+            }
+        }
+
+        private string GetLastDownloadedFile()
+        {
+            string[] files = System.IO.Directory.GetFiles(localPath);
+            string lastFile = "";
+            lastFile = files[0];
+            foreach (string fileName in files)
+            {
+                System.IO.FileInfo file = new System.IO.FileInfo(localPath + '\\' + fileName);
+                if (file.Extension == "cfg" || file.Extension == "dat")
+                {
+                    try
+                    {
+                        if(file.LastWriteTime > System.IO.File.GetLastWriteTime(localPath + '\\' + lastFile))
+                        {
+                            lastFile = fileName;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
+
+                        throw new SystemException("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
+                    }
+                }
+            }
+
+            return lastFile;
         }
 
         #endregion
