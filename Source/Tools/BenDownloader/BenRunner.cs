@@ -186,7 +186,7 @@ namespace BenDownloader
                 // todo: build an algroithm for rollover of record numbers
                 if (FileSystem.FileExists(dirFile))
                 {
-                    TextFieldParser dirReader = FileSystem.OpenTextFieldParser(dirFile);
+                    TextFieldParser dirReader = FileSystem.OpenTextFieldParser(dirFile, new string[] {"\t" });
                     string[] curRow;
                     while (!dirReader.EndOfData)
                     {
