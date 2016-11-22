@@ -387,7 +387,7 @@ namespace BenDownloader
 
             foreach (string fileName in files)
             {
-                System.IO.FileInfo file = new System.IO.FileInfo(localPath + '\\' + fileName);
+                System.IO.FileInfo file = new System.IO.FileInfo(fileName);
                 if(file.Extension == "cfg" || file.Extension == "dat")
                 {
                     try
@@ -416,12 +416,12 @@ namespace BenDownloader
             lastFile = files[0];
             foreach (string fileName in files)
             {
-                System.IO.FileInfo file = new System.IO.FileInfo(localPath + '\\' + fileName);
+                System.IO.FileInfo file = new System.IO.FileInfo(fileName);
                 if (file.Extension == "cfg" || file.Extension == "dat")
                 {
                     try
                     {
-                        if(file.LastWriteTime > System.IO.File.GetLastWriteTime(localPath + '\\' + lastFile))
+                        if(file.LastWriteTime > System.IO.File.GetLastWriteTime(lastFile))
                         {
                             lastFile = fileName;
                         }
