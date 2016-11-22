@@ -298,7 +298,7 @@ namespace BenDownloader
                     throw new System.Exception("FileID " + currec.rId + " at site " + siteName + " from the future. Fix DFR clock.");
                 }
 
-                if(currec.rDateTime > System.IO.File.GetLastWriteTime(localPath + '\\' + lastFileDownloaded))
+                if(currec.rDateTime > System.IO.File.GetLastWriteTime(lastFileDownloaded))
                 {
                     myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
                                 "RequestType=2" + System.Environment.NewLine +
@@ -385,12 +385,12 @@ namespace BenDownloader
             foreach (string fileName in files)
             {
                 System.IO.FileInfo file = new System.IO.FileInfo(fileName);
-                if(file.Extension == "cfg" || file.Extension == "dat")
+                if(file.Name.EndsWith("cfg") || file.Name.EndsWith("dat"))
                 {
                     try
                     {
-                        string[] dateFromFileName = fileName.Split(',');
-                        DateTime dateTime = new DateTime(int.Parse(dateFromFileName[0].Substring(0, 2)), int.Parse(dateFromFileName[0].Substring(2, 2)), int.Parse(dateFromFileName[0].Substring(4, 2)), int.Parse(dateFromFileName[1].Substring(0, 2)), int.Parse(dateFromFileName[1].Substring(2, 2)), int.Parse(dateFromFileName[1].Substring(4, 2)), int.Parse(dateFromFileName[1].Substring(6, 3)));
+                        string[] dateFromFileName = file.Name.Split(',');
+                        DateTime dateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
                         if(dateTime != file.LastWriteTime)
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
