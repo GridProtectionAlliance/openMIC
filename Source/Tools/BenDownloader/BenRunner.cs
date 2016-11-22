@@ -138,7 +138,7 @@ namespace BenDownloader
             }
             finally
             {
-                lastFileDownloaded = curRecId.ToString();
+                //lastFileDownloaded = curRecId.ToString();
 
             }
         }
@@ -192,24 +192,21 @@ namespace BenDownloader
                     while (!dirReader.EndOfData)
                     {
                         curRow = dirReader.ReadFields();
-                        if (Convert.ToInt32(curRow[0]) > Convert.ToInt32(lastFileDownloaded))
+
+                        if (Convert.ToInt32(curRow[2]) < BENMAXFILESIZE)
                         {
-                            if (Convert.ToInt32(curRow[2]) < BENMAXFILESIZE)
-                            {
-                                BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
-                                downloadList.Add(curRecord);
-                            }
-                            else
-                            {
-                                SendFileTooLargeEmailNotification("Record id: " + curRow[0]);
-                            }
+                            BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
+                            downloadList.Add(curRecord);
                         }
                         else
                         {
-                            SendFileNumberLargerEmailNotification("Record id: " + curRow[0], downloadFileNumber);
+                            SendFileTooLargeEmailNotification("Record id: " + curRow[0]);
                         }
+                     
                     }
                     dirReader.Close();
+                    FileSystem.DeleteFile(dirFile);
+
                 }
                 else
                 {
@@ -437,6 +434,7 @@ namespace BenDownloader
 
             return lastFile;
         }
+
 
         #endregion
 
