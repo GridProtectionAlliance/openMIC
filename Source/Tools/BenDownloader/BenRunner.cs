@@ -139,6 +139,7 @@ namespace BenDownloader
             finally
             {
                 //lastFileDownloaded = curRecId.ToString();
+                FileSystem.DeleteFile(localPath + "\\bendir.txt");
 
             }
         }
@@ -195,6 +196,7 @@ namespace BenDownloader
 
                         if (Convert.ToInt32(curRow[2]) < BENMAXFILESIZE)
                         {
+                            //Program.Log("DateTime from GetFile List for "+Convert.ToInt32(curRow[0]).ToString() +": " + Convert.ToDateTime(curRow[1]).ToString());
                             BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
                             downloadList.Add(curRecord);
                         }
@@ -205,7 +207,6 @@ namespace BenDownloader
                      
                     }
                     dirReader.Close();
-                    FileSystem.DeleteFile(dirFile);
 
                 }
                 else
@@ -280,10 +281,10 @@ namespace BenDownloader
                                 "NominalFrequency=60" + System.Environment.NewLine +
                                 "DataDirectory=" + localPath + '\\' + System.Environment.NewLine +
                                 System.Environment.NewLine +
+                                "CommAddress=1" + System.Environment.NewLine +
                                 "[ConnectionParam]" + System.Environment.NewLine +
                                 "AccessType=0" + System.Environment.NewLine +
                                 "UserName=0" + System.Environment.NewLine +
-                                "CommAddress=1" + System.Environment.NewLine +
                                 "IPAddress=" + ipAddress + System.Environment.NewLine +
                                 "HangupTimeout=0";
 
@@ -300,6 +301,7 @@ namespace BenDownloader
 
                 if(currec.rDateTime > System.IO.File.GetLastWriteTime(lastFileDownloaded))
                 {
+                    //Program.Log("Compare: " + currec.rId + ' ' + currec.rDateTime.ToString() + " > " + System.IO.File.GetLastWriteTime(lastFileDownloaded));
                     myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
                                 "RequestType=2" + System.Environment.NewLine +
                                 "RecordNum=" + currec.rId + System.Environment.NewLine +
@@ -410,16 +412,23 @@ namespace BenDownloader
         {
             string[] files = System.IO.Directory.GetFiles(localPath);
             string lastFile = "";
-            lastFile = files[0];
             foreach (string fileName in files)
             {
                 System.IO.FileInfo file = new System.IO.FileInfo(fileName);
-                if (file.Extension == "cfg" || file.Extension == "dat")
+                if (file.Name.EndsWith("cfg") || file.Name.EndsWith("dat"))
                 {
                     try
                     {
-                        if(file.LastWriteTime > System.IO.File.GetLastWriteTime(lastFile))
+                        Program.Log("Compare: " + file.FullName + " > " + lastFile);
+                        if(lastFile == "")
                         {
+                            lastFile = fileName;
+                        }
+                        else if (file.LastWriteTime > System.IO.File.GetLastWriteTime(lastFile))
+                        {
+                            //Program.Log("Compare: " + file.LastWriteTime.ToString() + " > " + System.IO.File.GetLastWriteTime(lastFile));
+
+                            //Program.Log("update lastfile");
                             lastFile = fileName;
                         }
                     }
