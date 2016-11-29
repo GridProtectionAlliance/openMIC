@@ -118,9 +118,9 @@ namespace BenDownloader
                     {
                         BuildBenLinkDLINI(myFiles);
                         ExecBenCommand();
-                        FixCFGFiles(myFiles);
+                        //FixCFGFiles(myFiles);
                         curRecId = myFiles[0].rId;
-
+                        UpdateTimestamps(myFiles);
                     }
                     else
                     {
@@ -198,7 +198,11 @@ namespace BenDownloader
                         {
                             //Program.Log("DateTime from GetFile List for "+Convert.ToInt32(curRow[0]).ToString() +": " + Convert.ToDateTime(curRow[1]).ToString());
                             BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
-                            downloadList.Add(curRecord);
+
+                            // John Shugart wants to know that here is where we are compairing each line of the bendir.txt against the date of the
+                            // last downloaded file. John Shugart, this is a ternary if statement.
+                            if(curRecord.rDateTime > (lastFileDownloaded != "" ? System.IO.File.GetLastWriteTime(lastFileDownloaded): DateTime.MinValue))
+                                downloadList.Add(curRecord);
                         }
                         else
                         {
@@ -253,7 +257,7 @@ namespace BenDownloader
 
                 FileSystem.DeleteFile(localPath + "\\benlink.req");
                 FileSystem.DeleteFile(localPath + "\\benlink.rsp");
-                UpdateTimestamps();
+                
             }
             catch (Exception ex)
             {
@@ -299,19 +303,18 @@ namespace BenDownloader
                     throw new System.Exception("FileID " + currec.rId + " at site " + siteName + " from the future. Fix DFR clock.");
                 }
 
-                if(currec.rDateTime > System.IO.File.GetLastWriteTime(lastFileDownloaded))
-                {
-                    //Program.Log("Compare: " + currec.rId + ' ' + currec.rDateTime.ToString() + " > " + System.IO.File.GetLastWriteTime(lastFileDownloaded));
-                    myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
-                                "RequestType=2" + System.Environment.NewLine +
-                                "RecordNum=" + currec.rId + System.Environment.NewLine +
-                                "SubBenNum=0" + System.Environment.NewLine +
-                                "Origin=1" + System.Environment.NewLine +
-                                "OptionFlags=1" + System.Environment.NewLine +
-                                "DataPath=" + localPath + System.Environment.NewLine +
-                                "FileName=" + get232FN(currec.rDateTime, serialNumber);
-                }
-                //"FileName=" +currec.rDateTime.ToString("yyMMdd,HHmmssfff") +"," +tzoffset +"," +Replace(sitename, " ", "_") +"," +siteuser +",TVA"
+
+                //Program.Log("Compare: " + currec.rId + ' ' + currec.rDateTime.ToString() + " > " + System.IO.File.GetLastWriteTime(lastFileDownloaded));
+                myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
+                            "RequestType=2" + System.Environment.NewLine +
+                            "RecordNum=" + currec.rId + System.Environment.NewLine +
+                            "SubBenNum=0" + System.Environment.NewLine +
+                            "Origin=1" + System.Environment.NewLine +
+                            "OptionFlags=1" + System.Environment.NewLine +
+                            "DataPath=" + localPath + System.Environment.NewLine +
+                            "FileName=" + get232FN(currec.rDateTime, serialNumber);
+                
+            //"FileName=" +currec.rDateTime.ToString("yyMMdd,HHmmssfff") +"," +tzoffset +"," +Replace(sitename, " ", "_") +"," +siteuser +",TVA"
                 //working "FileName=" +siteuser +"-" +currec.rId +"-" +currec.rDateTime.ToString("yyMMdd-HHmmssfff")
                 //using the property in the site base class for bens.  
                 //if it causes problems with the openFLE we may need to 2 folders one for the aux files and one for the
@@ -380,7 +383,7 @@ namespace BenDownloader
 
         }
 
-        private void UpdateTimestamps()
+        private void UpdateTimestamps(List<BenRecord> fileList)
         {
             string[] files = System.IO.Directory.GetFiles(localPath);
 
@@ -396,6 +399,9 @@ namespace BenDownloader
                         if(dateTime != file.LastWriteTime)
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
+                            string newFileName = file.Directory.FullName + '\\' + System.IO.Path.GetFileNameWithoutExtension(file.FullName) + ',' + fileList.Find(x => x.rDateTime == dateTime).rId + file.Extension;
+                            System.IO.File.Move(file.FullName, newFileName);
+                            System.IO.File.Delete(file.FullName);
                         }
                     }
                     catch(Exception ex)
@@ -419,7 +425,7 @@ namespace BenDownloader
                 {
                     try
                     {
-                        Program.Log("Compare: " + file.FullName + " > " + lastFile);
+                        //Program.Log("Compare: " + file.FullName + " > " + lastFile);
                         if(lastFile == "")
                         {
                             lastFile = fileName;
