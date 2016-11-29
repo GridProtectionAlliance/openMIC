@@ -294,7 +294,7 @@ namespace BenDownloader
 
             int i = 1;
             int curYear = DateTime.Now.Year;
-
+            System.IO.Directory.CreateDirectory(localPath + "\\temp");
             foreach (BenRecord currec in fileList)
             {
                 if (currec.rDateTime.Year > curYear)
@@ -402,7 +402,6 @@ namespace BenDownloader
                             string newFileName = localPath + '\\' + System.IO.Path.GetFileNameWithoutExtension(file.FullName) + ',' + fileList.Find(x => x.rDateTime == dateTime).rId + file.Extension;
                             System.IO.File.Move(file.FullName, newFileName);
                             System.IO.File.Delete(file.FullName);
-                            System.IO.Directory.Delete(localPath + "\\temp");
                         }
                     }
                     catch(Exception ex)
@@ -413,6 +412,8 @@ namespace BenDownloader
                     }
                 }
             }
+            System.IO.Directory.Delete(localPath + "\\temp");
+
         }
 
         private string GetLastDownloadedFile()
