@@ -120,7 +120,7 @@ namespace BenDownloader
                         ExecBenCommand();
                         FixCFGFiles(myFiles);
                         curRecId = myFiles[0].rId;
-
+                        UpdateTimestamps();
                     }
                     else
                     {
@@ -198,7 +198,8 @@ namespace BenDownloader
                         {
                             //Program.Log("DateTime from GetFile List for "+Convert.ToInt32(curRow[0]).ToString() +": " + Convert.ToDateTime(curRow[1]).ToString());
                             BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
-                            downloadList.Add(curRecord);
+                            if(curRecord.rDateTime > System.IO.File.GetLastWriteTime(lastFileDownloaded))
+                                downloadList.Add(curRecord);
                         }
                         else
                         {
@@ -253,7 +254,6 @@ namespace BenDownloader
 
                 FileSystem.DeleteFile(localPath + "\\benlink.req");
                 FileSystem.DeleteFile(localPath + "\\benlink.rsp");
-                UpdateTimestamps();
             }
             catch (Exception ex)
             {
