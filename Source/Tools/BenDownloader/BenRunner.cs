@@ -311,7 +311,7 @@ namespace BenDownloader
                             "SubBenNum=0" + System.Environment.NewLine +
                             "Origin=1" + System.Environment.NewLine +
                             "OptionFlags=1" + System.Environment.NewLine +
-                            "DataPath=" + localPath + System.Environment.NewLine +
+                            "DataPath=" + localPath + "\\temp" + System.Environment.NewLine +
                             "FileName=" + get232FN(currec.rDateTime, serialNumber);
                 
             //"FileName=" +currec.rDateTime.ToString("yyMMdd,HHmmssfff") +"," +tzoffset +"," +Replace(sitename, " ", "_") +"," +siteuser +",TVA"
@@ -385,7 +385,7 @@ namespace BenDownloader
 
         private void UpdateTimestamps(List<BenRecord> fileList)
         {
-            string[] files = System.IO.Directory.GetFiles(localPath);
+            string[] files = System.IO.Directory.GetFiles(localPath + "\\temp");
 
             foreach (string fileName in files)
             {
@@ -399,9 +399,10 @@ namespace BenDownloader
                         if(dateTime != file.LastWriteTime)
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
-                            string newFileName = file.Directory.FullName + '\\' + System.IO.Path.GetFileNameWithoutExtension(file.FullName) + ',' + fileList.Find(x => x.rDateTime == dateTime).rId + file.Extension;
+                            string newFileName = localPath + '\\' + System.IO.Path.GetFileNameWithoutExtension(file.FullName) + ',' + fileList.Find(x => x.rDateTime == dateTime).rId + file.Extension;
                             System.IO.File.Move(file.FullName, newFileName);
                             System.IO.File.Delete(file.FullName);
+                            System.IO.Directory.Delete(localPath + "\\temp");
                         }
                     }
                     catch(Exception ex)
