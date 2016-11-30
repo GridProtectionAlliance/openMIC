@@ -294,7 +294,11 @@ namespace BenDownloader
 
             int i = 1;
             int curYear = DateTime.Now.Year;
-            System.IO.Directory.CreateDirectory(localPath + "\\temp");
+
+            string tempDirectory = System.IO.Path.GetTempPath();
+            System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + siteName);
+            string tempDirectoryName = tempDirectory + "\\BenDownlaoder\\" + siteName;
+
             foreach (BenRecord currec in fileList)
             {
                 if (currec.rDateTime.Year > curYear)
@@ -311,7 +315,7 @@ namespace BenDownloader
                             "SubBenNum=0" + System.Environment.NewLine +
                             "Origin=1" + System.Environment.NewLine +
                             "OptionFlags=1" + System.Environment.NewLine +
-                            "DataPath=" + localPath + "\\temp" + System.Environment.NewLine +
+                            "DataPath=" + tempDirectoryName + System.Environment.NewLine +
                             "FileName=" + get232FN(currec.rDateTime, serialNumber);
                 
             //"FileName=" +currec.rDateTime.ToString("yyMMdd,HHmmssfff") +"," +tzoffset +"," +Replace(sitename, " ", "_") +"," +siteuser +",TVA"
@@ -385,7 +389,11 @@ namespace BenDownloader
 
         private void UpdateTimestamps(List<BenRecord> fileList)
         {
-            string[] files = System.IO.Directory.GetFiles(localPath + "\\temp");
+            string tempDirectory = System.IO.Path.GetTempPath();
+            string tempDirectoryName = tempDirectory + "\\BenDownlaoder\\" + siteName;
+
+
+            string[] files = System.IO.Directory.GetFiles(tempDirectoryName);
 
             foreach (string fileName in files)
             {
@@ -412,7 +420,7 @@ namespace BenDownloader
                     }
                 }
             }
-            System.IO.Directory.Delete(localPath + "\\temp");
+            System.IO.Directory.Delete(tempDirectoryName);
 
         }
 
