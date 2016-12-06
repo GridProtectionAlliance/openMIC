@@ -32,15 +32,57 @@ namespace BenDownloader
 {
     public class BenRecord
     {
-        public int rId;
-        public DateTime rDateTime;
-        public int rSize;
+        #region [Members]
+        private int m_id;
+        private DateTime m_dateTime;
+        private int m_size;
+        #endregion
 
+        #region [Constructors]
         public BenRecord(int recordId, DateTime recordDateTime, int recordSize)
         {
-            rId = recordId;
-            rDateTime = recordDateTime;
-            rSize = recordSize;
+            m_id = recordId;
+            m_dateTime = recordDateTime;
+            m_size = recordSize;
         }
+        #endregion
+
+        #region [Accessors]
+        public int Id
+        {
+            get
+            {
+                return m_id;
+            }
+            set
+            {
+                m_id = value;
+            }
+        }
+
+        public DateTime DateTime
+        {
+            get
+            {
+                return m_dateTime;
+            }
+            set
+            {
+                m_dateTime = value;
+            }
+        }
+
+        public int Size
+        {
+            get
+            {
+                return m_size;
+            }
+            set
+            {
+                m_size = value;
+            }
+        }
+        #endregion
     }
 }
