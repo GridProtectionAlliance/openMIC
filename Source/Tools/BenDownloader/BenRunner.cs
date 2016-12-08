@@ -434,7 +434,7 @@ namespace BenDownloader
         {
             DateTime dateUtc = myDate.ToUniversalTime();
             long tzoffset = Math.Abs(DateAndTime.DateDiff(DateInterval.Hour, myDate, dateUtc)) * -1;
-            return myDate.ToString("yyMMdd,HHmmssfff") + "," + tzoffset + timeStampType + "," + m_siteName.Replace(" ", "_") + "," + m_serialNumber + ",TVA," + myDevId;
+            return myDate.ToString("yyMMdd,HHmmssfff") + "," + tzoffset + timeStampType + "," + m_siteName.Replace(" ", "_") + "," + m_serialNumber + ",TVA";
         }
 
         private string GetShortPath(string longPathName)
@@ -473,6 +473,11 @@ namespace BenDownloader
         {
             string msgBody = "Site has " + fileCount + " files to download.  This site may be a candidate for chip failure.  Please check...";
             SendEmailDefault(msgBody);
+        }
+
+        private void SendExceptionEmail(string exception)
+        {
+            SendEmail("tllaughner@tva.gov", "bendownloader@gpa.org", "Exception from bendownloader", exception);
         }
 
 
