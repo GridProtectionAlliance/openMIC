@@ -32,6 +32,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GSF;
+using GSF.Identity;
+using System.Security.Principal;
 using GSF.Configuration;
 using GSF.Data;
 using Microsoft.VisualBasic;
@@ -51,6 +53,9 @@ namespace BenDownloader
         private readonly string m_localPath;
         private readonly string m_siteName;
         private readonly string m_serialNumber;
+        private readonly string m_domain;
+        private readonly string m_userName;
+        private readonly string m_passWord;
         private readonly BenRecord m_lastFileDownloaded;
         private static Mutex s_mutex;
         #endregion
@@ -73,6 +78,9 @@ namespace BenDownloader
                     m_siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
                     m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
                     m_lastFileDownloaded = GetLastDownloadedFile();
+                    m_domain = taskSettings["directoryAuthUserName"].Split('\\')[0];
+                    m_userName = taskSettings["directoryAuthUserName"].Split('\\')[1];
+                    m_passWord = taskSettings["directoryAuthPassword"];
                     s_mutex = new Mutex(false, m_serialNumber);
                 }
             }
@@ -380,7 +388,10 @@ namespace BenDownloader
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
                             string newFileName = m_localPath + '\\' + System.IO.Path.GetFileNameWithoutExtension(file.FullName) + ',' + fileList.Find(x => x.DateTime == dateTime).Id + file.Extension;
+                            WindowsImpersonationContext wic = UserInfo.ImpersonateUser(m_domain, m_userName, m_passWord);
                             System.IO.File.Move(file.FullName, newFileName);
+                            UserInfo.EndImpersonation(wic);
+
                             System.IO.File.Delete(file.FullName);
                         }
                     }
