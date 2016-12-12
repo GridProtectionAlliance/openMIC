@@ -82,6 +82,8 @@ namespace BenDownloader
                     m_userName = taskSettings["directoryAuthUserName"].Split('\\')[1];
                     m_passWord = taskSettings["directoryAuthPassword"];
                     s_mutex = new Mutex(false, m_serialNumber);
+                    GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
+
                 }
             }
             catch(Exception ex)
@@ -387,10 +389,12 @@ namespace BenDownloader
                         if(dateTime != file.LastWriteTime)
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
-                            string newFileName = m_localPath + '\\' + System.IO.Path.GetFileNameWithoutExtension(file.FullName) + ',' + fileList.Find(x => x.DateTime == dateTime).Id + file.Extension;
-                            WindowsImpersonationContext wic = UserInfo.ImpersonateUser(m_domain, m_userName, m_passWord);
-                            System.IO.File.Move(file.FullName, newFileName);
-                            UserInfo.EndImpersonation(wic);
+                            string newFileName = m_localPath + '\\' + file.Name;
+                            //WindowsImpersonationContext wic = UserInfo.ImpersonateUser(m_domain, m_userName, m_passWord);
+                            //System.IO.File.Copy(file.FullName, newFileName);
+                            System.IO.File.Copy(file.FullName, newFileName);
+
+                            //UserInfo.EndImpersonation(wic);
 
                             System.IO.File.Delete(file.FullName);
                         }
@@ -441,11 +445,11 @@ namespace BenDownloader
         #endregion
 
         #region [File System]
-        private string Get232Fn(DateTime myDate, string myDevId, string timeStampType = "t")
+        private string Get232Fn(DateTime myDate, string recordId, string timeStampType = "t")
         {
             DateTime dateUtc = myDate.ToUniversalTime();
             long tzoffset = Math.Abs(DateAndTime.DateDiff(DateInterval.Hour, myDate, dateUtc)) * -1;
-            return myDate.ToString("yyMMdd,HHmmssfff") + "," + tzoffset + timeStampType + "," + m_siteName.Replace(" ", "_") + "," + m_serialNumber + ",TVA";
+            return myDate.ToString("yyMMdd,HHmmssfff") + "," + tzoffset + timeStampType + "," + m_siteName.Replace(" ", "_") + "," + m_serialNumber + ",TVA," + recordId;
         }
 
         private string GetShortPath(string longPathName)
