@@ -51,12 +51,14 @@ namespace BenDownloader
 
         private readonly string m_ipAddress;
         private readonly string m_localPath;
+        private readonly string m_folder;
         private readonly string m_siteName;
         private readonly string m_serialNumber;
         private readonly string m_domain;
         private readonly string m_userName;
         private readonly string m_passWord;
         private readonly string m_tempDirectoryName;
+        private readonly WindowsImpersonationContext m_context;
         private readonly BenRecord m_lastFileDownloaded;
         private static Mutex s_mutex;
         #endregion
@@ -73,12 +75,10 @@ namespace BenDownloader
                     Dictionary<string, string> taskSettings = taskSettingsString.ParseKeyValuePairs();
                     string deviceConnectionString = conn.ExecuteScalar<string>("Select ConnectionString From Device WHERE ID = {0}", deviceId);
                     Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
-                    string folder = conn.ExecuteScalar<string>("Select OriginalSource From Device WHERE ID = {0}", deviceId);
+                    m_folder = conn.ExecuteScalar<string>("Select OriginalSource From Device WHERE ID = {0}", deviceId);
 
                     m_ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
-                    Program.Log("UNC - " + m_localPath);
-
-                    m_localPath = taskSettings["localPath"]+ '\\' + folder;
+                    m_localPath = taskSettings["localPath"];
                     m_siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
                     m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
                     m_domain = taskSettings["directoryAuthUserName"].Split('\\')[0];
@@ -92,14 +92,14 @@ namespace BenDownloader
                     {
                         GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
-                        
+
                     }
 
                     s_mutex = new Mutex(false, m_serialNumber);
                     GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
-
+                    //m_context = GSF.Identity.UserInfo.ImpersonateUser(m_domain, m_userName, m_passWord);
                     m_lastFileDownloaded = GetLastDownloadedFile();
 
                 }
@@ -113,6 +113,7 @@ namespace BenDownloader
         ~BenRunner()
         {
             GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
+            //GSF.Identity.UserInfo.EndImpersonation(m_context);
             s_mutex.Dispose();
         }
         #endregion
@@ -167,7 +168,7 @@ namespace BenDownloader
             finally
             {
                 //lastFileDownloaded = curRecId.ToString();
-                FileSystem.DeleteFile(m_localPath + "\\bendir.txt");
+                FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\bendir.txt");
 
             }
         }
@@ -175,7 +176,7 @@ namespace BenDownloader
         private List<BenRecord> GetFileList()
         {
             List<BenRecord> downloadList = new List<BenRecord>();
-            string dirFile = m_localPath + "\\bendir.txt";
+            string dirFile = m_localPath + "\\" + m_folder + "\\bendir.txt";
 
             try
             {
@@ -240,7 +241,7 @@ namespace BenDownloader
             try
             {
                 string benLinCmdLine = ConfigurationFile.Current.Settings["systemSettings"]["BenLinkCommandLine"].Value;
-                string cmdLine = benLinCmdLine.Replace("xxx", GetShortPath(m_localPath));
+                string cmdLine = benLinCmdLine.Replace("xxx", GetShortPath(m_localPath + "\\" + m_folder));
                 string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
                 var psi = new ProcessStartInfo(cmdLineSplit[0])
                 {
@@ -269,8 +270,8 @@ namespace BenDownloader
 
                 }
 
-                FileSystem.DeleteFile(m_localPath + "\\benlink.req");
-                FileSystem.DeleteFile(m_localPath + "\\benlink.rsp");
+                FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\benlink.req");
+                FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\benlink.rsp");
                 
             }
             catch (Exception ex)
@@ -283,7 +284,7 @@ namespace BenDownloader
 
         private void BuildBenLinkDLINI(List<BenRecord> fileList)
         {
-            string requestfilename = m_localPath + "\\benlink.req";
+            string requestfilename = m_localPath + "\\" + m_folder + "\\benlink.req";
 
             string myINIFile = "[Signature]" + System.Environment.NewLine +
                                "Program=BenLink" + System.Environment.NewLine +
@@ -297,7 +298,7 @@ namespace BenDownloader
                                 "DeviceType=5" + System.Environment.NewLine +
                                 "DeviceSN=" + m_serialNumber + System.Environment.NewLine +
                                 "NominalFrequency=60" + System.Environment.NewLine +
-                                "DataDirectory=" + m_localPath + '\\' + System.Environment.NewLine +
+                                "DataDirectory=" + m_localPath + "\\" + m_folder + '\\' + System.Environment.NewLine +
                                 System.Environment.NewLine +
                                 "CommAddress=1" + System.Environment.NewLine +
                                 "[ConnectionParam]" + System.Environment.NewLine +
@@ -351,7 +352,7 @@ namespace BenDownloader
 
         private void BuildBenLinkDirINI()
         {
-            string requestFileName = m_localPath + "\\benlink.req";
+            string requestFileName = m_localPath + "\\" + m_folder + "\\benlink.req";
 
             string myINIFile = "[Signature]" + System.Environment.NewLine +
                                "Program=BenLink" + System.Environment.NewLine +
@@ -365,7 +366,7 @@ namespace BenDownloader
                                 "DeviceType=5" + System.Environment.NewLine +
                                 "DeviceSN=" + m_serialNumber + System.Environment.NewLine +
                                 "NominalFrequency=60" + System.Environment.NewLine +
-                                "DataDirectory=" + m_localPath + '\\' + System.Environment.NewLine +
+                                "DataDirectory=" + m_localPath + "\\" + m_folder + '\\' + System.Environment.NewLine +
                                 System.Environment.NewLine +
                                 "[ConnectionParam]" + System.Environment.NewLine +
                                 "AccessType=0" + System.Environment.NewLine +
@@ -378,7 +379,7 @@ namespace BenDownloader
                                 "RequestType=1" + System.Environment.NewLine +
                                 "Origin=1" + System.Environment.NewLine +
                                 "SubBens=1" + System.Environment.NewLine +
-                                "DataPath=" + m_localPath;
+                                "DataPath=" + m_localPath + "\\" + m_folder;
 
             try
             {
@@ -412,7 +413,7 @@ namespace BenDownloader
                         if(dateTime != file.LastWriteTime)
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
-                            string newFileName = m_localPath + '\\' + file.Name;
+                            string newFileName = m_localPath + "\\" + m_folder + '\\' + file.Name;
                             System.IO.File.Copy(file.FullName, newFileName);
                             System.IO.File.Delete(file.FullName);
                         }
@@ -435,7 +436,7 @@ namespace BenDownloader
 
             try
             {
-                files = System.IO.Directory.GetFiles(m_localPath);
+                files = System.IO.Directory.GetFiles(m_localPath + "\\" + m_folder);
 
             foreach (string fileName in files)
             {
