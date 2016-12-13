@@ -82,14 +82,12 @@ namespace BenDownloader
                     m_domain = taskSettings["directoryAuthUserName"].Split('\\')[0];
                     m_userName = taskSettings["directoryAuthUserName"].Split('\\')[1];
                     m_passWord = taskSettings["directoryAuthPassword"];
-                    s_mutex = new Mutex(false, m_serialNumber);
-                    GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
-
                     string tempDirectory = System.IO.Path.GetTempPath();
                     System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
                     m_tempDirectoryName = tempDirectory + "\\BenDownloader\\" + m_siteName;
 
-
+                    s_mutex = new Mutex(false, m_serialNumber);
+                    GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
                 }
             }
             catch(Exception ex)
@@ -130,7 +128,7 @@ namespace BenDownloader
                     {
                         BuildBenLinkDLINI(myFiles);
                         ExecBenCommand();
-                        UpdateTimestamps(myFiles);
+                        UpdateTimestamps();
                     }
                     else
                     {
@@ -298,6 +296,12 @@ namespace BenDownloader
                     SendFileFromFutureNotification("Record ID: " + currec.Id);
                     throw new System.Exception("FileID " + currec.Id + " at site " + m_siteName + " from the future. Fix DFR clock.");
                 }
+                if (currec.Id < m_lastFileDownloaded.Id)
+                {
+                    SendFileNumberLargerEmailNotification("Record ID: " + currec.Id.ToString(), currec.Id);
+                    throw new System.Exception("FileID " + currec.Id + " at site " + m_siteName + " Id less than last downloaded.");
+                }
+
 
                 myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
                             "RequestType=2" + System.Environment.NewLine +
@@ -371,7 +375,7 @@ namespace BenDownloader
 
         }
 
-        private void UpdateTimestamps(List<BenRecord> fileList)
+        private void UpdateTimestamps()
         {
 
             string[] files = System.IO.Directory.GetFiles(m_tempDirectoryName);
@@ -389,12 +393,7 @@ namespace BenDownloader
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
                             string newFileName = m_localPath + '\\' + file.Name;
-                            //WindowsImpersonationContext wic = UserInfo.ImpersonateUser(m_domain, m_userName, m_passWord);
-                            //System.IO.File.Copy(file.FullName, newFileName);
                             System.IO.File.Copy(file.FullName, newFileName);
-
-                            //UserInfo.EndImpersonation(wic);
-
                             System.IO.File.Delete(file.FullName);
                         }
                     }
