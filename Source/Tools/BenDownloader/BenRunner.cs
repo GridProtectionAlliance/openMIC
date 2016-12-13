@@ -56,6 +56,7 @@ namespace BenDownloader
         private readonly string m_domain;
         private readonly string m_userName;
         private readonly string m_passWord;
+        private readonly string m_tempDirectoryName;
         private readonly BenRecord m_lastFileDownloaded;
         private static Mutex s_mutex;
         #endregion
@@ -83,6 +84,11 @@ namespace BenDownloader
                     m_passWord = taskSettings["directoryAuthPassword"];
                     s_mutex = new Mutex(false, m_serialNumber);
                     GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
+
+                    string tempDirectory = System.IO.Path.GetTempPath();
+                    System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
+                    m_tempDirectoryName = tempDirectory + "\\BenDownloader\\" + m_siteName;
+
 
                 }
             }
@@ -285,10 +291,6 @@ namespace BenDownloader
             int i = 1;
             int curYear = DateTime.Now.Year;
 
-            string tempDirectory = System.IO.Path.GetTempPath();
-            System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
-            string tempDirectoryName = tempDirectory + "\\BenDownloader\\" + m_siteName;
-
             foreach (BenRecord currec in fileList)
             {
                 if (currec.DateTime.Year > curYear)
@@ -303,7 +305,7 @@ namespace BenDownloader
                             "SubBenNum=0" + System.Environment.NewLine +
                             "Origin=1" + System.Environment.NewLine +
                             "OptionFlags=1" + System.Environment.NewLine +
-                            "DataPath=" + tempDirectoryName + System.Environment.NewLine +
+                            "DataPath=" + m_tempDirectoryName + System.Environment.NewLine +
                             "FileName=" + Get232Fn(currec.DateTime, currec.Id.ToString());
                 
             }
@@ -371,11 +373,8 @@ namespace BenDownloader
 
         private void UpdateTimestamps(List<BenRecord> fileList)
         {
-            string tempDirectory = System.IO.Path.GetTempPath();
-            string tempDirectoryName = tempDirectory + "\\BenDownlaoder\\" + m_siteName;
 
-
-            string[] files = System.IO.Directory.GetFiles(tempDirectoryName);
+            string[] files = System.IO.Directory.GetFiles(m_tempDirectoryName);
 
             foreach (string fileName in files)
             {
@@ -407,7 +406,7 @@ namespace BenDownloader
                     }
                 }
             }
-            System.IO.Directory.Delete(tempDirectoryName);
+            System.IO.Directory.Delete(m_tempDirectoryName);
 
         }
 
