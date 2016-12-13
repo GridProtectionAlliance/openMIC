@@ -66,6 +66,7 @@ namespace BenDownloader
         {
             try
             {
+
                 using (AdoDataConnection conn = new AdoDataConnection("systemSettings"))
                 {
                     string taskSettingsString = conn.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
@@ -75,10 +76,11 @@ namespace BenDownloader
                     string folder = conn.ExecuteScalar<string>("Select OriginalSource From Device WHERE ID = {0}", deviceId);
 
                     m_ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
+                    Program.Log("UNC - " + m_localPath);
+
                     m_localPath = taskSettings["localPath"]+ '\\' + folder;
                     m_siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
                     m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
-                    m_lastFileDownloaded = GetLastDownloadedFile();
                     m_domain = taskSettings["directoryAuthUserName"].Split('\\')[0];
                     m_userName = taskSettings["directoryAuthUserName"].Split('\\')[1];
                     m_passWord = taskSettings["directoryAuthPassword"];
@@ -86,14 +88,32 @@ namespace BenDownloader
                     System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
                     m_tempDirectoryName = tempDirectory + "\\BenDownloader\\" + m_siteName;
 
+                    try
+                    {
+                        GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
+                    }
+                    catch(Exception ex)
+                    {
+                        
+                    }
+
                     s_mutex = new Mutex(false, m_serialNumber);
                     GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
+
+                    m_lastFileDownloaded = GetLastDownloadedFile();
+
                 }
             }
             catch(Exception ex)
             {
                 Program.Log(ex.ToString());
             }
+        }
+
+        ~BenRunner()
+        {
+            GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
+            s_mutex.Dispose();
         }
         #endregion
 
@@ -160,8 +180,8 @@ namespace BenDownloader
             try
             {
                 //delete the existing dir file if one exists.
-                //if (FileSystem.FileExists(dirFile))
-                //    FileSystem.DeleteFile(dirFile);
+                if (FileSystem.FileExists(dirFile))
+                    FileSystem.DeleteFile(dirFile);
 
                 //build new dir files.
                 BuildBenLinkDirINI();
@@ -406,13 +426,17 @@ namespace BenDownloader
                 }
             }
             System.IO.Directory.Delete(m_tempDirectoryName);
-
         }
 
         private BenRecord GetLastDownloadedFile()
         {
-            string[] files = System.IO.Directory.GetFiles(m_localPath);
+            string[] files;
             BenRecord lastFile = new BenRecord(0, DateTime.MinValue, 0);
+
+            try
+            {
+                files = System.IO.Directory.GetFiles(m_localPath);
+
             foreach (string fileName in files)
             {
                 System.IO.FileInfo file = new System.IO.FileInfo(fileName);
@@ -435,6 +459,12 @@ namespace BenDownloader
                     }
                 }
             }
+            }
+            catch (Exception ex)
+            {
+                Program.Log("Get Last Downloaded File - Get Files \n\n" + ex.ToString());
+            }
+
 
             return lastFile;
         }

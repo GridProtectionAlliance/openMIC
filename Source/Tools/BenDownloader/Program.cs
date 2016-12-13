@@ -47,6 +47,7 @@ namespace BenDownloader
     class Program
     {
 
+        private static object s_logLock = new object();
 
         static void Main(string[] args)
         {
@@ -85,14 +86,19 @@ namespace BenDownloader
 
         public static void Log(string logMessage)
         {
-            using(StreamWriter w = File.AppendText("BenDownloaderLogFile.txt"))
+            lock (s_logLock)
             {
-                w.Write("\r\nLog Entry : ");
-                w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
-                    DateTime.Now.ToLongDateString());
-                w.WriteLine("  :");
-                w.WriteLine("  :{0}", logMessage);
-                w.WriteLine("-------------------------------");
+                using (StreamWriter w = File.AppendText("BenDownloaderLogFile.txt"))
+                {
+                    w.Write("\r\nLog Entry : ");
+                    w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
+                        DateTime.Now.ToLongDateString());
+                    w.WriteLine("  :");
+                    w.WriteLine("  :{0}", logMessage);
+                    w.WriteLine("-------------------------------");
+                    w.Flush();
+                }
+
             }
         }
         #endregion
