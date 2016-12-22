@@ -315,7 +315,8 @@
     <None Include="wwwroot\fonts\fontawesome-webfont.woff" />
     <None Include="wwwroot\fonts\fontawesome-webfont.woff2" />
     <None Include="wwwroot\fonts\FontAwesome.otf" />
-    <None Include="wwwroot\GraphMeasurements.cshtml" />
+    <Content Include="wwwroot\GraphMeasurements.cshtml" />
+    <None Include="wwwroot\GraphMeasurementsold.cshtml" />
     <None Include="wwwroot\GraphMeasurementsPopup.cshtml" />
     <None Include="wwwroot\Help.cshtml" />
     <None Include="wwwroot\ModbusConfig.cshtml" />
@@ -544,6 +545,8 @@
     <Content Include="wwwroot\Images\ModbusConfigEditor.png" />
     <Content Include="wwwroot\Images\openMIC.png" />
     <Content Include="wwwroot\Images\openMICBanner.png" />
+    <Content Include="wwwroot\Images\StatusLights\green.png" />
+    <Content Include="wwwroot\Images\StatusLights\grey.png" />
     <Content Include="wwwroot\Images\StatusLights\Large\amberlight.png" />
     <Content Include="wwwroot\Images\StatusLights\Large\blacklight.png" />
     <Content Include="wwwroot\Images\StatusLights\Large\bluelight.png" />
@@ -553,6 +556,7 @@
     <Content Include="wwwroot\Images\StatusLights\Large\magentalight.png" />
     <Content Include="wwwroot\Images\StatusLights\Large\redlight.png" />
     <Content Include="wwwroot\Images\StatusLights\Large\yellowlight.png" />
+    <Content Include="wwwroot\Images\StatusLights\red.png" />
     <Content Include="wwwroot\Images\StatusLights\Small\amberlight.png" />
     <Content Include="wwwroot\Images\StatusLights\Small\blacklight.png" />
     <Content Include="wwwroot\Images\StatusLights\Small\bluelight.png" />
@@ -562,6 +566,7 @@
     <Content Include="wwwroot\Images\StatusLights\Small\magentalight.png" />
     <Content Include="wwwroot\Images\StatusLights\Small\redlight.png" />
     <Content Include="wwwroot\Images\StatusLights\Small\yellowlight.png" />
+    <Content Include="wwwroot\Scripts\angular.js" />
     <Content Include="wwwroot\Scripts\bootstrap-datepicker.js" />
     <Content Include="wwwroot\Scripts\bootstrap-datepicker.min.js" />
     <Content Include="wwwroot\Scripts\bootstrap-toolkit.js" />
@@ -616,6 +621,8 @@
     <Content Include="wwwroot\Scripts\jquery.validate.min.js" />
     <Content Include="wwwroot\Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="wwwroot\Scripts\json2.js" />
+    <Content Include="wwwroot\Scripts\jstorage.js" />
     <Content Include="wwwroot\Scripts\knockout-3.4.0.debug.js" />
     <Content Include="wwwroot\Scripts\knockout.mapping-latest.debug.js" />
     <Content Include="wwwroot\Scripts\knockout.mapping-latest.js" />
