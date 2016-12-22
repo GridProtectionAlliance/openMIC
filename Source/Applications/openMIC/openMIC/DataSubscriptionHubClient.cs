@@ -137,7 +137,14 @@ namespace openMIC
 
                         m_statisticSubscription.ConnectionString = Program.Host.Model.Global.SubscriptionConnectionString;
                         m_statisticSubscription.AutoSynchronizeMetadata = false;
-                        m_statisticSubscription.OperationalModes |= OperationalModes.UseCommonSerializationFormat | OperationalModes.CompressMetadata | OperationalModes.CompressSignalIndexCache;
+
+                        m_statisticSubscription.OperationalModes |=
+                            OperationalModes.UseCommonSerializationFormat |
+                            OperationalModes.CompressMetadata |
+                            OperationalModes.CompressSignalIndexCache |
+                            OperationalModes.ReceiveInternalMetadata |
+                            OperationalModes.ReceiveExternalMetadata;
+
                         m_statisticSubscription.CompressionModes = CompressionModes.GZip;
 
                         m_statisticSubscription.Initialize();
