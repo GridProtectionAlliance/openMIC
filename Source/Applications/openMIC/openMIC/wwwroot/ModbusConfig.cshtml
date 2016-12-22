@@ -929,7 +929,7 @@
                 
                 // Pre-select all mappings
                 for (let j = 0; j < records.length; j++) {
-                    records[j].mapped(true);
+                    records[j].mapped(records[j].signalReference().length <= 200);
                 }
 
                 for (let j = 0; j < groups.length; j++) {
