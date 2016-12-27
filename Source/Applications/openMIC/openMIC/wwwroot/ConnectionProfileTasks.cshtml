@@ -163,7 +163,6 @@
         $(viewModel).on("beforeEdit", function(event, observableRecord) {
             // Add connection string reference to current observable record so it can participate in the validation group
             observableRecord._connectionstring = viewModel.connectionString;
-
             // Initialize selected connection profile ID
             observableRecord.ConnectionProfileID(@parentID);
         });
@@ -210,6 +209,12 @@
                 const dismissButtons = $("#editTasksDialog", window.parent.document).find("button[data-dismiss]");
                 dismissButtons.prop("disabled", true);
                 dismissButtons.invisible();
+
+                if (viewModel.recordMode() == RecordMode.AddNew) {
+                    viewModel.currentRecord().Settings(defaultConnectionString.joinKeyValuePairs());
+                    $('#textConnectionString').val(viewModel.currentRecord().Settings());
+                }
+
             });
 
             $("#addNewEditDialog").on("hidden.bs.modal", function () {
