@@ -131,14 +131,14 @@ CD %target%
 :CommitChanges
 ECHO.
 ECHO Committing updates to local repository...
-%git% add .
-%git% commit -m "Updated GSF dependencies."
+"%git%" add .
+"%git%" commit -m "Updated GSF dependencies."
 IF NOT "%donotpush%" == "" GOTO Finish
 
 :PushChanges
 ECHO.
 ECHO Pushing changes to remote repository...
-%git% push
+"%git%" push
 CD /D %pwd%
 
 :Finish
