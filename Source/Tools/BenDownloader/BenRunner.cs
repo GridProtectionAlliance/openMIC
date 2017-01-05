@@ -44,8 +44,8 @@ namespace BenDownloader
 {
     public class BenRunner
     {
-
         #region [Members]
+
         private const long BENMAXFILESIZE = 7000;
         private const int MAXFILELIMIT = 100;
 
@@ -54,52 +54,58 @@ namespace BenDownloader
         private readonly string m_folder;
         private readonly string m_siteName;
         private readonly string m_serialNumber;
-        private readonly string m_domain;
-        private readonly string m_userName;
-        private readonly string m_passWord;
         private readonly string m_tempDirectoryName;
-        private readonly WindowsImpersonationContext m_context;
         private readonly BenRecord m_lastFileDownloaded;
-        private static Mutex s_mutex;
+        
+        //private static Mutex s_mutex;
+        //private readonly string m_domain;
+        //private readonly string m_userName;
+        //private readonly string m_passWord;
+        //private readonly WindowsImpersonationContext m_context;
+
         #endregion
 
         #region [Constructors]
+
         public BenRunner(int deviceId, int taskId)
         {
             try
             {
-
                 using (AdoDataConnection conn = new AdoDataConnection("systemSettings"))
                 {
                     string taskSettingsString = conn.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
                     Dictionary<string, string> taskSettings = taskSettingsString.ParseKeyValuePairs();
                     string deviceConnectionString = conn.ExecuteScalar<string>("Select ConnectionString From Device WHERE ID = {0}", deviceId);
                     Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
-                    m_folder = conn.ExecuteScalar<string>("Select OriginalSource From Device WHERE ID = {0}", deviceId);
 
+                    m_folder = conn.ExecuteScalar<string>("Select OriginalSource From Device WHERE ID = {0}", deviceId);
                     m_ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
                     m_localPath = taskSettings["localPath"];
                     m_siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
                     m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
-                    m_domain = taskSettings["directoryAuthUserName"].Split('\\')[0];
-                    m_userName = taskSettings["directoryAuthUserName"].Split('\\')[1];
-                    m_passWord = taskSettings["directoryAuthPassword"];
+
+                    //m_domain = taskSettings["directoryAuthUserName"].Split('\\')[0];
+                    //m_userName = taskSettings["directoryAuthUserName"].Split('\\')[1];
+                    //m_passWord = taskSettings["directoryAuthPassword"];
+
                     string tempDirectory = System.IO.Path.GetTempPath();
                     System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
                     m_tempDirectoryName = tempDirectory + "\\BenDownloader\\" + m_siteName;
 
-                    try
-                    {
-                        GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
-                    }
-                    catch (Exception ex)
-                    {
+                    //try
+                    //{
+                    //    GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
+                    //}
+                    //catch (Exception ex)
+                    //{
 
-                    }
+                    //}
 
-                    s_mutex = new Mutex(false, m_serialNumber);
-                    GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
+                    //s_mutex = new Mutex(false, m_serialNumber);
+
+                    //GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
                     //m_context = GSF.Identity.UserInfo.ImpersonateUser(m_domain, m_userName, m_passWord);
+
                     m_lastFileDownloaded = GetLastDownloadedFile();
 
                 }
@@ -110,12 +116,13 @@ namespace BenDownloader
             }
         }
 
-        ~BenRunner()
-        {
-            GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
-            //GSF.Identity.UserInfo.EndImpersonation(m_context);
-            s_mutex.Dispose();
-        }
+        //~BenRunner()
+        //{
+        //    //GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
+        //    //GSF.Identity.UserInfo.EndImpersonation(m_context);
+        //    //s_mutex.Dispose();
+        //}
+
         #endregion
 
         #region [Methods]
@@ -236,8 +243,10 @@ namespace BenDownloader
             return downloadList;
         }
 
-        private void ExecBenCommand()
+        private bool ExecBenCommand()
         {
+            int exitcode = -1;
+
             try
             {
                 string benLinCmdLine = ConfigurationFile.Current.Settings["systemSettings"]["BenLinkCommandLine"].Value;
@@ -250,25 +259,32 @@ namespace BenDownloader
                     CreateNoWindow = true
                 };
 
-                bool flag = true;
-                while (flag)
+                using (Process p = Process.Start(psi))
                 {
-                    try
-                    {
-                        s_mutex.WaitOne();
-                        using (Process p = Process.Start(psi))
-                        {
-                            p.WaitForExit();
-                            if (p.ExitCode == 0)
-                                flag = false;
-                        }
-                    }
-                    finally
-                    {
-                        s_mutex.ReleaseMutex();
-                    }
-
+                    p.WaitForExit();
+                    exitcode = p.ExitCode;
                 }
+
+                //bool flag = true;
+
+                //while (flag)
+                //{
+                //    try
+                //    {
+                //        s_mutex.WaitOne();
+                //        using (Process p = Process.Start(psi))
+                //        {
+                //            p.WaitForExit();
+                //            if (p.ExitCode == 0)
+                //                flag = false;
+                //        }
+                //    }
+                //    finally
+                //    {
+                //        s_mutex.ReleaseMutex();
+                //    }
+
+                //}
 
                 FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\benlink.req");
                 FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\benlink.rsp");
@@ -280,6 +296,8 @@ namespace BenDownloader
 
                 throw new Exception("ExecBenCommand error: " + m_siteName + " - " + ex.ToString());
             }
+
+            return exitcode == 0;
         }
 
         private void BuildBenLinkDLINI(List<BenRecord> fileList)

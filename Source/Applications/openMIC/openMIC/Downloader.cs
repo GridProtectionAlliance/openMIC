@@ -805,12 +805,11 @@ namespace openMIC
                 if (localPath.StartsWith(@"\\") && !string.IsNullOrWhiteSpace(settings.DirectoryAuthUserName) && !string.IsNullOrWhiteSpace(settings.DirectoryAuthPassword))
                 {
                     string[] userParts = settings.DirectoryAuthUserName.Split('\\');
-                    string[] pathParts = localPath.Substring(2).Split('\\');
 
                     try
                     {
-                        if (userParts.Length == 2 && pathParts.Length > 1)
-                            FilePath.ConnectToNetworkShare($"\\\\{pathParts[0].Trim()}\\{pathParts[1].Trim()}\\", userParts[1].Trim(), settings.DirectoryAuthPassword.Trim(), userParts[0].Trim());
+                        if (userParts.Length == 2)
+                            FilePath.ConnectToNetworkShare(localPath.Trim(), userParts[1].Trim(), settings.DirectoryAuthPassword.Trim(), userParts[0].Trim());
                         else
                             throw new InvalidOperationException($"UNC based local path \"{settings.LocalPath}\" or authentication user name \"{settings.DirectoryAuthUserName}\" is not in the correct format.");
                     }
