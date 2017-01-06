@@ -18,6 +18,9 @@
   <Component Id="GraphMeasurements_cshtml">
     <File Id="GraphMeasurements.cshtml" Name="GraphMeasurements.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurements.cshtml" />
   </Component>
+  <Component Id="GraphMeasurementsold_cshtml">
+    <File Id="GraphMeasurementsold.cshtml" Name="GraphMeasurementsold.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurementsold.cshtml" />
+  </Component>
   <Component Id="GraphMeasurementsPopup_cshtml">
     <File Id="GraphMeasurementsPopup.cshtml" Name="GraphMeasurementsPopup.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurementsPopup.cshtml" />
   </Component>
@@ -27,8 +30,8 @@
   <Component Id="Help_cshtml">
     <File Id="Help.cshtml" Name="Help.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Help.cshtml" />
   </Component>
-  <Component Id="Index_cshtml">
-    <File Id="Index.cshtml" Name="Index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Index.cshtml" />
+  <Component Id="index_cshtml">
+    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
   </Component>
   <Component Id="Layout_cshtml">
     <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
@@ -318,6 +321,15 @@
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_StatusLights_Components" Directory="IMAGESSTATUSLIGHTSFOLDER">
+  <Component Id="Images_StatusLights_green_png">
+    <File Id="Images_StatusLights_green.png" Name="green.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\green.png" />
+  </Component>
+  <Component Id="Images_StatusLights_grey_png">
+    <File Id="Images_StatusLights_grey.png" Name="grey.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\grey.png" />
+  </Component>
+  <Component Id="Images_StatusLights_red_png">
+    <File Id="Images_StatusLights_red.png" Name="red.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\StatusLights\red.png" />
+  </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_StatusLights_Large_Components" Directory="IMAGESSTATUSLIGHTSLARGEFOLDER">
   <Component Id="Images_StatusLights_Large_amberlight_png">
@@ -794,6 +806,9 @@
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Scripts_Components" Directory="SCRIPTSFOLDER">
+  <Component Id="Scripts_angular_js">
+    <File Id="Scripts_angular.js" Name="angular.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\angular.js" />
+  </Component>
   <Component Id="Scripts_bootstrap_datepicker_js">
     <File Id="Scripts_bootstrap_datepicker.js" Name="bootstrap-datepicker.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-datepicker.js" />
   </Component>
@@ -862,6 +877,12 @@
   </Component>
   <Component Id="Scripts_jquery_validate_unobtrusive_min_js">
     <File Id="Scripts_jquery.validate.unobtrusive.min.js" Name="jquery.validate.unobtrusive.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
+  </Component>
+  <Component Id="Scripts_json2_js">
+    <File Id="Scripts_json2.js" Name="json2.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\json2.js" />
+  </Component>
+  <Component Id="Scripts_jstorage_js">
+    <File Id="Scripts_jstorage.js" Name="jstorage.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jstorage.js" />
   </Component>
   <Component Id="Scripts_knockout_3_4_0_debug_js">
     <File Id="Scripts_knockout_3.4.0.debug.js" Name="knockout-3.4.0.debug.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\knockout-3.4.0.debug.js" />
