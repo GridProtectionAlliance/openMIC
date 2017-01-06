@@ -214,6 +214,32 @@ namespace openMIC
                     // Ignoring updates
                 }
             }
+
+            // Gets or sets the number of measurements recevied while this <see cref="IDevice"/> was reporting errors.
+            public long MeasurementsWithError
+            {
+                get
+                {
+                    return 0;
+                }
+                set
+                {
+                    // Ignoring updates
+                }
+            }
+
+            // Gets or sets the number of measurements (per frame) defined for this <see cref="IDevice"/>.
+            public long MeasurementsDefined
+            {
+                get
+                {
+                    return m_parent.OutputMeasurements.Length;
+                }
+                set
+                {
+                    // Ignoring updates
+                }
+            }
         }
 
         // Constants
