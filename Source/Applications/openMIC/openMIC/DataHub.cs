@@ -202,7 +202,7 @@ namespace openMIC
         [RecordOperation(typeof(Device), RecordOperation.AddNewRecord)]
         public void AddNewDevice(Device device)
         {
-            device.NodeID = Program.Host.Model.Global.NodeID;
+            //device.NodeID = Program.Host.Model.Global.NodeID;
             device.UniqueID = Guid.NewGuid();
 
             if ((device.ProtocolID ?? 0) == 0)

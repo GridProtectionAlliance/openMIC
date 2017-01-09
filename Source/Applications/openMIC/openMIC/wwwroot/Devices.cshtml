@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using GSF.Security.Model
 @using GSF.Web
 @using GSF.Web.Model
 @using openMIC
@@ -87,6 +88,7 @@
         @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
         @Raw(dataContext.AddInputField("get('schedule')", true, fieldLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name"))
+        @Raw(dataContext.AddSelectField<Device, openMIC.Model.Node>("NodeID", "ID", "Name"))
     </div>
     <div class="col-md-6">
         <div class="panel panel-default" data-bind="css: {'panel-readonly': $root.recordMode()===RecordMode.View, 'panel-primary': $root.connectionString.get('usedialup')}">

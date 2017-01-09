@@ -241,6 +241,7 @@
     <Compile Include="IOrderedQueryableExtensions.cs" />
     <Compile Include="ModbusHubClient.cs" />
     <Compile Include="Model\Alarm.cs" />
+    <Compile Include="Model\Node.cs" />
     <Compile Include="Model\Runtime.cs" />
     <Compile Include="Model\AlarmLog.cs" />
     <Compile Include="Model\AppModel.cs" />
