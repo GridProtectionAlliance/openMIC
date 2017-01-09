@@ -1000,7 +1000,7 @@ namespace openMIC
 
         private void ProcessFTPTask(ConnectionProfileTaskSettings settings, FtpClient client)
         {
-            string remotePath = settings.RemotePath;
+            string remotePath = GetRemotePathName(settings);
             string localSubPath = Path.DirectorySeparatorChar.ToString();
 
             ProcessFTPTask(settings, client, remotePath, localSubPath);
@@ -1299,6 +1299,41 @@ namespace openMIC
 
             return fileName;
         }
+
+        private string GetRemotePathName(ConnectionProfileTaskSettings settings)
+        {
+            TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
+            Dictionary<string, string> substitutions = new Dictionary<string, string>
+            {
+                { "<YYYY>", $"{DateTime.Now.Year}" },
+                { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
+                { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
+                { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
+                { "<Month MM>", $"Month {DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
+                { "<Day DD>", $"Day {DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
+                { "<Day DD-1>", $"Day {DateTime.Now.AddDays(-1).Day.ToString().PadLeft(2, '0')}" },
+                { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
+                { "<DeviceAcronym>", m_deviceRecord.Acronym },
+                { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
+                { "<ProfileName>", m_connectionProfile.Name ?? "undefined" }
+            };
+
+            if(settings.RemotePath.Contains("<Day DD-1>"))
+            {
+                substitutions["<YYYY>"] = $"{DateTime.Now.AddDays(-1).Year}";
+                substitutions["<YY>"] = $"{DateTime.Now.AddDays(-1).Year.ToString().Substring(2)}";
+                substitutions["<MM>"] = $"{DateTime.Now.AddDays(-1).Month.ToString().PadLeft(2, '0')}";
+                substitutions["<Month MM>"] = $"Month {DateTime.Now.AddDays(-1).Month.ToString().PadLeft(2, '0')}";
+            }
+
+            directoryNameExpressionParser.TemplatedExpression = settings.RemotePath;
+
+            string directoryName = directoryNameExpressionParser.Execute(substitutions);
+
+            return directoryName;
+        }
+
+
 
         private void ProcessExternalOperationTask(ConnectionProfileTaskSettings settings)
         {
