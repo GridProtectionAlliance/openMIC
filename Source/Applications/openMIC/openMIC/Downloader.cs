@@ -474,7 +474,7 @@ namespace openMIC
         {
             get
             {
-                return ConfigurationFile.Current.Settings["systemSettings"]["ThreadCount"].ValueAsInt32() > 0;
+                return ConfigurationFile.Current.Settings["systemSettings"]["FTPThreadCount"].ValueAsInt32() > 0;
             }
         }
 
@@ -1573,7 +1573,7 @@ namespace openMIC
             s_instances = new ConcurrentDictionary<string, Downloader>();
             s_dialupScheduler = new ConcurrentDictionary<string, LogicalThread>();
             s_logicalThreadScheduler = new LogicalThreadScheduler();
-            s_logicalThreadScheduler.MaxThreadCount = ConfigurationFile.Current.Settings["systemSettings"]["ThreadCount"].ValueAsInt32();
+            s_logicalThreadScheduler.MaxThreadCount = ConfigurationFile.Current.Settings["systemSettings"]["FTPThreadCount"].ValueAsInt32();
             s_scheduleManager = new ScheduleManager();
             s_scheduleManager.ScheduleDue += s_scheduleManager_ScheduleDue;
             s_scheduleManager.Start();
