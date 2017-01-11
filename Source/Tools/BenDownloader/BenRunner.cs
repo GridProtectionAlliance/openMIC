@@ -90,7 +90,7 @@ namespace BenDownloader
 
                     string tempDirectory = System.IO.Path.GetTempPath();
                     System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
-                    m_tempDirectoryName = tempDirectory + "\\BenDownloader\\" + m_siteName;
+                    m_tempDirectoryName = tempDirectory + "BenDownloader\\" + m_siteName + "\\";
 
                     //try
                     //{
@@ -175,7 +175,7 @@ namespace BenDownloader
             finally
             {
                 //lastFileDownloaded = curRecId.ToString();
-                FileSystem.DeleteFile(m_tempDirectoryName + "\\bendir.txt");
+                FileSystem.DeleteFile(m_tempDirectoryName + "bendir.txt");
 
             }
         }
@@ -183,7 +183,7 @@ namespace BenDownloader
         private List<BenRecord> GetFileList()
         {
             List<BenRecord> downloadList = new List<BenRecord>();
-            string dirFile = m_tempDirectoryName + "\\bendir.txt";
+            string dirFile = m_tempDirectoryName + "bendir.txt";
 
             try
             {
@@ -240,7 +240,7 @@ namespace BenDownloader
             try
             {
                 string benLinCmdLine = ConfigurationFile.Current.Settings["systemSettings"]["BenLinkCommandLine"].Value;
-                string cmdLine = benLinCmdLine.Replace("xxx", m_tempDirectoryName);
+                string cmdLine = benLinCmdLine.Replace("xxx", GetShortPath(m_tempDirectoryName));
                 string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
                 var psi = new ProcessStartInfo(cmdLineSplit[0])
                 {
@@ -249,8 +249,6 @@ namespace BenDownloader
                     CreateNoWindow = true
                 };
 
-                Program.Log(m_tempDirectoryName);
-                Program.Log(cmdLineSplit[0]);
                 using (Process p = Process.Start(psi))
                 {
                     p.WaitForExit();
@@ -278,8 +276,8 @@ namespace BenDownloader
 
                 //}
 
-                FileSystem.DeleteFile(m_tempDirectoryName + "\\benlink.req");
-                FileSystem.DeleteFile(m_tempDirectoryName + "\\benlink.rsp");
+                FileSystem.DeleteFile(m_tempDirectoryName + "benlink.req");
+                FileSystem.DeleteFile(m_tempDirectoryName + "benlink.rsp");
                 
             }
             catch (Exception ex)
@@ -294,7 +292,7 @@ namespace BenDownloader
 
         private void BuildBenLinkDLINI(List<BenRecord> fileList)
         {
-            string requestfilename = m_tempDirectoryName + "\\benlink.req";
+            string requestfilename = m_tempDirectoryName + "benlink.req";
 
             string myINIFile = "[Signature]" + System.Environment.NewLine +
                                "Program=BenLink" + System.Environment.NewLine +
@@ -362,7 +360,7 @@ namespace BenDownloader
 
         private void BuildBenLinkDirINI()
         {
-            string requestFileName = m_tempDirectoryName + "\\benlink.req";
+            string requestFileName = m_tempDirectoryName + "benlink.req";
 
             string myINIFile = "[Signature]" + System.Environment.NewLine +
                                "Program=BenLink" + System.Environment.NewLine +
