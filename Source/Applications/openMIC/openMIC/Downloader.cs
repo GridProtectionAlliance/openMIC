@@ -46,6 +46,7 @@ using GSF.Units;
 using GSF.Web.Model;
 using openMIC.Model;
 using System.Data;
+using System.Runtime.Remoting.Channels;
 using GSF.Data;
 using GSF.Net.Smtp;
 using GSF.Parsing;
@@ -360,6 +361,7 @@ namespace openMIC
         private ConnectionProfile m_connectionProfile;
         private ConnectionProfileTaskSettings[] m_connectionProfileTaskSettings;
         private LogicalThreadOperation m_dialUpOperation;
+        private LogicalThreadOperation m_ftpOperation;
         private LongSynchronizedOperation m_executeTasks;
         private int m_overallTasksCompleted;
         private int m_overallTasksCount;
@@ -463,6 +465,20 @@ namespace openMIC
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// Gets or sets flag that determines if this connection will use dial-up.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Determines if this connection will use dial-up."),
+        DefaultValue(false)]
+        public bool UseLogicalThread
+        {
+            get
+            {
+                return ConfigurationFile.Current.Settings["systemSettings"]["ThreadCount"].ValueAsInt32() > 0;
+            }
         }
 
         /// <summary>
@@ -875,8 +891,11 @@ namespace openMIC
                     m_dialUpOperation.RunOnce();
                     m_dialUpOperation.Priority = NormalPriorty;
                 }
-                else
+                else if (UseLogicalThread)
                 {
+                    m_ftpOperation.RunOnce();
+                }
+                else { 
                     m_executeTasks.RunOnce();
                 }
             });
@@ -1542,6 +1561,7 @@ namespace openMIC
         private static readonly ScheduleManager s_scheduleManager;
         private static readonly ConcurrentDictionary<string, Downloader> s_instances;
         private static readonly ConcurrentDictionary<string, LogicalThread> s_dialupScheduler;
+        private static readonly LogicalThreadScheduler s_logicalThreadScheduler;
 
         // Static Events
 
@@ -1555,6 +1575,8 @@ namespace openMIC
         {
             s_instances = new ConcurrentDictionary<string, Downloader>();
             s_dialupScheduler = new ConcurrentDictionary<string, LogicalThread>();
+            s_logicalThreadScheduler = new LogicalThreadScheduler();
+            s_logicalThreadScheduler.MaxThreadCount = ConfigurationFile.Current.Settings["systemSettings"]["ThreadCount"].ValueAsInt32();
             s_scheduleManager = new ScheduleManager();
             s_scheduleManager.ScheduleDue += s_scheduleManager_ScheduleDue;
             s_scheduleManager.Start();
@@ -1571,6 +1593,8 @@ namespace openMIC
 
                 if (instance.UseDialUp)
                     instance.m_dialUpOperation.RunOnceAsync();
+                else if(instance.UseLogicalThread)
+                    instance.m_ftpOperation.RunOnceAsync();
                 else
                     instance.m_executeTasks.RunOnceAsync();
             }
@@ -1602,6 +1626,23 @@ namespace openMIC
                         instance.DisconnectDialUp();
                     }
                 }, NormalPriorty);
+            }
+            else if (s_logicalThreadScheduler.MaxThreadCount > 0)
+            {
+                LogicalThread thread = s_logicalThreadScheduler.CreateThread();
+                thread.UnhandledException += (sender, e) =>
+                {
+                    WeakReference<Downloader> reference = new WeakReference<Downloader>(instance);
+                    Downloader downloader;
+                    if (reference.TryGetTarget(out downloader))
+                        downloader.OnProcessException(e.Argument);
+                };
+
+                instance.m_ftpOperation = new LogicalThreadOperation(thread, () =>
+                {
+                    instance.ExecuteTasks();
+                });
+
             }
             else
             {

@@ -175,7 +175,7 @@ namespace BenDownloader
             finally
             {
                 //lastFileDownloaded = curRecId.ToString();
-                FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\bendir.txt");
+                FileSystem.DeleteFile(m_tempDirectoryName + "\\bendir.txt");
 
             }
         }
@@ -183,7 +183,7 @@ namespace BenDownloader
         private List<BenRecord> GetFileList()
         {
             List<BenRecord> downloadList = new List<BenRecord>();
-            string dirFile = m_localPath + "\\" + m_folder + "\\bendir.txt";
+            string dirFile = m_tempDirectoryName + "\\bendir.txt";
 
             try
             {
@@ -197,7 +197,6 @@ namespace BenDownloader
                 ExecBenCommand();
 
                 // build list of records to download
-                // todo: build an algroithm for rollover of record numbers
                 if (FileSystem.FileExists(dirFile))
                 {
                     TextFieldParser dirReader = FileSystem.OpenTextFieldParser(dirFile, new string[] {"\t" });
@@ -206,38 +205,29 @@ namespace BenDownloader
                         string[] curRow = dirReader.ReadFields();
 
                         if(Convert.ToInt32(curRow[0]) < m_lastFileDownloaded.Id)
-                        {
                             SendFileNumberLargerEmailNotification(curRow[0], m_lastFileDownloaded.Id);
-                        }
 
                         if (Convert.ToInt32(curRow[2]) < BENMAXFILESIZE)
                         {
                             BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
 
-                            // John Shugart wants to know that here is where we are compairing each line of the bendir.txt against the date of the
-                            // last downloaded file.
                             if(curRecord.DateTime > m_lastFileDownloaded.DateTime)
                                 downloadList.Add(curRecord);
                         }
                         else
-                        {
                             SendFileTooLargeEmailNotification("Record id: " + curRow[0]);
-                        }
-                     
                     }
                     dirReader.Close();
 
                 }
                 else
-                {
                     throw new Exception("GetFileList Error: " + m_siteName + " - dir file does not exist.");
-                }
+
 
             }
             catch (Exception ex)
             {
                 Program.Log("GetFileList Error: " + m_siteName + " - " + ex.ToString());
-
                 throw new Exception("GetFileList Error: " + m_siteName + " - " + ex.ToString());
             }
             return downloadList;
@@ -250,7 +240,7 @@ namespace BenDownloader
             try
             {
                 string benLinCmdLine = ConfigurationFile.Current.Settings["systemSettings"]["BenLinkCommandLine"].Value;
-                string cmdLine = benLinCmdLine.Replace("xxx", GetShortPath(m_localPath + "\\" + m_folder));
+                string cmdLine = benLinCmdLine.Replace("xxx", GetShortPath(m_tempDirectoryName));
                 string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
                 var psi = new ProcessStartInfo(cmdLineSplit[0])
                 {
@@ -286,8 +276,8 @@ namespace BenDownloader
 
                 //}
 
-                FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\benlink.req");
-                FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\benlink.rsp");
+                FileSystem.DeleteFile(m_tempDirectoryName + "\\benlink.req");
+                FileSystem.DeleteFile(m_tempDirectoryName + "\\benlink.rsp");
                 
             }
             catch (Exception ex)
@@ -302,7 +292,7 @@ namespace BenDownloader
 
         private void BuildBenLinkDLINI(List<BenRecord> fileList)
         {
-            string requestfilename = m_localPath + "\\" + m_folder + "\\benlink.req";
+            string requestfilename = m_tempDirectoryName + "\\benlink.req";
 
             string myINIFile = "[Signature]" + System.Environment.NewLine +
                                "Program=BenLink" + System.Environment.NewLine +
@@ -316,7 +306,7 @@ namespace BenDownloader
                                 "DeviceType=5" + System.Environment.NewLine +
                                 "DeviceSN=" + m_serialNumber + System.Environment.NewLine +
                                 "NominalFrequency=60" + System.Environment.NewLine +
-                                "DataDirectory=" + m_localPath + "\\" + m_folder + '\\' + System.Environment.NewLine +
+                                "DataDirectory=" + m_tempDirectoryName + System.Environment.NewLine +
                                 System.Environment.NewLine +
                                 "CommAddress=1" + System.Environment.NewLine +
                                 "[ConnectionParam]" + System.Environment.NewLine +
@@ -370,7 +360,7 @@ namespace BenDownloader
 
         private void BuildBenLinkDirINI()
         {
-            string requestFileName = m_localPath + "\\" + m_folder + "\\benlink.req";
+            string requestFileName = m_tempDirectoryName + "\\benlink.req";
 
             string myINIFile = "[Signature]" + System.Environment.NewLine +
                                "Program=BenLink" + System.Environment.NewLine +
@@ -384,7 +374,7 @@ namespace BenDownloader
                                 "DeviceType=5" + System.Environment.NewLine +
                                 "DeviceSN=" + m_serialNumber + System.Environment.NewLine +
                                 "NominalFrequency=60" + System.Environment.NewLine +
-                                "DataDirectory=" + m_localPath + "\\" + m_folder + '\\' + System.Environment.NewLine +
+                                "DataDirectory=" + m_tempDirectoryName + System.Environment.NewLine +
                                 System.Environment.NewLine +
                                 "[ConnectionParam]" + System.Environment.NewLine +
                                 "AccessType=0" + System.Environment.NewLine +
@@ -397,7 +387,7 @@ namespace BenDownloader
                                 "RequestType=1" + System.Environment.NewLine +
                                 "Origin=1" + System.Environment.NewLine +
                                 "SubBens=1" + System.Environment.NewLine +
-                                "DataPath=" + m_localPath + "\\" + m_folder;
+                                "DataPath=" + m_tempDirectoryName;
 
             try
             {
@@ -439,7 +429,6 @@ namespace BenDownloader
                     catch(Exception ex)
                     {
                         Program.Log("File timestamp update error: " + file.Name + '-' + ex.ToString());
-
                         throw new SystemException("File timestamp update error: " + file.Name + '-' + ex.ToString());
                     }
                 }
@@ -455,29 +444,27 @@ namespace BenDownloader
             try
             {
                 files = System.IO.Directory.GetFiles(m_localPath + "\\" + m_folder);
-
-            foreach (string fileName in files)
-            {
-                System.IO.FileInfo file = new System.IO.FileInfo(fileName);
-                if (file.Name.EndsWith("cfg") || file.Name.EndsWith("dat"))
+                foreach (string fileName in files)
                 {
-                    try
+                    System.IO.FileInfo file = new System.IO.FileInfo(fileName);
+                    if (file.Name.EndsWith("cfg") || file.Name.EndsWith("dat"))
                     {
-                    if (file.LastWriteTime > lastFile.DateTime)
+                        try
                         {
-                            string[] dateFromFileName = System.IO.Path.GetFileNameWithoutExtension(file.Name).Split(',');
-                            lastFile.DateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
-                            lastFile.Id = int.Parse(dateFromFileName[dateFromFileName.Length - 1]);
+                        if (file.LastWriteTime > lastFile.DateTime)
+                            {
+                                string[] dateFromFileName = System.IO.Path.GetFileNameWithoutExtension(file.Name).Split(',');
+                                lastFile.DateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
+                                lastFile.Id = int.Parse(dateFromFileName[dateFromFileName.Length - 1]);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
+                            throw new SystemException("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
-
-                        throw new SystemException("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
-                    }
                 }
-            }
             }
             catch (Exception ex)
             {
