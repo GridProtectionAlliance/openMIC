@@ -468,11 +468,8 @@ namespace openMIC
         }
 
         /// <summary>
-        /// Gets or sets flag that determines if this connection will use dial-up.
+        /// Gets or sets flag that determines if this connection will use logical threads scheduler.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Determines if this connection will use dial-up."),
-        DefaultValue(false)]
         public bool UseLogicalThread
         {
             get
