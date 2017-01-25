@@ -56,12 +56,6 @@ namespace BenDownloader
         private readonly string m_serialNumber;
         private readonly string m_tempDirectoryName;
         private readonly BenRecord m_lastFileDownloaded;
-        
-        //private static Mutex s_mutex;
-        //private readonly string m_domain;
-        //private readonly string m_userName;
-        //private readonly string m_passWord;
-        //private readonly WindowsImpersonationContext m_context;
 
         #endregion
 
@@ -84,28 +78,9 @@ namespace BenDownloader
                     m_siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
                     m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
 
-                    //m_domain = taskSettings["directoryAuthUserName"].Split('\\')[0];
-                    //m_userName = taskSettings["directoryAuthUserName"].Split('\\')[1];
-                    //m_passWord = taskSettings["directoryAuthPassword"];
-
                     string tempDirectory = System.IO.Path.GetTempPath();
                     System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
                     m_tempDirectoryName = tempDirectory + "BenDownloader\\" + m_siteName + "\\";
-
-                    //try
-                    //{
-                    //    GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
-                    //}
-                    //catch (Exception ex)
-                    //{
-
-                    //}
-
-                    //s_mutex = new Mutex(false, m_serialNumber);
-
-                    //GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
-                    //m_context = GSF.Identity.UserInfo.ImpersonateUser(m_domain, m_userName, m_passWord);
-
                     m_lastFileDownloaded = GetLastDownloadedFile();
 
                 }
@@ -115,14 +90,6 @@ namespace BenDownloader
                 Program.Log(ex.ToString());
             }
         }
-
-        //~BenRunner()
-        //{
-        //    //GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
-        //    //GSF.Identity.UserInfo.EndImpersonation(m_context);
-        //    //s_mutex.Dispose();
-        //}
-
         #endregion
 
         #region [Methods]
@@ -174,7 +141,6 @@ namespace BenDownloader
             }
             finally
             {
-                //lastFileDownloaded = curRecId.ToString();
                 FileSystem.DeleteFile(m_tempDirectoryName + "bendir.txt");
 
             }
@@ -254,27 +220,6 @@ namespace BenDownloader
                     p.WaitForExit();
                     exitcode = p.ExitCode;
                 }
-
-                //bool flag = true;
-
-                //while (flag)
-                //{
-                //    try
-                //    {
-                //        s_mutex.WaitOne();
-                //        using (Process p = Process.Start(psi))
-                //        {
-                //            p.WaitForExit();
-                //            if (p.ExitCode == 0)
-                //                flag = false;
-                //        }
-                //    }
-                //    finally
-                //    {
-                //        s_mutex.ReleaseMutex();
-                //    }
-
-                //}
 
                 FileSystem.DeleteFile(m_tempDirectoryName + "benlink.req");
                 FileSystem.DeleteFile(m_tempDirectoryName + "benlink.rsp");
