@@ -420,6 +420,18 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Gets or sets connection timeout for transport.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Defines connection timeout for transport."),
+        DefaultValue(30000)]
+        public int ConnectionTimeout
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets flag that determines if connection messages should be logged.
         /// </summary>
         [ConnectionStringParameter,
@@ -954,6 +966,7 @@ namespace openMIC
                             client.Server = ConnectionHostName;
                         }
 
+                        client.Timeout = ConnectionTimeout;
                         client.Connect(ConnectionUserName, ConnectionPassword);
                         OnStatusMessage("Connected to FTP server \"{0}@{1}\"", ConnectionUserName, ConnectionHostName);
                     }
