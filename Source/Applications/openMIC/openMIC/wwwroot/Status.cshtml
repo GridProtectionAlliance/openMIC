@@ -44,10 +44,10 @@
             <input class='form-control' type='search' id='searchFilter' placeholder='Search'/>
         </div>
     </div>
-    <div class='form-group' style='margin-top: 5px; margin-bottom: 10px'>
+    @*<div class='form-group' style='margin-top: 5px; margin-bottom: 10px'>
         <label for='inputQueryLimit'>Query Limit:</label> <input id='inputQueryLimit' data-bind='value: itemLimit' type='number' style='width: 50px'/>
         <button type='button' class='btn btn-primary pull-right' data-bind='click: queueAll()'>Queue All for Processing...</button>
-    </div>
+    </div>*@
 }
 @section Scripts {
     <script src="Scripts/knockout-3.4.0.js"></script>
@@ -64,7 +64,7 @@
             self.columnLength = ko.observable(4);       // Columns in each row of items
 
             // Internal fields
-            self._itemLimit = ko.observable(100);       // Item query limit
+            self._itemLimit = ko.observable(-1);       // Item query limit
 
             // Properties
 
@@ -198,14 +198,14 @@
             $("#pageHeader").append("@Raw(SearchFilter().ToString().RemoveDuplicateWhiteSpace().Replace("\r\n", ""))");
 
             $("#titleText").html("Records: <span data-bind='text: recordCount'>calculating...</span>");
-
             $("#searchFilter").on("keyup", function (event) {
                 if ($("#searchFilter").val().length === 0) {
-                    viewModel.filterText = "";
-                    viewModel.queryItems();
+                    $('.panel').show();
                 } else {
-                    viewModel.filterText = $("#searchFilter").val();
-                    viewModel.queryItems();
+                    $('.panel').hide();
+                    $('.panel').filter(function (i,d) {
+                        return $(d).attr('id').toLowerCase().indexOf($("#searchFilter").val().toLowerCase()) != -1
+                    }).show();
                 }
             });
 
@@ -230,7 +230,7 @@
         }
     </script>
 }
-<div data-bind="foreach: rows">
+@*<div data-bind="foreach: rows">
     <div data-bind="foreach: $data" class="row">
         <div class="col-md-3">
             <div class="panel panel-default" data-bind="attr: {id: Acronym + 'Panel'}">
@@ -250,4 +250,31 @@
             </div>
         </div>
     </div>    
+</div>*@
+
+<div class="bs-example">
+    <div class="panel-group" id="accordion" data-bind="foreach: items">
+        <div class="panel panel-default" data-bind="attr: {id: Acronym + 'Panel'}">
+            <div class="panel-heading" >
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" data-bind="attr: {id: Acronym+'Heading','data-target': '#sm' + Acronym}, text: Acronym"></a>
+                </h4>
+            </div>
+            <div data-bind="attr: {id: 'sm' + Acronym}" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="table-cell-wrap" data-bind="attr: {id: Acronym + 'Message'}" style="overflow-y: auto; height: 110px; padding: 5px; margin-bottom: 5px; border: 1px solid; border-color: #ddd"></div>
+                    <div class="progress" style="margin: 0">
+                        <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" data-bind="attr: {id: Acronym + 'CurrentProgress'}">0%</div>
+                    </div>
+                    <div class="progress" style="margin-top: 5px; margin-bottom: -5px">
+                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%" data-bind="attr: {id: Acronym + 'OverallProgress'}">0%</div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <button type="button" class="btn btn-primary" data-bind="click: queueNow.bind($data)">Queue Processing...</button>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
