@@ -105,6 +105,15 @@ CREATE TABLE Vendor(
     UpdatedBy VARCHAR(200) NOT NULL DEFAULT ''
 );
 
+CREATE TABLE [dbo].[StatusLog](
+      [ID] [int] IDENTITY(1,1) NOT NULL,
+      [DeviceID] [int] NOT NULL,
+      [LastSuccess] [DateTime2] NULL,
+	  [LastFailure] [DateTime2] NULL,
+      [Message] [varchar](max) NULL
+
+);
+
 CREATE TABLE Protocol(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     Acronym VARCHAR(200) NOT NULL,

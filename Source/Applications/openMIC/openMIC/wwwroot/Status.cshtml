@@ -120,6 +120,15 @@
                 dataHub.queryEnabledDevices(self.itemLimit(), self.filterText).done(function (devices) {
                     self.items.removeAll();
                     self.items(devices);
+                    
+                    $.each(devices, function (i, d) {
+                        dataHub.getStatusLogForDevice(d.Acronym).done(function (data) {
+                            $('#lastSuccessful' + d.Acronym).text(data.LastSuccess.formatDate(DateTimeFormat));
+                            $('#lastUnsuccessful' + d.Acronym).text(data.LastFailure.formatDate(DateTimeFormat));
+                            $('#lastMessage' + d.Acronym).text(data.Message);
+                        });
+                    });
+
                 });
             }
         }
@@ -193,6 +202,12 @@
                             break;
                     }
                 }
+                
+                dataHub.getStatusLogForDevice(update.DeviceName).done(function (data) {
+                    $('#lastSuccessful' + update.DeviceName).text(data.LastSuccess.formatDate(DateTimeFormat));
+                    $('#lastUnsuccessful' + update.DeviceName).text(data.LastFailure.formatDate(DateTimeFormat));
+                    $('#lastMessage' + update.DeviceName).text(data.Message);
+                });
             }
 
             $("#pageHeader").append("@Raw(SearchFilter().ToString().RemoveDuplicateWhiteSpace().Replace("\r\n", ""))");
@@ -230,28 +245,6 @@
         }
     </script>
 }
-@*<div data-bind="foreach: rows">
-    <div data-bind="foreach: $data" class="row">
-        <div class="col-md-3">
-            <div class="panel panel-default" data-bind="attr: {id: Acronym + 'Panel'}">
-                <div class="panel-heading" data-bind="attr: {id: Acronym + 'Heading'}, text: Acronym"></div>
-                <div class="panel-body">
-                    <div class="table-cell-wrap" data-bind="attr: {id: Acronym + 'Message'}" style="overflow-y: auto; height: 110px; padding: 5px; margin-bottom: 5px; border: 1px solid; border-color: #ddd"></div>
-                    <div class="progress" style="margin: 0">
-                        <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" data-bind="attr: {id: Acronym + 'CurrentProgress'}">0%</div>
-                    </div>
-                    <div class="progress" style="margin-top: 5px; margin-bottom: -5px">
-                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%" data-bind="attr: {id: Acronym + 'OverallProgress'}">0%</div>
-                    </div>
-                </div>
-                <div class="panel-footer">
-                    <button type="button" class="btn btn-primary" data-bind="click: queueNow.bind($data)">Queue Processing...</button>
-                </div>
-            </div>
-        </div>
-    </div>    
-</div>*@
-
 <div class="bs-example">
     <div class="panel-group" id="accordion" data-bind="foreach: items">
         <div class="panel panel-default" data-bind="attr: {id: Acronym + 'Panel'}">
@@ -262,6 +255,10 @@
             </div>
             <div data-bind="attr: {id: 'sm' + Acronym}" class="panel-collapse collapse">
                 <div class="panel-body">
+                    <div class="">Last Successful Download: <span data-bind="attr: {id: 'lastSuccessful' + Acronym}"></span></div>
+                    <div class="">Last Unsuccessful Download: <span data-bind="attr: {id: 'lastUnsuccessful' + Acronym}"></span></div>
+                    <div class="">Last Failure Message: <span data-bind="attr: {id: 'lastMessage' + Acronym}"></span></div>
+
                     <div class="table-cell-wrap" data-bind="attr: {id: Acronym + 'Message'}" style="overflow-y: auto; height: 110px; padding: 5px; margin-bottom: 5px; border: 1px solid; border-color: #ddd"></div>
                     <div class="progress" style="margin: 0">
                         <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" data-bind="attr: {id: Acronym + 'CurrentProgress'}">0%</div>

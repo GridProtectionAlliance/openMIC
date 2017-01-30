@@ -127,6 +127,51 @@ namespace openMIC
 
             if (!string.IsNullOrEmpty(update.ProgressMessage))
                 update.ProgressMessage += $"\r\n\r\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}]";
+            
+
+            if(e.Argument.State == ProgressState.Failed)
+            {
+                DataHub dataHub = new DataHub();
+                IEnumerable<StatusLog> logs = dataHub.DataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID IN (Select ID FROM Device WHERE Acronym LIKE {0})", e.Argument.DeviceName));
+
+                if(logs.Any())
+                {
+                    StatusLog log = logs.First();
+                    log.LastFailure = DateTime.UtcNow;
+                    log.Message = e.Argument.ProgressMessage;
+                    dataHub.DataContext.Table<StatusLog>().UpdateRecord(log);
+                }
+                else
+                {
+                    StatusLog log = new StatusLog();
+                    log.LastFailure = DateTime.UtcNow;
+                    log.Message = e.Argument.ProgressMessage;
+                    log.DeviceID = dataHub.DataContext.Connection.ExecuteScalar<int>($"Select ID FROM Device WHERE Acronym LIKE '{e.Argument.DeviceName}'");
+                    dataHub.DataContext.Table<StatusLog>().AddNewRecord(log);
+                }
+            }
+
+            else if(e.Argument.State == ProgressState.Succeeded)
+            {
+                DataHub dataHub = new DataHub();
+                IEnumerable<StatusLog> logs = dataHub.DataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID IN (Select ID FROM Device WHERE Acronym LIKE {0})", e.Argument.DeviceName));
+
+                if (logs.Any())
+                {
+                    StatusLog log = logs.First();
+                    log.LastSuccess = DateTime.UtcNow;
+                    //log.Message = e.Argument.ProgressMessage;
+                    dataHub.DataContext.Table<StatusLog>().UpdateRecord(log);
+                }
+                else
+                {
+                    StatusLog log = new StatusLog();
+                    log.LastSuccess = DateTime.UtcNow;
+                    //log.Message = e.Argument.ProgressMessage;
+                    log.DeviceID = dataHub.DataContext.Connection.ExecuteScalar<int>($"Select ID FROM Device WHERE Acronym LIKE '{e.Argument.DeviceName}'");
+                    dataHub.DataContext.Table<StatusLog>().AddNewRecord(log);
+                }
+            }
 
             GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(e.Argument);
         }
@@ -686,6 +731,19 @@ namespace openMIC
 
         #endregion
 
+        #region [StatusLog Operations]
+
+        public StatusLog GetStatusLogForDevice(string deviceName)
+        {
+            IEnumerable<StatusLog> logs = DataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID IN (SELECT ID FROM Device WHERE Acronym LIKE {0})",deviceName));
+
+            if (logs.Any())
+                return logs.First();
+            else
+                return new StatusLog();
+        }
+        #endregion
+        
         #region [ Data Subscription Operations ]
 
         // These functions are dependent on subscriptions to data where each client connection can customize the subscriptions, so an instance

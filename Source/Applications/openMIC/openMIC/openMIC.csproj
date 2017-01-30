@@ -266,6 +266,7 @@
     <Compile Include="Model\Statistic.cs" />
     <Compile Include="Model\ConnectionProfile.cs" />
     <Compile Include="Model\StatusLight.cs" />
+    <Compile Include="Model\StatusLog.cs" />
     <Compile Include="Model\Vendor.cs" />
     <Compile Include="Model\ConnectionProfileTask.cs" />
     <Compile Include="Model\VendorDevice.cs" />

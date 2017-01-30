@@ -139,6 +139,16 @@ CREATE TABLE [dbo].[ErrorLog](
 ) ON [PRIMARY]
 GO
 
+CREATE TABLE [dbo].[StatusLog](
+      [ID] [int] IDENTITY(1,1) NOT NULL,
+      [DeviceID] [int] NOT NULL,
+      [LastSuccess] [DateTime2] NULL,
+	  [LastFailure] [DateTime2] NULL,
+      [Message] [varchar](max) NULL
+
+) ON [PRIMARY]
+GO
+
 CREATE TABLE [dbo].[Runtime](
     [ID] [int] IDENTITY(1,1) NOT NULL,
     [SourceID] [int] NOT NULL,

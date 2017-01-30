@@ -408,6 +408,15 @@ CREATE TRIGGER AI_OutStreamDevDigital BEFORE INSERT ON OutputStreamDeviceDigital
 END;
 /
 
+CREATE TABLE [dbo].[StatusLog](
+      [ID] [int] IDENTITY(1,1) NOT NULL,
+      [DeviceID] [int] NOT NULL,
+      [LastSuccess] [DateTime2] NULL,
+	  [LastFailure] [DateTime2] NULL,
+      [Message] [varchar](max) NULL
+
+);
+
 CREATE TABLE OutputStreamDevicePhasor(
     NodeID VARCHAR2(36) NOT NULL,
     OutputStreamDeviceID NUMBER NOT NULL,
