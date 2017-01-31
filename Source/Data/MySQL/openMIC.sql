@@ -302,15 +302,6 @@ CREATE TABLE OutputStreamDeviceAnalog(
     CONSTRAINT PK_OutputStreamDeviceAnalog PRIMARY KEY (ID ASC)
 );
 
-CREATE TABLE [dbo].[StatusLog](
-      [ID] [int] IDENTITY(1,1) NOT NULL,
-      [DeviceID] [int] NOT NULL,
-      [LastSuccess] [DateTime2] NULL,
-	  [LastFailure] [DateTime2] NULL,
-      [Message] [varchar](max) NULL
-
-);
-
 CREATE TABLE Measurement(
     PointID INT AUTO_INCREMENT NOT NULL,
     SignalID NCHAR(36) NOT NULL DEFAULT '',
