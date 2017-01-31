@@ -64,8 +64,11 @@ namespace BenDownloader
 
             //ConfigurationFile openMicConfigurationFile = ConfigurationFile.Open("");
             BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1]));
-            if (!br.XferAllFiles()) 
+            if (!br.XferAllFiles())
+            {
+                Log("BEN Downloader failed...");
                 throw new Exception("BEN Downloader failed...");
+            }
 
         }
 

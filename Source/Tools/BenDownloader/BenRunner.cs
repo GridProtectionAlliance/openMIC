@@ -116,7 +116,7 @@ namespace BenDownloader
             {
                 int numFiles = myFiles.Count;
 
-                if (numFiles > 0)
+                if (myFiles.Any())
                 {
                     //if there are less than 25 records to download then begin downloading files
                     if (numFiles + 50 < MAXFILELIMIT)
@@ -177,7 +177,7 @@ namespace BenDownloader
                         {
                             BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
 
-                            if(curRecord.DateTime > m_lastFileDownloaded.DateTime)
+                            if(curRecord.DateTime > DateTime.UtcNow.AddDays(-30) && curRecord.DateTime > m_lastFileDownloaded.DateTime)
                                 downloadList.Add(curRecord);
                         }
                         else
@@ -367,7 +367,8 @@ namespace BenDownloader
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
                             string newFileName = m_localPath + "\\" + m_folder + '\\' + file.Name;
-                            System.IO.File.Copy(file.FullName, newFileName);
+                            if(!System.IO.File.Exists(newFileName))
+                                System.IO.File.Copy(file.FullName, newFileName);
                             System.IO.File.Delete(file.FullName);
                         }
                     }
@@ -396,12 +397,12 @@ namespace BenDownloader
                     {
                         try
                         {
-                        if (file.LastWriteTime > lastFile.DateTime)
-                            {
-                                string[] dateFromFileName = System.IO.Path.GetFileNameWithoutExtension(file.Name).Split(',');
-                                lastFile.DateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
-                                lastFile.Id = int.Parse(dateFromFileName[dateFromFileName.Length - 1]);
-                            }
+                            if (file.LastWriteTime > lastFile.DateTime)
+                                {
+                                    string[] dateFromFileName = System.IO.Path.GetFileNameWithoutExtension(file.Name).Split(',');
+                                    lastFile.DateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
+                                    lastFile.Id = int.Parse(dateFromFileName[dateFromFileName.Length - 1]);
+                                }
                         }
                         catch (Exception ex)
                         {
