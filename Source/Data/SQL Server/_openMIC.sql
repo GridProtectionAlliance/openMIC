@@ -38,6 +38,18 @@ CREATE TABLE [dbo].[ConnectionProfileTask](
 
 GO
 
+CREATE TABLE [dbo].[StatusLog](		
+      [ID] [int] IDENTITY(1,1) NOT NULL,		
+      [DeviceID] [int] NOT NULL,		
+      [LastSuccess] [DateTime2] NULL,		
+	  [LastFailure] [DateTime2] NULL,		
+      [Message] [varchar](max) NULL,
+	  [LastFile] [varchar](max) NULL		
+)
+
+GO
+
+
 ALTER TABLE [dbo].[ConnectionProfileTask]  WITH CHECK ADD  CONSTRAINT [FK_ConnectionProfileTask_ConnectionProfile] FOREIGN KEY([ConnectionProfileID])
 REFERENCES [dbo].[ConnectionProfile] ([ID])
 GO

@@ -71,7 +71,7 @@
     <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/Small/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="Images/StatusLights/Small/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
     <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: showViewScreen"></button></td>
     <td width="20%" class="text-center" data-bind="text: notNull(ConnectionString).parseKeyValuePairs().get('schedule')"></td>
-    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" disabled/></td>
+    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled, click: disableDevice" /></td>
     <td width="5%" class="text-center valign-middle" nowrap>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
@@ -85,6 +85,7 @@
         @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP [ <em>:port</em> ]", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionusername')", false, fieldLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionpassword')", false, inputType: "password", fieldLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('connectionTimeout')", false, fieldLabel: "Connection Timeout", fieldID: "inputConnectionTimeout", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
         @Raw(dataContext.AddInputField("get('schedule')", true, fieldLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name"))
@@ -194,6 +195,7 @@
         defaultConnectionString.set("dialUpPassword", "");
         defaultConnectionString.set("dialUpRetries", @Model.Global.DefaultDialUpRetries);
         defaultConnectionString.set("dialUpTimeout", @Model.Global.DefaultDialUpTimeout);
+        defaultConnectionString.set("connectionTimeout", "30000");
         defaultConnectionString.set("logConnectionMessages", false);
 
         // Create an observable key/value pair connection string dictionary
@@ -298,6 +300,12 @@
                 viewModel.viewPageRecord(record);
             else if (record.ProtocolID === modbusProtocolID)
                 window.location.href = "/ModbusConfig.cshtml?DeviceID=" + record.ID;
+        }
+        
+        function disableDevice(id, thecontrol){
+            dataHub.disableDevice(id.ID, $(thecontrol.target).prop('checked')).done(function(){
+                viewModel.queryPageRecords();
+            });
         }
     </script>
 }

@@ -161,6 +161,8 @@ namespace openMIC
                     StatusLog log = logs.First();
                     log.LastSuccess = DateTime.UtcNow;
                     //log.Message = e.Argument.ProgressMessage;
+                    if (e.Argument.ProgressMessage.Contains("Download complete"))
+                        log.LastFile = e.Argument.ProgressMessage.Split('\"')[1];
                     dataHub.DataContext.Table<StatusLog>().UpdateRecord(log);
                 }
                 else
@@ -242,6 +244,15 @@ namespace openMIC
                 FramesPerSecond = 1
             };
         }
+
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Device), RecordOperation.DeleteRecord)]
+        public void DisableDevice(int id, bool truth)
+        {
+            DataContext.Connection.ExecuteNonQuery("Update Device SET Enabled = {0} WHERE ID = {1}", truth, id);
+        }
+
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Device), RecordOperation.AddNewRecord)]

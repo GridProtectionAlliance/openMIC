@@ -14,5 +14,6 @@ namespace openMIC.Model
         public DateTime? LastSuccess { get; set; }
         public DateTime? LastFailure { get; set; }
         public string Message { get; set; }
+        public string LastFile { get; set; }
     }
 }
