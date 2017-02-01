@@ -24,7 +24,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Runtime.InteropServices;
@@ -36,10 +38,11 @@ using GSF.Identity;
 using System.Security.Principal;
 using GSF.Configuration;
 using GSF.Data;
+using GSF.IO;
+using GSF.Parsing;
 using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.FileIO;
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
-
 namespace BenDownloader
 {
     public class BenRunner
@@ -56,6 +59,9 @@ namespace BenDownloader
         private readonly string m_serialNumber;
         private readonly string m_tempDirectoryName;
         private readonly BenRecord m_lastFileDownloaded;
+        private readonly DataRow m_deviceRecord;
+        private readonly DataRow m_connectionProfile;
+        private readonly Dictionary<string, string> m_connectionProfileTaskSettings;
 
         #endregion
 
@@ -68,14 +74,16 @@ namespace BenDownloader
                 using (AdoDataConnection conn = new AdoDataConnection("systemSettings"))
                 {
                     string taskSettingsString = conn.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
-                    Dictionary<string, string> taskSettings = taskSettingsString.ParseKeyValuePairs();
+                    m_connectionProfileTaskSettings = taskSettingsString.ParseKeyValuePairs();
                     string deviceConnectionString = conn.ExecuteScalar<string>("Select ConnectionString From Device WHERE ID = {0}", deviceId);
                     Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
 
-                    m_folder = conn.ExecuteScalar<string>("Select OriginalSource From Device WHERE ID = {0}", deviceId);
+                    m_deviceRecord = conn.RetrieveRow("Select * From Device WHERE ID = {0}", deviceId);
+                    m_connectionProfile = conn.RetrieveRow("SELECT * FROM connectionProfile WHERE ID = {0}", deviceConnection["connectionProfileID"]);
+                    m_folder = m_deviceRecord["OriginalSource"].ToString();
                     m_ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
-                    m_localPath = taskSettings["localPath"];
-                    m_siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
+                    m_localPath = m_connectionProfileTaskSettings["localPath"];
+                    m_siteName = m_deviceRecord["Name"].ToString();
                     m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
 
                     string tempDirectory = System.IO.Path.GetTempPath();
@@ -366,7 +374,7 @@ namespace BenDownloader
                         if(dateTime != file.LastWriteTime)
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
-                            string newFileName = m_localPath + "\\" + m_folder + '\\' + file.Name;
+                            string newFileName = GetLocalFileName(file.Name);
                             if(!System.IO.File.Exists(newFileName))
                                 System.IO.File.Copy(file.FullName, newFileName);
                             System.IO.File.Delete(file.FullName);
@@ -443,6 +451,45 @@ namespace BenDownloader
         [DllImport("kernel32", EntryPoint = "GetShortPathName", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int GetShortPathName(string longPath, StringBuilder shortPath, int bufSize);
         #endregion
+
+        private string GetLocalFileName( string fileName)
+        {
+            TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
+            Dictionary<string, string> substitutions = new Dictionary<string, string>
+            {
+                { "<YYYY>", $"{DateTime.Now.Year}" },
+                { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
+                { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
+                { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
+                { "<DeviceName>", (m_deviceRecord["Name"].ToString() ==""? "undefined": m_deviceRecord["Name"].ToString())},
+                { "<DeviceAcronym>", m_deviceRecord["Acronym"].ToString() },
+                { "<DeviceFolderName>", (m_deviceRecord["OriginalSource"].ToString() =="" ? m_deviceRecord["Acronym"].ToString() : m_deviceRecord["OriginalSource"].ToString())},
+                { "<ProfileName>", (m_connectionProfile["Name"].ToString() == "" ? "undefined" :m_connectionProfile["Name"].ToString()) }
+            };
+
+            directoryNameExpressionParser.TemplatedExpression = m_connectionProfileTaskSettings["directoryNamingExpression"].Replace("\\", "\\\\");
+
+            //         Possible UNC Path                            Sub Directory - duplicate path slashes are removed
+            fileName = $"{m_localPath}{Path.DirectorySeparatorChar}{m_folder}{Path.DirectorySeparatorChar}{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{fileName}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
+
+            string directoryName = FilePath.GetDirectoryName(fileName);
+
+            if (!Directory.Exists(directoryName))
+            {
+                try
+                {
+                    Directory.CreateDirectory(directoryName);
+                }
+                catch (Exception ex)
+                {
+                    Program.Log($"Failed to create directory \"{directoryName}\": {ex.Message}");
+                    throw new InvalidOperationException($"Failed to create directory \"{directoryName}\": {ex.Message}", ex);
+
+                }
+            }
+
+            return fileName;
+        }
 
         #region [Email/PQMS]
         private void SendFileNumberLargerEmailNotification(string filename, int downloadFileNumber)

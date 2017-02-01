@@ -50,6 +50,8 @@
   <ItemGroup>
     <Compile Include="BenRecord.cs" />
     <Compile Include="BenRunner.cs" />
+    <Compile Include="ConnectionProfile.cs" />
+    <Compile Include="Device.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
