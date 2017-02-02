@@ -100,7 +100,7 @@ namespace BenDownloader
             }
             catch(Exception ex)
             {
-                Program.Log(ex.ToString());
+                Program.Log(ex.ToString(), m_tempDirectoryName);
             }
         }
         #endregion
@@ -187,7 +187,7 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log("XFER Error/Site: " + m_siteName + " - " + ex.ToString());
+                Program.Log("XFER Error/Site: " + m_siteName + " - " + ex.ToString(),m_tempDirectoryName);
 
                 throw new System.Exception("XFER Error/Site: " + m_siteName + " - " + ex.ToString());
 
@@ -246,7 +246,7 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log("GetFileList Error: " + m_siteName + " - " + ex.ToString());
+                Program.Log("GetFileList Error: " + m_siteName + " - " + ex.ToString(), m_tempDirectoryName);
                 throw new Exception("GetFileList Error: " + m_siteName + " - " + ex.ToString());
             }
             return downloadList;
@@ -280,7 +280,7 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log("ExecBenCommand error: " + m_siteName + " - " + ex.ToString());
+                Program.Log("ExecBenCommand error: " + m_siteName + " - " + ex.ToString(), m_tempDirectoryName);
 
                 throw new Exception("ExecBenCommand error: " + m_siteName + " - " + ex.ToString());
             }
@@ -350,7 +350,7 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log("BuildBenLinkDLINI error: " + m_siteName + " - " + ex.ToString());
+                Program.Log("BuildBenLinkDLINI error: " + m_siteName + " - " + ex.ToString(), m_tempDirectoryName);
 
                 throw new System.Exception("BuildBenLinkDLINI error: " + m_siteName + " - " + ex.ToString());
             }
@@ -395,7 +395,7 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log("BuildBenLinkDirINI error: " + m_siteName + '-' + ex.ToString());
+                Program.Log("BuildBenLinkDirINI error: " + m_siteName + '-' + ex.ToString(), m_tempDirectoryName);
 
                 throw new SystemException("BuildBenLinkDirINI error: " + m_siteName + '-' + ex.ToString());
             }
@@ -429,7 +429,7 @@ namespace BenDownloader
                     }
                     catch(Exception ex)
                     {
-                        Program.Log("File timestamp update error: " + file.Name + '-' + ex.ToString());
+                        Program.Log("File timestamp update error: " + file.Name + '-' + ex.ToString(), m_tempDirectoryName);
                         throw new SystemException("File timestamp update error: " + file.Name + '-' + ex.ToString());
                     }
                 }
@@ -461,7 +461,7 @@ namespace BenDownloader
                         }
                         catch (Exception ex)
                         {
-                            Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
+                            Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString(), m_tempDirectoryName);
                             throw new SystemException("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
                         }
                     }
@@ -469,7 +469,7 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log("Get Last Downloaded File - Get Files \n\n" + ex.ToString());
+                Program.Log("Get Last Downloaded File - Get Files \n\n" + ex.ToString(), m_tempDirectoryName);
             }
 
 
@@ -528,7 +528,7 @@ namespace BenDownloader
                 }
                 catch (Exception ex)
                 {
-                    Program.Log($"Failed to create directory \"{directoryName}\": {ex.Message}");
+                    Program.Log($"Failed to create directory \"{directoryName}\": {ex.Message}", m_tempDirectoryName);
                     throw new InvalidOperationException($"Failed to create directory \"{directoryName}\": {ex.Message}", ex);
 
                 }

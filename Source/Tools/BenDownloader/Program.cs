@@ -100,11 +100,11 @@ namespace BenDownloader
                 : str;
         }
 
-        public static void Log(string logMessage)
+        public static void Log(string logMessage, string path ="")
         {
             lock (s_logLock)
             {
-                using (StreamWriter w = File.AppendText("BenDownloaderLogFile.txt"))
+                using (StreamWriter w = File.AppendText(path + "BenDownloaderLogFile.txt"))
                 {
                     w.Write("\r\nLog Entry : ");
                     w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
