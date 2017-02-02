@@ -65,6 +65,7 @@ namespace BenDownloader
         private readonly DataRow m_deviceRecord;
         private readonly DataRow m_connectionProfile;
         private readonly Dictionary<string, string> m_connectionProfileTaskSettings;
+        private string m_lastFileDownloadedThisSession;
 
         #endregion
 
@@ -118,14 +119,14 @@ namespace BenDownloader
                     {
                         StatusLog log = logs.First();
                         log.LastSuccess = DateTime.UtcNow;
-                        log.LastFile = "";
+                        log.LastFile = m_lastFileDownloadedThisSession;
                         dataContext.Table<StatusLog>().UpdateRecord(log);
                     }
                     else
                     {
                         StatusLog log = new StatusLog();
                         log.LastSuccess = DateTime.UtcNow;
-                        log.LastFile = "";
+                        log.LastFile = m_lastFileDownloadedThisSession;
                         log.DeviceID = int.Parse(m_deviceRecord["ID"].ToString());
                         dataContext.Table<StatusLog>().AddNewRecord(log);
                     }
@@ -418,8 +419,11 @@ namespace BenDownloader
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
                             string newFileName = GetLocalFileName(file.Name);
-                            if(!System.IO.File.Exists(newFileName))
+                            if (!System.IO.File.Exists(newFileName))
+                            {
                                 System.IO.File.Copy(file.FullName, newFileName);
+                                m_lastFileDownloadedThisSession = file.Name;
+                            }
                             System.IO.File.Delete(file.FullName);
                         }
                     }
