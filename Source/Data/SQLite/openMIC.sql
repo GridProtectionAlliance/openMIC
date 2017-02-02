@@ -1683,6 +1683,16 @@ CREATE TABLE ConnectionProfileTask(
     CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID)
 );
 
+CREATE TABLE [dbo].[StatusLog](		
+      [ID] [int] IDENTITY(1,1) NOT NULL,		
+      [DeviceID] [int] NOT NULL,		
+      [LastSuccess] [DateTime2] NULL,		
+	  [LastFailure] [DateTime2] NULL,		
+      [Message] [varchar](max) NULL,
+	  [LastFile] [varchar](max) NULL		
+);
+
+
 CREATE TRIGGER ConnectionProfile_InsertDefault AFTER INSERT ON ConnectionProfile
 FOR EACH ROW
 BEGIN

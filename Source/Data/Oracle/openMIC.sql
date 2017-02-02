@@ -2693,6 +2693,15 @@ CREATE TABLE ConnectionProfileTask(
     UpdatedBy VARCHAR2(200) NOT NULL
 );
 
+CREATE TABLE [dbo].[StatusLog](		
+      [ID] [int] IDENTITY(1,1) NOT NULL,		
+      [DeviceID] [int] NOT NULL,		
+      [LastSuccess] [DateTime2] NULL,		
+	  [LastFailure] [DateTime2] NULL,		
+      [Message] [varchar](max) NULL,
+	  [LastFile] [varchar](max) NULL		
+);
+
 CREATE UNIQUE INDEX IX_ConnectionProfileTask_ID ON ConnectionProfileTask (ID ASC) TABLESPACE openMIC_INDEX;
 
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT PK_ConnectionProfileTask PRIMARY KEY (ID);
