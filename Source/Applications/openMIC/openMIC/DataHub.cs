@@ -160,16 +160,18 @@ namespace openMIC
                 {
                     StatusLog log = logs.First();
                     log.LastSuccess = DateTime.UtcNow;
-                    //log.Message = e.Argument.ProgressMessage;
                     if (e.Argument.ProgressMessage.Contains("Download complete"))
                         log.LastFile = e.Argument.ProgressMessage.Split('\"')[1];
+
                     dataHub.DataContext.Table<StatusLog>().UpdateRecord(log);
                 }
                 else
                 {
                     StatusLog log = new StatusLog();
                     log.LastSuccess = DateTime.UtcNow;
-                    //log.Message = e.Argument.ProgressMessage;
+                    if (e.Argument.ProgressMessage.Contains("Download complete"))
+                        log.LastFile = e.Argument.ProgressMessage.Split('\"')[1];
+
                     log.DeviceID = dataHub.DataContext.Connection.ExecuteScalar<int>($"Select ID FROM Device WHERE Acronym LIKE '{e.Argument.DeviceName}'");
                     dataHub.DataContext.Table<StatusLog>().AddNewRecord(log);
                 }

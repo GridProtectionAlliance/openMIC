@@ -48,26 +48,39 @@ namespace BenDownloader
     {
 
         private static object s_logLock = new object();
+        private static readonly ConfigurationFile s_openMicConfigurationFile = ConfigurationFile.Open(Directory.GetCurrentDirectory() + "\\openMIC.exe.Config");
+
+        public static ConfigurationFile OpenMiConfigurationFile
+        {
+            get
+            {
+                return s_openMicConfigurationFile;
+            }
+        }
 
         static void Main(string[] args)
         {
-//#if DEBUG
-//            Console.Write("Press enter to continue... ");
-//            var name = Console.ReadLine();
-//#endif        
-
-            if(args.Length != 2)
+            //#if DEBUG
+            //            Console.Write("Press enter to continue... ");
+            //            var name = Console.ReadLine();
+            //#endif        
+            try
             {
-                Console.WriteLine("Please pass two and only two parameters...");
-                return;
+                if (args.Length != 2)
+                {
+                    Console.WriteLine("Please pass two and only two parameters...");
+                    return;
+                }
+
+                BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1]));
+                if (!br.XferAllFiles())
+                {
+                    throw new Exception("BEN Downloader failed...");
+                }
             }
-
-            //ConfigurationFile openMicConfigurationFile = ConfigurationFile.Open("");
-            BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1]));
-            if (!br.XferAllFiles())
+            catch(Exception ex)
             {
-                Log("BEN Downloader failed...");
-                throw new Exception("BEN Downloader failed...");
+                Log("Ben Downloader failed. Message: " + ex);
             }
 
         }

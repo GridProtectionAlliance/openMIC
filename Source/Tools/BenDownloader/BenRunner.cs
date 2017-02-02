@@ -34,12 +34,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GSF;
+using GSF.Web.Hubs;
 using GSF.Identity;
 using System.Security.Principal;
 using GSF.Configuration;
 using GSF.Data;
+using GSF.Data.Model;
 using GSF.IO;
 using GSF.Parsing;
+using GSF.Web.Model;
 using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.FileIO;
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
@@ -71,7 +74,8 @@ namespace BenDownloader
         {
             try
             {
-                using (AdoDataConnection conn = new AdoDataConnection("systemSettings"))
+
+                using (AdoDataConnection conn = new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value))
                 {
                     string taskSettingsString = conn.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
                     m_connectionProfileTaskSettings = taskSettingsString.ParseKeyValuePairs();
@@ -106,12 +110,52 @@ namespace BenDownloader
             try
             {
                 XferDataFiles();
+                using (DataContext dataContext = new DataContext(new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value)))
+                {
+                    IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID = {0}",m_deviceRecord["ID"]));
+
+                    if (logs.Any())
+                    {
+                        StatusLog log = logs.First();
+                        log.LastSuccess = DateTime.UtcNow;
+                        log.LastFile = "";
+                        dataContext.Table<StatusLog>().UpdateRecord(log);
+                    }
+                    else
+                    {
+                        StatusLog log = new StatusLog();
+                        log.LastSuccess = DateTime.UtcNow;
+                        log.LastFile = "";
+                        log.DeviceID = int.Parse(m_deviceRecord["ID"].ToString());
+                        dataContext.Table<StatusLog>().AddNewRecord(log);
+                    }
+
+                }
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ben5K XferAllFiles (" + m_siteName + "): " + ex.ToString());
                 Program.Log("Ben5K XferAllFiles (" + m_siteName + "): " + ex.ToString());
+                using (DataContext dataContext = new DataContext(new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value)))
+                {
+
+                    IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID = {0}", m_deviceRecord["ID"]));
+                    if (logs.Any())
+                    {
+                        StatusLog log = logs.First();
+                        log.LastFailure = DateTime.UtcNow;
+                        log.Message = ex.Message;
+                        dataContext.Table<StatusLog>().UpdateRecord(log);
+                    }
+                    else
+                    {
+                        StatusLog log = new StatusLog();
+                        log.LastFailure = DateTime.UtcNow;
+                        log.Message = ex.Message;
+                        log.DeviceID = int.Parse(m_deviceRecord["ID"].ToString());
+                        dataContext.Table<StatusLog>().AddNewRecord(log);
+                    }
+                }
                 return false;
             }
         }
@@ -359,7 +403,6 @@ namespace BenDownloader
 
         private void UpdateTimestamps()
         {
-
             string[] files = System.IO.Directory.GetFiles(m_tempDirectoryName);
 
             foreach (string fileName in files)
@@ -401,7 +444,7 @@ namespace BenDownloader
                 foreach (string fileName in files)
                 {
                     System.IO.FileInfo file = new System.IO.FileInfo(fileName);
-                    if (file.Name.EndsWith("cfg") || file.Name.EndsWith("dat"))
+                    if (file.Name.EndsWith("cfg"))
                     {
                         try
                         {
@@ -450,7 +493,6 @@ namespace BenDownloader
 
         [DllImport("kernel32", EntryPoint = "GetShortPathName", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int GetShortPathName(string longPath, StringBuilder shortPath, int bufSize);
-        #endregion
 
         private string GetLocalFileName( string fileName)
         {
@@ -490,6 +532,8 @@ namespace BenDownloader
 
             return fileName;
         }
+
+        #endregion
 
         #region [Email/PQMS]
         private void SendFileNumberLargerEmailNotification(string filename, int downloadFileNumber)
