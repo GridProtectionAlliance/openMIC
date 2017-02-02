@@ -121,13 +121,13 @@
                     self.items.removeAll();
                     self.items(devices);
                     
-                    $.each(devices, function (i, d) {
-                        dataHub.getStatusLogForDevice(d.Acronym).done(function (data) {
-                            $('#lastSuccessful' + d.Acronym).text(data.LastSuccess.formatDate(DateTimeFormat));
-                            $('#lastUnsuccessful' + d.Acronym).text(data.LastFailure.formatDate(DateTimeFormat));
-                            $('#lastMessage' + d.Acronym).text(data.Message);
-                        });
-                    });
+                    //$.each(devices, function (i, d) {
+                    //    dataHub.getStatusLogForDevice(d.Acronym).done(function (data) {
+                    //        $('#lastSuccessful' + d.Acronym).text(data.LastSuccess.formatDate(DateTimeFormat));
+                    //        $('#lastUnsuccessful' + d.Acronym).text(data.LastFailure.formatDate(DateTimeFormat));
+                    //        $('#lastMessage' + d.Acronym).text(data.Message);
+                    //    });
+                    //});
 
                 });
             }
@@ -203,11 +203,11 @@
                     }
                 }
                 
-                dataHub.getStatusLogForDevice(update.DeviceName).done(function (data) {
-                    $('#lastSuccessful' + update.DeviceName).text(data.LastSuccess.formatDate(DateTimeFormat));
-                    $('#lastUnsuccessful' + update.DeviceName).text(data.LastFailure.formatDate(DateTimeFormat));
-                    $('#lastMessage' + update.DeviceName).text(data.Message);
-                });
+                //dataHub.getStatusLogForDevice(update.DeviceName).done(function (data) {
+                //    $('#lastSuccessful' + update.DeviceName).text(data.LastSuccess.formatDate(DateTimeFormat));
+                //    $('#lastUnsuccessful' + update.DeviceName).text(data.LastFailure.formatDate(DateTimeFormat));
+                //    $('#lastMessage' + update.DeviceName).text(data.Message);
+                //});
             }
 
             $("#pageHeader").append("@Raw(SearchFilter().ToString().RemoveDuplicateWhiteSpace().Replace("\r\n", ""))");
@@ -255,9 +255,9 @@
             </div>
             <div data-bind="attr: {id: 'sm' + Acronym}" class="panel-collapse collapse">
                 <div class="panel-body">
-                    <div class="">Last Successful Download: <span data-bind="attr: {id: 'lastSuccessful' + Acronym}"></span></div>
+                    @*<div class="">Last Successful Download: <span data-bind="attr: {id: 'lastSuccessful' + Acronym}"></span></div>
                     <div class="">Last Unsuccessful Download: <span data-bind="attr: {id: 'lastUnsuccessful' + Acronym}"></span></div>
-                    <div class="">Last Failure Message: <span data-bind="attr: {id: 'lastMessage' + Acronym}"></span></div>
+                    <div class="">Last Failure Message: <span data-bind="attr: {id: 'lastMessage' + Acronym}"></span></div>*@
 
                     <div class="table-cell-wrap" data-bind="attr: {id: Acronym + 'Message'}" style="overflow-y: auto; height: 110px; padding: 5px; margin-bottom: 5px; border: 1px solid; border-color: #ddd"></div>
                     <div class="progress" style="margin: 0">
