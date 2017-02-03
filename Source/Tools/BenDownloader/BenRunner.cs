@@ -94,6 +94,7 @@ namespace BenDownloader
                     string tempDirectory = System.IO.Path.GetTempPath();
                     System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
                     m_tempDirectoryName = tempDirectory + "BenDownloader\\" + m_siteName + "\\";
+                    //Console.WriteLine(m_tempDirectoryName);
                     m_lastFileDownloaded = GetLastDownloadedFile();
 
                 }
@@ -419,8 +420,12 @@ namespace BenDownloader
                         {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
                             string newFileName = GetLocalFileName(file.Name);
-                            if (!System.IO.File.Exists(newFileName))
+                            System.IO.FileInfo fi = new System.IO.FileInfo(newFileName);
+                            //Console.WriteLine($"{fi.FullName} {fi.Exists}" );
+                            if (!fi.Exists)
                             {
+                                //Console.WriteLine("moving " +newFileName);
+                                Program.Log(newFileName, m_tempDirectoryName);
                                 System.IO.File.Copy(file.FullName, newFileName);
                                 m_lastFileDownloadedThisSession = file.Name;
                             }
@@ -516,7 +521,8 @@ namespace BenDownloader
             directoryNameExpressionParser.TemplatedExpression = m_connectionProfileTaskSettings["directoryNamingExpression"].Replace("\\", "\\\\");
 
             //         Possible UNC Path                            Sub Directory - duplicate path slashes are removed
-            fileName = $"{m_localPath}{Path.DirectorySeparatorChar}{m_folder}{Path.DirectorySeparatorChar}{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{fileName}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
+            fileName = m_localPath + $"{Path.DirectorySeparatorChar}{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{fileName}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
+            //Console.WriteLine(fileName);
 
             string directoryName = FilePath.GetDirectoryName(fileName);
 

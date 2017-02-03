@@ -102,17 +102,25 @@ namespace BenDownloader
 
         public static void Log(string logMessage, string path ="")
         {
+            Console.WriteLine(path + "BenDownloaderLogFile.txt");
             lock (s_logLock)
             {
-                using (StreamWriter w = File.AppendText(path + "BenDownloaderLogFile.txt"))
+                try
                 {
-                    w.Write("\r\nLog Entry : ");
-                    w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
-                        DateTime.Now.ToLongDateString());
-                    w.WriteLine("  :");
-                    w.WriteLine("  :{0}", logMessage);
-                    w.WriteLine("-------------------------------");
-                    w.Flush();
+                    using (StreamWriter w = File.AppendText(path + "BenDownloaderLogFile.txt"))
+                    {
+                        w.Write("\r\nLog Entry : ");
+                        w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
+                            DateTime.Now.ToLongDateString());
+                        w.WriteLine("  :");
+                        w.WriteLine("  :{0}", logMessage);
+                        w.WriteLine("-------------------------------");
+                        w.Flush();
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex);
                 }
 
             }
