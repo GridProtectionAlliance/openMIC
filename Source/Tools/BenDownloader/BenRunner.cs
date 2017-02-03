@@ -434,7 +434,7 @@ namespace BenDownloader
                     }
                 }
             }
-            System.IO.Directory.Delete(m_tempDirectoryName);
+            //System.IO.Directory.Delete(m_tempDirectoryName);
         }
 
         private BenRecord GetLastDownloadedFile()
