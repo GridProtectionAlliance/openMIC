@@ -258,7 +258,7 @@ namespace BenDownloader
 
             try
             {
-                string benLinCmdLine = ConfigurationFile.Current.Settings["systemSettings"]["BenLinkCommandLine"].Value;
+                string benLinCmdLine = Program.OpenMiConfigurationFile.Settings["systemSettings"]["BenLinkCommandLine"].Value;
                 string cmdLine = benLinCmdLine.Replace("xxx", GetShortPath(m_tempDirectoryName));
                 string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
                 var psi = new ProcessStartInfo(cmdLineSplit[0])
