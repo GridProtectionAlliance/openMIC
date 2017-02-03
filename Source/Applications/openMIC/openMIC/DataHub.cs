@@ -128,55 +128,6 @@ namespace openMIC
             if (!string.IsNullOrEmpty(update.ProgressMessage))
                 update.ProgressMessage += $"\r\n\r\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}]";
             
-
-            if(e.Argument.State == ProgressState.Failed)
-            {
-                DataHub dataHub = new DataHub();
-                IEnumerable<StatusLog> logs = dataHub.DataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID IN (Select ID FROM Device WHERE Acronym LIKE {0})", e.Argument.DeviceName));
-
-                if(logs.Any())
-                {
-                    StatusLog log = logs.First();
-                    log.LastFailure = DateTime.UtcNow;
-                    log.Message = e.Argument.ProgressMessage;
-                    dataHub.DataContext.Table<StatusLog>().UpdateRecord(log);
-                }
-                else
-                {
-                    StatusLog log = new StatusLog();
-                    log.LastFailure = DateTime.UtcNow;
-                    log.Message = e.Argument.ProgressMessage;
-                    log.DeviceID = dataHub.DataContext.Connection.ExecuteScalar<int>($"Select ID FROM Device WHERE Acronym LIKE '{e.Argument.DeviceName}'");
-                    dataHub.DataContext.Table<StatusLog>().AddNewRecord(log);
-                }
-            }
-
-            else if(e.Argument.State == ProgressState.Succeeded)
-            {
-                DataHub dataHub = new DataHub();
-                IEnumerable<StatusLog> logs = dataHub.DataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID IN (Select ID FROM Device WHERE Acronym LIKE {0})", e.Argument.DeviceName));
-
-                if (logs.Any())
-                {
-                    StatusLog log = logs.First();
-                    log.LastSuccess = DateTime.UtcNow;
-                    if (e.Argument.ProgressMessage.Contains("Download complete"))
-                        log.LastFile = e.Argument.ProgressMessage.Split('\"')[1];
-
-                    dataHub.DataContext.Table<StatusLog>().UpdateRecord(log);
-                }
-                else
-                {
-                    StatusLog log = new StatusLog();
-                    log.LastSuccess = DateTime.UtcNow;
-                    if (e.Argument.ProgressMessage.Contains("Download complete"))
-                        log.LastFile = e.Argument.ProgressMessage.Split('\"')[1];
-
-                    log.DeviceID = dataHub.DataContext.Connection.ExecuteScalar<int>($"Select ID FROM Device WHERE Acronym LIKE '{e.Argument.DeviceName}'");
-                    dataHub.DataContext.Table<StatusLog>().AddNewRecord(log);
-                }
-            }
-
             GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(e.Argument);
         }
 

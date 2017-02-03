@@ -1009,6 +1009,7 @@ namespace openMIC
                         OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"Skipped \"{connectionProfileName}\" connection profile processing: No tasks defined.", 0, 1));
                     }
 
+                    UpdateStatusLogDatabase("", "", true);
                     Ticks connectedTime = DateTime.UtcNow.Ticks - connectionStartTime;
                     OnStatusMessage("FTP session connected for {0}", connectedTime.ToElapsedTimeString(2));
                     TotalConnectedTime += connectedTime;
@@ -1018,6 +1019,7 @@ namespace openMIC
                     FailedConnections++;
                     OnProcessException(new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                     OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", 0, 1));
+                    UpdateStatusLogDatabase(ex.Message, "", false);
                 }
 
                 client.CommandSent -= FtpClient_CommandSent;
@@ -1240,6 +1242,7 @@ namespace openMIC
                 FilesDownloaded++;
                 BytesDownloaded += file.Size;
                 OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, false, $"Download complete for \"{file.Name}\".", file.Size, file.Size));
+                UpdateStatusLogDatabase("", file.Name, true);
 
                 // Send e-mail on file update, if requested
                 if (fileChanged && settings.EmailOnFileUpdate)
@@ -1563,6 +1566,60 @@ namespace openMIC
             OnProcessException(e.GetException());
         }
 
+        private void UpdateStatusLogDatabase(string message, string filename, bool success)
+        {
+            try
+            {
+                using (DataContext dataContext = new DataContext(new AdoDataConnection("systemSettings")))
+                {
+                    IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID IN (Select ID FROM Device WHERE Acronym LIKE {0})", m_deviceRecord.Acronym));
+                    StatusLog log = new StatusLog();
+
+                    if (success)
+                    {
+                        if (logs.Any())
+                        {
+                            log = logs.First();
+                            log.LastSuccess = DateTime.UtcNow;
+                            if(filename != "")
+                                log.LastFile = filename;
+                            dataContext.Table<StatusLog>().UpdateRecord(log);
+                        }
+                        else
+                        {
+                            log.LastSuccess = DateTime.UtcNow;
+                            if (filename != "")
+                                log.LastFile = filename;
+                            dataContext.Table<StatusLog>().AddNewRecord(log);
+                        }
+
+                    }
+                    else
+                    {
+
+                        if (logs.Any())
+                        {
+                            log = logs.First();
+                            log.LastFailure = DateTime.UtcNow;
+                            log.Message = message;
+                            dataContext.Table<StatusLog>().UpdateRecord(log);
+                        }
+                        else
+                        {
+                            log.LastFailure = DateTime.UtcNow;
+                            log.Message = message;
+                            log.DeviceID = dataContext.Connection.ExecuteScalar<int>($"Select ID FROM Device WHERE Acronym LIKE '{m_deviceRecord.Acronym}'");
+                            dataContext.Table<StatusLog>().AddNewRecord(log);
+                        }
+
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                OnProcessException(new InvalidOperationException($"Failed to update StatusLog database for device \"{m_deviceRecord.Acronym}\": {ex.Message}"));
+            }
+        }
         #endregion
 
         #region [ Static ]
