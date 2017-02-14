@@ -1568,6 +1568,9 @@ namespace openMIC
 
         private void UpdateStatusLogDatabase(string message, string filename, bool success)
         {
+            string[] extensions = {".rcd", ".d00", ".dat", ".ctl", ".cfg", ".pcd"};
+            string[] exclusions = {"rms.", "trend."};
+
             try
             {
                 using (DataContext dataContext = new DataContext(new AdoDataConnection("systemSettings")))
@@ -1581,14 +1584,14 @@ namespace openMIC
                         {
                             log = logs.First();
                             log.LastSuccess = DateTime.UtcNow;
-                            if(filename != "")
+                            if(extensions.Any(x => filename.Contains(x)) && !exclusions.Any(x => filename.Contains(x)))
                                 log.LastFile = filename;
                             dataContext.Table<StatusLog>().UpdateRecord(log);
                         }
                         else
                         {
                             log.LastSuccess = DateTime.UtcNow;
-                            if (filename != "")
+                            if (extensions.Any(x => filename.Contains(x)) && !exclusions.Any(x => filename.Contains(x)))
                                 log.LastFile = filename;
                             dataContext.Table<StatusLog>().AddNewRecord(log);
                         }
