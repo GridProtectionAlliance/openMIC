@@ -1572,7 +1572,7 @@ namespace openMIC
             {
                 using (DataContext dataContext = new DataContext(new AdoDataConnection("systemSettings")))
                 {
-                    IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID IN (Select ID FROM Device WHERE Acronym LIKE {0})", m_deviceRecord.Acronym));
+                    IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID = {0}", m_deviceRecord.ID));
                     StatusLog log = new StatusLog();
 
                     if (success)
@@ -1608,7 +1608,7 @@ namespace openMIC
                         {
                             log.LastFailure = DateTime.UtcNow;
                             log.Message = message;
-                            log.DeviceID = dataContext.Connection.ExecuteScalar<int>($"Select ID FROM Device WHERE Acronym LIKE '{m_deviceRecord.Acronym}'");
+                            log.DeviceID = m_deviceRecord.ID;
                             dataContext.Table<StatusLog>().AddNewRecord(log);
                         }
 
