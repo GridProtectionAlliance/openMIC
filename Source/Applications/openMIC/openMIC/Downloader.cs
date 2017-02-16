@@ -1591,6 +1591,7 @@ namespace openMIC
                         else
                         {
                             log.LastSuccess = DateTime.UtcNow;
+                            log.DeviceID = m_deviceRecord.ID;
                             if (extensions.Any(x => filename.Contains(x)) && !exclusions.Any(x => filename.Contains(x)))
                                 log.LastFile = filename;
                             dataContext.Table<StatusLog>().AddNewRecord(log);
