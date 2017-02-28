@@ -46,6 +46,7 @@ using GSF.Units;
 using GSF.Web.Model;
 using openMIC.Model;
 using System.Data;
+using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Channels;
 using GSF.Data;
 using GSF.Net.Smtp;
@@ -1032,7 +1033,7 @@ namespace openMIC
         private void ProcessFTPTask(ConnectionProfileTaskSettings settings, FtpClient client)
         {
             string remotePath = GetRemotePathName(settings);
-            string localSubPath = Path.DirectorySeparatorChar.ToString();
+            string localSubPath = GetLocalPathName(settings,Path.DirectorySeparatorChar.ToString());
 
             ProcessFTPTask(settings, client, remotePath, localSubPath);
 
@@ -1054,7 +1055,7 @@ namespace openMIC
                     continue;
 
                 string remotePath = $"{rootRemotePath}/{directoryName}";
-                string localSubPath = Path.Combine(rootLocalSubPath, directoryName);
+                string localSubPath = GetLocalPathName(settings,Path.Combine(rootLocalSubPath, directoryName));
 
                 ProcessFTPTask(settings, client, remotePath, localSubPath);
                 ProcessFTPSubDirectories(settings, client, remotePath, localSubPath);
@@ -1172,7 +1173,7 @@ namespace openMIC
                 return false;
             }
 
-            string localFileName = GetLocalFileName(settings, localSubPath, file.Name);
+            string localFileName = Path.Combine(localSubPath, file.Name);
             bool fileChanged = false;
 
             if (File.Exists(localFileName) && settings.SkipDownloadIfUnchanged)
@@ -1330,6 +1331,42 @@ namespace openMIC
             }
 
             return fileName;
+        }
+
+        private string GetLocalPathName(ConnectionProfileTaskSettings settings, string localSubPath)
+        {
+            TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
+            Dictionary<string, string> substitutions = new Dictionary<string, string>
+            {
+                { "<YYYY>", $"{DateTime.Now.Year}" },
+                { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
+                { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
+                { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
+                { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
+                { "<DeviceAcronym>", m_deviceRecord.Acronym },
+                { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
+                { "<ProfileName>", m_connectionProfile.Name ?? "undefined" }
+            };
+
+            directoryNameExpressionParser.TemplatedExpression = settings.DirectoryNamingExpression.Replace("\\", "\\\\");
+
+            //         Possible UNC Path                            Sub Directory - duplicate path slashes are removed
+            string directoryName = FilePath.AddPathSuffix(settings.LocalPath) + $"{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{localSubPath}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
+
+
+            if (!Directory.Exists(directoryName))
+            {
+                try
+                {
+                    Directory.CreateDirectory(directoryName);
+                }
+                catch (Exception ex)
+                {
+                    OnProcessException(new InvalidOperationException($"Failed to create directory \"{directoryName}\": {ex.Message}", ex));
+                }
+            }
+
+            return directoryName;
         }
 
         private string GetRemotePathName(ConnectionProfileTaskSettings settings)
@@ -1566,6 +1603,7 @@ namespace openMIC
             OnProcessException(e.GetException());
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         private void UpdateStatusLogDatabase(string message, string filename, bool success)
         {
             string[] extensions = {".rcd", ".d00", ".dat", ".ctl", ".cfg", ".pcd"};
