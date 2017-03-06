@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using GSF.Data;
 using GSF.Data.Model;
 
 namespace openMIC.Model
 {
+    [TableName("StatusLog")]
+    [AmendExpression("With (NOLOCK)", DatabaseType.SQLServer)]
     public class StatusLog
     {
         [PrimaryKey (true)]

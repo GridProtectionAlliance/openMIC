@@ -28,3 +28,5 @@ CREATE TABLE [dbo].[StatusLog](
       [Message] [varchar](max) NULL,
 	  [LastFile] [varchar](max) NULL		
 );
+
+CREATE UNIQUE INDEX IX_StatusLog_DeviceID ON StatusLog ( DeviceID );

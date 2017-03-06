@@ -43,3 +43,5 @@ BEGIN
     UPDATE ConnectionProfileTask SET CreatedOn = strftime('%Y-%m-%d %H:%M:%f') WHERE ROWID = NEW.ROWID AND CreatedOn = '';
     UPDATE ConnectionProfileTask SET UpdatedOn = strftime('%Y-%m-%d %H:%M:%f') WHERE ROWID = NEW.ROWID AND UpdatedOn = '';
 END;
+
+CREATE UNIQUE INDEX IX_StatusLog_DeviceID ON StatusLog ( DeviceID );

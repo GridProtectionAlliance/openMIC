@@ -38,8 +38,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="GSF.Core, Version=2.1.439.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\Dependencies\NuGet\GSF.Core.2.1.439-beta\lib\net46\GSF.Core.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\GSF\GSF.Core.dll</HintPath>
     </Reference>
     <Reference Include="GSF.Security, Version=2.1.439.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\Dependencies\NuGet\GSF.Security.2.1.439-beta\lib\net46\GSF.Security.dll</HintPath>
@@ -50,8 +50,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="GSF.Web, Version=2.1.439.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\Dependencies\NuGet\GSF.Web.2.1.439-beta\lib\net46\GSF.Web.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\GSF\GSF.Web.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\Dependencies\NuGet\Microsoft.AspNet.SignalR.Core.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
