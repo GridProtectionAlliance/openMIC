@@ -2714,3 +2714,4 @@ END;
 /
 
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
+CREATE UNIQUE INDEX IX_StatusLog_DeviceID ON StatusLog ( DeviceID );
