@@ -71,7 +71,7 @@
     <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/Small/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="Images/StatusLights/Small/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
     <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: showViewScreen"></button></td>
     <td width="20%" class="text-center" data-bind="text: notNull(ConnectionString).parseKeyValuePairs().get('schedule')"></td>
-    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled, click: disableDevice" /></td>
+    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled, click: enabledStateChanged.bind($data), enable: $parent.dataHubIsConnected" /></td>
     <td width="5%" class="text-center valign-middle" nowrap>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
@@ -89,7 +89,7 @@
         @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
         @Raw(dataContext.AddInputField("get('schedule')", true, fieldLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name"))
-        @Raw(dataContext.AddSelectField<Device, openMIC.Model.Node>("NodeID", "ID", "Name"))
+        @*@Raw(dataContext.AddSelectField<Device, openMIC.Model.Node>("NodeID", "ID", "Name"))*@
     </div>
     <div class="col-md-6">
         <div class="panel panel-default" data-bind="css: {'panel-readonly': $root.recordMode()===RecordMode.View, 'panel-primary': $root.connectionString.get('usedialup')}">
@@ -302,10 +302,24 @@
                 window.location.href = "/ModbusConfig.cshtml?DeviceID=" + record.ID;
         }
         
-        function disableDevice(id, thecontrol){
-            dataHub.disableDevice(id.ID, $(thecontrol.target).prop('checked')).done(function(){
-                viewModel.queryPageRecords();
-            });
+        function refreshEnabledState(record) {
+            if (!hubIsConnected)
+                return;
+
+            if (record.Enabled)
+                serviceHub.sendCommand("initialize " + record.Acronym);
+            else
+                serviceHub.sendCommand("reloadconfig");
         }
-    </script>
+
+        function enabledStateChanged(record) {
+            if (hubIsConnected) {
+                record.Enable = !record.Enable;
+
+                dataHub.updateDevice(record).done(function() {
+                    viewModel.queryPageRecords();
+                    refreshEnabledState(record);
+                });
+            }
+        }    </script>
 }

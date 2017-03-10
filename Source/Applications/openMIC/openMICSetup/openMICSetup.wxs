@@ -498,6 +498,9 @@
       <Component Id="WavInputAdapter">
         <File Id="WavInputAdapter.dll" Name="WavInputAdapter.dll" Source="$(var.SolutionDir)\Dependencies\GSF\WavInputAdapter.dll" />
       </Component>
+      <Component Id="NModbus4"> <!-- Dependency for Modbus connectivity -->
+        <File Id="NModbus4.dll" Name="NModbus4.dll" Source="$(var.SolutionDir)Dependencies\NuGet\NModbus4.2.1.0\lib\net40\NModbus4.dll" />
+      </Component>
     </ComponentGroup>
 
     <!-- GSF Dependencies -->

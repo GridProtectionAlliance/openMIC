@@ -198,20 +198,11 @@ namespace openMIC
             };
         }
 
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(Device), RecordOperation.DeleteRecord)]
-        public void DisableDevice(int id, bool truth)
-        {
-            DataContext.Connection.ExecuteNonQuery("Update Device SET Enabled = {0} WHERE ID = {1}", truth, id);
-        }
-
-
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Device), RecordOperation.AddNewRecord)]
         public void AddNewDevice(Device device)
         {
-            //device.NodeID = Program.Host.Model.Global.NodeID;
+            device.NodeID = Program.Host.Model.Global.NodeID;
             device.UniqueID = Guid.NewGuid();
 
             if ((device.ProtocolID ?? 0) == 0)
