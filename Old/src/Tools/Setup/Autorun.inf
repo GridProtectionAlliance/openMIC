@@ -1,5 +1,0 @@
-[autorun]
-icon=System\GPA.ico
-open=setup.exe
-label=GPA openMIC Setup
-action=Install the openMIC
