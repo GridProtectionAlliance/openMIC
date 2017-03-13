@@ -66,7 +66,7 @@ namespace BenDownloader
             int setting = s_openMicConfigurationFile.Settings["systemSettings"]["BenRunnerInstanceCount"]?.ValueAsInt32() ?? 0;
 
             if(setting > 0)
-                s_lock = new Semaphore(0, setting, "BenRunner");
+                s_lock = new Semaphore(setting, setting, "BenRunner");
 
             try
             {

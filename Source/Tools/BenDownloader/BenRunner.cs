@@ -80,10 +80,10 @@ namespace BenDownloader
                 {
                     string taskSettingsString = conn.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
                     m_connectionProfileTaskSettings = taskSettingsString.ParseKeyValuePairs();
-                    string deviceConnectionString = conn.ExecuteScalar<string>("Select ConnectionString From Device WHERE ID = {0}", deviceId);
+                    m_deviceRecord = conn.RetrieveRow("Select * From Device WHERE ID = {0}", deviceId);
+                    string deviceConnectionString = m_deviceRecord["connectionString"].ToString();
                     Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
 
-                    m_deviceRecord = conn.RetrieveRow("Select * From Device WHERE ID = {0}", deviceId);
                     m_connectionProfile = conn.RetrieveRow("SELECT * FROM connectionProfile WHERE ID = {0}", deviceConnection["connectionProfileID"]);
                     m_folder = m_deviceRecord["OriginalSource"].ToString();
                     m_ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
@@ -115,6 +115,7 @@ namespace BenDownloader
             {
                 XferDataFiles();
                 //UpdateTimestamps();
+                //ExecNotepad();
                 using (DataContext dataContext = new DataContext(new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value)))
                 {
                     IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID = {0}",m_deviceRecord["ID"]));
@@ -482,7 +483,21 @@ namespace BenDownloader
             return lastFile;
         }
 
+        private void ExecNotepad()
+        {
+            var psi = new ProcessStartInfo("C:\\Windows\\notepad.exe")
+            {
+                Arguments = "",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
 
+            using (Process p = Process.Start(psi))
+            {
+                p.WaitForExit();
+            }
+
+        }
         #endregion
 
         #region [File System]
