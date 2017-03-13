@@ -96,6 +96,7 @@ namespace BenDownloader
                     m_tempDirectoryName = tempDirectory + "BenDownloader\\" + m_siteName + "\\";
                     //Console.WriteLine(m_tempDirectoryName);
                     m_lastFileDownloaded = GetLastDownloadedFile();
+                    m_lastFileDownloadedThisSession = "";
 
                 }
             }
@@ -113,6 +114,7 @@ namespace BenDownloader
             try
             {
                 XferDataFiles();
+                //UpdateTimestamps();
                 using (DataContext dataContext = new DataContext(new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value)))
                 {
                     IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID = {0}",m_deviceRecord["ID"]));
@@ -413,7 +415,7 @@ namespace BenDownloader
             foreach (string fileName in files)
             {
                 System.IO.FileInfo file = new System.IO.FileInfo(fileName);
-                if(file.Name.EndsWith("cfg") || file.Name.EndsWith("dat"))
+                if(file.Name.EndsWith("cfg") || file.Name.EndsWith("dat") )
                 {
                     try
                     {
@@ -424,13 +426,10 @@ namespace BenDownloader
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
                             string newFileName = GetLocalFileName(file.Name);
                             System.IO.FileInfo fi = new System.IO.FileInfo(newFileName);
-                            //Console.WriteLine($"{fi.FullName} {fi.Exists}" );
                             if (!fi.Exists)
                             {
-                                //Console.WriteLine("moving " +newFileName);
-                                Program.Log(newFileName, m_tempDirectoryName);
-                                System.IO.File.Copy(file.FullName, newFileName);
                                 m_lastFileDownloadedThisSession = file.Name;
+                                System.IO.File.Copy(file.FullName, newFileName);
                             }
                             System.IO.File.Delete(file.FullName);
                         }
@@ -442,7 +441,6 @@ namespace BenDownloader
                     }
                 }
             }
-            //System.IO.Directory.Delete(m_tempDirectoryName);
         }
 
         private BenRecord GetLastDownloadedFile()

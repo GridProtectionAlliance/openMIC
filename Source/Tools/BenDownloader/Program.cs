@@ -65,7 +65,8 @@ namespace BenDownloader
         {
             int setting = s_openMicConfigurationFile.Settings["systemSettings"]["BenRunnerInstanceCount"]?.ValueAsInt32() ?? 0;
 
-            s_lock = new Semaphore(0, setting, "BenRunner");
+            if(setting > 0)
+                s_lock = new Semaphore(0, setting, "BenRunner");
 
             try
             {
@@ -75,7 +76,7 @@ namespace BenDownloader
                     return;
                 }
 
-                s_lock.WaitOne();
+                s_lock?.WaitOne();
                 BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1]));
                 if (!br.XferAllFiles())
                 {
@@ -88,12 +89,12 @@ namespace BenDownloader
             }
             finally
             {
-                s_lock.Release();
+                s_lock?.Release();
             }
 
         }
 
-#region [Helper Functions]
+        #region [Helper Functions]
         public static string Left(string str, int length)
         {
             str = (str ?? string.Empty);
