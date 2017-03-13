@@ -99,11 +99,12 @@ namespace BenDownloader
 
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Program.Log(ex.ToString(), m_tempDirectoryName);
             }
         }
+
         #endregion
 
         #region [Methods]
@@ -133,6 +134,7 @@ namespace BenDownloader
                     }
 
                 }
+
                 return true;
             }
             catch (Exception ex)
@@ -158,6 +160,7 @@ namespace BenDownloader
                         dataContext.Table<StatusLog>().AddNewRecord(log);
                     }
                 }
+
                 return false;
             }
         }

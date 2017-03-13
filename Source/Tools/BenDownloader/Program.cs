@@ -33,10 +33,12 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using GSF;
 using GSF.Configuration;
 using GSF.Data;
+using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.CompilerServices;
 using Microsoft.VisualBasic.FileIO;
@@ -46,6 +48,7 @@ namespace BenDownloader
 {
     class Program
     {
+        private static Semaphore s_lock;
 
         private static object s_logLock = new object();
         private static readonly ConfigurationFile s_openMicConfigurationFile = ConfigurationFile.Open(Directory.GetCurrentDirectory() + "\\openMIC.exe.Config");
@@ -60,10 +63,10 @@ namespace BenDownloader
 
         static void Main(string[] args)
         {
-            //#if DEBUG
-            //            Console.Write("Press enter to continue... ");
-            //            var name = Console.ReadLine();
-            //#endif        
+            int setting = s_openMicConfigurationFile.Settings["systemSettings"]["BenRunnerInstanceCount"]?.ValueAsInt32() ?? 0;
+
+            s_lock = new Semaphore(0, setting, "BenRunner");
+
             try
             {
                 if (args.Length != 2)
@@ -72,6 +75,7 @@ namespace BenDownloader
                     return;
                 }
 
+                s_lock.WaitOne();
                 BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1]));
                 if (!br.XferAllFiles())
                 {
@@ -81,6 +85,10 @@ namespace BenDownloader
             catch(Exception ex)
             {
                 Log("Ben Downloader failed. Message: " + ex);
+            }
+            finally
+            {
+                s_lock.Release();
             }
 
         }
