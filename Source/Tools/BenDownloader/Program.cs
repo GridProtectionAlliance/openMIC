@@ -88,7 +88,8 @@ namespace BenDownloader
                 Log("Ben Downloader failed. Message: " + ex);
             }
             finally
-            {
+            {   
+               
                 s_lock?.Release();
             }
 
@@ -111,12 +112,18 @@ namespace BenDownloader
 
         public static void Log(string logMessage, string path ="")
         {
-            Console.WriteLine(path + "BenDownloaderLogFile.txt");
+
             lock (s_logLock)
             {
+                FileInfo fi = new FileInfo(path + "Logs\\BenDownloaderLogFile.txt");
+                if (fi.Exists && fi.Length > 1048576)
+                {
+                    fi.MoveTo(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt");
+                }
+
                 try
                 {
-                    using (StreamWriter w = File.AppendText(path + "BenDownloaderLogFile.txt"))
+                    using (StreamWriter w = File.AppendText(path + "Logs\\BenDownloaderLogFile.txt"))
                     {
                         w.Write("\r\nLog Entry : ");
                         w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
