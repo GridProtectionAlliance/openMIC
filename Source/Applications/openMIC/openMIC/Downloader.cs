@@ -1001,6 +1001,9 @@ namespace openMIC
                                 HandleLocalFileAgeLimitProcessing(settings);
 
                             //OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
+                            if (string.IsNullOrWhiteSpace(settings.ExternalOperation))
+                                UpdateStatusLogDatabase("", "", true);
+
                         }
 
                         OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"Completed \"{connectionProfileName}\" connection profile processing.", m_overallTasksCount, m_overallTasksCount));
@@ -1009,8 +1012,6 @@ namespace openMIC
                     {
                         OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"Skipped \"{connectionProfileName}\" connection profile processing: No tasks defined.", 0, 1));
                     }
-
-                    UpdateStatusLogDatabase("", "", true);
                     Ticks connectedTime = DateTime.UtcNow.Ticks - connectionStartTime;
                     OnStatusMessage("FTP session connected for {0}", connectedTime.ToElapsedTimeString(2));
                     TotalConnectedTime += connectedTime;
