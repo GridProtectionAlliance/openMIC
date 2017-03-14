@@ -113,14 +113,14 @@ namespace BenDownloader
         public static void Log(string logMessage, string path ="")
         {
 
-            Console.WriteLine(path + "Logs\\BenDownloaderLogFile.txt");
-            FileInfo fi = new FileInfo(path + "Logs\\BenDownloaderLogFile.txt");
-            if(fi.Exists && fi.Length > 1048576)
-            {
-                fi.MoveTo(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt");
-            }
             lock (s_logLock)
             {
+                FileInfo fi = new FileInfo(path + "Logs\\BenDownloaderLogFile.txt");
+                if (fi.Exists && fi.Length > 1048576)
+                {
+                    fi.MoveTo(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt");
+                }
+
                 try
                 {
                     using (StreamWriter w = File.AppendText(path + "Logs\\BenDownloaderLogFile.txt"))
