@@ -88,7 +88,8 @@ namespace BenDownloader
                 Log("Ben Downloader failed. Message: " + ex);
             }
             finally
-            {
+            {   
+               
                 s_lock?.Release();
             }
 

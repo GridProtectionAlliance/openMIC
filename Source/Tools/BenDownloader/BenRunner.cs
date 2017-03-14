@@ -66,6 +66,7 @@ namespace BenDownloader
         private readonly DataRow m_connectionProfile;
         private readonly Dictionary<string, string> m_connectionProfileTaskSettings;
         private string m_lastFileDownloadedThisSession;
+        private AdoDataConnection m_adoDataConnection;
 
         #endregion
 
@@ -73,32 +74,31 @@ namespace BenDownloader
 
         public BenRunner(int deviceId, int taskId)
         {
+            m_adoDataConnection = new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value);
+
             try
             {
 
-                using (AdoDataConnection conn = new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value))
-                {
-                    string taskSettingsString = conn.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
-                    m_connectionProfileTaskSettings = taskSettingsString.ParseKeyValuePairs();
-                    m_deviceRecord = conn.RetrieveRow("Select * From Device WHERE ID = {0}", deviceId);
-                    string deviceConnectionString = m_deviceRecord["connectionString"].ToString();
-                    Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
+                string taskSettingsString = m_adoDataConnection.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
+                m_connectionProfileTaskSettings = taskSettingsString.ParseKeyValuePairs();
+                m_deviceRecord = m_adoDataConnection.RetrieveRow("Select * From Device WHERE ID = {0}", deviceId);
+                string deviceConnectionString = m_deviceRecord["connectionString"].ToString();
+                Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
 
-                    m_connectionProfile = conn.RetrieveRow("SELECT * FROM connectionProfile WHERE ID = {0}", deviceConnection["connectionProfileID"]);
-                    m_folder = m_deviceRecord["OriginalSource"].ToString();
-                    m_ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
-                    m_localPath = m_connectionProfileTaskSettings["localPath"];
-                    m_siteName = m_deviceRecord["Name"].ToString();
-                    m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
+                m_connectionProfile = m_adoDataConnection.RetrieveRow("SELECT * FROM connectionProfile WHERE ID = {0}", deviceConnection["connectionProfileID"]);
+                m_folder = m_deviceRecord["OriginalSource"].ToString();
+                m_ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
+                m_localPath = m_connectionProfileTaskSettings["localPath"];
+                m_siteName = m_deviceRecord["Name"].ToString();
+                m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
 
-                    string tempDirectory = System.IO.Path.GetTempPath();
-                    System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
-                    m_tempDirectoryName = tempDirectory + "BenDownloader\\" + m_siteName + "\\";
-                    //Console.WriteLine(m_tempDirectoryName);
-                    m_lastFileDownloaded = GetLastDownloadedFile();
-                    m_lastFileDownloadedThisSession = "";
+                string tempDirectory = System.IO.Path.GetTempPath();
+                System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
+                m_tempDirectoryName = tempDirectory + "BenDownloader\\" + m_siteName + "\\";
+                //Console.WriteLine(m_tempDirectoryName);
+                m_lastFileDownloaded = GetLastDownloadedFile();
+                m_lastFileDownloadedThisSession = "";
 
-                }
             }
             catch (Exception ex)
             {
@@ -106,63 +106,59 @@ namespace BenDownloader
             }
         }
 
+        ~BenRunner()
+        {
+            m_adoDataConnection.Dispose();
+        }
+
         #endregion
 
         #region [Methods]
         public bool XferAllFiles()
         {
+            DataRow log;
             try
             {
                 XferDataFiles();
                 //UpdateTimestamps();
                 //ExecNotepad();
-                using (DataContext dataContext = new DataContext(new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value)))
+
+                log = m_adoDataConnection.RetrieveRow("SELECT * FROM StatusLog WHERE DeviceID = {0}", int.Parse(m_deviceRecord["ID"].ToString()));
+
+                try
                 {
-                    IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID = {0}",m_deviceRecord["ID"]));
-
-                    if (logs.Any())
-                    {
-                        StatusLog log = logs.First();
-                        log.LastSuccess = DateTime.UtcNow;
-                        log.LastFile = m_lastFileDownloadedThisSession;
-                        dataContext.Table<StatusLog>().UpdateRecord(log);
-                    }
+                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession != "")
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}, LastFile = {1}", DateTime.UtcNow, m_lastFileDownloadedThisSession);
+                    else if(m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession == "")
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}", DateTime.UtcNow);
                     else
-                    {
-                        StatusLog log = new StatusLog();
-                        log.LastSuccess = DateTime.UtcNow;
-                        log.LastFile = m_lastFileDownloadedThisSession;
-                        log.DeviceID = int.Parse(m_deviceRecord["ID"].ToString());
-                        dataContext.Table<StatusLog>().AddNewRecord(log);
-                    }
-
+                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastSuccess , LastFile, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, m_lastFileDownloadedThisSession, m_deviceRecord["ID"]);
+                }
+                catch (Exception ex)
+                {
+                    Program.Log("StatusLog Update (" + m_siteName + "): " + ex.Message, m_tempDirectoryName);
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                Program.Log("Ben5K XferAllFiles (" + m_siteName + "): " + ex.ToString());
-                using (DataContext dataContext = new DataContext(new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value)))
-                {
+                Program.Log("Ben5K XferAllFiles (" + m_siteName + "): " + ex.ToString(), m_tempDirectoryName);
 
-                    IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID = {0}", m_deviceRecord["ID"]));
-                    if (logs.Any())
-                    {
-                        StatusLog log = logs.First();
-                        log.LastFailure = DateTime.UtcNow;
-                        log.Message = ex.Message;
-                        dataContext.Table<StatusLog>().UpdateRecord(log);
-                    }
+                log = m_adoDataConnection.RetrieveRow("SELECT * FROM StatusLog WHERE DeviceID = {0}", int.Parse(m_deviceRecord["ID"].ToString()));
+
+                try
+                {
+                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString())
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastFailure = {0}, Message = {1}", DateTime.UtcNow, ex.Message);
                     else
-                    {
-                        StatusLog log = new StatusLog();
-                        log.LastFailure = DateTime.UtcNow;
-                        log.Message = ex.Message;
-                        log.DeviceID = int.Parse(m_deviceRecord["ID"].ToString());
-                        dataContext.Table<StatusLog>().AddNewRecord(log);
-                    }
+                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastFailure , Message, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, ex.Message, m_deviceRecord["ID"]);
                 }
+                catch (Exception)
+                {
+                    Program.Log("StatusLog Update (" + m_siteName + "): " + ex.Message, m_tempDirectoryName);
+                }
+
 
                 return false;
             }
@@ -423,17 +419,16 @@ namespace BenDownloader
                         string[] dateFromFileName = file.Name.Split(',');
                         DateTime dateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
                         if(dateTime != file.LastWriteTime)
-                        {
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
-                            string newFileName = GetLocalFileName(file.Name);
-                            System.IO.FileInfo fi = new System.IO.FileInfo(newFileName);
-                            if (!fi.Exists)
-                            {
-                                m_lastFileDownloadedThisSession = file.Name;
-                                System.IO.File.Copy(file.FullName, newFileName);
-                            }
-                            System.IO.File.Delete(file.FullName);
+
+                        string newFileName = GetLocalFileName(file.Name);
+                        System.IO.FileInfo fi = new System.IO.FileInfo(newFileName);
+                        if (!fi.Exists)
+                        {
+                            m_lastFileDownloadedThisSession = file.Name;
+                            System.IO.File.Copy(file.FullName, newFileName);
                         }
+                        
                     }
                     catch(Exception ex)
                     {
@@ -441,6 +436,10 @@ namespace BenDownloader
                         throw new SystemException("File timestamp update error: " + file.Name + '-' + ex.ToString());
                     }
                 }
+
+                if(file.Name != "BenDownloaderLogFile.txt")
+                    System.IO.File.Delete(file.FullName);
+
             }
         }
 
