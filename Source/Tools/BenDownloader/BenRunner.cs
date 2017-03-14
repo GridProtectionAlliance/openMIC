@@ -118,18 +118,18 @@ namespace BenDownloader
             DataRow log;
             try
             {
-                //XferDataFiles();
-                UpdateTimestamps();
-                ExecNotepad();
+                XferDataFiles();
+                //UpdateTimestamps();
+                //ExecNotepad();
 
                 log = m_adoDataConnection.RetrieveRow("SELECT * FROM StatusLog WHERE DeviceID = {0}", int.Parse(m_deviceRecord["ID"].ToString()));
 
                 try
                 {
                     if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession != "")
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}, LastFile = {1}", DateTime.UtcNow, m_lastFileDownloadedThisSession);
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}, LastFile = {1} WHERE DeviceID = {2}", DateTime.UtcNow, m_lastFileDownloadedThisSession, m_deviceRecord["ID"]);
                     else if(m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession == "")
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}", DateTime.UtcNow);
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0} WHERE DeviceID = {1}", DateTime.UtcNow, m_deviceRecord["ID"]);
                     else
                         m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastSuccess , LastFile, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, m_lastFileDownloadedThisSession, m_deviceRecord["ID"]);
                 }
@@ -149,7 +149,7 @@ namespace BenDownloader
                 try
                 {
                     if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString())
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastFailure = {0}, Message = {1}", DateTime.UtcNow, ex.Message);
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastFailure = {0}, Message = {1} WHERE DeviceID = {2}", DateTime.UtcNow, ex.Message, m_deviceRecord["ID"]);
                     else
                         m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastFailure , Message, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, ex.Message, m_deviceRecord["ID"]);
                 }
