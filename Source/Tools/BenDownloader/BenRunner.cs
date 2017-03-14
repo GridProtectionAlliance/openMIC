@@ -66,7 +66,7 @@ namespace BenDownloader
         private readonly DataRow m_connectionProfile;
         private readonly Dictionary<string, string> m_connectionProfileTaskSettings;
         private string m_lastFileDownloadedThisSession;
-        private AdoDataConnection m_adoDataConnection;
+        private readonly AdoDataConnection m_adoDataConnection;
 
         #endregion
 
@@ -82,8 +82,7 @@ namespace BenDownloader
                 string taskSettingsString = m_adoDataConnection.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
                 m_connectionProfileTaskSettings = taskSettingsString.ParseKeyValuePairs();
                 m_deviceRecord = m_adoDataConnection.RetrieveRow("Select * From Device WHERE ID = {0}", deviceId);
-                string deviceConnectionString = m_deviceRecord["connectionString"].ToString();
-                Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
+                Dictionary<string, string> deviceConnection = m_deviceRecord["connectionString"].ToString().ParseKeyValuePairs();
 
                 m_connectionProfile = m_adoDataConnection.RetrieveRow("SELECT * FROM connectionProfile WHERE ID = {0}", deviceConnection["connectionProfileID"]);
                 m_folder = m_deviceRecord["OriginalSource"].ToString();
@@ -119,9 +118,9 @@ namespace BenDownloader
             DataRow log;
             try
             {
-                XferDataFiles();
-                //UpdateTimestamps();
-                //ExecNotepad();
+                //XferDataFiles();
+                UpdateTimestamps();
+                ExecNotepad();
 
                 log = m_adoDataConnection.RetrieveRow("SELECT * FROM StatusLog WHERE DeviceID = {0}", int.Parse(m_deviceRecord["ID"].ToString()));
 
