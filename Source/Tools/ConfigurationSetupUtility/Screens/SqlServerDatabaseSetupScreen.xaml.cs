@@ -26,8 +26,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Management;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -48,7 +50,7 @@ namespace ConfigurationSetupUtility.Screens
         #region [ Members ]
 
         // Fields
-        private SqlServerSetup m_sqlServerSetup;
+        private readonly SqlServerSetup m_sqlServerSetup;
         private Dictionary<string, object> m_state;
         private Button m_advancedButton;
 
@@ -325,9 +327,14 @@ namespace ConfigurationSetupUtility.Screens
                 m_databaseNameTextBox.Text = migrate ? "openMIC" + App.DatabaseVersionSuffix : "openMIC";
 
                 // When using an existing database as-is, read existing connection settings out of the configuration file
-                if (existing && !migrate)
+                string configFile = FilePath.GetAbsolutePath("openMIC.exe.config");
+
+                if (!File.Exists(configFile))
+                    configFile = FilePath.GetAbsolutePath("openMICManager.exe.config");
+
+                if (existing && !migrate && File.Exists(configFile))
                 {
-                    serviceConfig = XDocument.Load(FilePath.GetAbsolutePath("openMIC.exe.config"));
+                    serviceConfig = XDocument.Load(configFile);
 
                     connectionString = serviceConfig
                         .Descendants("systemSettings")
