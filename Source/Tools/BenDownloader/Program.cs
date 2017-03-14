@@ -117,8 +117,7 @@ namespace BenDownloader
             FileInfo fi = new FileInfo(path + "Logs\\BenDownloaderLogFile.txt");
             if(fi.Exists && fi.Length > 1048576)
             {
-                fi.CopyTo(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt");
-                fi.Delete();
+                fi.MoveTo(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt");
             }
             lock (s_logLock)
             {
