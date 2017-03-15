@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -42,7 +43,7 @@ namespace ConfigurationSetupUtility.Screens
         #region [ Members ]
 
         // Fields
-        private OracleSetup m_oracleSetup;
+        private readonly OracleSetup m_oracleSetup;
         private Dictionary<string, object> m_state;
         private Button m_advancedButton;
 
@@ -282,9 +283,14 @@ namespace ConfigurationSetupUtility.Screens
                 m_schemaUserNameTextBox.Text = migrate ? "openMIC" + App.DatabaseVersionSuffix : "openMIC";
 
                 // When using an existing database as-is, read existing connection settings out of the configuration file
-                if (existing && !migrate)
+                string configFile = FilePath.GetAbsolutePath(App.ApplicationConfig);
+
+                if (!File.Exists(configFile))
+                    configFile = FilePath.GetAbsolutePath(App.ManagerConfig);
+
+                if (existing && !migrate && File.Exists(configFile))
                 {
-                    serviceConfig = XDocument.Load(FilePath.GetAbsolutePath("openMIC.exe.config"));
+                    serviceConfig = XDocument.Load(configFile);
 
                     connectionString = serviceConfig
                         .Descendants("systemSettings")

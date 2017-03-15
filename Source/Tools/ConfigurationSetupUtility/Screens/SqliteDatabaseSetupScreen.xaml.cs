@@ -1,4 +1,27 @@
-﻿using System;
+﻿//******************************************************************************************************
+//  SqliteDatabaseSetupScreen.xaml.cs - Gbtc
+//
+//  Copyright © 2010, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the Eclipse Public License -v 1.0 (the "License"); you may
+//  not use this file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://www.opensource.org/licenses/eclipse-1.0.php
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  07/18/2011 - Stephen C. Wills
+//       Generated original version of source code.
+//
+//******************************************************************************************************
+
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -7,10 +30,10 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml.Linq;
+using Microsoft.Win32;
 using GSF;
 using GSF.Data;
 using GSF.IO;
-using Microsoft.Win32;
 
 namespace ConfigurationSetupUtility.Screens
 {
@@ -120,11 +143,11 @@ namespace ConfigurationSetupUtility.Screens
             {
                 if (!string.IsNullOrEmpty(m_sqliteDatabaseFilePathTextBox.Text))
                 {
-                    if (!Convert.ToBoolean(m_state["existing"]) && File.Exists(m_sqliteDatabaseFilePathTextBox.Text))
-                        return (MessageBox.Show("A SQLite database already exists at the selected location. Are you sure you want to override the existing configuration?", "Configuration Already Exists", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes);
-
                     bool existing = Convert.ToBoolean(m_state["existing"]);
                     bool migrate = existing && Convert.ToBoolean(m_state["updateConfiguration"]);
+
+                    if ((!existing || migrate) && File.Exists(m_sqliteDatabaseFilePathTextBox.Text))
+                        return (MessageBox.Show("A SQLite database already exists at the selected location. Are you sure you want to override the existing configuration?", "Configuration Already Exists", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes);
 
                     if (existing && !migrate)
                     {
@@ -245,20 +268,25 @@ namespace ConfigurationSetupUtility.Screens
                 if (!Directory.Exists(sqliteDatabaseFilePath))
                     Directory.CreateDirectory(sqliteDatabaseFilePath);
 
-                m_sqliteDatabaseFilePathTextBox.Text = Path.Combine(sqliteDatabaseFilePath, migrate ? "openMIC" + App.DatabaseVersionSuffix + ".db" : "openMIC.db");
+                m_sqliteDatabaseFilePathTextBox.Text = Path.Combine(sqliteDatabaseFilePath, migrate ? App.SqliteConfigv2 : App.BaseSqliteConfig); //"openMIC" + App.DatabaseVersionSuffix + ".db" : "openMIC.db");
             }
             catch
             {
-                m_sqliteDatabaseFilePathTextBox.Text = migrate ? "openMIC" + App.DatabaseVersionSuffix + ".db" : "openMIC.db";
+                m_sqliteDatabaseFilePathTextBox.Text = migrate ? App.SqliteConfigv2 : App.BaseSqliteConfig; //"openMIC" + App.DatabaseVersionSuffix + ".db" : "openMIC.db";
             }
 
             if (!m_state.ContainsKey("sqliteDatabaseFilePath"))
                 m_state.Add("sqliteDatabaseFilePath", m_sqliteDatabaseFilePathTextBox.Text);
 
             // When using an existing database as-is, read existing connection settings out of the configuration file
-            if (existing && !migrate)
+            string configFile = FilePath.GetAbsolutePath(App.ApplicationConfig);
+
+            if (!File.Exists(configFile))
+                configFile = FilePath.GetAbsolutePath(App.ManagerConfig);
+
+            if (existing && !migrate && File.Exists(configFile))
             {
-                serviceConfig = XDocument.Load(FilePath.GetAbsolutePath("openMIC.exe.config"));
+                serviceConfig = XDocument.Load(configFile);
 
                 connectionString = serviceConfig
                     .Descendants("systemSettings")

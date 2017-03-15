@@ -31,6 +31,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -52,10 +53,10 @@ namespace ConfigurationSetupUtility.Screens
         #region [ Members ]
 
         // Fields
-        private MySqlSetup m_mySqlSetup;
+        private readonly MySqlSetup m_mySqlSetup;
         private Dictionary<string, object> m_state;
         private Button m_advancedButton;
-        private string m_dataProviderString;
+        private readonly string m_dataProviderString;
 
         #endregion
 
@@ -340,9 +341,14 @@ namespace ConfigurationSetupUtility.Screens
                 m_databaseNameTextBox.Text = migrate ? "openMIC" + App.DatabaseVersionSuffix : "openMIC";
 
                 // When using an existing database as-is, read existing connection settings out of the configuration file
-                if (existing && !migrate)
+                string configFile = FilePath.GetAbsolutePath(App.ApplicationConfig); //"openPDC.exe.config"
+
+                if (!File.Exists(configFile))
+                    configFile = FilePath.GetAbsolutePath(App.ManagerConfig); //"openPDCManager.exe.config"
+
+                if (existing && !migrate && File.Exists(configFile))
                 {
-                    serviceConfig = XDocument.Load(FilePath.GetAbsolutePath("openMIC.exe.config"));
+                    serviceConfig = XDocument.Load(configFile);
 
                     connectionString = serviceConfig
                         .Descendants("systemSettings")

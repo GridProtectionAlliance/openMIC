@@ -327,10 +327,10 @@ namespace ConfigurationSetupUtility.Screens
                 m_databaseNameTextBox.Text = migrate ? "openMIC" + App.DatabaseVersionSuffix : "openMIC";
 
                 // When using an existing database as-is, read existing connection settings out of the configuration file
-                string configFile = FilePath.GetAbsolutePath("openMIC.exe.config");
+                string configFile = FilePath.GetAbsolutePath(App.ApplicationConfig);
 
                 if (!File.Exists(configFile))
-                    configFile = FilePath.GetAbsolutePath("openMICManager.exe.config");
+                    configFile = FilePath.GetAbsolutePath(App.ManagerConfig);
 
                 if (existing && !migrate && File.Exists(configFile))
                 {
