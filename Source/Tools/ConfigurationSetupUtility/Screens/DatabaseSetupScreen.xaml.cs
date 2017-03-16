@@ -191,7 +191,7 @@ namespace ConfigurationSetupUtility.Screens
 
                 // *** For the openMIC, defaulting to SQLite...
                 if (!m_state.ContainsKey("newDatabaseType"))
-                    m_state.Add("newDatabaseType", "SQLite");
+                    m_state.Add("newDatabaseType", "SQLServer");
 
                 if (!m_state.ContainsKey("initialDataScript"))
                     m_state.Add("initialDataScript", true);
