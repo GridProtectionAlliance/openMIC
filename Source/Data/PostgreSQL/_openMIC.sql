@@ -20,13 +20,12 @@ CREATE TABLE ConnectionProfileTask(
     CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID)
 );
 
-CREATE TABLE [dbo].[StatusLog](		
-      [ID] [int] IDENTITY(1,1) NOT NULL,		
-      [DeviceID] [int] NOT NULL,		
-      [LastSuccess] [DateTime2] NULL,		
-	  [LastFailure] [DateTime2] NULL,		
-      [Message] [varchar](max) NULL,
-	  [LastFile] [varchar](max) NULL		
+CREATE TABLE StatusLog(		
+    ID SERIAL NOT NULL PRIMARY KEY,
+    DeviceID INTEGER NOT NULL,
+    LastSuccess TIMESTAMP NULL,
+	LastFailure TIMESTAMP NULL,
+    Message TEXT NULL,
+	LastFile TEXT NULL,
+    CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID)
 );
-
-CREATE UNIQUE INDEX IX_StatusLog_DeviceID ON StatusLog ( DeviceID );
