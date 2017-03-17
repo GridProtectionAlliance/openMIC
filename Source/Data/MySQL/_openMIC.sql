@@ -24,8 +24,8 @@ CREATE TABLE ConnectionProfileTask(
 CREATE TABLE StatusLog(
     ID INT AUTO_INCREMENT NOT NULL,
     DeviceID INT NOT NULL,
-    LastSuccess DateTime NULL,		
-	LastFailure DateTime NULL,		
+    LastSuccess DATETIME NULL,
+	LastFailure DATETIME NULL,
     Message TEXT NULL,
     LastFile TEXT NULL,
     CONSTRAINT PK_StatusLog PRIMARY KEY (ID ASC),

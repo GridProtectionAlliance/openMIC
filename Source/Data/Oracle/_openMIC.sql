@@ -30,13 +30,13 @@ CREATE TABLE ConnectionProfileTask(
     UpdatedBy VARCHAR2(200) NOT NULL
 );
 
-CREATE TABLE [dbo].[StatusLog](		
-      [ID] [int] IDENTITY(1,1) NOT NULL,		
-      [DeviceID] [int] NOT NULL,		
-      [LastSuccess] [DateTime2] NULL,		
-	  [LastFailure] [DateTime2] NULL,		
-      [Message] [varchar](max) NULL,
-	  [LastFile] [varchar](max) NULL		
+CREATE TABLE StatusLog(		
+    ID NUMBER NOT NULL,
+    DeviceID NUMBER NOT NULL,
+    LastSuccess DATE NULL,
+	LastFailure DATE NULL,
+    Message VARCHAR(4000) NULL,
+	LastFile VARCHAR(4000) NULL
 );
 
 CREATE UNIQUE INDEX IX_ConnectionProfileTask_ID ON ConnectionProfileTask (ID ASC) TABLESPACE openMIC_INDEX;
@@ -51,4 +51,16 @@ END;
 /
 
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
-CREATE UNIQUE INDEX IX_StatusLog_DeviceID ON StatusLog ( DeviceID );
+
+CREATE UNIQUE INDEX IX_StatusLog_ID ON StatusLog (ID ASC) TABLESPACE openMIC_INDEX;
+
+ALTER TABLE StatusLog ADD CONSTRAINT PK_StatusLog PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_StatusLog START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_StatusLog BEFORE INSERT ON StatusLog
+    FOR EACH ROW BEGIN SELECT SEQ_StatusLog.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
+CREATE UNIQUE INDEX IX_StatusLog_DeviceID ON StatusLog (DeviceID ASC) TABLESPACE openMIC_INDEX;
