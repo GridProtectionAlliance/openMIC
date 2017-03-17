@@ -1783,13 +1783,15 @@ CREATE TABLE ConnectionProfileTask(
     CONSTRAINT PK_ConnectionProfileTask PRIMARY KEY (ID ASC)
 );
 
-CREATE TABLE [dbo].[StatusLog](		
-      [ID] [int] IDENTITY(1,1) NOT NULL,		
-      [DeviceID] [int] NOT NULL,		
-      [LastSuccess] [DateTime2] NULL,		
-	  [LastFailure] [DateTime2] NULL,		
-      [Message] [varchar](max) NULL,
-	  [LastFile] [varchar](max) NULL		
+CREATE TABLE StatusLog(
+    ID INT AUTO_INCREMENT NOT NULL,
+    DeviceID INT NOT NULL,
+    LastSuccess DATETIME NULL,
+	LastFailure DATETIME NULL,
+    Message TEXT NULL,
+    LastFile TEXT NULL,
+    CONSTRAINT PK_StatusLog PRIMARY KEY (ID ASC),
+    CONSTRAINT IX_StatusLog_DeviceID UNIQUE KEY (DeviceID ASC)
 );
 
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
@@ -1799,6 +1801,3 @@ FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn 
 
 CREATE TRIGGER ConnectionProfileTask_InsertDefault BEFORE INSERT ON ConnectionProfileTask
 FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
-
-CREATE UNIQUE INDEX IX_StatusLog_DeviceID ON StatusLog ( DeviceID );
-

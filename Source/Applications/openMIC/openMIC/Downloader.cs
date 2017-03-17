@@ -1000,7 +1000,8 @@ namespace openMIC
                             if (settings.DeleteOldLocalFiles)
                                 HandleLocalFileAgeLimitProcessing(settings);
 
-                            //OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
+
                             if (string.IsNullOrWhiteSpace(settings.ExternalOperation))
                                 UpdateStatusLogDatabase("", "", true);
 
@@ -1096,7 +1097,7 @@ namespace openMIC
                         OnStatusMessage("Found {0} remote file{1}, starting file processing...", files.Length, files.Length > 1 ? "s" : "");
 
                         m_overallTasksCount += files.Length;
-                        //OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, m_overallTasksCompleted, m_overallTasksCount));
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, m_overallTasksCompleted, m_overallTasksCount));
 
                         foreach (FtpFile file in files)
                         {
@@ -1106,7 +1107,7 @@ namespace openMIC
                                     continue;
 
                                 OnStatusMessage("Processing remote file \"{0}\"...", file.Name);
-                                //OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Starting \"{file.Name}\" download...", 0, file.Size));
+                                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Starting \"{file.Name}\" download...", 0, file.Size));
 
                                 try
                                 {
@@ -1120,7 +1121,7 @@ namespace openMIC
                             }
                             finally
                             {
-                                //OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
+                                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
                             }
                         }
                     }

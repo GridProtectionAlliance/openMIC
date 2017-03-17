@@ -731,7 +731,7 @@ XCOPY "$(SolutionDir)Data\SerializedSchema.bin" "$(TargetDir)" /Y</PostBuildEven
           </CustomServerUrl>
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
           <servers defaultServer="SelfHostServer">
-            <server name="SelfHostServer" exePath="" cmdArgs="" url="http://localhost:8089/" workingDir="" />
+            <server name="SelfHostServer" exePath="" cmdArgs="" url="http://localhost:8088/" workingDir="" />
           </servers>
         </WebProjectProperties>
       </FlavorProperties>
