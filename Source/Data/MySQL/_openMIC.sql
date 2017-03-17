@@ -22,12 +22,12 @@ CREATE TABLE ConnectionProfileTask(
 );
 
 CREATE TABLE [dbo].[StatusLog](		
-      [ID] [int] IDENTITY(1,1) NOT NULL,		
-      [DeviceID] [int] NOT NULL,		
-      [LastSuccess] [DateTime2] NULL,		
-	  [LastFailure] [DateTime2] NULL,		
-      [Message] [varchar](max) NULL,
-	  [LastFile] [varchar](max) NULL		
+    ID INT AUTO_INCREMENT NOT NULL,
+    DeviceID INT NOT NULL,
+    LastSuccess DateTime NULL,		
+	LastFailure DateTime NULL,		
+    Message TEXT NULL,
+    LastFile TEXT NULL		
 );
 
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
