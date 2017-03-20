@@ -433,6 +433,54 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Gets or sets mode of FTP connection.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Defines mode of FTP connection."),
+        DefaultValue(true)]
+        public bool PassiveFtp
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets mode of FTP connection.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Defines IP address to send in FTP PORT command."),
+        DefaultValue("")]
+        public string ActiveFtpAddress
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets mode of FTP connection.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Defines minimum port in active FTP port range."),
+        DefaultValue(0)]
+        public int MinActiveFtpPort
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets mode of FTP connection.
+        /// </summary>
+        [ConnectionStringParameter,
+        Description("Defines maximum port in active FTP port range."),
+        DefaultValue(0)]
+        public int MaxActiveFtpPort
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets flag that determines if connection messages should be logged.
         /// </summary>
         [ConnectionStringParameter,
@@ -968,6 +1016,10 @@ namespace openMIC
                         }
 
                         client.Timeout = ConnectionTimeout;
+                        client.Passive = PassiveFtp;
+                        client.ActiveAddress = ActiveFtpAddress;
+                        client.MinActivePort = MinActiveFtpPort;
+                        client.MaxActivePort = MaxActiveFtpPort;
                         client.Connect(ConnectionUserName, ConnectionPassword);
                         OnStatusMessage("Connected to FTP server \"{0}@{1}\"", ConnectionUserName, ConnectionHostName);
                     }
