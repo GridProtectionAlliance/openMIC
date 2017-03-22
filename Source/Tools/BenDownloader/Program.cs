@@ -50,7 +50,7 @@ namespace BenDownloader
     {
         private static Semaphore s_lock;
 
-        private static object s_logLock = new object();
+        private static readonly object s_logLock = new object();
         private static readonly ConfigurationFile s_openMicConfigurationFile = ConfigurationFile.Open(Directory.GetCurrentDirectory() + "\\openMIC.exe.Config");
 
         public static ConfigurationFile OpenMiConfigurationFile
@@ -76,11 +76,13 @@ namespace BenDownloader
                     return;
                 }
 
-                s_lock?.WaitOne();
-                BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1]));
-                if (!br.XferAllFiles())
+                if (s_lock?.WaitOne(5000 * 60) ?? true)
                 {
-                    throw new Exception("BEN Downloader failed...");
+                    using (BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1])))
+                    {
+                        if (!br.XferAllFiles())
+                            throw new Exception("BEN Downloader failed...");
+                    }
                 }
             }
             catch(Exception ex)

@@ -49,7 +49,7 @@ using Microsoft.VisualBasic.FileIO;
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 namespace BenDownloader
 {
-    public class BenRunner
+    public class BenRunner : IDisposable
     {
         #region [Members]
 
@@ -68,6 +68,11 @@ namespace BenDownloader
         private readonly Dictionary<string, string> m_connectionProfileTaskSettings;
         private string m_lastFileDownloadedThisSession;
         private readonly AdoDataConnection m_adoDataConnection;
+        private readonly SafeFileWatcher m_fileWatcher;
+        private long m_lastFileChangedTime;
+        private Process m_process;
+        private readonly System.Timers.Timer m_activityMonitor;
+        private bool m_disposed;
 
         #endregion
 
@@ -96,6 +101,16 @@ namespace BenDownloader
                 System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
                 m_tempDirectoryName = tempDirectory + "BenDownloader\\" + m_siteName + "\\";
                 //Console.WriteLine(m_tempDirectoryName);
+
+                m_fileWatcher = new SafeFileWatcher(m_tempDirectoryName);
+                m_fileWatcher.NotifyFilter = NotifyFilters.Size | NotifyFilters.CreationTime | NotifyFilters.LastWrite | NotifyFilters.LastAccess | NotifyFilters.FileName;
+                m_fileWatcher.Changed += m_fileWatcher_Changed;
+                m_fileWatcher.Created += m_fileWatcher_Changed;
+
+                m_activityMonitor = new System.Timers.Timer(5000.0D);
+                m_activityMonitor.Elapsed += m_activityMonitor_Elapsed;
+                m_activityMonitor.AutoReset = true;
+
                 m_lastFileDownloaded = GetLastDownloadedFile();
                 m_lastFileDownloadedThisSession = "";
 
@@ -108,12 +123,30 @@ namespace BenDownloader
 
         ~BenRunner()
         {
-            m_adoDataConnection.Dispose();
+            Dispose();
         }
 
         #endregion
 
         #region [Methods]
+
+        /// <summary>
+        /// Releases all the resources used by the <see cref="BenRunner"/> object.
+        /// </summary>
+        public void Dispose()
+        {
+            if (!m_disposed)
+            {
+                m_disposed = true;
+
+                m_adoDataConnection?.Dispose();
+                m_fileWatcher?.Dispose();
+                m_activityMonitor?.Dispose();
+
+                GC.SuppressFinalize(this);
+            }
+        }
+
         public bool XferAllFiles()
         {
             try
@@ -147,7 +180,11 @@ namespace BenDownloader
                     if (numFiles + 50 < MAXFILELIMIT)
                     {
                         BuildBenLinkDLINI(myFiles);
+
+                        m_fileWatcher.EnableRaisingEvents = true;
                         ExecBenCommand();
+                        m_fileWatcher.EnableRaisingEvents = false;
+
                         UpdateTimestamps();
                     }
                     else
@@ -240,10 +277,14 @@ namespace BenDownloader
                     CreateNoWindow = true
                 };
 
-                using (Process p = Process.Start(psi))
+                if (m_fileWatcher.EnableRaisingEvents)
+                    m_activityMonitor.Enabled = true;
+
+                // ReSharper disable once PossibleNullReferenceException
+                using (m_process = Process.Start(psi))
                 {
-                    p.WaitForExit();
-                    exitcode = p.ExitCode;
+                    m_process.WaitForExit();
+                    exitcode = m_process.ExitCode;
                 }
 
                 FileSystem.DeleteFile(m_tempDirectoryName + "benlink.req");
@@ -255,6 +296,10 @@ namespace BenDownloader
                 Program.Log("ExecBenCommand error: " + m_siteName + " - " + ex.ToString(), m_tempDirectoryName);
 
                 throw new Exception("ExecBenCommand error: " + m_siteName + " - " + ex.ToString());
+            }
+            finally
+            {
+                m_activityMonitor.Enabled = false;
             }
 
             return exitcode == 0;
@@ -559,9 +604,33 @@ namespace BenDownloader
             return fileName;
         }
 
+        private void m_fileWatcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            m_lastFileChangedTime = DateTime.UtcNow.Ticks;
+        }
+
+        private void m_activityMonitor_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (DateTime.UtcNow.Ticks - m_lastFileChangedTime > Ticks.FromSeconds(60.0D))
+            {
+                m_activityMonitor.Enabled = false;
+
+                try
+                {
+                    m_process?.Kill();
+                }
+                catch (Exception ex)
+                {
+                    Program.Log("Error while trying to kill no responsive downloader: " + ex.Message);
+                    throw;
+                }
+            }
+        }
+
         #endregion
 
         #region [Email/PQMS]
+
         private void SendFileNumberLargerEmailNotification(string filename, int downloadFileNumber)
         {
             string msgBody = "Largest file on DFR is " + filename + ". The largest file already downloaded is " + downloadFileNumber + ".  " +
