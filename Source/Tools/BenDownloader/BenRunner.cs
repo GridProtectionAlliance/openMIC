@@ -29,6 +29,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -115,50 +116,19 @@ namespace BenDownloader
         #region [Methods]
         public bool XferAllFiles()
         {
-            DataRow log;
             try
             {
                 XferDataFiles();
                 //UpdateTimestamps();
                 //ExecNotepad();
 
-                log = m_adoDataConnection.RetrieveRow("SELECT * FROM StatusLog WHERE DeviceID = {0}", int.Parse(m_deviceRecord["ID"].ToString()));
-
-                try
-                {
-                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession != "")
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}, LastFile = {1} WHERE DeviceID = {2}", DateTime.UtcNow, m_lastFileDownloadedThisSession, m_deviceRecord["ID"]);
-                    else if(m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession == "")
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0} WHERE DeviceID = {1}", DateTime.UtcNow, m_deviceRecord["ID"]);
-                    else
-                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastSuccess , LastFile, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, m_lastFileDownloadedThisSession, m_deviceRecord["ID"]);
-                }
-                catch (Exception ex)
-                {
-                    Program.Log("StatusLog Update (" + m_siteName + "): " + ex.Message, m_tempDirectoryName);
-                }
-
+                UpdateStatusLogDatabase("", true);
                 return true;
             }
             catch (Exception ex)
             {
+                UpdateStatusLogDatabase(ex.Message, false);
                 Program.Log("Ben5K XferAllFiles (" + m_siteName + "): " + ex.ToString(), m_tempDirectoryName);
-
-                log = m_adoDataConnection.RetrieveRow("SELECT * FROM StatusLog WHERE DeviceID = {0}", int.Parse(m_deviceRecord["ID"].ToString()));
-
-                try
-                {
-                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString())
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastFailure = {0}, Message = {1} WHERE DeviceID = {2}", DateTime.UtcNow, ex.Message, m_deviceRecord["ID"]);
-                    else
-                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastFailure , Message, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, ex.Message, m_deviceRecord["ID"]);
-                }
-                catch (Exception)
-                {
-                    Program.Log("StatusLog Update (" + m_siteName + "): " + ex.Message, m_tempDirectoryName);
-                }
-
-
                 return false;
             }
         }
@@ -496,6 +466,38 @@ namespace BenDownloader
             }
 
         }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private void UpdateStatusLogDatabase(string message, bool success)
+        {
+            try
+            {
+                DataRow log = m_adoDataConnection.RetrieveRow("SELECT * FROM StatusLog  WITH (NOLOCK) WHERE DeviceID = {0}", int.Parse(m_deviceRecord["ID"].ToString()));
+
+                if (success)
+                {
+                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession != "")
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}, LastFile = {1} WHERE DeviceID = {2}", DateTime.UtcNow, m_lastFileDownloadedThisSession, m_deviceRecord["ID"]);
+                    else if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession == "")
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0} WHERE DeviceID = {1}", DateTime.UtcNow, m_deviceRecord["ID"]);
+                    else
+                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastSuccess , LastFile, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, m_lastFileDownloadedThisSession, m_deviceRecord["ID"]);
+                }
+                else
+                {
+
+                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString())
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastFailure = {0}, Message = {1} WHERE DeviceID = {2}", DateTime.UtcNow, message, m_deviceRecord["ID"]);
+                    else
+                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastFailure , Message, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, message, m_deviceRecord["ID"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.Log("StatusLog Update (" + m_siteName + "): " + ex.Message, m_tempDirectoryName);
+            }
+        }
+
         #endregion
 
         #region [File System]

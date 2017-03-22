@@ -115,14 +115,15 @@ namespace BenDownloader
 
             lock (s_logLock)
             {
-                FileInfo fi = new FileInfo(path + "Logs\\BenDownloaderLogFile.txt");
-                if (fi.Exists && fi.Length > 1048576)
-                {
-                    fi.MoveTo(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt");
-                }
-
                 try
                 {
+                    Directory.CreateDirectory(path + "Logs");
+                    FileInfo fi = new FileInfo(path + "Logs\\BenDownloaderLogFile.txt");
+                    if (fi.Exists && fi.Length > 1048576)
+                    {
+                        fi.MoveTo(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt");
+                    }
+
                     using (StreamWriter w = File.AppendText(path + "Logs\\BenDownloaderLogFile.txt"))
                     {
                         w.Write("\r\nLog Entry : ");
@@ -134,7 +135,7 @@ namespace BenDownloader
                         w.Flush();
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                 }
