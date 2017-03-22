@@ -278,7 +278,10 @@ namespace BenDownloader
                 };
 
                 if (m_fileWatcher.EnableRaisingEvents)
+                {
+                    m_lastFileChangedTime = DateTime.UtcNow.Ticks;
                     m_activityMonitor.Enabled = true;
+                }
 
                 // ReSharper disable once PossibleNullReferenceException
                 using (m_process = Process.Start(psi))
