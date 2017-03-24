@@ -23,26 +23,9 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Configuration;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Net.Mail;
-using System.Net.Mime;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using GSF;
 using GSF.Configuration;
-using GSF.Data;
-using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.VisualBasic;
-using Microsoft.VisualBasic.CompilerServices;
-using Microsoft.VisualBasic.FileIO;
-using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace BenDownloader
 {
