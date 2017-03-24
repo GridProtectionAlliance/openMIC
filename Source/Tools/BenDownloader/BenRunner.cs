@@ -355,7 +355,7 @@ namespace BenDownloader
                             "RecordNum=" + currec.Id + System.Environment.NewLine +
                             "SubBenNum=0" + System.Environment.NewLine +
                             "Origin=1" + System.Environment.NewLine +
-                            "OptionFlags=1" + System.Environment.NewLine +
+                            "OptionFlags=2" + System.Environment.NewLine +
                             "DataPath=" + m_tempDirectoryName + System.Environment.NewLine +
                             "FileName=" + Get232Fn(currec.DateTime, currec.Id.ToString());
                 
@@ -542,7 +542,7 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log("StatusLog Update (" + m_siteName + "): " + ex.Message, m_tempDirectoryName);
+                Program.Log("StatusLog Update (" + m_siteName + ") failed: " + ex.Message, m_tempDirectoryName);
             }
         }
 
@@ -680,16 +680,23 @@ namespace BenDownloader
 
         private void SendEmail(string msgTo, string msgFrom, string msgSubject, string msgBody)
         {
-            if (bool.Parse(ConfigurationFile.Current.Settings["systemSettings"]["EmailNotificationsEnabled"].Value))
+            try
             {
-                MailAddress mf = new MailAddress(msgFrom);
-                MailAddress mt = new MailAddress(msgTo);
-                MailMessage msg = new MailMessage(mf, mt);
-                msg.Subject = msgSubject;
-                msg.Body = msgBody;
+                if (bool.Parse(Program.OpenMiConfigurationFile.Settings["systemSettings"]["EmailNotificationsEnabled"]?.Value ?? "false"))
+                {
+                    MailAddress mf = new MailAddress(msgFrom);
+                    MailAddress mt = new MailAddress(msgTo);
+                    MailMessage msg = new MailMessage(mf, mt);
+                    msg.Subject = msgSubject;
+                    msg.Body = msgBody;
 
-                SmtpClient mclient = new SmtpClient(ConfigurationFile.Current.Settings["systemSettings"]["Mailserver"].Value);
-                mclient.Send(msg);
+                    SmtpClient mclient = new SmtpClient(Program.OpenMiConfigurationFile.Settings["systemSettings"]["Mailserver"].Value);
+                    mclient.Send(msg);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.Log("Failed Sending Email: " + ex.Message);
             }
         }
 
