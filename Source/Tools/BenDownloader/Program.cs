@@ -26,6 +26,7 @@ using System;
 using System.IO;
 using System.Threading;
 using GSF.Configuration;
+using GSF.IO;
 
 namespace BenDownloader
 {
@@ -106,7 +107,7 @@ namespace BenDownloader
                     FileInfo fi = new FileInfo(path + "Logs\\BenDownloaderLogFile.txt");
                     if (fi.Exists && fi.Length > 1048576)
                     {
-                        fi.MoveTo(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt");
+                        fi.MoveTo(FilePath.GetUniqueFilePathWithBinarySearch(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt"));
                     }
 
                     using (StreamWriter w = File.AppendText(path + "Logs\\BenDownloaderLogFile.txt"))

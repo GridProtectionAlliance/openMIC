@@ -65,6 +65,10 @@ namespace BenDownloader
         private Process m_process;
         private readonly System.Timers.Timer m_activityMonitor;
         private bool m_disposed;
+        private static bool s_emailSentTooManyFiles;
+        private static bool s_emailSentFileNumberLarger;
+        private static bool s_emailSentFileTooLarge;
+        private static bool s_emailSentFileFromFuture;
 
         #endregion
 
@@ -283,7 +287,8 @@ namespace BenDownloader
                 }
 
                 FileSystem.DeleteFile(m_tempDirectoryName + "benlink.req");
-                FileSystem.DeleteFile(m_tempDirectoryName + "benlink.rsp");
+                if(File.Exists(m_tempDirectoryName + "benlink.rsp"))
+                    FileSystem.DeleteFile(m_tempDirectoryName + "benlink.rsp");
                 
             }
             catch (Exception ex)
@@ -630,25 +635,38 @@ namespace BenDownloader
         {
             string msgBody = "Largest file on DFR is " + filename + ". The largest file already downloaded is " + downloadFileNumber + ".  " +
                              "This site may need to be checked.  It appears files were deleted from the DFR.  The counter on the Downloader should be reset.";
-            SendEmailDefault(msgBody);
+
+            if(!s_emailSentFileNumberLarger)
+                SendEmailDefault(msgBody);
+            s_emailSentFileNumberLarger = true;
         }
 
         private void SendFileTooLargeEmailNotification(string filename)
         {
             string msgBody = "File " + filename + " too large to download (greater than 4 MB).  Please check site...";
-            SendEmailDefault(msgBody);
+
+            if (!s_emailSentFileTooLarge)
+                SendEmailDefault(msgBody);
+            s_emailSentFileTooLarge = true;
         }
 
         private void SendFileFromFutureNotification(string filename)
         {
             string msgBody = "File " + filename + " has a timestamp from the future, please check the DFR clock.";
-            SendEmailDefault(msgBody);
+
+            if (!s_emailSentFileFromFuture)
+                SendEmailDefault(msgBody);
+            s_emailSentFileFromFuture = true;
         }
 
         private void SendTooManyFilesEmailNotification(int fileCount)
         {
             string msgBody = "Site has " + fileCount + " files to download.  This site may be a candidate for chip failure.  Please check...";
-            SendEmailDefault(msgBody);
+
+            if (!s_emailSentTooManyFiles)
+                SendEmailDefault(msgBody);
+            s_emailSentTooManyFiles = true;
+
         }
 
         private void SendExceptionEmail(string exception)
