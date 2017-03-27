@@ -39,6 +39,16 @@ CREATE TABLE StatusLog(
 	LastFile VARCHAR(4000) NULL
 );
 
+CREATE TABLE DownloadedFile(
+	ID int AUTOINCREMENT NOT NULL,
+	DeviceID int NOT NULL,
+	File nvarchar(200) NOT NULL,
+	Timestamp datetime NOT NULL,
+	CreationTime datetime NOT NULL,
+	CONSTRAINT PK_DownloadedFile PRIMARY KEY CLUSTERED (ID ASC) 
+ );
+
+
 CREATE UNIQUE INDEX IX_ConnectionProfileTask_ID ON ConnectionProfileTask (ID ASC) TABLESPACE openMIC_INDEX;
 
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT PK_ConnectionProfileTask PRIMARY KEY (ID);
