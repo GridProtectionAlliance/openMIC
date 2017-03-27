@@ -28,6 +28,7 @@ CREATE TABLE StatusLog(
 	LastFailure DATETIME NULL,
     Message TEXT NULL,
     LastFile TEXT NULL,
+    FileDownloadTimestamp DATETIME NULL,
     CONSTRAINT PK_StatusLog PRIMARY KEY (ID ASC),
     CONSTRAINT IX_StatusLog_DeviceID UNIQUE KEY (DeviceID ASC)
 );

@@ -27,7 +27,8 @@ CREATE TABLE StatusLog(
 	LastFailure TIMESTAMP NULL,
     Message TEXT NULL,
 	LastFile TEXT NULL,
-    CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID)
+    CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID),
+	FileDownloadTimestamp TIMESTAMP NULL
 );
 
 CREATE TABLE DownloadedFile(

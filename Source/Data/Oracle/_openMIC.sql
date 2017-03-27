@@ -36,15 +36,16 @@ CREATE TABLE StatusLog(
     LastSuccess DATE NULL,
 	LastFailure DATE NULL,
     Message VARCHAR(4000) NULL,
-	LastFile VARCHAR(4000) NULL
+	LastFile VARCHAR(4000) NULL,
+    FileDownloadTimestamp DATE NULL
 );
 
 CREATE TABLE DownloadedFile(
 	ID int AUTOINCREMENT NOT NULL,
 	DeviceID int NOT NULL,
 	File nvarchar(200) NOT NULL,
-	Timestamp datetime NOT NULL,
-	CreationTime datetime NOT NULL,
+	Timestamp DATE NOT NULL,
+	CreationTime DATE NOT NULL,
 	CONSTRAINT PK_DownloadedFile PRIMARY KEY CLUSTERED (ID ASC) 
  );
 

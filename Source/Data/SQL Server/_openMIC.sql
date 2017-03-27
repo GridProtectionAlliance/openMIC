@@ -44,7 +44,9 @@ CREATE TABLE [dbo].[StatusLog](
       [LastSuccess] [DateTime2] NULL,		
 	  [LastFailure] [DateTime2] NULL,		
       [Message] [varchar](max) NULL,
-	  [LastFile] [varchar](max) NULL
+	  [LastFile] [varchar](max) NULL,
+      FileDownloadTimestamp [DateTime2](7) NULL
+
 )
 
 GO
