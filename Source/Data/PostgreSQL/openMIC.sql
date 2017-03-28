@@ -1821,5 +1821,14 @@ CREATE TABLE StatusLog(
 	LastFailure TIMESTAMP NULL,
     Message TEXT NULL,
 	LastFile TEXT NULL,
-    CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID)
+    CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID),
+	FileDownloadTimestamp TIMESTAMP NULL
 );
+
+CREATE TABLE DownloadedFile(
+	ID SERIAL NOT NULL PRIMARY KEY,
+	DeviceID INTEGER NOT NULL,
+	File VARCHAR(200) NOT NULL,
+	Timestamp TIMESTAMP NOT NULL,
+	CreationTime TIMESTAMP NOT NULL
+ );

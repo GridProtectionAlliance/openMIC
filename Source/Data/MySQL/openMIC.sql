@@ -1790,9 +1790,21 @@ CREATE TABLE StatusLog(
 	LastFailure DATETIME NULL,
     Message TEXT NULL,
     LastFile TEXT NULL,
+    FileDownloadTimestamp DATETIME NULL,
     CONSTRAINT PK_StatusLog PRIMARY KEY (ID ASC),
     CONSTRAINT IX_StatusLog_DeviceID UNIQUE KEY (DeviceID ASC)
 );
+
+CREATE TABLE DownloadedFile(
+	ID int AUTO_INCREMENT NOT NULL,
+	DeviceID int NOT NULL,
+	File nvarchar(200) NOT NULL,
+	Timestamp datetime NOT NULL,
+	CreationTime datetime NOT NULL,
+	CONSTRAINT PK_DownloadedFile PRIMARY KEY CLUSTERED (ID ASC) 
+ );
+
+
 
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
 

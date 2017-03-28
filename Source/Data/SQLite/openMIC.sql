@@ -1690,8 +1690,18 @@ CREATE TABLE StatusLog(
 	LastFailure DATETIME NULL,		
     Message TEXT NULL,
 	LastFile TEXT NULL,
+	FileDownloadTimestamp DATETIME NULL,
     CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID ASC)
 );
+
+CREATE TABLE DownloadedFile(
+	ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,
+	DeviceID INTEGER NOT NULL,
+	File VARCHAR(200) NOT NULL,
+	Timestamp DATETIME NOT NULL,
+	CreationTime DATETIME NOT NULL
+);
+
 
 CREATE TRIGGER ConnectionProfile_InsertDefault AFTER INSERT ON ConnectionProfile
 FOR EACH ROW
