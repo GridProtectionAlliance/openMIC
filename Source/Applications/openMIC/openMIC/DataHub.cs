@@ -187,6 +187,8 @@ namespace openMIC
         public void DeleteDevice(int id)
         {
             DataContext.Table<Device>().DeleteRecord(id);
+            DataContext.Table<StatusLog>().DeleteRecord(new RecordRestriction("DeviceID = {0}", id));
+            DataContext.Table<DownloadedFile>().DeleteRecord(new RecordRestriction("DeviceID = {0}", id));
         }
 
         [RecordOperation(typeof(Device), RecordOperation.CreateNewRecord)]

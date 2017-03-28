@@ -37,6 +37,10 @@
       <HintPath>..\..\Dependencies\NuGet\AjaxMin.5.14.5506.26202\lib\net40\AjaxMin.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="ExpressionEvaluator, Version=2.0.3.0, Culture=neutral, PublicKeyToken=90d9f15d622e2348, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dependencies\GSF\ExpressionEvaluator.dll</HintPath>
+    </Reference>
     <Reference Include="GSF.Core, Version=2.1.439.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Dependencies\GSF\GSF.Core.dll</HintPath>

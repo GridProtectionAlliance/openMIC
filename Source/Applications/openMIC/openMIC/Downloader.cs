@@ -1055,7 +1055,7 @@ namespace openMIC
                             OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
 
                             if (string.IsNullOrWhiteSpace(settings.ExternalOperation))
-                                UpdateStatusLogDatabase("", "", true);
+                                UpdateStatusLogDatabase("", null,"", true);
 
                         }
 
@@ -1074,7 +1074,7 @@ namespace openMIC
                     FailedConnections++;
                     OnProcessException(new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                     OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", 0, 1));
-                    UpdateStatusLogDatabase(ex.Message, "", false);
+                    UpdateStatusLogDatabase(ex.Message, null, "",false);
                 }
 
                 client.CommandSent -= FtpClient_CommandSent;
@@ -1297,7 +1297,7 @@ namespace openMIC
                 FilesDownloaded++;
                 BytesDownloaded += file.Size;
                 OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, false, $"Download complete for \"{file.Name}\".", file.Size, file.Size));
-                UpdateStatusLogDatabase("", file.Name, true);
+                UpdateStatusLogDatabase("", file,localFileName, true);
 
                 // Send e-mail on file update, if requested
                 if (fileChanged && settings.EmailOnFileUpdate)
@@ -1658,7 +1658,7 @@ namespace openMIC
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        private void UpdateStatusLogDatabase(string message, string filename, bool success)
+        private void UpdateStatusLogDatabase(string message, FtpFile file, string localFileName,bool success)
         {
             string[] extensions = {".rcd", ".d00", ".dat", ".ctl", ".cfg", ".pcd"};
             string[] exclusions = {"rms.", "trend."};
@@ -1676,16 +1676,72 @@ namespace openMIC
                         {
                             log = logs.First();
                             log.LastSuccess = DateTime.UtcNow;
-                            if(extensions.Any(x => filename.Contains(x)) && !exclusions.Any(x => filename.Contains(x)))
-                                log.LastFile = filename;
+                            if(extensions.Any(x => file.Name.Contains(x)) && !exclusions.Any(x => file.Name.Contains(x)))
+                            {
+                                log.LastFile = file.Name;
+                                log.FileDownloadTimestamp = (DateTime)log.LastSuccess;
+
+                                dataContext.Table<DownloadedFile>().AddNewRecord(new DownloadedFile()
+                                {
+                                    DeviceID = m_deviceRecord.ID,
+                                    CreationTime = new FileInfo(localFileName).CreationTimeUtc,
+                                    File = file.Name,
+                                    Timestamp = (DateTime)log.LastSuccess
+                                });
+
+                                int maxDownloadThreshold = ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThreshold"].ValueAsInt32() ?? 0;
+                                if (maxDownloadThreshold > 0)
+                                {
+                                    DateTime timeWindow = DateTime.UtcNow.AddHours(-(ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThresholdTimeWindow"].ValueAsInt32() ?? 24));
+                                    int count = dataContext.Table<DownloadedFile>().QueryRecordCount(new RecordRestriction("Timestamp >= {0}", timeWindow));
+
+                                    if (count > maxDownloadThreshold)
+                                    {
+                                        dataContext.Connection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord.ID);
+                                        dataContext.Connection.ExecuteNonQuery("UPDATE StatusLog SET Message = 'Disabled due to excessive file production.' WHERE DeviceID = {0}", m_deviceRecord.ID);
+                                        Program.Host.SendRequest(m_deviceRecord.NodeID, "reloadconfig");
+
+                                        // TODO: ADD email notification.
+                                    }
+                                }
+                            }
                             dataContext.Table<StatusLog>().UpdateRecord(log);
                         }
                         else
                         {
                             log.LastSuccess = DateTime.UtcNow;
                             log.DeviceID = m_deviceRecord.ID;
-                            if (extensions.Any(x => filename.Contains(x)) && !exclusions.Any(x => filename.Contains(x)))
-                                log.LastFile = filename;
+                            if (extensions.Any(x => file.Name.Contains(x)) && !exclusions.Any(x => file.Name.Contains(x)))
+                            {
+                                log.LastFile = file.Name;
+                                log.FileDownloadTimestamp = (DateTime)log.LastSuccess;
+
+                                dataContext.Table<DownloadedFile>().AddNewRecord(new DownloadedFile()
+                                {
+                                    DeviceID = m_deviceRecord.ID,
+                                    CreationTime = new FileInfo(localFileName).CreationTimeUtc,
+                                    File = file.Name,
+                                    Timestamp = (DateTime)log.LastSuccess
+                                });
+
+                                int maxDownloadThreshold = ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThreshold"].ValueAsInt32() ?? 0;
+                                if (maxDownloadThreshold > 0)
+                                {
+                                    DateTime timeWindow = DateTime.UtcNow.AddHours(-(ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThresholdTimeWindow"].ValueAsInt32() ?? 24));
+                                    int count = dataContext.Table<DownloadedFile>().QueryRecordCount(new RecordRestriction("Timestamp >= {0}", timeWindow));
+
+                                    if (count > maxDownloadThreshold)
+                                    {
+                                        dataContext.Connection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord.ID);
+                                        dataContext.Connection.ExecuteNonQuery("UPDATE StatusLog SET Message = 'Disabled due to excessive file production.' WHERE DeviceID = {0}", m_deviceRecord.ID);
+                                        Program.Host.SendRequest(m_deviceRecord.NodeID, "reloadconfig");
+
+                                        // TODO: ADD email notification.
+                                    }
+                                }
+
+
+                            }
                             dataContext.Table<StatusLog>().AddNewRecord(log);
                         }
 
@@ -1705,6 +1761,7 @@ namespace openMIC
                             log.LastFailure = DateTime.UtcNow;
                             log.Message = message;
                             log.DeviceID = m_deviceRecord.ID;
+                            log.FileDownloadTimestamp = null;
                             dataContext.Table<StatusLog>().AddNewRecord(log);
                         }
 
