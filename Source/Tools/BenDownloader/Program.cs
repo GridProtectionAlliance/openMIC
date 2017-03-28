@@ -47,6 +47,7 @@ namespace BenDownloader
 
         static void Main(string[] args)
         {
+
             int setting = s_openMicConfigurationFile.Settings["systemSettings"]["BenRunnerInstanceCount"]?.ValueAsInt32() ?? 0;
 
             if(setting > 0)
@@ -64,6 +65,8 @@ namespace BenDownloader
                 {
                     using (BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1])))
                     {
+                        AppDomain.CurrentDomain.ProcessExit += (sender, arg) => br.Dispose();
+
                         if (!br.XferAllFiles())
                             throw new Exception("BEN Downloader failed...");
                     }

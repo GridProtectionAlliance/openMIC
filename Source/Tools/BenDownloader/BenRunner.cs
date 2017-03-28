@@ -135,6 +135,7 @@ namespace BenDownloader
             {
                 m_disposed = true;
 
+                m_process?.Kill();
                 m_adoDataConnection?.Dispose();
                 m_fileWatcher?.Dispose();
                 m_activityMonitor?.Dispose();

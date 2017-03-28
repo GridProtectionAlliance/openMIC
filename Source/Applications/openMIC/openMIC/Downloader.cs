@@ -25,18 +25,23 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using DotRas;
 using GSF;
 using GSF.Configuration;
+using GSF.Data;
 using GSF.Data.Model;
-using GSF.Net.Ftp;
 using GSF.IO;
+using GSF.Net.Ftp;
+using GSF.Net.Smtp;
+using GSF.Parsing;
 using GSF.Scheduling;
 using GSF.Threading;
 using GSF.TimeSeries;
@@ -45,12 +50,6 @@ using GSF.TimeSeries.Statistics;
 using GSF.Units;
 using GSF.Web.Model;
 using openMIC.Model;
-using System.Data;
-using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Channels;
-using GSF.Data;
-using GSF.Net.Smtp;
-using GSF.Parsing;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedParameter.Local
@@ -364,6 +363,7 @@ namespace openMIC
         private LogicalThreadOperation m_dialUpOperation;
         private LogicalThreadOperation m_ftpOperation;
         private LongSynchronizedOperation m_executeTasks;
+        private ICancellationToken m_cancellationToken;
         private int m_overallTasksCompleted;
         private int m_overallTasksCount;
         private long m_startDialUpTime;
@@ -378,6 +378,7 @@ namespace openMIC
             m_rasDialer = new RasDialer();
             m_rasDialer.Error += m_rasDialer_Error;
             m_deviceProxy = new DeviceProxy(this);
+            m_cancellationToken = new GSF.Threading.CancellationToken();
             m_connectionProfileLock = new object();
         }
 
@@ -838,6 +839,7 @@ namespace openMIC
                 {
                     if (disposing)
                     {
+                        m_cancellationToken.Cancel();
                         DeregisterSchedule(this);
 
                         if ((object)m_rasDialer != null)
@@ -986,6 +988,9 @@ namespace openMIC
 
         private void ExecuteTasks()
         {
+            if (m_cancellationToken.IsCancelled)
+                return;
+
             using (FtpClient client = new FtpClient())
             {
                 client.CommandSent += FtpClient_CommandSent;
@@ -1103,6 +1108,9 @@ namespace openMIC
 
             foreach (FtpDirectory directory in directories)
             {
+                if (m_cancellationToken.IsCancelled)
+                    return;
+
                 string directoryName = directory.Name;
 
                 if (directoryName.StartsWith(".", StringComparison.Ordinal))
@@ -1155,6 +1163,9 @@ namespace openMIC
                         {
                             try
                             {
+                                if (m_cancellationToken.IsCancelled)
+                                    return;
+
                                 if (!FilePath.IsFilePatternMatch(settings.FileSpecs, file.Name, true))
                                     continue;
 
@@ -1484,7 +1495,15 @@ namespace openMIC
                 }
                 else
                 {
-                    externalOperation.WaitForExit();
+                    while (!externalOperation.WaitForExit(1000))
+                    {
+                        if (m_cancellationToken.IsCancelled)
+                        {
+                            externalOperation.Kill();
+                            return;
+                        }
+                    }
+
                     OnStatusMessage("External operation \"{0}\" completed with status code {1}.", settings.ExternalOperation, externalOperation.ExitCode);
                     OnProgressUpdated(this, new ProgressUpdate(ProgressState.Undefined, false, $"External action complete: exit code {externalOperation.ExitCode}.", 1, 1));
                     FilesDownloaded++;
