@@ -1689,101 +1689,110 @@ namespace openMIC
                     IEnumerable<StatusLog> logs = dataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID = {0}", m_deviceRecord.ID));
                     StatusLog log = new StatusLog();
 
-                    if (success)
+                    if (m_deviceRecord.Enabled)
                     {
-                        if (logs.Any())
+                        if (success)
                         {
-                            log = logs.First();
-                            log.LastSuccess = DateTime.UtcNow;
-                            if(extensions.Any(x => file.Name.Contains(x)) && !exclusions.Any(x => file.Name.Contains(x)))
+                            if (logs.Any())
                             {
-                                log.LastFile = file.Name;
-                                log.FileDownloadTimestamp = (DateTime)log.LastSuccess;
-
-                                dataContext.Table<DownloadedFile>().AddNewRecord(new DownloadedFile()
+                                log = logs.First();
+                                log.LastSuccess = DateTime.UtcNow;
+                                if (extensions.Any(x => file.Name.Contains(x)) && !exclusions.Any(x => file.Name.Contains(x)))
                                 {
-                                    DeviceID = m_deviceRecord.ID,
-                                    CreationTime = new FileInfo(localFileName).CreationTimeUtc,
-                                    File = file.Name,
-                                    Timestamp = (DateTime)log.LastSuccess
-                                });
+                                    log.LastFile = file.Name;
+                                    log.FileDownloadTimestamp = (DateTime)log.LastSuccess;
 
-                                int maxDownloadThreshold = ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThreshold"].ValueAsInt32() ?? 0;
-                                if (maxDownloadThreshold > 0)
-                                {
-                                    DateTime timeWindow = DateTime.UtcNow.AddHours(-(ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThresholdTimeWindow"].ValueAsInt32() ?? 24));
-                                    int count = dataContext.Table<DownloadedFile>().QueryRecordCount(new RecordRestriction("Timestamp >= {0}", timeWindow));
-
-                                    if (count > maxDownloadThreshold)
+                                    dataContext.Table<DownloadedFile>().AddNewRecord(new DownloadedFile()
                                     {
-                                        dataContext.Connection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord.ID);
-                                        dataContext.Connection.ExecuteNonQuery("UPDATE StatusLog SET Message = 'Disabled due to excessive file production.' WHERE DeviceID = {0}", m_deviceRecord.ID);
-                                        Program.Host.SendRequest(m_deviceRecord.NodeID, "reloadconfig");
+                                        DeviceID = m_deviceRecord.ID,
+                                        CreationTime = new FileInfo(localFileName).CreationTimeUtc,
+                                        File = file.Name,
+                                        Timestamp = (DateTime)log.LastSuccess
+                                    });
 
-                                        // TODO: ADD email notification.
+                                    int maxDownloadThreshold = ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThreshold"].ValueAsInt32() ?? 0;
+                                    if (maxDownloadThreshold > 0)
+                                    {
+                                        DateTime timeWindow = DateTime.UtcNow.AddHours(-(ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThresholdTimeWindow"].ValueAsInt32() ?? 24));
+                                        int count = dataContext.Table<DownloadedFile>().QueryRecordCount(new RecordRestriction("Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord.ID));
+
+                                        if (count > maxDownloadThreshold)
+                                        {
+                                            dataContext.Connection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord.ID);
+                                            log.Message = "Disabled due to excessive file production.";
+                                            log.LastFailure = log.LastSuccess;
+                                            Program.Host.SendRequest(m_deviceRecord.NodeID, "reloadconfig");
+                                            OnStatusMessage($"[{m_deviceRecord.Name}] Disabled due to excessive file downloads. Setting: {maxDownloadThreshold}; Count: {count}");
+                                            m_deviceRecord.Enabled = false;
+
+                                            // TODO: ADD email notification.
+                                        }
                                     }
                                 }
+                                dataContext.Table<StatusLog>().UpdateRecord(log);
                             }
-                            dataContext.Table<StatusLog>().UpdateRecord(log);
+                            else
+                            {
+                                log.LastSuccess = DateTime.UtcNow;
+                                log.DeviceID = m_deviceRecord.ID;
+                                if (extensions.Any(x => file.Name.Contains(x)) && !exclusions.Any(x => file.Name.Contains(x)))
+                                {
+                                    log.LastFile = file.Name;
+                                    log.FileDownloadTimestamp = (DateTime)log.LastSuccess;
+
+                                    dataContext.Table<DownloadedFile>().AddNewRecord(new DownloadedFile()
+                                    {
+                                        DeviceID = m_deviceRecord.ID,
+                                        CreationTime = new FileInfo(localFileName).CreationTimeUtc,
+                                        File = file.Name,
+                                        Timestamp = (DateTime)log.LastSuccess
+                                    });
+
+                                    int maxDownloadThreshold = ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThreshold"].ValueAsInt32() ?? 0;
+                                    if (maxDownloadThreshold > 0)
+                                    {
+                                        DateTime timeWindow = DateTime.UtcNow.AddHours(-(ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThresholdTimeWindow"].ValueAsInt32() ?? 24));
+                                        int count = dataContext.Table<DownloadedFile>().QueryRecordCount(new RecordRestriction("Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord.ID));
+
+                                        if (count > maxDownloadThreshold)
+                                        {
+                                            dataContext.Connection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord.ID);
+                                            log.Message = "Disabled due to excessive file production.";
+                                            log.LastFailure = log.LastSuccess;
+                                            Program.Host.SendRequest(m_deviceRecord.NodeID, "reloadconfig");
+                                            OnStatusMessage($"[{m_deviceRecord.Name}] Disabled due to excessive file downloads. Setting: {maxDownloadThreshold}; Count: {count}");
+                                            m_deviceRecord.Enabled = false;
+
+                                            // TODO: ADD email notification.
+                                        }
+                                    }
+
+
+                                }
+                                dataContext.Table<StatusLog>().AddNewRecord(log);
+                            }
+
                         }
                         else
                         {
-                            log.LastSuccess = DateTime.UtcNow;
-                            log.DeviceID = m_deviceRecord.ID;
-                            if (extensions.Any(x => file.Name.Contains(x)) && !exclusions.Any(x => file.Name.Contains(x)))
+
+                            if (logs.Any())
                             {
-                                log.LastFile = file.Name;
-                                log.FileDownloadTimestamp = (DateTime)log.LastSuccess;
-
-                                dataContext.Table<DownloadedFile>().AddNewRecord(new DownloadedFile()
-                                {
-                                    DeviceID = m_deviceRecord.ID,
-                                    CreationTime = new FileInfo(localFileName).CreationTimeUtc,
-                                    File = file.Name,
-                                    Timestamp = (DateTime)log.LastSuccess
-                                });
-
-                                int maxDownloadThreshold = ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThreshold"].ValueAsInt32() ?? 0;
-                                if (maxDownloadThreshold > 0)
-                                {
-                                    DateTime timeWindow = DateTime.UtcNow.AddHours(-(ConfigurationFile.Current.Settings?["systemSettings"]["MaxDownloadThresholdTimeWindow"].ValueAsInt32() ?? 24));
-                                    int count = dataContext.Table<DownloadedFile>().QueryRecordCount(new RecordRestriction("Timestamp >= {0}", timeWindow));
-
-                                    if (count > maxDownloadThreshold)
-                                    {
-                                        dataContext.Connection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord.ID);
-                                        dataContext.Connection.ExecuteNonQuery("UPDATE StatusLog SET Message = 'Disabled due to excessive file production.' WHERE DeviceID = {0}", m_deviceRecord.ID);
-                                        Program.Host.SendRequest(m_deviceRecord.NodeID, "reloadconfig");
-
-                                        // TODO: ADD email notification.
-                                    }
-                                }
-
-
+                                log = logs.First();
+                                log.LastFailure = DateTime.UtcNow;
+                                log.Message = message;
+                                dataContext.Table<StatusLog>().UpdateRecord(log);
                             }
-                            dataContext.Table<StatusLog>().AddNewRecord(log);
-                        }
+                            else
+                            {
+                                log.LastFailure = DateTime.UtcNow;
+                                log.Message = message;
+                                log.DeviceID = m_deviceRecord.ID;
+                                log.FileDownloadTimestamp = null;
+                                dataContext.Table<StatusLog>().AddNewRecord(log);
+                            }
 
-                    }
-                    else
-                    {
-
-                        if (logs.Any())
-                        {
-                            log = logs.First();
-                            log.LastFailure = DateTime.UtcNow;
-                            log.Message = message;
-                            dataContext.Table<StatusLog>().UpdateRecord(log);
                         }
-                        else
-                        {
-                            log.LastFailure = DateTime.UtcNow;
-                            log.Message = message;
-                            log.DeviceID = m_deviceRecord.ID;
-                            log.FileDownloadTimestamp = null;
-                            dataContext.Table<StatusLog>().AddNewRecord(log);
-                        }
-
                     }
                 }
             }
