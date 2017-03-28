@@ -29,6 +29,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -1499,7 +1500,7 @@ namespace openMIC
                     {
                         if (m_cancellationToken.IsCancelled)
                         {
-                            externalOperation.Kill();
+                            TerminateProcessTree(externalOperation.Id);
                             return;
                         }
                     }
@@ -1900,6 +1901,29 @@ namespace openMIC
         private static void OnProgressUpdated(Downloader instance, ProgressUpdate update)
         {
             ProgressUpdated?.Invoke(instance, new EventArgs<ProgressUpdate>(update));
+        }
+
+        private static void TerminateProcessTree(int ancestorID)
+        {
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + ancestorID);
+            ManagementObjectCollection descendantIDs = searcher.Get();
+
+            foreach (ManagementObject descendantID in descendantIDs)
+            {
+                TerminateProcessTree(Convert.ToInt32(descendantID["ProcessID"]));
+            }
+
+            try
+            {
+                using (Process ancestor = Process.GetProcessById(ancestorID))
+                {
+                    ancestor.Kill();
+                }
+            }
+            catch (ArgumentException)
+            {
+                // Process already exited
+            }
         }
 
         #region [ Statistic Functions ]
