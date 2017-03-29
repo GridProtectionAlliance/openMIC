@@ -46,3 +46,7 @@ CREATE TABLE DownloadedFile(
 	Timestamp TIMESTAMP NOT NULL
  );
 
+CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
+CREATE INDEX IX_SentEmail_DeviceID ON SentEmail (DeviceID);
+CREATE INDEX IX_SentEmail_Timestamp ON SentEmail (Timestamp);
+

@@ -59,3 +59,8 @@ FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn 
 
 CREATE TRIGGER ConnectionProfileTask_InsertDefault BEFORE INSERT ON ConnectionProfileTask
 FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
+
+CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
+CREATE INDEX IX_SentEmail_DeviceID ON SentEmail (DeviceID);
+CREATE INDEX IX_SentEmail_Timestamp ON SentEmail (Timestamp);
+

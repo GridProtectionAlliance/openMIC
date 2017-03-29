@@ -84,3 +84,8 @@ END;
 /
 
 CREATE UNIQUE INDEX IX_StatusLog_DeviceID ON StatusLog (DeviceID ASC) TABLESPACE openMIC_INDEX;
+CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID)  TABLESPACE openMIC_INDEX;
+CREATE INDEX IX_SentEmail_DeviceID ON SentEmail (DeviceID)  TABLESPACE openMIC_INDEX;
+CREATE INDEX IX_SentEmail_Timestamp ON SentEmail (Timestamp)  TABLESPACE openMIC_INDEX;
+
+

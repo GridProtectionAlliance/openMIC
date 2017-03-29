@@ -44,8 +44,11 @@ CREATE TABLE DownloadedFile(
 	DeviceID int NOT NULL,
 	Message VARCHAR(MAX) NOT NULL,
 	Timestamp DATETIME NOT NULL
-	 );
+);
 
+CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
+CREATE INDEX IX_SentEmail_DeviceID ON SentEmail (DeviceID);
+CREATE INDEX IX_SentEmail_Timestamp ON SentEmail (Timestamp);
 
 
 CREATE TRIGGER ConnectionProfile_InsertDefault AFTER INSERT ON ConnectionProfile
