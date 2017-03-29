@@ -49,6 +49,15 @@ CREATE TABLE DownloadedFile(
 	CONSTRAINT PK_DownloadedFile PRIMARY KEY CLUSTERED (ID ASC) 
  );
 
+ CREATE TABLE SentEmail(
+	ID int AUTOINCREMENT NOT NULL,
+	DeviceID int NOT NULL,
+	Message nvarchar(MAX) NOT NULL,
+	Timestamp DATE NOT NULL,
+	CONSTRAINT PK_SentEMail PRIMARY KEY CLUSTERED (ID ASC) 
+ );
+
+
 
 CREATE UNIQUE INDEX IX_ConnectionProfileTask_ID ON ConnectionProfileTask (ID ASC) TABLESPACE openMIC_INDEX;
 

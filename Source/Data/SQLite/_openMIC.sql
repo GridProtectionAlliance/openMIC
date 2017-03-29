@@ -39,6 +39,14 @@ CREATE TABLE DownloadedFile(
 	CreationTime DATETIME NOT NULL
 );
 
+ CREATE TABLE SentEmail(
+	ID  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	DeviceID int NOT NULL,
+	Message VARCHAR(MAX) NOT NULL,
+	Timestamp DATETIME NOT NULL
+	 );
+
+
 
 CREATE TRIGGER ConnectionProfile_InsertDefault AFTER INSERT ON ConnectionProfile
 FOR EACH ROW
