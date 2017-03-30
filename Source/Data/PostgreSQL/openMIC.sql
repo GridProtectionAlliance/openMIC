@@ -1832,3 +1832,15 @@ CREATE TABLE DownloadedFile(
 	Timestamp TIMESTAMP NOT NULL,
 	CreationTime TIMESTAMP NOT NULL
  );
+
+ CREATE TABLE SentEmail(
+	ID SERIAL NOT NULL PRIMARY KEY,
+	DeviceID INTEGER NOT NULL,
+	Message varchar(MAX) NOT NULL,
+	Timestamp TIMESTAMP NOT NULL
+ );
+
+CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
+CREATE INDEX IX_SentEmail_DeviceID ON SentEmail (DeviceID);
+CREATE INDEX IX_SentEmail_Timestamp ON SentEmail (Timestamp);
+

@@ -1804,6 +1804,14 @@ CREATE TABLE DownloadedFile(
 	CONSTRAINT PK_DownloadedFile PRIMARY KEY CLUSTERED (ID ASC) 
  );
 
+CREATE TABLE SentEmail(
+	ID int AUTO_INCREMENT NOT NULL,
+	DeviceID int NOT NULL,
+	Message nvarchar(MAX) NOT NULL,
+	Timestamp datetime NOT NULL,
+	CONSTRAINT PK_SentEMail PRIMARY KEY CLUSTERED (ID ASC) 
+ );
+
 
 
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
@@ -1813,3 +1821,8 @@ FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn 
 
 CREATE TRIGGER ConnectionProfileTask_InsertDefault BEFORE INSERT ON ConnectionProfileTask
 FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
+
+CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
+CREATE INDEX IX_SentEmail_DeviceID ON SentEmail (DeviceID);
+CREATE INDEX IX_SentEmail_Timestamp ON SentEmail (Timestamp);
+
