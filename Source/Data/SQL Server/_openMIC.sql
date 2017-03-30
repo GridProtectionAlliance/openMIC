@@ -139,7 +139,7 @@ GO
 --	DECLARE @downloadDate nvarchar(max) = (SELECT TOP 1 FileDownloadTimestamp FROM inserted)
 --	DECLARE @lastSuccess DateTime = (SELECT LastSuccess FROM StatusLog WHERE DeviceID = @deviceID)
 --	DECLARE @lastFailure DateTime = (SELECT LastFailure FROM StatusLog WHERE DeviceID = @deviceID)
-
+--	DECLARE @fileSize int = (SELECT FileSize FROM DownloadedFile WHERE DeviceID = @deviceID)
 --	DECLARE @fileDate DateTime 
 --	IF @lastFile IS NOT NULL
 --	BEGIN	
@@ -169,6 +169,12 @@ GO
 --		SET @emailFlag = 1
 --	END
 
+--	IF @fileDate > GETDATE() AND @enabled = 1 AND @emailCountToday = 0
+--	BEGIN
+--		SET @intro = @intro + N'<div>'+ @Name+' has produced a record in the future.</div><br>'
+--		SET @emailFlag = 1
+--	END
+
 --	IF @downloadDateDiff > 12 AND @enabled = 1 AND @emailCountToday = 0
 --	BEGIN
 --		SET @intro = @intro + N'<div>'+ @Name+' has taken '+ CAST(@downloadDateDiff as nvarchar(100)) +' hours to download a file.  The meter may require attention.</div><br>'
@@ -180,6 +186,13 @@ GO
 --		SET @intro = @intro + N'<div>'+ @Name+' has not had a successful connection in  '+ CAST(@successDateDiff as nvarchar(100)) +' hours.  The meter may require attention.</div><br>'
 --		SET @emailFlag = 1
 --	END
+
+--	IF @fileSize > 1028*50 AND @enabled = 1 AND @emailCountToday = 0 -- email on greater than 50 MB
+--	BEGIN
+--		SET @intro = @intro + N'<div>'+ @Name+' has produced a record that is too large.</div><br>'
+--		SET @emailFlag = 1
+--	END
+
 
 --	IF @emailFlag = 1 
 --	BEGIN
