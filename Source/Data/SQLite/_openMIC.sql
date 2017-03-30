@@ -36,7 +36,8 @@ CREATE TABLE DownloadedFile(
 	DeviceID INTEGER NOT NULL,
 	File VARCHAR(200) NOT NULL,
 	Timestamp DATETIME NOT NULL,
-	CreationTime DATETIME NOT NULL
+	CreationTime DATETIME NOT NULL,
+	FileSize INTEGER Not NULL
 );
 
  CREATE TABLE SentEmail(

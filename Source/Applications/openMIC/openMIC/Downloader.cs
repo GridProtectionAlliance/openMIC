@@ -1708,6 +1708,7 @@ namespace openMIC
                                         DeviceID = m_deviceRecord.ID,
                                         CreationTime = new FileInfo(localFileName).CreationTimeUtc,
                                         File = file.Name,
+                                        FileSize = (int)(new FileInfo(localFileName).Length / 1028),   // FileSize in KB
                                         Timestamp = (DateTime)log.LastSuccess
                                     });
 
@@ -1746,6 +1747,7 @@ namespace openMIC
                                         DeviceID = m_deviceRecord.ID,
                                         CreationTime = new FileInfo(localFileName).CreationTimeUtc,
                                         File = file.Name,
+                                        FileSize = (int)(new FileInfo(localFileName).Length / 1028),   // FileSize in KB
                                         Timestamp = (DateTime)log.LastSuccess
                                     });
 

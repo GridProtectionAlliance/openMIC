@@ -15,5 +15,6 @@ namespace openMIC.Model
         public string File { get; set; }
         public DateTime Timestamp { get; set; }
         public DateTime CreationTime { get; set; }
+        public int FileSize { get; set; }
     }
 }

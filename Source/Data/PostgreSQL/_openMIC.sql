@@ -36,6 +36,7 @@ CREATE TABLE DownloadedFile(
 	DeviceID INTEGER NOT NULL,
 	File VARCHAR(200) NOT NULL,
 	Timestamp TIMESTAMP NOT NULL,
+	FileSize INTEGER Not NULL,
 	CreationTime TIMESTAMP NOT NULL
  );
 

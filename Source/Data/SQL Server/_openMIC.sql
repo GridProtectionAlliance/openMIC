@@ -57,6 +57,7 @@ CREATE TABLE [dbo].[DownloadedFile](
 	[File] [nvarchar](200) NOT NULL,
 	[Timestamp] [datetime2](7) NOT NULL,
 	[CreationTime] [datetime2](7) NOT NULL,
+	FileSize int Not NULL,
  CONSTRAINT [PK_DownloadedFile] PRIMARY KEY CLUSTERED 
 (
 	[ID] ASC
