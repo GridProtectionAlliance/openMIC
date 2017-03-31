@@ -2717,6 +2717,7 @@ CREATE TABLE DownloadedFile(
 	DeviceID int NOT NULL,
 	Message nvarchar(MAX) NOT NULL,
 	Timestamp DATE NOT NULL,
+	FileSize int Not NULL,
 	CONSTRAINT PK_SentEMail PRIMARY KEY CLUSTERED (ID ASC) 
  );
 
