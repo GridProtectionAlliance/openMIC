@@ -1727,7 +1727,6 @@ namespace openMIC
                                             OnStatusMessage($"[{m_deviceRecord.Name}] Disabled due to excessive file downloads. Setting: {maxDownloadThreshold}; Count: {count}");
                                             m_deviceRecord.Enabled = false;
 
-                                            // TODO: ADD email notification.
                                         }
                                     }
                                 }

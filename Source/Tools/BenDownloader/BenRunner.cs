@@ -64,10 +64,6 @@ namespace BenDownloader
         private Process m_process;
         private readonly System.Timers.Timer m_activityMonitor;
         private bool m_disposed;
-        private static bool s_emailSentTooManyFiles;
-        private static bool s_emailSentFileNumberLarger;
-        private static bool s_emailSentFileTooLarge;
-        private static bool s_emailSentFileFromFuture;
 
         #endregion
 
@@ -504,12 +500,33 @@ namespace BenDownloader
 
                 if (success)
                 {
-                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession != "")
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}, LastFile = {1} WHERE DeviceID = {2}", DateTime.UtcNow, m_lastFileDownloadedThisSession, m_deviceRecord["ID"]);
-                    else if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession == "")
+                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession != string.Empty) { 
+                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}, LastFile = {1}, FileDownloadTimestamp = {2} WHERE DeviceID = {3}", DateTime.UtcNow, m_lastFileDownloadedThisSession, DateTime.UtcNow, m_deviceRecord["ID"]);}
+                    else if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession == string.Empty)
                         m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0} WHERE DeviceID = {1}", DateTime.UtcNow, m_deviceRecord["ID"]);
                     else
-                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastSuccess , LastFile, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, m_lastFileDownloadedThisSession, m_deviceRecord["ID"]);
+                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastSuccess , LastFile, FileDownloadTimestamp, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, m_lastFileDownloadedThisSession, DateTime.UtcNow, m_deviceRecord["ID"]);
+
+                    if(m_lastFileDownloadedThisSession != string.Empty)
+                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO DownloadedFile (DeviceID , CreationTime, File, FileSize, Timestamp) VALUES ({0},{1},{2})", m_deviceRecord["ID"], DateTime.UtcNow, m_lastFileDownloadedThisSession, 0, DateTime.UtcNow);
+
+                    int maxDownloadThreshold = Program.OpenMiConfigurationFile.Settings?["systemSettings"]["MaxDownloadThreshold"].ValueAsInt32() ?? 0;
+                    if (maxDownloadThreshold > 0)
+                    {
+                        DateTime timeWindow = DateTime.UtcNow.AddHours(-(Program.OpenMiConfigurationFile.Settings?["systemSettings"]["MaxDownloadThresholdTimeWindow"].ValueAsInt32() ?? 24));
+                        int count = m_adoDataConnection.ExecuteScalar<int>("SELECT COUNT(*) FROM DownloadedFile WHERE Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord["ID"]);
+
+                        if (count > maxDownloadThreshold)
+                        {
+                            m_adoDataConnection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord["ID"]);
+                            string fail = "Disabled due to excessive file production.";
+                            m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastFailure = {0}, Message = {1} WHERE DeviceID = {2}", DateTime.UtcNow, fail, m_deviceRecord["ID"]);
+                            Program.Log($"[{m_deviceRecord["Name"]} Disabled due to excessive file downloads. Setting: {maxDownloadThreshold}; Count: {count}");
+
+                        }
+                    }
+
+
                 }
                 else
                 {
