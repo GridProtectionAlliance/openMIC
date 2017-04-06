@@ -28,7 +28,6 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Mail;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -186,7 +185,6 @@ namespace BenDownloader
                     }
                     else
                     {
-                        SendTooManyFilesEmailNotification(numFiles);
                         throw new System.Exception("Site " + m_siteName + " has too many files, aborting download.");
                     }
                 }
@@ -229,9 +227,6 @@ namespace BenDownloader
                     {
                         string[] curRow = dirReader.ReadFields();
 
-                        if(Convert.ToInt32(curRow[0]) < m_lastFileDownloaded.Id)
-                            SendFileNumberLargerEmailNotification(curRow[0], m_lastFileDownloaded.Id);
-
                         if (Convert.ToInt32(curRow[2]) < BENMAXFILESIZE)
                         {
                             BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
@@ -240,7 +235,7 @@ namespace BenDownloader
                                 downloadList.Add(curRecord);
                         }
                         else
-                            SendFileTooLargeEmailNotification("Record id: " + curRow[0]);
+                            Program.Log("File too large Error: " + m_siteName + " - " + Convert.ToString(curRow[0]) , m_tempDirectoryName);
                     }
                     dirReader.Close();
 
@@ -332,22 +327,9 @@ namespace BenDownloader
                                 "HangupTimeout=0";
 
             int i = 1;
-            int curYear = DateTime.Now.Year;
 
             foreach (BenRecord currec in fileList)
             {
-                if (currec.DateTime.Year > curYear)
-                {
-                    SendFileFromFutureNotification("Record ID: " + currec.Id);
-                    throw new System.Exception("FileID " + currec.Id + " at site " + m_siteName + " from the future. Fix DFR clock.");
-                }
-                if (currec.Id < m_lastFileDownloaded.Id)
-                {
-                    SendFileNumberLargerEmailNotification("Record ID: " + currec.Id.ToString(), currec.Id);
-                    throw new System.Exception("FileID " + currec.Id + " at site " + m_siteName + " Id less than last downloaded.");
-                }
-
-
                 myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
                             "RequestType=2" + System.Environment.NewLine +
                             "RecordNum=" + currec.Id + System.Environment.NewLine +
@@ -468,9 +450,10 @@ namespace BenDownloader
                 files = System.IO.Directory.GetFiles(m_localPath + "\\" + m_folder);
                 foreach (string fileName in files)
                 {
-                    System.IO.FileInfo file = new System.IO.FileInfo(fileName);
-                    if (file.Name.EndsWith("cfg"))
+                    if (fileName.EndsWith("cfg"))
                     {
+                        System.IO.FileInfo file = new System.IO.FileInfo(fileName);
+
                         try
                         {
                             if (file.LastWriteTime > lastFile.DateTime)
@@ -483,7 +466,6 @@ namespace BenDownloader
                         catch (Exception ex)
                         {
                             Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString(), m_tempDirectoryName);
-                            throw new SystemException("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
                         }
                     }
                 }
@@ -627,90 +609,6 @@ namespace BenDownloader
                 }
             }
         }
-
-        #endregion
-
-        #region [Email/PQMS]
-
-        private void SendFileNumberLargerEmailNotification(string filename, int downloadFileNumber)
-        {
-            string msgBody = "Largest file on DFR is " + filename + ". The largest file already downloaded is " + downloadFileNumber + ".  " +
-                             "This site may need to be checked.  It appears files were deleted from the DFR.  The counter on the Downloader should be reset.";
-
-            if(!s_emailSentFileNumberLarger)
-                SendEmailDefault(msgBody);
-            s_emailSentFileNumberLarger = true;
-        }
-
-        private void SendFileTooLargeEmailNotification(string filename)
-        {
-            string msgBody = "File " + filename + " too large to download (greater than 4 MB).  Please check site...";
-
-            if (!s_emailSentFileTooLarge)
-                SendEmailDefault(msgBody);
-            s_emailSentFileTooLarge = true;
-        }
-
-        private void SendFileFromFutureNotification(string filename)
-        {
-            string msgBody = "File " + filename + " has a timestamp from the future, please check the DFR clock.";
-
-            if (!s_emailSentFileFromFuture)
-                SendEmailDefault(msgBody);
-            s_emailSentFileFromFuture = true;
-        }
-
-        private void SendTooManyFilesEmailNotification(int fileCount)
-        {
-            string msgBody = "Site has " + fileCount + " files to download.  This site may be a candidate for chip failure.  Please check...";
-
-            if (!s_emailSentTooManyFiles)
-                SendEmailDefault(msgBody);
-            s_emailSentTooManyFiles = true;
-
-        }
-
-        private void SendExceptionEmail(string exception)
-        {
-            SendEmail("tllaughner@tva.gov", "bendownloader@gpa.org", "Exception from bendownloader", exception);
-        }
-
-
-        private void SendEmailDefault(string msgBody)
-        {
-#if DEBUG
-            string msgTo = "tllaughner@tva.gov";
-#else
-            string msgTo = "powerquality@tva.gov";
-#endif
-            string msgFrom = "powerquality@tva.gov";
-            string msgSubject = "Site " + m_siteName + " problem";
-
-            SendEmail(msgTo, msgFrom, msgSubject, msgBody);
-        }
-
-        private void SendEmail(string msgTo, string msgFrom, string msgSubject, string msgBody)
-        {
-            try
-            {
-                if (bool.Parse(Program.OpenMiConfigurationFile.Settings["systemSettings"]["EmailNotificationsEnabled"]?.Value ?? "false"))
-                {
-                    MailAddress mf = new MailAddress(msgFrom);
-                    MailAddress mt = new MailAddress(msgTo);
-                    MailMessage msg = new MailMessage(mf, mt);
-                    msg.Subject = msgSubject;
-                    msg.Body = msgBody;
-
-                    SmtpClient mclient = new SmtpClient(Program.OpenMiConfigurationFile.Settings["systemSettings"]["Mailserver"].Value);
-                    mclient.Send(msg);
-                }
-            }
-            catch (Exception ex)
-            {
-                Program.Log("Failed Sending Email: " + ex.Message);
-            }
-        }
-
 
         #endregion
 
