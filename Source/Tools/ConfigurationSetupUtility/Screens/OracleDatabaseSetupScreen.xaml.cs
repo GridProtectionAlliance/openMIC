@@ -299,6 +299,7 @@ namespace ConfigurationSetupUtility.Screens
                         m_tnsNameTextBox.Text = m_oracleSetup.TnsName;
                         m_schemaUserNameTextBox.Text = m_oracleSetup.SchemaUserName;
                         m_schemaUserPasswordTextBox.Password = m_oracleSetup.SchemaPassword;
+                        m_oracleSetup.EncryptConnectionString = serviceConfig.Settings["systemSettings"]["ConnectionString"].Encrypted;
                     }
                 }
             }
