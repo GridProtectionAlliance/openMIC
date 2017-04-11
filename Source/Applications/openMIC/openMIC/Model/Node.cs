@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
+using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
 namespace openMIC.Model
@@ -35,7 +33,7 @@ namespace openMIC.Model
         /// <summary>
         /// Enabled field.
         /// </summary>
-        [InitialValue("true")]
+        [InitialValueScript("true")]
         public bool Enabled { get; set; }
 
         /// <summary>

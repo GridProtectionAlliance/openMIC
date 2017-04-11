@@ -1,4 +1,5 @@
 using System;
+using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
 namespace BenDownloader
@@ -107,7 +108,7 @@ namespace BenDownloader
         }
 
         [Label("Interconnection")]
-        [InitialValue("1")]
+        [InitialValueScript("1")]
         public int? InterconnectionID
         {
             get;

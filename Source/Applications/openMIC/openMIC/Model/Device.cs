@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
 namespace openMIC.Model
@@ -115,7 +116,7 @@ namespace openMIC.Model
         }
 
         [Label("Interconnection")]
-        [InitialValue("1")]
+        [InitialValueScript("1")]
         public int? InterconnectionID
         {
             get;
