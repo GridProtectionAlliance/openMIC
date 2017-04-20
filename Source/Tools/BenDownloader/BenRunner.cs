@@ -621,7 +621,7 @@ namespace BenDownloader
                 }
                 catch (Exception ex)
                 {
-                    Program.Log("Error while trying to kill no responsive downloader: " + ex.Message);
+                    Program.Log("Error while trying to kill non-responsive downloader: " + ex.Message);
                     throw;
                 }
             }
