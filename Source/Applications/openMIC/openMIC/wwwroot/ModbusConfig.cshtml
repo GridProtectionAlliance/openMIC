@@ -1394,22 +1394,6 @@
                 grouping: { deep: true, observable: true, live: true }
             }, true);
 
-            // Handle special validation error message location when using bootstap add-on fields
-            ko.bindingHandlers.validationCore = {
-                init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-                    const parent = $(element).parent().closest(".input-group");
-                    const message = document.createElement("em");
-                    message.className = "validationMessage small";
-
-                    if (parent.length > 0)
-                        $(parent).after(message);
-                    else
-                        $(element).after(message);
-
-                    ko.applyBindingsToNode(message, { validationMessage: valueAccessor() });
-                }
-            };
-
             ko.bindingHandlers.applyVerticalText = {
                 init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
                     $(element).text(ko.unwrap(valueAccessor()));

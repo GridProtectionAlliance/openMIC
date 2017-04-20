@@ -22,14 +22,18 @@
 //******************************************************************************************************
 
 using System;
+using System.Net;
+using System.Xml.Linq;
 using Microsoft.Owin.Hosting;
 using GSF;
+using GSF.ComponentModel;
 using GSF.Configuration;
 using GSF.IO;
 using GSF.Reflection;
 using GSF.TimeSeries;
 using GSF.Security.Model;
 using GSF.ServiceProcess;
+using GSF.Threading;
 using GSF.Web.Hosting;
 using GSF.Web.Model;
 using GSF.Web.Model.Handlers;
@@ -184,6 +188,9 @@ namespace openMIC
             Model.Global.FromAddress = systemSettings["FromAddress"].Value;
             Model.Global.SmtpUserName = systemSettings["SmtpUserName"].Value;
             Model.Global.SmtpPassword = systemSettings["SmtpPassword"].Value;
+
+            // Register a symbolic reference to global settings for use by default value expressions
+            ValueExpressionParser.DefaultTypeRegistry.RegisterSymbol("Global", Program.Host.Model.Global);
 
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
             ServiceHelper.LoggedException += LoggedExceptionHandler;

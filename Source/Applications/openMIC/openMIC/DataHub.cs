@@ -27,7 +27,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using Microsoft.AspNet.SignalR;
 using GSF;
+using GSF.ComponentModel.DataAnnotations;
 using GSF.Configuration;
 using GSF.Data.Model;
 using GSF.Identity;
@@ -35,9 +38,7 @@ using GSF.IO;
 using GSF.Web.Hubs;
 using GSF.Web.Model.HubOperations;
 using GSF.Web.Security;
-using Microsoft.AspNet.SignalR;
 using openMIC.Model;
-using RecordRestriction = GSF.Data.Model.RecordRestriction;
 
 namespace openMIC
 {
@@ -97,12 +98,24 @@ namespace openMIC
         private static int s_downloaderProtocolID;
         private static int s_modbusProtocolID;
         private static string s_configurationCachePath;
+        private static readonly Func<char, bool> s_isInvalidAcronymChar;
+        private static readonly char[] s_digits;
 
         // Static Constructor
         static DataHub()
         {
             Downloader.ProgressUpdated += ProgressUpdated;
             ModbusPoller.ProgressUpdated += ProgressUpdated;
+
+            s_digits = "0123456789".ToCharArray();
+
+            AcronymValidationAttribute acronymValidator = new AcronymValidationAttribute();
+
+            s_isInvalidAcronymChar = testChar =>
+            {
+                lock (acronymValidator)
+                    return !acronymValidator.IsValid(testChar);
+            };
         }
 
         private static void ProgressUpdated(object sender, EventArgs<ProgressUpdate> e)
@@ -127,7 +140,7 @@ namespace openMIC
 
             if (!string.IsNullOrEmpty(update.ProgressMessage))
                 update.ProgressMessage += $"\r\n\r\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}]";
-            
+
             GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(e.Argument);
         }
 
@@ -154,32 +167,29 @@ namespace openMIC
         [RecordOperation(typeof(Device), RecordOperation.QueryRecordCount)]
         public int QueryDeviceCount(string filterText)
         {
-            TableOperations<Device> tableOperations = DataContext.Table<Device>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecordCount(restriction);
+            return DataContext.Table<Device>().QueryRecordCount(filterText);
         }
 
         [RecordOperation(typeof(Device), RecordOperation.QueryRecords)]
         public IEnumerable<Device> QueryDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            TableOperations<Device> tableOperations = DataContext.Table<Device>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
+            return DataContext.Table<Device>().QueryRecords(sortField, ascending, page, pageSize, filterText);
         }
 
         public IEnumerable<Device> QueryEnabledDevices(int limit, string filterText)
         {
-            return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Enabled <> 0 AND (Acronym LIKE {0} OR Name LIKE {0})", $"%{filterText}%"), limit);
+            TableOperations<Device> deviceTable = DataContext.Table<Device>();
+            return deviceTable.QueryRecords("Acronym", "Enabled <> 0" + deviceTable.GetSearchRestriction(filterText), limit);
         }
 
         public Device QueryDevice(string acronym)
         {
-            return DataContext.Table<Device>().QueryRecords("Acronym", new RecordRestriction("Acronym = {0}", acronym)).FirstOrDefault() ?? NewDevice();
+            return DataContext.Table<Device>().QueryRecordWhere("Acronym = {0}", acronym) ?? NewDevice();
         }
 
         public Device QueryDeviceByID(int deviceID)
         {
-            return DataContext.Table<Device>().QueryRecords("ID", new RecordRestriction("ID = {0}", deviceID)).FirstOrDefault() ?? NewDevice();
+            return DataContext.Table<Device>().QueryRecordWhere("ID = {0}", deviceID) ?? NewDevice();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -187,33 +197,22 @@ namespace openMIC
         public void DeleteDevice(int id)
         {
             DataContext.Table<Device>().DeleteRecord(id);
-            DataContext.Table<StatusLog>().DeleteRecord(new RecordRestriction("DeviceID = {0}", id));
-            DataContext.Table<DownloadedFile>().DeleteRecord(new RecordRestriction("DeviceID = {0}", id));
+            DataContext.Table<StatusLog>().DeleteRecordWhere("DeviceID = {0}", id);
+            DataContext.Table<DownloadedFile>().DeleteRecordWhere("DeviceID = {0}", id);
         }
 
         [RecordOperation(typeof(Device), RecordOperation.CreateNewRecord)]
         public Device NewDevice()
         {
-            return new Device
-            {
-                FramesPerSecond = 1
-            };
+            return DataContext.Table<Device>().NewRecord();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Device), RecordOperation.AddNewRecord)]
         public void AddNewDevice(Device device)
         {
-            device.NodeID = Program.Host.Model.Global.NodeID;
-            device.UniqueID = Guid.NewGuid();
-
             if ((device.ProtocolID ?? 0) == 0)
                 device.ProtocolID = DownloaderProtocolID;
-
-            device.CreatedBy = GetCurrentUserID();
-            device.CreatedOn = DateTime.UtcNow;
-            device.UpdatedBy = device.CreatedBy;
-            device.UpdatedOn = device.CreatedOn;
 
             if (string.IsNullOrWhiteSpace(device.OriginalSource))
                 device.OriginalSource = device.Acronym;
@@ -228,13 +227,16 @@ namespace openMIC
             if ((device.ProtocolID ?? 0) == 0)
                 device.ProtocolID = DownloaderProtocolID;
 
-            device.UpdatedBy = GetCurrentUserID();
-            device.UpdatedOn = DateTime.UtcNow;
-
             if (string.IsNullOrWhiteSpace(device.OriginalSource))
                 device.OriginalSource = device.Acronym;
 
             DataContext.Table<Device>().UpdateRecord(device);
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        public void AddNewOrUpdateDevice(Device device)
+        {
+            DataContext.Table<Device>().AddNewOrUpdateRecord(device);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -296,22 +298,18 @@ namespace openMIC
         [RecordOperation(typeof(Measurement), RecordOperation.QueryRecordCount)]
         public int QueryMeasurementCount(string filterText)
         {
-            TableOperations<Measurement> tableOperations = DataContext.Table<Measurement>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecordCount(restriction);
+            return DataContext.Table<Measurement>().QueryRecordCount(filterText);
         }
 
         [RecordOperation(typeof(Measurement), RecordOperation.QueryRecords)]
         public IEnumerable<Measurement> QueryMeasurements(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            TableOperations<Measurement> tableOperations = DataContext.Table<Measurement>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
+            return DataContext.Table<Measurement>().QueryRecords(sortField, ascending, page, pageSize, filterText);
         }
 
         public Measurement QueryMeasurement(string signalReference)
         {
-            return DataContext.Table<Measurement>().QueryRecords("SignalReference", new RecordRestriction("SignalReference = {0}", signalReference)).FirstOrDefault() ?? NewMeasurement();
+            return DataContext.Table<Measurement>().QueryRecordWhere("SignalReference = {0}", signalReference) ?? NewMeasurement();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -324,23 +322,13 @@ namespace openMIC
         [RecordOperation(typeof(Measurement), RecordOperation.CreateNewRecord)]
         public Measurement NewMeasurement()
         {
-            return new Measurement
-            {
-                Adder = 0.0D,
-                Multiplier = 1.0D
-            };
+            return DataContext.Table<Measurement>().NewRecord();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Measurement), RecordOperation.AddNewRecord)]
         public void AddNewMeasurement(Measurement measurement)
         {
-            measurement.SignalID = Guid.NewGuid();
-            measurement.CreatedBy = GetCurrentUserID();
-            measurement.CreatedOn = DateTime.UtcNow;
-            measurement.UpdatedBy = measurement.CreatedBy;
-            measurement.UpdatedOn = measurement.CreatedOn;
-
             DataContext.Table<Measurement>().AddNewRecord(measurement);
         }
 
@@ -348,9 +336,6 @@ namespace openMIC
         [RecordOperation(typeof(Measurement), RecordOperation.UpdateRecord)]
         public void UpdateMeasurement(Measurement measurement)
         {
-            measurement.UpdatedBy = GetCurrentUserID();
-            measurement.UpdatedOn = DateTime.UtcNow;
-
             DataContext.Table<Measurement>().UpdateRecord(measurement);
         }
 
@@ -361,13 +346,13 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.QueryRecordCount)]
         public int QueryConnectionProfileCount(string filterText)
         {
-            return DataContext.Table<ConnectionProfile>().QueryRecordCount();
+            return DataContext.Table<ConnectionProfile>().QueryRecordCount(filterText);
         }
 
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.QueryRecords)]
         public IEnumerable<ConnectionProfile> QueryConnectionProfiles(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            return DataContext.Table<ConnectionProfile>().QueryRecords(sortField, ascending, page, pageSize);
+            return DataContext.Table<ConnectionProfile>().QueryRecords(sortField, ascending, page, pageSize, filterText);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -380,18 +365,13 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.CreateNewRecord)]
         public ConnectionProfile NewConnectionProfile()
         {
-            return new ConnectionProfile();
+            return DataContext.Table<ConnectionProfile>().NewRecord();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.AddNewRecord)]
         public void AddNewConnectionProfile(ConnectionProfile connectionProfile)
         {
-            connectionProfile.CreatedBy = GetCurrentUserID();
-            connectionProfile.CreatedOn = DateTime.UtcNow;
-            connectionProfile.UpdatedBy = connectionProfile.CreatedBy;
-            connectionProfile.UpdatedOn = connectionProfile.CreatedOn;
-
             DataContext.Table<ConnectionProfile>().AddNewRecord(connectionProfile);
         }
 
@@ -399,9 +379,6 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfile), RecordOperation.UpdateRecord)]
         public void UpdateConnectionProfile(ConnectionProfile connectionProfile)
         {
-            connectionProfile.UpdatedBy = GetCurrentUserID();
-            connectionProfile.UpdatedOn = DateTime.UtcNow;
-
             DataContext.Table<ConnectionProfile>().UpdateRecord(connectionProfile);
         }
 
@@ -417,21 +394,15 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.QueryRecordCount)]
         public int QueryConnectionProfileTaskCount(int parentID, string filterText)
         {
-            return DataContext.Table<ConnectionProfileTask>().QueryRecordCount(new RecordRestriction
-            {
-                FilterExpression = "ConnectionProfileID = {0}",
-                Parameters = new object[] { parentID }
-            });
+            TableOperations<ConnectionProfileTask> connectionProfileTaskTable = DataContext.Table<ConnectionProfileTask>();
+            return connectionProfileTaskTable.QueryRecordCount(new RecordRestriction("ConnectionProfileID = {0}", parentID) + connectionProfileTaskTable.GetSearchRestriction(filterText));
         }
 
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.QueryRecords)]
         public IEnumerable<ConnectionProfileTask> QueryConnectionProfileTasks(int parentID, string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            return DataContext.Table<ConnectionProfileTask>().QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction
-            {
-                FilterExpression = "ConnectionProfileID = {0}",
-                Parameters = new object[] { parentID }
-            });
+            TableOperations<ConnectionProfileTask> connectionProfileTaskTable = DataContext.Table<ConnectionProfileTask>();
+            return connectionProfileTaskTable.QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("ConnectionProfileID = {0}", parentID) + connectionProfileTaskTable.GetSearchRestriction(filterText));
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -444,18 +415,13 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.CreateNewRecord)]
         public ConnectionProfileTask NewConnectionProfileTask()
         {
-            return new ConnectionProfileTask();
+            return DataContext.Table<ConnectionProfileTask>().NewRecord();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.AddNewRecord)]
         public void AddNewConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
         {
-            connectionProfileTask.CreatedBy = GetCurrentUserID();
-            connectionProfileTask.CreatedOn = DateTime.UtcNow;
-            connectionProfileTask.UpdatedBy = connectionProfileTask.CreatedBy;
-            connectionProfileTask.UpdatedOn = connectionProfileTask.CreatedOn;
-
             DataContext.Table<ConnectionProfileTask>().AddNewRecord(connectionProfileTask);
         }
 
@@ -463,9 +429,6 @@ namespace openMIC
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.UpdateRecord)]
         public void UpdateConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
         {
-            connectionProfileTask.UpdatedBy = GetCurrentUserID();
-            connectionProfileTask.UpdatedOn = DateTime.UtcNow;
-
             DataContext.Table<ConnectionProfileTask>().UpdateRecord(connectionProfileTask);
         }
 
@@ -476,17 +439,13 @@ namespace openMIC
         [RecordOperation(typeof(Company), RecordOperation.QueryRecordCount)]
         public int QueryCompanyCount(string filterText)
         {
-            TableOperations<Company> tableOperations = DataContext.Table<Company>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecordCount(restriction);
+            return DataContext.Table<Company>().QueryRecordCount(filterText);
         }
 
         [RecordOperation(typeof(Company), RecordOperation.QueryRecords)]
         public IEnumerable<Company> QueryCompanies(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            TableOperations<Company> tableOperations = DataContext.Table<Company>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
+            return DataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize, filterText);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -499,18 +458,13 @@ namespace openMIC
         [RecordOperation(typeof(Company), RecordOperation.CreateNewRecord)]
         public Company NewCompany()
         {
-            return new Company();
+            return DataContext.Table<Company>().NewRecord();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Company), RecordOperation.AddNewRecord)]
         public void AddNewCompany(Company company)
         {
-            company.CreatedBy = GetCurrentUserID();
-            company.CreatedOn = DateTime.UtcNow;
-            company.UpdatedBy = company.CreatedBy;
-            company.UpdatedOn = company.CreatedOn;
-
             DataContext.Table<Company>().AddNewRecord(company);
         }
 
@@ -518,9 +472,6 @@ namespace openMIC
         [RecordOperation(typeof(Company), RecordOperation.UpdateRecord)]
         public void UpdateCompany(Company company)
         {
-            company.UpdatedBy = GetCurrentUserID();
-            company.UpdatedOn = DateTime.UtcNow;
-
             DataContext.Table<Company>().UpdateRecord(company);
         }
 
@@ -531,17 +482,13 @@ namespace openMIC
         [RecordOperation(typeof(Vendor), RecordOperation.QueryRecordCount)]
         public int QueryVendorCount(string filterText)
         {
-            TableOperations<Vendor> tableOperations = DataContext.Table<Vendor>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecordCount(restriction);
+            return DataContext.Table<Vendor>().QueryRecordCount(filterText);
         }
 
         [RecordOperation(typeof(Vendor), RecordOperation.QueryRecords)]
         public IEnumerable<Vendor> QueryVendors(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            TableOperations<Vendor> tableOperations = DataContext.Table<Vendor>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
+            return DataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize, filterText);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -554,18 +501,13 @@ namespace openMIC
         [RecordOperation(typeof(Vendor), RecordOperation.CreateNewRecord)]
         public Vendor NewVendor()
         {
-            return new Vendor();
+            return DataContext.Table<Vendor>().NewRecord();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Vendor), RecordOperation.AddNewRecord)]
         public void AddNewVendor(Vendor vendor)
         {
-            vendor.CreatedBy = GetCurrentUserID();
-            vendor.CreatedOn = DateTime.UtcNow;
-            vendor.UpdatedBy = vendor.CreatedBy;
-            vendor.UpdatedOn = vendor.CreatedOn;
-
             DataContext.Table<Vendor>().AddNewRecord(vendor);
         }
 
@@ -573,9 +515,6 @@ namespace openMIC
         [RecordOperation(typeof(Vendor), RecordOperation.UpdateRecord)]
         public void UpdateVendor(Vendor vendor)
         {
-            vendor.UpdatedBy = GetCurrentUserID();
-            vendor.UpdatedOn = DateTime.UtcNow;
-
             DataContext.Table<Vendor>().UpdateRecord(vendor);
         }
 
@@ -586,17 +525,13 @@ namespace openMIC
         [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecordCount)]
         public int QueryVendorDeviceCount(string filterText)
         {
-            TableOperations<VendorDevice> tableOperations = DataContext.Table<VendorDevice>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecordCount(restriction);
+            return DataContext.Table<VendorDevice>().QueryRecordCount(filterText);
         }
 
         [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecords)]
         public IEnumerable<VendorDevice> QueryVendorDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            TableOperations<VendorDevice> tableOperations = DataContext.Table<VendorDevice>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
+            return DataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize, filterText);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -609,18 +544,13 @@ namespace openMIC
         [RecordOperation(typeof(VendorDevice), RecordOperation.CreateNewRecord)]
         public VendorDevice NewVendorDevice()
         {
-            return new VendorDevice();
+            return DataContext.Table<VendorDevice>().NewRecord();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(VendorDevice), RecordOperation.AddNewRecord)]
         public void AddNewVendorDevice(VendorDevice vendorDevice)
         {
-            vendorDevice.CreatedBy = GetCurrentUserID();
-            vendorDevice.CreatedOn = DateTime.UtcNow;
-            vendorDevice.UpdatedBy = vendorDevice.CreatedBy;
-            vendorDevice.UpdatedOn = vendorDevice.CreatedOn;
-
             DataContext.Table<VendorDevice>().AddNewRecord(vendorDevice);
         }
 
@@ -628,9 +558,6 @@ namespace openMIC
         [RecordOperation(typeof(VendorDevice), RecordOperation.UpdateRecord)]
         public void UpdateVendorDevice(VendorDevice vendorDevice)
         {
-            vendorDevice.UpdatedBy = GetCurrentUserID();
-            vendorDevice.UpdatedOn = DateTime.UtcNow;
-
             DataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
         }
 
@@ -641,22 +568,18 @@ namespace openMIC
         [RecordOperation(typeof(SignalType), RecordOperation.QueryRecordCount)]
         public int QuerySignalTypeCount(string filterText)
         {
-            TableOperations<SignalType> tableOperations = DataContext.Table<SignalType>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecordCount(restriction);
+            return DataContext.Table<SignalType>().QueryRecordCount(filterText);
         }
 
         [RecordOperation(typeof(SignalType), RecordOperation.QueryRecords)]
         public IEnumerable<SignalType> QuerySignalTypes(string sortField, bool ascending, int page, int pageSize, string filterText)
         {
-            TableOperations<SignalType> tableOperations = DataContext.Table<SignalType>();
-            RecordRestriction restriction = tableOperations.GetSearchRestriction(filterText);
-            return tableOperations.QueryRecords(sortField, ascending, page, pageSize, restriction);
+            return DataContext.Table<SignalType>().QueryRecords(sortField, ascending, page, pageSize, filterText);
         }
 
         public SignalType QuerySignalType(string acronym)
         {
-            return DataContext.Table<SignalType>().QueryRecords("Acronym", new RecordRestriction("Acronym = {0}", acronym)).FirstOrDefault();
+            return DataContext.Table<SignalType>().QueryRecordWhere("Acronym = {0}", acronym);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -669,7 +592,7 @@ namespace openMIC
         [RecordOperation(typeof(SignalType), RecordOperation.CreateNewRecord)]
         public SignalType NewSignalType()
         {
-            return new SignalType();
+            return DataContext.Table<SignalType>().NewRecord();
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -688,19 +611,15 @@ namespace openMIC
 
         #endregion
 
-        #region [StatusLog Operations]
+        #region [ StatusLog Operations]
 
         public StatusLog GetStatusLogForDevice(string deviceName)
         {
-            IEnumerable<StatusLog> logs = DataContext.Table<StatusLog>().QueryRecords(restriction: new RecordRestriction("DeviceID IN (SELECT ID FROM Device WHERE Acronym LIKE {0})",deviceName));
-
-            if (logs.Any())
-                return logs.First();
-            else
-                return new StatusLog();
+            return DataContext.Table<StatusLog>().QueryRecord("DeviceID IN (SELECT ID FROM Device WHERE Acronym LIKE {0})", deviceName) ?? new StatusLog();
         }
+
         #endregion
-        
+
         #region [ Data Subscription Operations ]
 
         // These functions are dependent on subscriptions to data where each client connection can customize the subscriptions, so an instance
@@ -766,7 +685,7 @@ namespace openMIC
         #region [ Modbus Operations ]
 
         public Task<bool> ModbusConnect(string connectionString)
-        {            
+        {
             return m_modbusOperations.ModbusConnect(connectionString);
         }
 
@@ -884,6 +803,72 @@ namespace openMIC
         public ulong DeriveUInt64(ushort b3, ushort b2, ushort b1, ushort b0)
         {
             return m_modbusOperations.DeriveUInt64(b3, b2, b1, b0);
+        }
+
+        #endregion
+
+        #region [ I-Grid Operations ] 
+
+        public IEnumerable<IGridDevice> QueryIGridDevices(string baseURL)
+        {
+            TableOperations<Device> deviceTable = DataContext.Table<Device>();
+            XDocument document = XDocument.Load($"{baseURL}&action=getMonitorList");
+
+            foreach (XElement monitor in document.Descendants("monitor"))
+            {
+                decimal longitude, latitude;
+                XElement location = monitor.Element("location");
+                XElement identification = monitor.Element("identification");
+                XElement model = monitor.Element("model");
+
+                string serialNumber = identification?.Element("serialNumber")?.Value;
+                string modelNumber = model?.Element("number")?.Value;
+                string monitorName = identification?.Element("monitorName")?.Value;
+
+                if (string.IsNullOrWhiteSpace(serialNumber) || string.IsNullOrWhiteSpace(modelNumber))
+                    continue;
+
+                Device deviceRecord = deviceTable.QueryRecordWhere("OriginalSource = {0}", serialNumber);
+
+                if ((object)deviceRecord == null)
+                {
+                    deviceRecord = deviceTable.NewRecord();
+
+                    string acronym = monitorName ?? modelNumber;
+
+                    // Get a clean acronym
+                    acronym = acronym
+                        .ToUpperInvariant()
+                        .ReplaceCharacters(' ', s_isInvalidAcronymChar)
+                        .RemoveDuplicateWhiteSpace();
+
+                    // Truncate at any numbers in the acronym, note this is based on sample data naming convention
+                    int index = acronym.IndexOfAny(s_digits);
+
+                    if (index > 0)
+                        acronym = acronym.Substring(0, index);
+
+                    acronym = acronym.Trim().ReplaceWhiteSpace('-');
+
+                    deviceRecord.Acronym = $"{acronym}${serialNumber}";
+                }
+
+                decimal.TryParse(location?.Element("longitude")?.Value, out longitude);
+                decimal.TryParse(location?.Element("latitude")?.Value, out latitude);
+
+                yield return new IGridDevice
+                {
+                    DeviceID = deviceRecord.ID,
+                    Acronym = deviceRecord.Acronym,
+                    SerialNumber = serialNumber,
+                    Name = monitorName,
+                    Description = model.Element("description")?.Value,
+                    ModelNumber = modelNumber,
+                    Longitude = longitude,
+                    Latitude = latitude,
+                    Selected = deviceRecord.ID == 0
+                };
+            }
         }
 
         #endregion

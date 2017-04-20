@@ -1,4 +1,5 @@
 using System;
+using GSF.ComponentModel;
 
 namespace openMIC.Model
 {
@@ -34,6 +35,7 @@ namespace openMIC.Model
             set;
         }
 
+        [DefaultValueExpression("DateTime.UtcNow")]
         public DateTime Timestamp
         {
             get;

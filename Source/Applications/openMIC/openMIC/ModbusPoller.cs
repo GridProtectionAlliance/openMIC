@@ -34,6 +34,7 @@ using System.Threading;
 using System.Timers;
 using GSF;
 using GSF.Configuration;
+using GSF.Diagnostics;
 using GSF.Threading;
 using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
@@ -530,7 +531,7 @@ namespace openMIC
                 throw new InvalidOperationException("No sequences defined, cannot start Modbus polling.");
 
             // Define synchronized polling operation
-            m_pollingOperation = new ShortSynchronizedOperation(PollingOperation, OnProcessException);
+            m_pollingOperation = new ShortSynchronizedOperation(PollingOperation, exception => OnProcessException(MessageLevel.Warning, exception));
 
             // Define polling timer
             m_pollingTimer = new Timer(m_pollingRate);
@@ -600,7 +601,7 @@ namespace openMIC
                 int overallTasksCompleted = 0;
                 int overallTasksCount = m_sequences.Count + 1;
                 OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, "Starting polling operation...", overallTasksCompleted, overallTasksCount));
-                OnStatusMessage($"Executing poll operation {m_pollOperations + 1}.");
+                OnStatusMessage(MessageLevel.Info, $"Executing poll operation {m_pollOperations + 1}.");
 
                 // Handle read/write operations for sequence groups
                 try
@@ -668,7 +669,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: No address records defined for derived String value \"{0}\".", item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"No address records defined for derived String value \"{item.Key}\".");
                                 }
                                 break;
                             case DerivedType.Single:
@@ -679,7 +680,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived Single value \"{1}\", expected 2.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived Single value \"{item.Key}\", expected 2.");
                                 }
                                 break;
                             case DerivedType.Double:
@@ -690,7 +691,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived Double value \"{1}\", expected 4.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived Double value \"{item.Key}\", expected 4.");
                                 }
                                 break;
                             case DerivedType.UInt16:
@@ -701,7 +702,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: No address records defined for UInt16 value \"{0}\".", item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"No address records defined for UInt16 value \"{item.Key}\".");
                                 }
                                 break;
                             case DerivedType.Int32:
@@ -712,7 +713,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived Int32 value \"{1}\", expected 2.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived Int32 value \"{item.Key}\", expected 2.");
                                 }
                                 break;
                             case DerivedType.UInt32:
@@ -723,7 +724,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived UInt32 value \"{1}\", expected 2.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived UInt32 value \"{item.Key}\", expected 2.");
                                 }
                                 break;
                             case DerivedType.Int64:
@@ -734,7 +735,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived Int64 value \"{1}\", expected 4.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived Int64 value \"{item.Key}\", expected 4.");
                                 }
                                 break;
                             case DerivedType.UInt64:
@@ -745,7 +746,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived UInt64 value \"{1}\", expected 4.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived UInt64 value \"{item.Key}\", expected 4.");
                                 }
                                 break;
                         }
@@ -885,7 +886,7 @@ namespace openMIC
                 m_pollingTimer.Enabled = false;
 
             DisposeConnections();
-            OnStatusMessage("Device disconnected.");
+            OnStatusMessage(MessageLevel.Info, "Device disconnected.");
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using GSF.ComponentModel;
 using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
@@ -36,24 +37,38 @@ namespace openMIC.Model
         [InitialValueScript("true")]
         public bool Enabled { get; set; }
 
-        /// <summary>
-        /// Created on field.
-        /// </summary>
-        public DateTime CreatedOn { get; set; }
+        [DefaultValueExpression("DateTime.UtcNow")]
+        public DateTime CreatedOn
+        {
+            get;
+            set;
+        }
 
-        /// <summary>
-        /// Created by field.
-        /// </summary>
-        public string CreatedBy { get; set; }
+        [Required]
+        [StringLength(200)]
+        [DefaultValueExpression("UserInfo.CurrentUserID")]
+        public string CreatedBy
+        {
+            get;
+            set;
+        }
 
-        /// <summary>
-        /// Updated on field.
-        /// </summary>
-        public DateTime UpdatedOn { get; set; }
+        [DefaultValueExpression("this.CreatedOn", EvaluationOrder = 1)]
+        [UpdateValueExpression("DateTime.UtcNow")]
+        public DateTime UpdatedOn
+        {
+            get;
+            set;
+        }
 
-        /// <summary>
-        /// Updated by field.
-        /// </summary>
-        public string UpdatedBy { get; set; }
+        [Required]
+        [StringLength(200)]
+        [DefaultValueExpression("this.CreatedBy", EvaluationOrder = 1)]
+        [UpdateValueExpression("UserInfo.CurrentUserID")]
+        public string UpdatedBy
+        {
+            get;
+            set;
+        }
     }
 }

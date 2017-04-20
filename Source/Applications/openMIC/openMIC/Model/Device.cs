@@ -1,5 +1,7 @@
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using GSF.ComponentModel;
 using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
@@ -8,6 +10,7 @@ namespace openMIC.Model
     [PrimaryLabel("Acronym")]
     public class Device
     {
+        [DefaultValueExpression("Global.NodeID")]
         public Guid NodeID
         {
             get;
@@ -29,6 +32,7 @@ namespace openMIC.Model
         }
 
         [Label("Unique Device ID")]
+        [DefaultValueExpression("Guid.NewGuid()")]
         public Guid UniqueID
         {
             get;
@@ -37,7 +41,7 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
-        [RegularExpression("^[A-Z0-9\\-!_\\.@#\\$]+$", ErrorMessage = "Only upper case letters, numbers, '!', '-', '@', '#', '_' , '.'and '$' are allowed.")]
+        [AcronymValidation]
         [Searchable]
         public string Acronym
         {
@@ -69,6 +73,7 @@ namespace openMIC.Model
 
         [Required]
         [Label("Company")]
+        [DefaultValueExpression("Connection.ExecuteScalar('SELECT ID FROM Company WHERE Acronym = {0}', Global.CompanyAcronym)", Cached = true)]
         public int? CompanyID
         {
             get;
@@ -138,6 +143,7 @@ namespace openMIC.Model
         }
 
         [Label("Frames Per Second")]
+        [DefaultValue(1)] // For openMIC, we are typically dealing with slower moving data
         public int? FramesPerSecond
         {
             get;
@@ -192,6 +198,7 @@ namespace openMIC.Model
             set;
         }
 
+        [DefaultValue(5000)] // For openMIC, we are typically dealing with slower moving data
         public int MeasurementReportingInterval
         {
             get;
@@ -224,12 +231,14 @@ namespace openMIC.Model
             set;
         }
 
+        [DefaultValue(true)]
         public bool Enabled
         {
             get;
             set;
         }
 
+        [DefaultValueExpression("DateTime.UtcNow")]
         public DateTime CreatedOn
         {
             get;
@@ -238,12 +247,15 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(50)]
+        [DefaultValueExpression("UserInfo.CurrentUserID")]
         public string CreatedBy
         {
             get;
             set;
         }
 
+        [DefaultValueExpression("this.CreatedOn", EvaluationOrder = 1)]
+        [UpdateValueExpression("DateTime.UtcNow")]
         public DateTime UpdatedOn
         {
             get;
@@ -252,6 +264,8 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(50)]
+        [DefaultValueExpression("this.CreatedBy", EvaluationOrder = 1)]
+        [UpdateValueExpression("UserInfo.CurrentUserID")]
         public string UpdatedBy
         {
             get;

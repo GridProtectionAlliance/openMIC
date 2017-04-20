@@ -20,7 +20,7 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
-@using System
+@using System.Globalization
 @using System.Threading
 @using GSF
 @using GSF.Data
@@ -28,9 +28,9 @@
 @using GSF.IO
 @using GSF.Reflection
 @using GSF.Security
+@using GSF.Security.Cryptography
 @using GSF.Web.Model
 @using openMIC.Model
-@using RazorEngine.Templating
 @inherits ExtendedTemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
@@ -40,6 +40,7 @@
     string applicationVersion = assemblyVersionInfo.Major + "." + assemblyVersionInfo.Minor + "." + assemblyVersionInfo.Build;
     string databaseType;
     string databaseName;
+    string localTimeFormat = Model.Global.DateFormat + " hh:mm:ss.fff";
 
     try
     {
@@ -161,12 +162,19 @@
 }
 @section Scripts {
     <script>
+        const LocalTimeFormat = DateFormat + " hh:mm:ss.fff";
+
         function updateTimestamps() {
-            $('#localTime').html(new Date().formatDate());
+            const date = new Date();
+
+            $("#meridiem").html(date.getHours() < 12 ? "AM" : "PM");
+            $('#localTimeUTC').html(date.formatDate());
+            $('#localTime').html(date.formatDate(LocalTimeFormat, false));
 
             if (hubIsConnected) {
                 serviceHub.getServerTime().done(function (serverTime) {
-                    $('#serverTime').html(serverTime.formatDate());
+                    $('#serverTimeUTC').html(serverTime.formatDate());
+                    $('#serverTime').html(serverTime.formatDate(LocalTimeFormat, false));
                 });
             }
         }
@@ -223,6 +231,7 @@
                     <a href="Status.cshtml" role="button" class="btn btn-default">Status</a>
                     <a href="ConnectionProfiles.cshtml" role="button" class="btn btn-default">Connection Profiles</a>
                     <a href="ModbusConfig.cshtml" role="button" class="btn btn-default">Add Modbus Mapping</a>
+                    <a href="IGridConfig.cshtml" role="button" class="btn btn-default">Manage I-Grid Config</a>
                     <a href="GraphMeasurements.cshtml" role="button" class="btn btn-default">Graph Measurements</a>
                     @if (UserIsAdmin()) {
                     <button type="button" class="btn btn-default" id="restartButton" hub-dependent>Restart Service</button>
@@ -230,23 +239,42 @@
                 </div>
             </div>
         </div>
-        <ul class="list-group">
-            <li class="list-group-item">
-                <span class="badge badge-fixed" id="serverTime">@DateTime.UtcNow.ToString(Model.Global.DateTimeFormat)</span>Server&nbsp;Time
-                <hr class="quarter-break"/>
-                <span class="badge badge-fixed" id="localTime">@DateTime.UtcNow.ToString(Model.Global.DateTimeFormat)</span>Local&nbsp;Time
-                <hr class="quarter-break" />
-                <span class="badge badge-fixed" id="currentUser">@GetCurrentUserID()</span> Current User
-            </li>
-            <li class="list-group-item">
-                <span class="badge badge-fixed" id="applicationVersion">@applicationVersion</span>App&nbsp;Version
-                <hr class="quarter-break" />
-                <span class="badge badge-fixed" id="databaseType">DB: @databaseType</span>Config&nbsp;Type
-                <hr class="quarter-break" />
-                <span class="badge badge-fixed" id="databaseName">@databaseName</span>Config&nbsp;Name
-            </li>
-        </ul>
-        <p class="text-info text-center small">@ViewBag.Request.RequestUri.ToString()</p>
+        <div class="list-group">
+            <a href="#" class="list-group-item">
+                <h5 class="list-group-item-heading" style="text-align: right"><strong>UTC Time</strong></h5>
+                <p class="list-group-item-text">
+                    <hr class="quarter-break" />
+                    <span class="badge badge-fixed" id="serverTimeUTC">@DateTime.UtcNow.ToString(Model.Global.DateTimeFormat)</span>Server&nbsp;Time
+                    <hr class="quarter-break" />
+                    <span class="badge badge-fixed" id="localTimeUTC">@DateTime.UtcNow.ToString(Model.Global.DateTimeFormat)</span>Client&nbsp;Time
+                </p>
+            </a>
+            <a href="#" class="list-group-item">
+                <h5 class="list-group-item-heading" style="text-align: right"><strong>Local Time (<span id="meridiem">@DateTime.Now.ToString("tt", CultureInfo.InvariantCulture)</span>)</strong></h5>
+                <p class="list-group-item-text">
+                    <hr class="quarter-break" />
+                    <span class="badge badge-fixed" id="serverTime">@DateTime.Now.ToString(localTimeFormat)</span>Server&nbsp;Time
+                    <hr class="quarter-break" />
+                    <span class="badge badge-fixed" id="localTime">@DateTime.Now.ToString(localTimeFormat)</span>Client&nbsp;Time
+                </p>
+            </a>
+            <a href="#" class="list-group-item">
+                <p class="list-group-item-text">
+                    <hr class="quarter-break" />
+                    <span class="badge badge-fixed" id="currentUser">@GetCurrentUserID()</span> Current User
+                    <hr class="quarter-break" />
+                    <span class="badge badge-fixed" id="applicationVersion">@applicationVersion</span>App&nbsp;Version
+                    <hr class="quarter-break" />
+                    <span class="badge badge-fixed" id="databaseType">DB: @databaseType</span>Config&nbsp;Type
+                    <hr class="quarter-break" />
+                    <span class="badge badge-fixed" id="databaseName">@databaseName</span>Config&nbsp;Name
+                </p>
+            </a>
+        </div>
+        <div class="text-info text-center small"style="margin-top: -15px;">
+            Using @(Cipher.SystemAllowsManagedEncryption ? "managed" : "FIPS compliant") security algorithms<br />
+            @ViewBag.Request.RequestUri.ToString()
+        </div>
         <!-- label class="small" id="fontSizeLabel"></label -->
     </div>
     <div class="col-lg-8 col-md-8 col-sm-7">

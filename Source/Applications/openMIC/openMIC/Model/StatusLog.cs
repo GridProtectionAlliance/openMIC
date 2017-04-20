@@ -1,23 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using GSF.ComponentModel;
 using GSF.Data;
 using GSF.Data.Model;
 
 namespace openMIC.Model
 {
     [TableName("StatusLog")]
-    [AmendExpression("With (NOLOCK)", DatabaseType.SQLServer)]
+    [AmendExpression("WITH (NOLOCK)", DatabaseType.SQLServer)]
+    [AmendExpression("TOP 1",
+        StatementTypes = StatementTypes.SelectSet,
+        TargetExpression = TargetExpression.FieldList,
+        AffixPosition = AffixPosition.Prefix)]
     public class StatusLog
     {
-        [PrimaryKey (true)]
+        [PrimaryKey(true)]
         public int ID { get; set; }
+
         public int DeviceID { get; set; }
+
+        [DefaultValueExpression("DateTime.UtcNow")]
         public DateTime? LastSuccess { get; set; }
+
+        [DefaultValueExpression("DateTime.UtcNow")]
         public DateTime? LastFailure { get; set; }
+
         public string Message { get; set; }
+
         public string LastFile { get; set; }
+
         public DateTime? FileDownloadTimestamp { get; set; }
     }
 }

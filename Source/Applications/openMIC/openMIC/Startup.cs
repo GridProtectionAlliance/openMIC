@@ -27,6 +27,7 @@ using GSF.Web.Hosting;
 using GSF.Web.Security;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Json;
+using Microsoft.Owin.Cors;
 using Newtonsoft.Json;
 using openMIC.Model;
 using Owin;
@@ -59,7 +60,10 @@ namespace openMIC
 
             // Enabled detailed client errors
             hubConfig.EnableDetailedErrors = true;
-            
+
+            // Enable cross-domain scripting
+            app.UseCors(CorsOptions.AllowAll);
+
             // Load ServiceHub SignalR class
             app.MapSignalR(hubConfig);
 

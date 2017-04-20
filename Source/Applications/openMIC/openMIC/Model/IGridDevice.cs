@@ -1,12 +1,23 @@
 using System;
-using GSF.Data.Model;
+using System.ComponentModel;
 
-namespace BenDownloader
+namespace openMIC.Model
 {
-    public class ConnectionProfile
+    public class IGridDevice
     {
-        [PrimaryKey(true)]
-        public int ID
+        public int DeviceID
+        {
+            get;
+            set;
+        }
+
+        public string Acronym
+        {
+            get;
+            set;
+        }
+
+        public string SerialNumber
         {
             get;
             set;
@@ -24,25 +35,25 @@ namespace BenDownloader
             set;
         }
 
-        public DateTime CreatedOn
+        public string ModelNumber
         {
             get;
             set;
         }
 
-        public string CreatedBy
+        public decimal Longitude
         {
             get;
             set;
         }
 
-        public DateTime UpdatedOn
+        public decimal Latitude
         {
             get;
             set;
         }
 
-        public string UpdatedBy
+        public bool Selected
         {
             get;
             set;

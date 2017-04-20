@@ -49,18 +49,6 @@
         new[] { "Enabled", "Enabled", "text-center" }
     };
 
-    // Lookup default company ID
-    int? companyID;
-
-    try
-    {
-        companyID = dataContext.Connection.ExecuteScalar<int?>("SELECT ID FROM Company WHERE Acronym={0}", Model.Global.CompanyAcronym);
-    }
-    catch
-    {
-        companyID = null;
-    }
-
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext).ToString();
 
@@ -79,7 +67,7 @@
 }
 @helper AddNewEditDialog(DataContext dataContext) {
     <div class="col-md-6">
-        @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus:true, enableHotLinks: false))
+        @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus: true, enableHotLinks: false))
         @Raw(dataContext.AddInputField<Device>("Name", enableHotLinks: false))
         @Raw(dataContext.AddInputField<Device>("OriginalSource", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP [ <em>:port</em> ]", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
@@ -223,10 +211,12 @@
             delete observableRecord._connectionstring;
         });
 
+        @* This is now handled by the model
         $(viewModel).on("newRecord", function(event, record) {
             // Initialize default values for new record
             record.CompanyID = @Raw(companyID == null ? "\"\"" : companyID.ToString());
         });
+        *@
 
         $(viewModel).on("currentRecordChanged", function(event) {
             viewModel.loadingConnectionString = true;
@@ -296,10 +286,10 @@
         });
 
         function showViewScreen(record) {
-            if (record.ProtocolID === downloaderProtocolID)
-                viewModel.viewPageRecord(record);
-            else if (record.ProtocolID === modbusProtocolID)
+            if (record.ProtocolID === modbusProtocolID)
                 window.location.href = "/ModbusConfig.cshtml?DeviceID=" + record.ID;
+            else
+                viewModel.viewPageRecord(record);
         }
         
         function refreshEnabledState(record) {
@@ -321,5 +311,6 @@
                     refreshEnabledState(record);
                 });
             }
-        }    </script>
+        }
+    </script>
 }
