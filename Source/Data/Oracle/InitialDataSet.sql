@@ -267,6 +267,7 @@ INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('OTHER'
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('APP', 'APP Engineering Inc.', '', '', 'http://appengineering.com/');
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('EMAX', 'E-MAX Instruments, Inc.', '', '', 'http://www.e-maxinstruments.com/');
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('QUAL', 'Qualitrol LLC', '', '', 'http://www.qualitrolcorp.com/');
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('IGRID', 'I-Grid - Rockwell Automation, Inc.', '', '', 'https://www.igrid.com/');
 
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(2, 'APP-501', 'APP-501 Multifunction Recorder', 'http://appengineering.com/products/601_Sales_Literature_Rev_4.pdf');
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(2, 'APP-601', 'APP-601 Multifunction Recorder', 'http://appengineering.com/products/601_Sales_Literature_Rev_4.pdf');
@@ -275,3 +276,4 @@ INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(3, 'EMAX-SUR',
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(3, 'EMAX-WAV', 'E-MAX Wave DFR', 'http://www.e-maxinstruments.com/images/pdf/product-catalog/E-MAX-DFR-Wave-2014%20.pdf');
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(4, 'BEN-5000', 'BEN 5000 Portable DFR', 'http://www.qualitrolcorp.com/Products/BEN_5000_to_BEN_6000_Upgrade/');
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(4, 'BEN-6000', 'BEN 6000 Portable DFR', 'http://www.qualitrolcorp.com/Products/BEN_6000_Portable_digital_fault_recorder_(with_options_for_power_quality_and_PMU)/');
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(5, 'ISENSE', 'I-Sense Monitor', 'https://www.igrid.com/igrid/SupportV3.jsp');
