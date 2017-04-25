@@ -989,7 +989,7 @@ namespace openMIC
                 {
                     m_deviceRecord = deviceTable.QueryRecordWhere("Acronym = {0}", Name);
                     m_connectionProfile = connectionProfileTable.LoadRecord(ConnectionProfileID);
-                    IEnumerable<ConnectionProfileTask> tasks = connectionProfileTaskTable.QueryRecordsWhere("ConnectionProfileID={0}", ConnectionProfileID);
+                    IEnumerable<ConnectionProfileTask> tasks = connectionProfileTaskTable.QueryRecords(restriction: new RecordRestriction("ConnectionProfileID={0}", ConnectionProfileID));
                     List<ConnectionProfileTaskSettings> connectionProfileTaskSettings = new List<ConnectionProfileTaskSettings>();
 
                     foreach (ConnectionProfileTask task in tasks)
@@ -1095,7 +1095,7 @@ namespace openMIC
                     FailedConnections++;
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                     OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", 0, 1));
-                    UpdateStatusLogTable(null, "", false, ex.Message);
+                    TryUpdateStatusLogTable(null, "", false, ex.Message);
                 }
 
                 client.CommandSent -= FtpClient_CommandSent;
@@ -1677,109 +1677,36 @@ namespace openMIC
                 {
                     TableOperations<StatusLog> statusLogTable = new TableOperations<StatusLog>(connection);
                     TableOperations<DownloadedFile> downloadedFileTable = new TableOperations<DownloadedFile>(connection);
-                    StatusLog log = statusLogTable.QueryRecordWhere("DeviceID = {0}", m_deviceRecord.ID);
+                    StatusLog log = statusLogTable.QueryRecordWhere("DeviceID = {0}", m_deviceRecord.ID) ?? statusLogTable.NewRecord();
 
-                    if (success)
+                    if (!success)
                     {
-                        if ((object)log == null)
+                        log.Message = message;
+                        log.LastFailure = DateTime.UtcNow;
+                    }
+                    else if (s_statusLogInclusions.Any(extension => file.Name.EndsWith(extension)) && !s_statusLogExclusions.Any(exclusion => file.Name.EndsWith(exclusion)))
+                    {
+                        log.LastFile = file.Name;
+                        log.FileDownloadTimestamp = log.LastSuccess;
+
+                        downloadedFileTable.AddNewRecord(new DownloadedFile()
                         {
-                            log = statusLogTable.NewRecord();
-                            log.DeviceID = m_deviceRecord.ID;
+                            DeviceID = m_deviceRecord.ID,
+                            CreationTime = new FileInfo(localFileName).CreationTimeUtc,
+                            File = file.Name,
+                            FileSize = (int)(new FileInfo(localFileName).Length / 1028), // FileSize in KB
+                            Timestamp = log.LastSuccess.GetValueOrDefault()
+                        });
+                    }
 
-                            if (s_statusLogInclusions.Any(extension => file.Name.Contains(extension)) && !s_statusLogExclusions.Any(exclusion => file.Name.Contains(exclusion)))
-                            {
-                                log.LastFile = file.Name;
-                                log.FileDownloadTimestamp = log.LastSuccess;
-
-                                downloadedFileTable.AddNewRecord(new DownloadedFile
-                                {
-                                    DeviceID = m_deviceRecord.ID,
-                                    CreationTime = new FileInfo(localFileName).CreationTimeUtc,
-                                    File = file.Name,
-                                    FileSize = (int)(new FileInfo(localFileName).Length / 1028), // FileSize in KB
-                                    Timestamp = log.LastSuccess.GetValueOrDefault()
-                                });
-
-                                if (s_maxDownloadThreshold > 0)
-                                {
-                                    DateTime timeWindow = DateTime.UtcNow.AddHours(-s_maxDownloadThresholdTimeWindow);
-
-                                    int count = downloadedFileTable.QueryRecordCountWhere("Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord.ID);
-
-                                    if (count > s_maxDownloadThreshold)
-                                    {
-                                        connection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord.ID);
-                                        log.Message = "Disabled due to excessive file production.";
-                                        log.LastFailure = log.LastSuccess;
-
-                                        Program.Host.SendRequest(m_deviceRecord.NodeID, "reloadconfig");
-                                        OnStatusMessage(MessageLevel.Warning, $"[{m_deviceRecord.Name}] Disabled due to excessive file downloads. Setting: {s_maxDownloadThreshold}; Count: {count}");
-
-                                        m_deviceRecord.Enabled = false;
-                                        // TODO: ADD email notification.
-                                    }
-                                }
-                            }
-
-                            statusLogTable.AddNewRecord(log);
-                        }
-                        else
-                        {
-                            log.LastSuccess = DateTime.UtcNow;
-
-                            if (s_statusLogInclusions.Any(extension => file.Name.Contains(extension)) && !s_statusLogExclusions.Any(exclusion => file.Name.Contains(exclusion)))
-                            {
-                                log.LastFile = file.Name;
-                                log.FileDownloadTimestamp = (DateTime)log.LastSuccess;
-
-                                downloadedFileTable.AddNewRecord(new DownloadedFile
-                                {
-                                    DeviceID = m_deviceRecord.ID,
-                                    CreationTime = new FileInfo(localFileName).CreationTimeUtc,
-                                    File = file.Name,
-                                    FileSize = (int)(new FileInfo(localFileName).Length / 1028), // FileSize in KB
-                                    Timestamp = (DateTime)log.LastSuccess
-                                });
-
-                                if (s_maxDownloadThreshold > 0)
-                                {
-                                    DateTime timeWindow = DateTime.UtcNow.AddHours(-s_maxDownloadThresholdTimeWindow);
-
-                                    int count = downloadedFileTable.QueryRecordCountWhere("Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord.ID);
-
-                                    if (count > s_maxDownloadThreshold)
-                                    {
-                                        connection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord.ID);
-                                        log.Message = "Disabled due to excessive file production.";
-                                        log.LastFailure = log.LastSuccess;
-
-                                        Program.Host.SendRequest(m_deviceRecord.NodeID, "reloadconfig");
-                                        OnStatusMessage(MessageLevel.Warning, $"[{m_deviceRecord.Name}] Disabled due to excessive file downloads. Setting: {s_maxDownloadThreshold}; Count: {count}");
-
-                                        m_deviceRecord.Enabled = false;
-                                    }
-                                }
-                            }
-
-                            statusLogTable.UpdateRecord(log);
-                        }
+                    if (log.DeviceID != m_deviceRecord.ID)
+                    {
+                        log.DeviceID = m_deviceRecord.ID;
+                        statusLogTable.AddNewRecord(log);
                     }
                     else
                     {
-                        if ((object)log == null)
-                        {
-                            log = statusLogTable.NewRecord();
-                            log.Message = message;
-                            log.DeviceID = m_deviceRecord.ID;
-                            log.FileDownloadTimestamp = null;
-                            statusLogTable.AddNewRecord(log);
-                        }
-                        else
-                        {
-                            log.LastFailure = DateTime.UtcNow;
-                            log.Message = message;
-                            statusLogTable.UpdateRecord(log);
-                        }
+                        statusLogTable.UpdateRecord(log);
                     }
                 }
             }
