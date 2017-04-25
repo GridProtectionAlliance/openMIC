@@ -350,6 +350,25 @@ namespace openMIC
             }
         }
 
+        // Define a wrapper to store information about a
+        // remote file and the local path it's destined for
+        private class FtpFileWrapper
+        {
+            public readonly string LocalPath;
+            public readonly FtpFile File;
+
+            public FtpFileWrapper(string localPath, FtpFile file)
+            {
+                LocalPath = localPath;
+                File = file;
+            }
+
+            public void Get()
+            {
+                File.Get(LocalPath);
+            }
+        }
+
         // Constants
         private const int NormalPriorty = 1;
         private const int HighPriority = 2;
@@ -1076,7 +1095,7 @@ namespace openMIC
                     FailedConnections++;
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                     OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", 0, 1));
-                    UpdateStatusLogDatabase(null, "", false, ex.Message);
+                    UpdateStatusLogTable(null, "", false, ex.Message);
                 }
 
                 client.CommandSent -= FtpClient_CommandSent;
@@ -1088,274 +1107,254 @@ namespace openMIC
 
         private void ProcessFTPTask(ConnectionProfileTaskSettings settings, FtpClient client)
         {
-            string remotePath = GetRemotePathName(settings);
-            string localSubPath = GetLocalPathName(settings,Path.DirectorySeparatorChar.ToString());
+            if (string.IsNullOrWhiteSpace(settings.LocalPath) || !Directory.Exists(settings.LocalPath))
+            {
+                OnProcessException(MessageLevel.Error, new InvalidOperationException($"Cannot download files for connection profile task \"{settings.Name}\": Local path \"{settings.LocalPath ?? ""}\" does not exist."));
+                return;
+            }
 
-            ProcessFTPTask(settings, client, remotePath, localSubPath);
+            if (!Directory.Exists(settings.LocalPath))
+                Directory.CreateDirectory(settings.LocalPath);
 
-            if (settings.RecursiveDownload)
-                ProcessFTPSubDirectories(settings, client, remotePath, localSubPath);
+            string remotePath = GetRemotePathDirectory(settings);
+            string localDirectoryPath = GetLocalPathDirectory(settings);
+            List<FtpFileWrapper> files = new List<FtpFileWrapper>();
+
+            OnStatusMessage(MessageLevel.Info, $"Building list of files to be downloaded from \"{remotePath}\".");
+            BuildFileList(files, settings, client, remotePath, localDirectoryPath);
+            DownloadAllFiles(files, settings);
         }
 
-        private void ProcessFTPSubDirectories(ConnectionProfileTaskSettings settings, FtpClient client, string rootRemotePath, string rootLocalSubPath)
-        {        
-            client.SetCurrentDirectory(rootRemotePath);
+        private void BuildFileList(List<FtpFileWrapper> fileList, ConnectionProfileTaskSettings settings, FtpClient client, string remotePath, string localDirectoryPath)
+        {
+            if (m_cancellationToken.IsCancelled)
+                return;
 
-            FtpDirectory[] directories = client.CurrentDirectory.SubDirectories.ToArray();
+            OnStatusMessage(MessageLevel.Info, $"Attempting to set remote FTP directory path \"{remotePath}\"...");
+            client.SetCurrentDirectory(remotePath);
 
-            foreach (FtpDirectory directory in directories)
+            OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePath}\"...");
+
+            foreach (FtpFile file in client.CurrentDirectory.Files)
             {
                 if (m_cancellationToken.IsCancelled)
                     return;
 
-                string directoryName = directory.Name;
-
-                if (directoryName.StartsWith(".", StringComparison.Ordinal))
+                if (!FilePath.IsFilePatternMatch(settings.FileSpecs, file.Name, true))
                     continue;
 
-                string remotePath = $"{rootRemotePath}/{directoryName}";
-                string localSubPath = GetLocalPathName(settings,Path.Combine(rootLocalSubPath, directoryName));
-
-                ProcessFTPTask(settings, client, remotePath, localSubPath);
-                ProcessFTPSubDirectories(settings, client, remotePath, localSubPath);
-            }
-        }
-
-        private void ProcessFTPTask(ConnectionProfileTaskSettings settings, FtpClient client, string remotePath, string localSubPath)
-        {
-            if (string.IsNullOrWhiteSpace(remotePath))
-            {
-                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Cannot process connection profile task \"{settings.Name}\", remote FTP directory path is undefined."));
-                return;
-            }
-
-            OnStatusMessage(MessageLevel.Info, $"Attempting to set remote FTP directory path \"{remotePath}\"...");
-
-            try
-            {
-                client.SetCurrentDirectory(remotePath);
-
-                OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePath}\"...");
-
-                try
+                if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
                 {
-                    FtpFile[] files = client.CurrentDirectory.Files.ToArray();
-
-                    if (files.Length == 0)
-                    {
-                        OnStatusMessage(MessageLevel.Info, "No remote files found, remote file processing terminated.");
-                    }
-                    else if (files.Length > settings.MaximumFileCount && settings.MaximumFileCount > -1)
-                    {
-                        OnStatusMessage(MessageLevel.Warning, $"Skipping remote file processing, there are {files.Length} remote files which exceeds the set {settings.MaximumFileCount} file limit.");
-                    }
-                    else
-                    {
-                        OnStatusMessage(MessageLevel.Info, $"Found {files.Length} remote file{(files.Length > 1 ? "s" : "")}, starting file processing...");
-
-                        m_overallTasksCount += files.Length;
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, m_overallTasksCompleted, m_overallTasksCount));
-
-                        foreach (FtpFile file in files)
-                        {
-                            try
-                            {
-                                if (m_cancellationToken.IsCancelled)
-                                    return;
-
-                                if (!FilePath.IsFilePatternMatch(settings.FileSpecs, file.Name, true))
-                                    continue;
-
-                                OnStatusMessage(MessageLevel.Info, $"Processing remote file \"{file.Name}\"...");
-                                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Starting \"{file.Name}\" download...", 0, file.Size));
-
-                                try
-                                {
-                                    ProcessFile(settings, localSubPath, file);
-                                    TotalProcessedFiles++;
-                                }
-                                catch (Exception ex)
-                                {
-                                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to process remote file \"{file.Name ?? "undefined"}\" in \"{remotePath}\": {ex.Message}", ex));
-                                }
-                            }
-                            finally
-                            {
-                                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
-                            }
-                        }
-                    }
+                    OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, timestamp \"{file.Timestamp:yyyy-MM-dd HH:mm.ss.fff}\" is older than {Program.Host.Model.Global.MaxRemoteFileAge} days.");
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: File is too old.", m_overallTasksCompleted, m_overallTasksCount));
+                    continue;
                 }
-                catch (Exception ex)
+
+                if (file.Size > settings.MaximumFileSize * SI2.Mega)
                 {
-                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to enumerate remote files in \"{remotePath}\": {ex.Message}", ex));
+                    OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, size of {file.Size / SI2.Mega:N3} MB is larger than {settings.MaximumFileSize:N3} MB configured limit.");
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB).", m_overallTasksCompleted, m_overallTasksCount));
+                    continue;
                 }
-            }
-            catch (Exception ex)
-            {
-                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to set remote FTP directory path \"{remotePath}\": {ex.Message}", ex));
-            }
-        }
 
-        private void ProcessFile(ConnectionProfileTaskSettings settings, string localSubPath, FtpFile file)
-        {
-            if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
-            {
-                OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, timestamp \"{file.Timestamp:yyyy-MM-dd HH:mm.ss.fff}\" is older than {Program.Host.Model.Global.MaxRemoteFileAge} days.");
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: File is too old.", 0, file.Size));
-                return;
-            }
+                string localPath = Path.Combine(localDirectoryPath, file.Name);
 
-            if (file.Size > settings.MaximumFileSize * SI2.Mega)
-            {
-                OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, size of {file.Size / SI2.Mega:N3} MB is larger than {settings.MaximumFileSize:N3} MB configured limit.");
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB).", 0, file.Size));
-                return;
-            }
-
-            if (DownloadFile(settings, localSubPath, file) && settings.DeleteRemoteFilesAfterDownload)
-            {
-                try
+                if (File.Exists(localPath) && settings.SkipDownloadIfUnchanged)
                 {
-                    file.Parent.RemoveFile(file.Name);
-                }
-                catch (Exception ex)
-                {
-                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to remove \"{file.Name}\" after download: {ex.Message}", ex));
-                }
-            }
-        }
-
-        private bool DownloadFile(ConnectionProfileTaskSettings settings, string localSubPath, FtpFile file)
-        {
-            if (string.IsNullOrWhiteSpace(settings.LocalPath) || !Directory.Exists(settings.LocalPath))
-            {
-                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Cannot download file \"{file.Name}\" for connection profile task \"{settings.Name}\": Local path \"{settings.LocalPath ?? ""}\" does not exist."));
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, false, $"Cannot download file \"{file.Name}\": Local path does not exists", 0, file.Size));
-                return false;
-            }
-
-            string localFileName = Path.Combine(localSubPath, file.Name);
-            bool fileChanged = false;
-
-            if (File.Exists(localFileName) && settings.SkipDownloadIfUnchanged)
-            {
-                try
-                {
-                    FileInfo info = new FileInfo(localFileName);
-
-                    // Compare file sizes
-                    bool localEqualsRemote = info.Length == file.Size;
-
-                    if (localEqualsRemote)
+                    try
                     {
-                        // Compare timestamps, if synchronized
-                        if (settings.SynchronizeTimestamps)
-                            localEqualsRemote = info.LastWriteTime == file.Timestamp;
+                        FileInfo info = new FileInfo(localPath);
+
+                        // Compare file sizes and timestamps
+                        bool localEqualsRemote =
+                            info.Length == file.Size &&
+                            (!settings.SynchronizeTimestamps || info.LastWriteTime == file.Timestamp);
 
                         if (localEqualsRemote)
                         {
-                            OnStatusMessage(MessageLevel.Info, $"Skipping file \"{file.Name}\" download for connection profile task \"{settings.Name}\": Local file already exists and matches remote file.");
-                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: Local file already exists and matches remote file", 0, file.Size));
-                            return false;
+                            OnStatusMessage(MessageLevel.Info, $"Skipping file download for remote file \"{file.Name}\" due to exception: Local file already exists and matches remote file.");
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: Local file already exists and matches remote file", m_overallTasksCompleted, m_overallTasksCount));
+                            continue;
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Unable to determine whether local file size and time matches remote file size and time due to exception: {ex.Message}", ex));
+                    }
+                }
 
-                    fileChanged = true;
-                }
-                catch (Exception ex)
-                {
-                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to get info for local file \"{localFileName}\" for connection profile task \"{settings.Name}\": {ex.Message}", ex));
-                }
+                fileList.Add(new FtpFileWrapper(localDirectoryPath, file));
             }
 
-            if (File.Exists(localFileName) && settings.ArchiveExistingFilesBeforeDownload)
+            if (settings.RecursiveDownload)
             {
                 try
                 {
-                    string directoryName = Path.Combine(FilePath.GetDirectoryName(localFileName), "Archive\\");
-                    string archiveFileName = Path.Combine(directoryName, FilePath.GetFileName(localFileName));
+                    OnStatusMessage(MessageLevel.Info, $"Enumerating remote directories in \"{remotePath}\"...");
+                    FtpDirectory[] directories = client.CurrentDirectory.SubDirectories.ToArray();
 
-                    Directory.CreateDirectory(directoryName);
+                    foreach (FtpDirectory directory in directories)
+                    {
+                        if (m_cancellationToken.IsCancelled)
+                            return;
 
-                    if (File.Exists(archiveFileName))
-                        archiveFileName = FilePath.GetUniqueFilePathWithBinarySearch(archiveFileName);
+                        string directoryName = directory.Name;
 
-                    OnStatusMessage(MessageLevel.Info, $"Archiving existing file \"{localFileName}\" to \"{archiveFileName}\"...");
-                    File.Move(localFileName, archiveFileName);
+                        if (directoryName.StartsWith(".", StringComparison.Ordinal))
+                            continue;
+
+                        string remoteSubPath = $"{remotePath}/{directoryName}";
+                        string localSubPath = Path.Combine(localDirectoryPath, directoryName);
+
+                        OnStatusMessage(MessageLevel.Info, $"Recursively adding files in \"{remotePath}\" to file list...");
+                        BuildFileList(fileList, settings, client, remoteSubPath, localDirectoryPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to archive existing local file \"{localFileName}\" before download for connection profile task \"{settings.Name}\": {ex.Message}", ex));
+                    OnProcessException(MessageLevel.Error, ex);
                 }
             }
+        }
 
-            if (File.Exists(localFileName) && !settings.OverwriteExistingLocalFiles)
+        private void DownloadAllFiles(List<FtpFileWrapper> files, ConnectionProfileTaskSettings settings)
+        {
+            long progress = 0L;
+            long totalBytes = files.Sum(wrapper => wrapper.File.Size);
+
+            if (m_cancellationToken.IsCancelled)
+                return;
+
+            // Group files by destination directory so we can skip whole groups
+            // of files if the directory does not exist and cannot be created
+            foreach (IGrouping<string, FtpFileWrapper> grouping in files.GroupBy(wrapper => Path.GetDirectoryName(wrapper.LocalPath)))
             {
-                OnStatusMessage(MessageLevel.Info, $"Skipping file \"{file.Name}\" download for connection profile task \"{settings.Name}\": Local file already exists and settings do not allow overwrite.");
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{file.Name}\" skipped: Local file already exists", 0, file.Size));
-                return false;
-            }
+                if (m_cancellationToken.IsCancelled)
+                    return;
 
-            OnStatusMessage(MessageLevel.Info, $"Downloading \"{file.Name}\" to \"{localFileName}\"...");
-
-            try
-            {
-                file.Parent.GetFile(localFileName, file.Name);
-                FilesDownloaded++;
-                BytesDownloaded += file.Size;
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, false, $"Download complete for \"{file.Name}\".", file.Size, file.Size));
-                UpdateStatusLogDatabase(file, localFileName, true);
-
-                // Send e-mail on file update, if requested
-                if (fileChanged && settings.EmailOnFileUpdate)
+                try
                 {
-                    ThreadPool.QueueUserWorkItem(state =>
+                    Directory.CreateDirectory(grouping.Key);
+                }
+                catch (Exception ex)
+                {
+                    string message = $"Failed to create local directory for {grouping.Count()} remote files due to exception: {ex.Message}";
+                    OnProcessException(MessageLevel.Error, new Exception(message, ex));
+                    progress += grouping.Sum(wrapper => wrapper.File.Size);
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, message, m_overallTasksCompleted * totalBytes + progress, totalBytes * m_overallTasksCount));
+                    continue;
+                }
+
+                foreach (FtpFileWrapper wrapper in grouping)
+                {
+                    if (m_cancellationToken.IsCancelled)
+                        return;
+
+                    OnStatusMessage(MessageLevel.Info, $"Verifying logic allows for download of remote file \"{wrapper.File.Name}\"...");
+
+                    // Update progress in advance in case the transfer fails
+                    progress += wrapper.File.Size;
+                    TotalProcessedFiles++;
+
+                    bool fileUpdated = File.Exists(wrapper.LocalPath) && settings.SkipDownloadIfUnchanged;
+
+                    if (File.Exists(wrapper.LocalPath) && settings.ArchiveExistingFilesBeforeDownload)
                     {
                         try
                         {
-                            GlobalSettings global = Program.Host.Model.Global;
-                            string subject = $"File changed for \"{Name}: {settings.Name}\"";
-                            string body = $"<b>File Name = {localFileName}</b></br>";
+                            string directoryName = Path.Combine(grouping.Key, "Archive\\");
+                            string archiveFileName = Path.Combine(directoryName, wrapper.File.Name);
 
-                            if (string.IsNullOrWhiteSpace(global.SmtpUserName))
-                                Mail.Send(global.FromAddress, settings.EmailRecipients, subject, body, true, global.SmtpServer);
-                            else
-                                Mail.Send(global.FromAddress, settings.EmailRecipients, subject, body, true, global.SmtpServer, global.SmtpUserName, global.SmtpPassword);
+                            Directory.CreateDirectory(directoryName);
+
+                            if (File.Exists(archiveFileName))
+                                archiveFileName = FilePath.GetUniqueFilePathWithBinarySearch(archiveFileName);
+
+                            OnStatusMessage(MessageLevel.Info, $"Archiving existing file \"{wrapper.LocalPath}\" to \"{archiveFileName}\"...");
+                            File.Move(wrapper.LocalPath, archiveFileName);
                         }
                         catch (Exception ex)
                         {
-                            OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to send e-mail notification about updated file \"{localFileName}\": {ex.Message}"));
+                            OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to archive existing local file \"{wrapper.LocalPath}\" due to exception: {ex.Message}", ex));
                         }
-                    });
-                }
+                    }
 
-                // Synchronize local timestamp to that of remote file if requested
-                if (settings.SynchronizeTimestamps)
-                {
-                    ThreadPool.QueueUserWorkItem(state =>
+                    if (File.Exists(wrapper.LocalPath) && !settings.OverwriteExistingLocalFiles)
                     {
-                        try
+                        OnStatusMessage(MessageLevel.Info, $"Skipping file download for remote file \"{wrapper.File.Name}\": Local file already exists and settings do not allow overwrite.");
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, false, $"File \"{wrapper.File.Name}\" skipped: Local file already exists", m_overallTasksCompleted * totalBytes + progress, totalBytes * m_overallTasksCount));
+                        continue;
+                    }
+
+                    try
+                    {
+                        // Download the file
+                        OnStatusMessage(MessageLevel.Info, $"Downloading remote file from \"{wrapper.File.FullPath}\" to local path \"{wrapper.LocalPath}\"...");
+                        wrapper.Get();
+
+                        if (settings.DeleteRemoteFilesAfterDownload)
                         {
-                            FileInfo info = new FileInfo(localFileName);
-                            info.LastAccessTime = info.LastWriteTime = file.Timestamp;
+                            try
+                            {
+                                // Remove the remote file
+                                OnStatusMessage(MessageLevel.Info, $"Removing file \"{wrapper.File.FullPath}\" from remote server...");
+                                wrapper.File.Remove();
+                            }
+                            catch (Exception ex)
+                            {
+                                string message = $"Failed to remove file \"{wrapper.File.FullPath}\" from remote server due to exception: {ex.Message}";
+                                OnProcessException(MessageLevel.Warning, new InvalidOperationException(message, ex));
+                                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, message, m_overallTasksCompleted * totalBytes + progress, totalBytes * m_overallTasksCount));
+                            }
                         }
-                        catch (Exception ex)
+
+                        // Update these statistics only if
+                        // the file download was successful
+                        FilesDownloaded++;
+                        BytesDownloaded += wrapper.File.Size;
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"Successfully downloaded remote file \"{wrapper.File.FullPath}\".", m_overallTasksCompleted * totalBytes + progress, totalBytes * m_overallTasksCount));
+
+                        // Synchronize local timestamp to that of remote file if requested
+                        if (settings.SynchronizeTimestamps)
                         {
-                            OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to update timestamp of downloaded file \"{localFileName}\": {ex.Message}"));
+                            FileInfo info = new FileInfo(wrapper.LocalPath);
+                            info.LastAccessTime = info.LastWriteTime = wrapper.File.Timestamp;
                         }
-                    });
+
+                        TryUpdateStatusLogTable(wrapper.File, wrapper.LocalPath, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        string message = $"Failed to download remote file \"{wrapper.File.FullPath}\" due to exception: {ex.Message}";
+                        OnProcessException(MessageLevel.Warning, new InvalidOperationException(message, ex));
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, message, m_overallTasksCompleted * totalBytes + progress, totalBytes * m_overallTasksCount));
+                        TryUpdateStatusLogTable(wrapper.File, wrapper.LocalPath, false);
+                    }
+
+                    // Send e-mail on file update, if requested
+                    if (fileUpdated && settings.EmailOnFileUpdate)
+                    {
+                        ThreadPool.QueueUserWorkItem(state =>
+                        {
+                            try
+                            {
+                                GlobalSettings global = Program.Host.Model.Global;
+                                string subject = $"File changed for \"{Name}: {settings.Name}\"";
+                                string body = $"<b>File Name = {wrapper.LocalPath}</b></br>";
+
+                                if (string.IsNullOrWhiteSpace(global.SmtpUserName))
+                                    Mail.Send(global.FromAddress, settings.EmailRecipients, subject, body, true, global.SmtpServer);
+                                else
+                                    Mail.Send(global.FromAddress, settings.EmailRecipients, subject, body, true, global.SmtpServer, global.SmtpUserName, global.SmtpPassword);
+                            }
+                            catch (Exception ex)
+                            {
+                                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to send e-mail notification about updated file \"{wrapper.LocalPath}\": {ex.Message}"));
+                            }
+                        });
+                    }
                 }
-
-                return true;
             }
-            catch (Exception ex)
-            {
-                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to download file \"{file.Name}\" for connection profile task \"{settings.Name}\" to \"{localFileName}\": {ex.Message}", ex));
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, false, $"Failed to download file \"{file.Name}\": {ex.Message}", 0, file.Size));
-            }
-
-            return false;
         }
 
         private string GetLocalFileName(ConnectionProfileTaskSettings settings, string localSubPath, string fileName)
@@ -1378,26 +1377,11 @@ namespace openMIC
             //         Possible UNC Path                            Sub Directory - duplicate path slashes are removed
             fileName = FilePath.AddPathSuffix(settings.LocalPath) + $"{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{localSubPath}{Path.DirectorySeparatorChar}{fileName}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
 
-            string directoryName = FilePath.GetDirectoryName(fileName);
-
-            if (!Directory.Exists(directoryName))
-            {
-                try
-                {
-                    Directory.CreateDirectory(directoryName);
-                }
-                catch (Exception ex)
-                {
-                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to create directory \"{directoryName}\": {ex.Message}", ex));
-                }
-            }
-
             return fileName;
         }
 
-        private string GetLocalPathName(ConnectionProfileTaskSettings settings, string localSubPath)
+        private string GetLocalPathDirectory(ConnectionProfileTaskSettings settings)
         {
-            TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
             Dictionary<string, string> substitutions = new Dictionary<string, string>
             {
                 { "<YYYY>", $"{DateTime.Now.Year}" },
@@ -1410,10 +1394,12 @@ namespace openMIC
                 { "<ProfileName>", m_connectionProfile.Name ?? "undefined" }
             };
 
-            directoryNameExpressionParser.TemplatedExpression = settings.DirectoryNamingExpression.Replace("\\", "\\\\");
+            string subPath = substitutions.Aggregate(settings.DirectoryNamingExpression, (expression, kvp) => expression.Replace(kvp.Key, kvp.Value));
 
-            // Possible UNC path and sub-directory - duplicate path slashes are removed
-            string directoryName = FilePath.AddPathSuffix(settings.LocalPath) + $"{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{localSubPath}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
+            if (!string.IsNullOrEmpty(settings.LocalPath))
+                subPath = subPath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            
+            string directoryName = Path.Combine(settings.LocalPath, subPath);
 
             if (!Directory.Exists(directoryName))
             {
@@ -1430,9 +1416,8 @@ namespace openMIC
             return directoryName;
         }
 
-        private string GetRemotePathName(ConnectionProfileTaskSettings settings)
+        private string GetRemotePathDirectory(ConnectionProfileTaskSettings settings)
         {
-            TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
             Dictionary<string, string> substitutions = new Dictionary<string, string>
             {
                 { "<YYYY>", $"{DateTime.Now.Year}" },
@@ -1456,13 +1441,8 @@ namespace openMIC
                 substitutions["<Month MM>"] = $"Month {DateTime.Now.AddDays(-1).Month.ToString().PadLeft(2, '0')}";
             }
 
-            directoryNameExpressionParser.TemplatedExpression = settings.RemotePath;
-
-            string directoryName = directoryNameExpressionParser.Execute(substitutions);
-
-            return directoryName;
+            return substitutions.Aggregate(settings.RemotePath, (path, sub) => path.Replace(sub.Key, sub.Value));
         }
-
 
         private void ProcessExternalOperationTask(ConnectionProfileTaskSettings settings)
         {
@@ -1671,8 +1651,22 @@ namespace openMIC
             OnProcessException(MessageLevel.Warning, e.GetException());
         }
 
+        private bool TryUpdateStatusLogTable(FtpFile file, string localFileName, bool success, string message = null)
+        {
+            try
+            {
+                UpdateStatusLogTable(file, localFileName, success, message);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                OnProcessException(MessageLevel.Warning, new Exception($"Failed to update status log due to exception: {ex.Message}", ex));
+                return false;
+            }
+        }
+
         [MethodImpl(MethodImplOptions.Synchronized)]
-        private void UpdateStatusLogDatabase(FtpFile file, string localFileName, bool success, string message = null)
+        private void UpdateStatusLogTable(FtpFile file, string localFileName, bool success, string message = null)
         {
             if (!m_deviceRecord.Enabled)
                 return;
