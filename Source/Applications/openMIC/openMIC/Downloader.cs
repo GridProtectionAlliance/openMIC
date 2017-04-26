@@ -968,9 +968,9 @@ namespace openMIC
 
                 lock (m_connectionProfileLock)
                 {
-                    m_deviceRecord = deviceTable.QueryRecord("Acronym = {0}", Name);
+                    m_deviceRecord = deviceTable.QueryRecordWhere("Acronym = {0}", Name);
                     m_connectionProfile = connectionProfileTable.LoadRecord(ConnectionProfileID);
-                    IEnumerable<ConnectionProfileTask> tasks = connectionProfileTaskTable.QueryRecords(restriction: new RecordRestriction("ConnectionProfileID={0}", ConnectionProfileID));
+                    IEnumerable<ConnectionProfileTask> tasks = connectionProfileTaskTable.QueryRecordsWhere("ConnectionProfileID={0}", ConnectionProfileID);
                     List<ConnectionProfileTaskSettings> connectionProfileTaskSettings = new List<ConnectionProfileTaskSettings>();
 
                     foreach (ConnectionProfileTask task in tasks)
@@ -1710,7 +1710,7 @@ namespace openMIC
                                 {
                                     DateTime timeWindow = DateTime.UtcNow.AddHours(-s_maxDownloadThresholdTimeWindow);
 
-                                    int count = downloadedFileTable.QueryRecordCount(new RecordRestriction("Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord.ID));
+                                    int count = downloadedFileTable.QueryRecordCountWhere("Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord.ID);
 
                                     if (count > s_maxDownloadThreshold)
                                     {
@@ -1751,7 +1751,7 @@ namespace openMIC
                                 {
                                     DateTime timeWindow = DateTime.UtcNow.AddHours(-s_maxDownloadThresholdTimeWindow);
 
-                                    int count = downloadedFileTable.QueryRecordCount(new RecordRestriction("Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord.ID));
+                                    int count = downloadedFileTable.QueryRecordCountWhere("Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord.ID);
 
                                     if (count > s_maxDownloadThreshold)
                                     {
