@@ -73,7 +73,7 @@ namespace openMIC.Model
 
         [Required]
         [Label("Company")]
-        [DefaultValueExpression("Connection.ExecuteScalar('SELECT ID FROM Company WHERE Acronym = {0}', Global.CompanyAcronym)", Cached = true)]
+        [DefaultValueExpression("Connection.ExecuteScalar(typeof(int), (object)null, 'SELECT ID FROM Company WHERE Acronym = {0}', Global.CompanyAcronym)", Cached = true)]
         public int? CompanyID
         {
             get;
