@@ -1360,29 +1360,6 @@ namespace openMIC
             }
         }
 
-        private string GetLocalFileName(ConnectionProfileTaskSettings settings, string localSubPath, string fileName)
-        {
-            TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
-            Dictionary<string, string> substitutions = new Dictionary<string, string>
-            {
-                { "<YYYY>", $"{DateTime.Now.Year}" },
-                { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
-                { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
-                { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
-                { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
-                { "<DeviceAcronym>", m_deviceRecord.Acronym },
-                { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
-                { "<ProfileName>", m_connectionProfile.Name ?? "undefined" }
-            };
-
-            directoryNameExpressionParser.TemplatedExpression = settings.DirectoryNamingExpression.Replace("\\", "\\\\");
-
-            //         Possible UNC Path                            Sub Directory - duplicate path slashes are removed
-            fileName = FilePath.AddPathSuffix(settings.LocalPath) + $"{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{localSubPath}{Path.DirectorySeparatorChar}{fileName}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
-
-            return fileName;
-        }
-
         private string GetLocalPathDirectory(ConnectionProfileTaskSettings settings)
         {
             Dictionary<string, string> substitutions = new Dictionary<string, string>
