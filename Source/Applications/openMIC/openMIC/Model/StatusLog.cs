@@ -7,7 +7,7 @@ namespace openMIC.Model
 {
     [TableName("StatusLog")]
     [AmendExpression("WITH (NOLOCK)", DatabaseType.SQLServer)]
-    [AmendExpression("TOP 1",
+    [AmendExpression("TOP 1", DatabaseType.SQLServer,
         StatementTypes = StatementTypes.SelectSet,
         TargetExpression = TargetExpression.FieldList,
         AffixPosition = AffixPosition.Prefix)]
