@@ -53,6 +53,13 @@
             padding-left: 3px;
             padding-right: 4px;
         }
+
+        /* Prevent label wrapping */
+        #baseURLArea {
+            width: 80%;
+            display: inline-table;
+            vertical-align: middle;
+        }
     </style>
 }
 @functions {
@@ -73,8 +80,8 @@
 <div style="display: none" search-header></div>
 <form class="form-inline">
     <label for="inputBaseURL">Base URL:</label>
-    <div class="input-group" style="width: 80%" data-bind="css: { 'has-error': !fieldIsValid(baseURL, true), 'has-feedback': !fieldIsValid(baseURL, true) }">
-        <input type="text" class="form-control" data-bind="textInput: baseURL" id="inputBaseURL" required>
+    <div id="baseURLArea" class="input-group" data-bind="css: { 'has-error': !fieldIsValid(baseURL, true), 'has-feedback': !fieldIsValid(baseURL, true) }">
+        <input type="text" class="form-control" style="width: 100%" data-bind="textInput: baseURL" id="inputBaseURL" required>
         <span class="input-group-addon" style="border-left: none; background-color: #fff; width: 100px">&amp;action=getMonitorList</span>
         <span class="input-group-btn">
             <button class="btn btn-default" id="queryDevices" data-bind="enable: dataHubIsConnected">Query Devices</button>

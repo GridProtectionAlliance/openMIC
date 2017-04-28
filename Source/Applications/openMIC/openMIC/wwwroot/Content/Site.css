@@ -7,6 +7,12 @@ body {
     border-bottom: none;
 }
 
+.nowrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
 /* Define read-only style for disabled div areas */
 div.readonly {
     background-color: #eee;
