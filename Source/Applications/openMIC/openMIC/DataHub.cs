@@ -615,7 +615,7 @@ namespace openMIC
 
         public StatusLog GetStatusLogForDevice(string deviceName)
         {
-            return DataContext.Table<StatusLog>().QueryRecord("DeviceID IN (SELECT ID FROM Device WHERE Acronym LIKE {0})", deviceName) ?? new StatusLog();
+            return DataContext.Table<StatusLog>().QueryRecordWhere("DeviceID IN (SELECT ID FROM Device WHERE Acronym LIKE {0})", deviceName) ?? new StatusLog();
         }
 
         #endregion
