@@ -7908,7 +7908,7 @@
             </summary>
             <typeparam name="T">Modeled table.</typeparam>
         </member>
-        <member name="M:GSF.Data.Model.TableOperations`1.#ctor(GSF.Data.AdoDataConnection,System.Collections.Generic.KeyValuePair{System.String,System.String}[])">
+        <member name="M:GSF.Data.Model.TableOperations`1.#ctor(GSF.Data.AdoDataConnection,System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
             <summary>
             Creates a new <see cref="T:GSF.Data.Model.TableOperations`1"/>.
             </summary>
@@ -7931,7 +7931,7 @@
             </code>
             </remarks>
         </member>
-        <member name="M:GSF.Data.Model.TableOperations`1.#ctor(GSF.Data.AdoDataConnection,System.Action{System.Exception},System.Collections.Generic.KeyValuePair{System.String,System.String}[])">
+        <member name="M:GSF.Data.Model.TableOperations`1.#ctor(GSF.Data.AdoDataConnection,System.Action{System.Exception},System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
             <summary>
             Creates a new <see cref="T:GSF.Data.Model.TableOperations`1"/>.
             </summary>
@@ -8519,7 +8519,7 @@
         <member name="P:GSF.Data.Model.TableOperations`1.TypeRegistry">
             <summary>
             Gets or sets <see cref="T:ExpressionEvaluator.TypeRegistry"/> instance used for evaluating encountered instances
-            of the <see cref="T:GSF.ComponentModel.DefaultValueExpressionAttribute"/> on modeled table properties.
+            of the <see cref="T:GSF.ComponentModel.ValueExpressionAttributeBase"/> on modeled table properties.
             </summary>
             <remarks>
             Accessing this property will create a unique type registry for the current type <typeparamref name="T"/> which
