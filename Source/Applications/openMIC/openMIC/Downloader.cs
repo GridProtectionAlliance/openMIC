@@ -1009,14 +1009,33 @@ namespace openMIC
             if (m_cancellationToken.IsCancelled)
                 return;
 
-            using (FtpClient client = new FtpClient())
-            {
-                client.CommandSent += FtpClient_CommandSent;
-                client.ResponseReceived += FtpClient_ResponseReceived;
-                client.FileTransferProgress += FtpClient_FileTransferProgress;
-                client.FileTransferNotification += FtpClient_FileTransferNotification;
+            FtpClient client = null;
+            Ticks connectionStartTime = DateTime.UtcNow.Ticks;
+            string connectionProfileName = m_connectionProfile?.Name ?? "Undefined";
 
-                try
+            try
+            {
+                ConnectionProfileTaskSettings[] taskSettings;
+                List<ConnectionProfileTaskSettings> ftpTaskSettings;
+                List<ConnectionProfileTaskSettings> externalOperationTaskSettings;
+
+                lock (m_connectionProfileLock)
+                    taskSettings = m_connectionProfileTaskSettings;
+
+                if (taskSettings.Length == 0)
+                {
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"Skipped \"{connectionProfileName}\" connection profile processing: No tasks defined.", 0, 1));
+                    return;
+                }
+
+                ftpTaskSettings = taskSettings.Where(settings => string.IsNullOrWhiteSpace(settings.ExternalOperation)).ToList();
+                externalOperationTaskSettings = taskSettings.Where(settings => !string.IsNullOrWhiteSpace(settings.ExternalOperation)).ToList();
+
+                m_overallTasksCompleted = 0;
+                m_overallTasksCount = taskSettings.Length;
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"Starting \"{connectionProfileName}\" connection profile processing...", m_overallTasksCompleted, m_overallTasksCount));
+
+                if (ftpTaskSettings.Count > 0)
                 {
                     if (string.IsNullOrWhiteSpace(ConnectionHostName))
                     {
@@ -1025,6 +1044,12 @@ namespace openMIC
                     else
                     {
                         OnStatusMessage(MessageLevel.Info, $"Attempting connection to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"...");
+
+                        client = new FtpClient();
+                        client.CommandSent += FtpClient_CommandSent;
+                        client.ResponseReceived += FtpClient_ResponseReceived;
+                        client.FileTransferProgress += FtpClient_FileTransferProgress;
+                        client.FileTransferNotification += FtpClient_FileTransferNotification;
 
                         string[] parts = ConnectionHostName.Split(':');
 
@@ -1045,63 +1070,70 @@ namespace openMIC
                         client.MaxActivePort = MaxActiveFtpPort;
                         client.Connect(ConnectionUserName, ConnectionPassword);
 
+                        SuccessfulConnections++;
                         OnStatusMessage(MessageLevel.Info, $"Connected to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"");
                     }
+                }
 
-                    Ticks connectionStartTime = DateTime.UtcNow.Ticks;
-                    SuccessfulConnections++;
+                foreach (ConnectionProfileTaskSettings settings in ftpTaskSettings)
+                {
+                    OnStatusMessage(MessageLevel.Info, $"Starting \"{connectionProfileName}\" connection profile \"{settings.Name}\" task processing:");
 
-                    string connectionProfileName = m_connectionProfile?.Name ?? "Undefined";
-                    ConnectionProfileTaskSettings[] taskSettings;
+                    ProcessFTPTask(settings, client);
 
-                    lock (m_connectionProfileLock)
-                        taskSettings = m_connectionProfileTaskSettings;
+                    // Handle local file age limit processing, if enabled
+                    if (settings.DeleteOldLocalFiles)
+                        HandleLocalFileAgeLimitProcessing(settings);
 
-                    if (taskSettings.Length > 0)
-                    {
-                        m_overallTasksCompleted = 0;
-                        m_overallTasksCount = taskSettings.Length;
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"Starting \"{connectionProfileName}\" connection profile processing...", m_overallTasksCompleted, m_overallTasksCount));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
+                }
 
-                        foreach (ConnectionProfileTaskSettings settings in taskSettings)
-                        {
-                            OnStatusMessage(MessageLevel.Info, $"Starting \"{connectionProfileName}\" connection profile \"{settings.Name}\" task processing:");
+                foreach (ConnectionProfileTaskSettings settings in externalOperationTaskSettings)
+                {
+                    OnStatusMessage(MessageLevel.Info, $"Starting \"{connectionProfileName}\" connection profile \"{settings.Name}\" task processing:");
 
-                            if (string.IsNullOrWhiteSpace(settings.ExternalOperation))
-                                ProcessFTPTask(settings, client);
-                            else
-                                ProcessExternalOperationTask(settings);
+                    ProcessExternalOperationTask(settings);
 
-                            // Handle local file age limit processing, if enabled
-                            if (settings.DeleteOldLocalFiles)
-                                HandleLocalFileAgeLimitProcessing(settings);
+                    // Handle local file age limit processing, if enabled
+                    if (settings.DeleteOldLocalFiles)
+                        HandleLocalFileAgeLimitProcessing(settings);
 
-                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
-                        }
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
+                }
 
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"Completed \"{connectionProfileName}\" connection profile processing.", m_overallTasksCount, m_overallTasksCount));
-                    }
-                    else
-                    {
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"Skipped \"{connectionProfileName}\" connection profile processing: No tasks defined.", 0, 1));
-                    }
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"Completed \"{connectionProfileName}\" connection profile processing.", m_overallTasksCount, m_overallTasksCount));
+            }
+            catch (Exception ex)
+            {
+                FailedConnections++;
+
+                if ((object)client != null)
+                {
+                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", 0, 1));
+                }
+                else
+                {
+                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to process connection profile tasks for \"{connectionProfileName}\": {ex.Message}", ex));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to process connection profile tasks for \"{connectionProfileName}\": {ex.Message}", 0, 1));
+                }
+
+                TryUpdateStatusLogTable(null, "", false, ex.Message);
+            }
+            finally
+            {
+                if ((object)client != null)
+                {
+                    client.CommandSent -= FtpClient_CommandSent;
+                    client.ResponseReceived -= FtpClient_ResponseReceived;
+                    client.FileTransferProgress -= FtpClient_FileTransferProgress;
+                    client.FileTransferNotification -= FtpClient_FileTransferNotification;
+                    client.Dispose();
 
                     Ticks connectedTime = DateTime.UtcNow.Ticks - connectionStartTime;
                     OnStatusMessage(MessageLevel.Info, $"FTP session connected for {connectedTime.ToElapsedTimeString(2)}");
                     TotalConnectedTime += connectedTime;
                 }
-                catch (Exception ex)
-                {
-                    FailedConnections++;
-                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
-                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", 0, 1));
-                    TryUpdateStatusLogTable(null, "", false, ex.Message);
-                }
-
-                client.CommandSent -= FtpClient_CommandSent;
-                client.ResponseReceived -= FtpClient_ResponseReceived;
-                client.FileTransferProgress -= FtpClient_FileTransferProgress;
-                client.FileTransferNotification -= FtpClient_FileTransferNotification;
             }
         }
 
