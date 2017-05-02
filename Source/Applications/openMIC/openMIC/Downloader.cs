@@ -33,10 +33,12 @@ using System.Management;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using DotRas;
 using GSF;
 using GSF.Configuration;
+using GSF.Console;
 using GSF.Data;
 using GSF.Data.Model;
 using GSF.Diagnostics;
@@ -209,6 +211,15 @@ namespace openMIC
             Description("Defines external operation application."),
             DefaultValue("")]
             public string ExternalOperation
+            {
+                get;
+                set;
+            }
+
+            [ConnectionStringParameter,
+            Description("Defines maximum amount of time, in seconds, to allow the external operation to sit idle."),
+            DefaultValue(null)]
+            public double? ExternalOperationTimeout
             {
                 get;
                 set;
@@ -1458,48 +1469,100 @@ namespace openMIC
 
         private void ProcessExternalOperationTask(ConnectionProfileTaskSettings settings)
         {
-            string externalOperationExecutableName = FilePath.GetAbsolutePath(settings.ExternalOperation);
+            string localPathDirectory = GetLocalPathDirectory(settings);
 
-            if (!File.Exists(externalOperationExecutableName))
+            Dictionary<string, string> substitutions = new Dictionary<string, string>
             {
-                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Cannot execute external operation \"{settings.ExternalOperation}\" for connection profile task \"{settings.Name}\": Executable file not found."));
-                return;
-            }
+                { "<DeviceID>", m_deviceRecord.ID.ToString() },
+                { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
+                { "<DeviceAcronym>", m_deviceRecord.Acronym },
+                { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
+                { "<DeviceFolderPath>", GetLocalPathDirectory(settings) },
+                { "<ProfileName>", m_connectionProfile.Name ?? "undefined" },
+                { "<TaskID>", settings.ID.ToString() }
+            };
 
-            OnStatusMessage(MessageLevel.Info, $"Executing external operation \"{settings.ExternalOperation}\"...");
-            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, "Starting external action...", 1, 0));
+            string command = substitutions.Aggregate(settings.ExternalOperation.Trim(), (str, kvp) => str.Replace(kvp.Key, kvp.Value));
+            string executable = Arguments.ParseCommand(command)[0];
+            string args = command.Substring(executable.Length).Trim();
+            TimeSpan timeout = TimeSpan.FromSeconds(settings.ExternalOperationTimeout ?? ConnectionTimeout / 1000.0D);
+
+            OnStatusMessage(MessageLevel.Info, $"Executing external operation \"{command}\"...");
+            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, "Starting external action...", m_overallTasksCompleted, m_overallTasksCount));
 
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(externalOperationExecutableName, $"{m_deviceRecord.ID} {settings.ID}");
-                startInfo.UseShellExecute = false;
-                Process externalOperation = Process.Start(startInfo);
+                int fileCount = FilePath.EnumerateFiles(localPathDirectory, "*", SearchOption.AllDirectories).Count();
 
-                if ((object)externalOperation == null)
+                using (SafeFileWatcher fileWatcher = new SafeFileWatcher(localPathDirectory))
+                using (Process externalOperation = new Process())
                 {
-                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to start external operation \"{settings.ExternalOperation}\"."));
-                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, false, "Failed to start external action.", 1, 0));
-                }
-                else
-                {
+                    DateTime lastUpdate = DateTime.UtcNow;
+
+                    fileWatcher.Created += (sender, fileArgs) => lastUpdate = DateTime.UtcNow;
+                    fileWatcher.Changed += (sender, fileArgs) => lastUpdate = DateTime.UtcNow;
+                    fileWatcher.Deleted += (sender, fileArgs) => lastUpdate = DateTime.UtcNow;
+                    fileWatcher.EnableRaisingEvents = true;
+
+                    externalOperation.StartInfo.FileName = executable;
+                    externalOperation.StartInfo.Arguments = args;
+                    externalOperation.StartInfo.RedirectStandardOutput = true;
+                    externalOperation.StartInfo.RedirectStandardError = true;
+                    externalOperation.StartInfo.UseShellExecute = false;
+                    externalOperation.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+
+                    externalOperation.OutputDataReceived += (sender, processArgs) =>
+                    {
+                        if (string.IsNullOrWhiteSpace(processArgs.Data))
+                            return;
+
+                        lastUpdate = DateTime.UtcNow;
+                        OnStatusMessage(MessageLevel.Info, processArgs.Data);
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, processArgs.Data, m_overallTasksCompleted, m_overallTasksCount));
+                    };
+
+                    externalOperation.ErrorDataReceived += (sender, processArgs) =>
+                    {
+                        if (string.IsNullOrWhiteSpace(processArgs.Data))
+                            return;
+
+                        lastUpdate = DateTime.UtcNow;
+                        OnProcessException(MessageLevel.Error, new Exception(processArgs.Data));
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, processArgs.Data, m_overallTasksCompleted, m_overallTasksCount));
+                    };
+
+                    externalOperation.Start();
+                    externalOperation.BeginOutputReadLine();
+                    externalOperation.BeginErrorReadLine();
+
                     while (!externalOperation.WaitForExit(1000))
                     {
                         if (m_cancellationToken.IsCancelled)
                         {
                             TerminateProcessTree(externalOperation.Id);
+                            OnProcessException(MessageLevel.Warning, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: downloader was disabled."));
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, "External operation forcefully terminated: downloader was disabled.", m_overallTasksCompleted, m_overallTasksCount));
+                            return;
+                        }
+
+                        if (DateTime.UtcNow - lastUpdate > timeout)
+                        {
+                            TerminateProcessTree(externalOperation.Id);
+                            OnProcessException(MessageLevel.Error, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)."));
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"External operation forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds).", m_overallTasksCompleted, m_overallTasksCount));
                             return;
                         }
                     }
 
-                    OnStatusMessage(MessageLevel.Info, $"External operation \"{settings.ExternalOperation}\" completed with status code {externalOperation.ExitCode}.");
-                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Undefined, false, $"External action complete: exit code {externalOperation.ExitCode}.", 1, 1));
-                    FilesDownloaded++;
+                    FilesDownloaded += FilePath.EnumerateFiles(localPathDirectory, "*", SearchOption.AllDirectories).Count() - fileCount;
+                    OnStatusMessage(MessageLevel.Info, $"External operation \"{command}\" completed with status code {externalOperation.ExitCode}.");
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"External action complete: exit code {externalOperation.ExitCode}.", m_overallTasksCompleted, m_overallTasksCount));
                 }
             }
             catch (Exception ex)
             {
-                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to execute external operation \"{settings.ExternalOperation}\": {ex.Message}", ex));
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, false, $"Failed to execute external action: {ex.Message}", 1, 0));
+                OnProcessException(MessageLevel.Error, new InvalidOperationException($"Failed to execute external operation \"{command}\": {ex.Message}", ex));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to execute external action: {ex.Message}", m_overallTasksCompleted, m_overallTasksCount));
             }
         }
 
