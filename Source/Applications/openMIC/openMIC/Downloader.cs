@@ -33,7 +33,6 @@ using System.Management;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using DotRas;
 using GSF;
@@ -45,7 +44,6 @@ using GSF.Diagnostics;
 using GSF.IO;
 using GSF.Net.Ftp;
 using GSF.Net.Smtp;
-using GSF.Parsing;
 using GSF.Scheduling;
 using GSF.Threading;
 using GSF.TimeSeries;
@@ -701,9 +699,18 @@ namespace openMIC
         }
 
         /// <summary>
-        /// Gets or sets total number of files downloaded.
+        /// Gets or sets number of files downloaded during last execution.
         /// </summary>
         public long FilesDownloaded
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets total number of files downloaded.
+        /// </summary>
+        public long TotalFilesDownloaded
         {
             get;
             set;
@@ -1042,6 +1049,7 @@ namespace openMIC
                 ftpTaskSettings = taskSettings.Where(settings => string.IsNullOrWhiteSpace(settings.ExternalOperation)).ToList();
                 externalOperationTaskSettings = taskSettings.Where(settings => !string.IsNullOrWhiteSpace(settings.ExternalOperation)).ToList();
 
+                FilesDownloaded = 0;
                 m_overallTasksCompleted = 0;
                 m_overallTasksCount = taskSettings.Length;
                 OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"Starting \"{connectionProfileName}\" connection profile processing...", m_overallTasksCompleted, m_overallTasksCount));
@@ -1121,12 +1129,12 @@ namespace openMIC
                 if ((object)client != null)
                 {
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
-                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", 0, 1));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", m_overallTasksCompleted, m_overallTasksCount));
                 }
                 else
                 {
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to process connection profile tasks for \"{connectionProfileName}\": {ex.Message}", ex));
-                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to process connection profile tasks for \"{connectionProfileName}\": {ex.Message}", 0, 1));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to process connection profile tasks for \"{connectionProfileName}\": {ex.Message}", m_overallTasksCompleted, m_overallTasksCount));
                 }
 
                 TryUpdateStatusLogTable(null, "", false, ex.Message);
@@ -1145,6 +1153,8 @@ namespace openMIC
                     OnStatusMessage(MessageLevel.Info, $"FTP session connected for {connectedTime.ToElapsedTimeString(2)}");
                     TotalConnectedTime += connectedTime;
                 }
+
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Finished, true, "", 1, 1));
             }
         }
 
@@ -1183,14 +1193,14 @@ namespace openMIC
                 if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
                 {
                     OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, timestamp \"{file.Timestamp:yyyy-MM-dd HH:mm.ss.fff}\" is older than {Program.Host.Model.Global.MaxRemoteFileAge} days.");
-                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"File \"{file.Name}\" skipped: File is too old.", m_overallTasksCompleted, m_overallTasksCount));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"File \"{file.Name}\" skipped: File is too old.", m_overallTasksCompleted, m_overallTasksCount));
                     continue;
                 }
 
                 if (file.Size > settings.MaximumFileSize * SI2.Mega)
                 {
                     OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, size of {file.Size / SI2.Mega:N3} MB is larger than {settings.MaximumFileSize:N3} MB configured limit.");
-                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"File \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB).", m_overallTasksCompleted, m_overallTasksCount));
+                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"File \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB).", m_overallTasksCompleted, m_overallTasksCount));
                     continue;
                 }
 
@@ -1210,7 +1220,7 @@ namespace openMIC
                         if (localEqualsRemote)
                         {
                             OnStatusMessage(MessageLevel.Info, $"Skipping file download for remote file \"{file.Name}\": Local file already exists and matches remote file.");
-                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"File \"{file.Name}\" skipped: Local file already exists and matches remote file", m_overallTasksCompleted, m_overallTasksCount));
+                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"File \"{file.Name}\" skipped: Local file already exists and matches remote file", m_overallTasksCompleted, m_overallTasksCount));
                             continue;
                         }
                     }
@@ -1328,7 +1338,7 @@ namespace openMIC
                     if (File.Exists(wrapper.LocalPath) && !settings.OverwriteExistingLocalFiles)
                     {
                         OnStatusMessage(MessageLevel.Info, $"Skipping file download for remote file \"{wrapper.RemoteFile.Name}\": Local file already exists and settings do not allow overwrite.");
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"File \"{wrapper.RemoteFile.Name}\" skipped: Local file already exists", m_overallTasksCompleted * totalBytes + progress, totalBytes * m_overallTasksCount));
+                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"File \"{wrapper.RemoteFile.Name}\" skipped: Local file already exists", m_overallTasksCompleted * totalBytes + progress, totalBytes * m_overallTasksCount));
                         continue;
                     }
 
@@ -1357,6 +1367,7 @@ namespace openMIC
                         // Update these statistics only if
                         // the file download was successful
                         FilesDownloaded++;
+                        TotalFilesDownloaded++;
                         BytesDownloaded += wrapper.RemoteFile.Size;
                         OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"Successfully downloaded remote file \"{wrapper.RemoteFile.FullPath}\".", m_overallTasksCompleted * totalBytes + progress, totalBytes * m_overallTasksCount));
 
@@ -1554,7 +1565,9 @@ namespace openMIC
                         }
                     }
 
-                    FilesDownloaded += FilePath.EnumerateFiles(localPathDirectory, "*", SearchOption.AllDirectories).Count() - fileCount;
+                    int filesDownloaded = FilePath.EnumerateFiles(localPathDirectory, "*", SearchOption.AllDirectories).Count() - fileCount;
+                    FilesDownloaded += filesDownloaded;
+                    TotalFilesDownloaded += filesDownloaded;
                     OnStatusMessage(MessageLevel.Info, $"External operation \"{command}\" completed with status code {externalOperation.ExitCode}.");
                     OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, $"External action complete: exit code {externalOperation.ExitCode}.", m_overallTasksCompleted, m_overallTasksCount));
                 }

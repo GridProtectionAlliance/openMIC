@@ -766,7 +766,7 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed during poll operation: {ex.Message}", 0, 1));
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed during poll operation: {ex.Message}", 1, 1));
 
                 // Restart connection cycle when an exception occurs
                 Start();
@@ -775,6 +775,7 @@ namespace openMIC
             finally
             {
                 m_measurementsExpected += OutputMeasurements.Length;
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Finished, true, null, 1, 1));
             }
         }
 

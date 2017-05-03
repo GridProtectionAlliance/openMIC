@@ -2,11 +2,11 @@ namespace openMIC.Model
 {
     public enum ProgressState
     {
-        Undefined,
         Processing,
         Skipped,
         Succeeded,
-        Failed
+        Failed,
+        Finished
     }
 
     public class ProgressUpdate
@@ -49,6 +49,12 @@ namespace openMIC.Model
         }
 
         public long FilesDownloaded
+        {
+            get;
+            set;
+        }
+
+        public long TotalFilesDownloaded
         {
             get;
             set;

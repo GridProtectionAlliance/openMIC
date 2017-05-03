@@ -128,6 +128,7 @@ namespace openMIC
             {
                 update.DeviceName = downloader.Name;
                 update.FilesDownloaded = downloader.FilesDownloaded;
+                update.TotalFilesDownloaded = downloader.TotalFilesDownloaded;
             }
 
             ModbusPoller modbusPoller = sender as ModbusPoller;
@@ -139,7 +140,7 @@ namespace openMIC
             }
 
             if (!string.IsNullOrEmpty(update.ProgressMessage))
-                update.ProgressMessage += $"\r\n\r\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}]";
+                update.ProgressMessage = $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}] {update.ProgressMessage}";
 
             GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(e.Argument);
         }
