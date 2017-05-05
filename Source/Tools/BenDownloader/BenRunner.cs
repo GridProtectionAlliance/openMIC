@@ -21,29 +21,23 @@
 //
 //******************************************************************************************************
 
-
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
 using GSF;
 using GSF.Data;
 using GSF.IO;
 using GSF.Parsing;
-using Microsoft.VisualBasic;
-using Microsoft.VisualBasic.FileIO;
-using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
+using System.Threading;
+
 namespace BenDownloader
 {
     public class BenRunner : IDisposable
     {
         #region [Members]
-
         private const long BENMAXFILESIZE = 7000;
         private const int MAXFILELIMIT = 100;
 
@@ -59,12 +53,8 @@ namespace BenDownloader
         private readonly Dictionary<string, string> m_connectionProfileTaskSettings;
         private string m_lastFileDownloadedThisSession;
         private readonly AdoDataConnection m_adoDataConnection;
-        private readonly SafeFileWatcher m_fileWatcher;
-        private long m_lastFileChangedTime;
         private Process m_process;
-        private readonly System.Timers.Timer m_activityMonitor;
         private bool m_disposed;
-
         #endregion
 
         #region [Constructors]
@@ -91,16 +81,6 @@ namespace BenDownloader
                 string tempDirectory = System.IO.Path.GetTempPath();
                 System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
                 m_tempDirectoryName = tempDirectory + "BenDownloader\\" + m_siteName + "\\";
-                //Console.WriteLine(m_tempDirectoryName);
-
-                m_fileWatcher = new SafeFileWatcher(m_tempDirectoryName);
-                m_fileWatcher.NotifyFilter = NotifyFilters.Size | NotifyFilters.CreationTime | NotifyFilters.LastWrite | NotifyFilters.LastAccess | NotifyFilters.FileName;
-                m_fileWatcher.Changed += m_fileWatcher_Changed;
-                m_fileWatcher.Created += m_fileWatcher_Changed;
-
-                m_activityMonitor = new System.Timers.Timer(5000.0D);
-                m_activityMonitor.Elapsed += m_activityMonitor_Elapsed;
-                m_activityMonitor.AutoReset = true;
 
                 m_lastFileDownloaded = GetLastDownloadedFile();
                 m_lastFileDownloadedThisSession = "";
@@ -108,13 +88,26 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log(ex.ToString(), m_tempDirectoryName);
+                Program.Log(ex.ToString(), true);
             }
         }
 
         ~BenRunner()
         {
             Dispose();
+        }
+
+        #endregion
+
+        #region [ Static ]
+        private static Semaphore s_lock;
+
+        static BenRunner()
+        {
+            int setting = Program.OpenMiConfigurationFile.Settings["systemSettings"]["BenRunnerInstanceCount"]?.ValueAsInt32() ?? 0;
+
+            if (setting > 0)
+                s_lock = new Semaphore(setting, setting, "BenRunner");
         }
 
         #endregion
@@ -132,8 +125,6 @@ namespace BenDownloader
 
                 m_process?.Kill();
                 m_adoDataConnection?.Dispose();
-                m_fileWatcher?.Dispose();
-                m_activityMonitor?.Dispose();
 
                 GC.SuppressFinalize(this);
             }
@@ -144,16 +135,12 @@ namespace BenDownloader
             try
             {
                 XferDataFiles();
-                //UpdateTimestamps();
                 //ExecNotepad();
-
-                UpdateStatusLogDatabase("", true);
                 return true;
             }
             catch (Exception ex)
             {
-                UpdateStatusLogDatabase(ex.Message, false);
-                Program.Log("Ben5K XferAllFiles (" + m_siteName + "): " + ex.ToString(), m_tempDirectoryName);
+                Program.Log("Ben5K XferAllFiles (" + m_siteName + "): " + ex.ToString(), true);
                 return false;
             }
         }
@@ -172,11 +159,7 @@ namespace BenDownloader
                     if (numFiles + 50 < MAXFILELIMIT)
                     {
                         BuildBenLinkDLINI(myFiles);
-
-                        m_fileWatcher.EnableRaisingEvents = true;
                         ExecBenCommand();
-                        m_fileWatcher.EnableRaisingEvents = false;
-
                         UpdateTimestamps();
                     }
                     else
@@ -187,14 +170,14 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log("XFER Error/Site: " + m_siteName + " - " + ex.ToString(),m_tempDirectoryName);
+                Program.Log("XFER Error/Site: " + m_siteName + " - " + ex.ToString(), true);
 
                 throw new System.Exception("XFER Error/Site: " + m_siteName + " - " + ex.ToString());
 
             }
             finally
             {
-                FileSystem.DeleteFile(m_tempDirectoryName + "bendir.txt");
+                File.Delete(m_tempDirectoryName + "bendir.txt");
 
             }
         }
@@ -207,8 +190,8 @@ namespace BenDownloader
             try
             {
                 //delete the existing dir file if one exists.
-                if (FileSystem.FileExists(dirFile))
-                    FileSystem.DeleteFile(dirFile);
+                if (File.Exists(dirFile))
+                    File.Delete(dirFile);
 
                 //build new dir files.
                 BuildBenLinkDirINI();
@@ -216,12 +199,13 @@ namespace BenDownloader
                 ExecBenCommand();
 
                 // build list of records to download
-                if (FileSystem.FileExists(dirFile))
+                if (File.Exists(dirFile))
                 {
-                    TextFieldParser dirReader = FileSystem.OpenTextFieldParser(dirFile, new string[] {"\t" });
-                    while (!dirReader.EndOfData)
+                    TextReader dirReader = File.OpenText(dirFile);
+                    string line;
+                    while ((line = dirReader.ReadLine()) != null)
                     {
-                        string[] curRow = dirReader.ReadFields();
+                        string[] curRow = line.Split('\t');
 
                         if (Convert.ToInt32(curRow[2]) < BENMAXFILESIZE)
                         {
@@ -231,7 +215,7 @@ namespace BenDownloader
                                 downloadList.Add(curRecord);
                         }
                         else
-                            Program.Log("File too large Error: " + m_siteName + " - " + Convert.ToString(curRow[0]) , m_tempDirectoryName);
+                            Program.Log("File too large Error: " + m_siteName + " - " + Convert.ToString(curRow[0]) , true);
                     }
                     dirReader.Close();
 
@@ -243,7 +227,7 @@ namespace BenDownloader
             }
             catch (Exception ex)
             {
-                Program.Log("GetFileList Error: " + m_siteName + " - " + ex.ToString(), m_tempDirectoryName);
+                Program.Log("GetFileList Error: " + m_siteName + " - " + ex.ToString(), true);
                 throw new Exception("GetFileList Error: " + m_siteName + " - " + ex.ToString());
             }
             return downloadList;
@@ -256,42 +240,47 @@ namespace BenDownloader
             try
             {
                 string benLinCmdLine = Program.OpenMiConfigurationFile.Settings["systemSettings"]["BenLinkCommandLine"].Value;
-                string cmdLine = benLinCmdLine.Replace("xxx", GetShortPath(m_tempDirectoryName));
+                string cmdLine = benLinCmdLine.Replace("xxx", "\"" + m_tempDirectoryName + "\"");
                 string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
                 var psi = new ProcessStartInfo(cmdLineSplit[0])
                 {
                     Arguments = cmdLineSplit[1],
                     UseShellExecute = false,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    RedirectStandardError = true, 
+                    RedirectStandardOutput = true
                 };
 
-                if (m_fileWatcher.EnableRaisingEvents)
+                try
                 {
-                    m_lastFileChangedTime = DateTime.UtcNow.Ticks;
-                    m_activityMonitor.Enabled = true;
+                    s_lock?.WaitOne();
+                    using (m_process = Process.Start(psi))
+                    {
+                        m_process.OutputDataReceived += (sender, args) => { Program.Log(args.Data); };
+                        m_process.ErrorDataReceived += (sender, args) => { Program.Log(args.Data, true); };
+                        m_process.WaitForExit();
+                        exitcode = m_process.ExitCode;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Program.Log("BenLink failed to run: " + ex.Message, true);
+                }
+                finally
+                {
+                    s_lock?.Release();
                 }
 
-                // ReSharper disable once PossibleNullReferenceException
-                using (m_process = Process.Start(psi))
-                {
-                    m_process.WaitForExit();
-                    exitcode = m_process.ExitCode;
-                }
-
-                FileSystem.DeleteFile(m_tempDirectoryName + "benlink.req");
+                File.Delete(m_tempDirectoryName + "benlink.req");
                 if(File.Exists(m_tempDirectoryName + "benlink.rsp"))
-                    FileSystem.DeleteFile(m_tempDirectoryName + "benlink.rsp");
+                    File.Delete(m_tempDirectoryName + "benlink.rsp");
                 
             }
             catch (Exception ex)
             {
-                Program.Log("ExecBenCommand error: " + m_siteName + " - " + ex.ToString(), m_tempDirectoryName);
+                Program.Log("ExecBenCommand error: " + m_siteName + " - " + ex.ToString(), true);
 
                 throw new Exception("ExecBenCommand error: " + m_siteName + " - " + ex.ToString());
-            }
-            finally
-            {
-                m_activityMonitor.Enabled = false;
             }
 
             return exitcode == 0;
@@ -324,6 +313,7 @@ namespace BenDownloader
 
             int i = 1;
 
+            Program.Log("StartFileList");
             foreach (BenRecord currec in fileList)
             {
                 myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
@@ -334,19 +324,20 @@ namespace BenDownloader
                             "OptionFlags=2" + System.Environment.NewLine +
                             "DataPath=" + m_tempDirectoryName + System.Environment.NewLine +
                             "FileName=" + Get232Fn(currec.DateTime, currec.Id.ToString());
-                
-            }
 
+                Program.Log("FileList - " + Get232Fn(currec.DateTime, currec.Id.ToString()));
+            }
+            Program.Log("EndFileList");
 
             try
             {
                 System.IO.FileInfo file = new System.IO.FileInfo(requestfilename);
                 file.Directory.Create();
-                FileSystem.WriteAllText(file.FullName, myINIFile, false, System.Text.Encoding.ASCII);
+                File.WriteAllText(file.FullName, myINIFile,System.Text.Encoding.ASCII);
             }
             catch (Exception ex)
             {
-                Program.Log("BuildBenLinkDLINI error: " + m_siteName + " - " + ex.ToString(), m_tempDirectoryName);
+                Program.Log("BuildBenLinkDLINI error: " + m_siteName + " - " + ex.ToString(), true);
 
                 throw new System.Exception("BuildBenLinkDLINI error: " + m_siteName + " - " + ex.ToString());
             }
@@ -387,11 +378,11 @@ namespace BenDownloader
             {
                 System.IO.FileInfo file = new System.IO.FileInfo(requestFileName);
                 file.Directory.Create();
-                FileSystem.WriteAllText(file.FullName, myINIFile, false, System.Text.Encoding.ASCII);
+                File.WriteAllText(file.FullName, myINIFile, System.Text.Encoding.ASCII);
             }
             catch (Exception ex)
             {
-                Program.Log("BuildBenLinkDirINI error: " + m_siteName + '-' + ex.ToString(), m_tempDirectoryName);
+                Program.Log("BuildBenLinkDirINI error: " + m_siteName + '-' + ex.ToString(), true);
 
                 throw new SystemException("BuildBenLinkDirINI error: " + m_siteName + '-' + ex.ToString());
             }
@@ -425,7 +416,7 @@ namespace BenDownloader
                     }
                     catch(Exception ex)
                     {
-                        Program.Log("File timestamp update error: " + file.Name + '-' + ex.ToString(), m_tempDirectoryName);
+                        Program.Log("File timestamp update error: " + file.Name + '-' + ex.ToString(), true);
                         throw new SystemException("File timestamp update error: " + file.Name + '-' + ex.ToString());
                     }
                 }
@@ -461,14 +452,14 @@ namespace BenDownloader
                         }
                         catch (Exception ex)
                         {
-                            Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString(), m_tempDirectoryName);
+                            Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString(), true);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Program.Log("Get Last Downloaded File - Get Files \n\n" + ex.ToString(), m_tempDirectoryName);
+                Program.Log("Get Last Downloaded File - Get Files \n\n" + ex.ToString(), true);
             }
 
 
@@ -484,63 +475,25 @@ namespace BenDownloader
                 CreateNoWindow = true
             };
 
-            using (Process p = Process.Start(psi))
-            {
-                p.WaitForExit();
-            }
-
-        }
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        private void UpdateStatusLogDatabase(string message, bool success)
-        {
             try
             {
-                DataRow log = m_adoDataConnection.RetrieveRow("SELECT * FROM StatusLog  WITH (NOLOCK) WHERE DeviceID = {0}", int.Parse(m_deviceRecord["ID"].ToString()));
-
-                if (success)
+                s_lock?.WaitOne();
+                using (Process p = Process.Start(psi))
                 {
-                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession != string.Empty) { 
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0}, LastFile = {1}, FileDownloadTimestamp = {2} WHERE DeviceID = {3}", DateTime.UtcNow, m_lastFileDownloadedThisSession, DateTime.UtcNow, m_deviceRecord["ID"]);}
-                    else if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString() && m_lastFileDownloadedThisSession == string.Empty)
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastSuccess = {0} WHERE DeviceID = {1}", DateTime.UtcNow, m_deviceRecord["ID"]);
-                    else
-                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastSuccess , LastFile, FileDownloadTimestamp, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, m_lastFileDownloadedThisSession, DateTime.UtcNow, m_deviceRecord["ID"]);
-
-                    if(m_lastFileDownloadedThisSession != string.Empty)
-                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO DownloadedFile (DeviceID , CreationTime, File, FileSize, Timestamp) VALUES ({0},{1},{2})", m_deviceRecord["ID"], DateTime.UtcNow, m_lastFileDownloadedThisSession, 0, DateTime.UtcNow);
-
-                    int maxDownloadThreshold = Program.OpenMiConfigurationFile.Settings?["systemSettings"]["MaxDownloadThreshold"].ValueAsInt32() ?? 0;
-                    if (maxDownloadThreshold > 0)
-                    {
-                        DateTime timeWindow = DateTime.UtcNow.AddHours(-(Program.OpenMiConfigurationFile.Settings?["systemSettings"]["MaxDownloadThresholdTimeWindow"].ValueAsInt32() ?? 24));
-                        int count = m_adoDataConnection.ExecuteScalar<int>("SELECT COUNT(*) FROM DownloadedFile WHERE Timestamp >= {0} AND DeviceID = {1}", timeWindow, m_deviceRecord["ID"]);
-
-                        if (count > maxDownloadThreshold)
-                        {
-                            m_adoDataConnection.ExecuteNonQuery("UPDATE Device SET Enabled = 0 WHERE ID = {0}", m_deviceRecord["ID"]);
-                            string fail = "Disabled due to excessive file production.";
-                            m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastFailure = {0}, Message = {1} WHERE DeviceID = {2}", DateTime.UtcNow, fail, m_deviceRecord["ID"]);
-                            Program.Log($"[{m_deviceRecord["Name"]} Disabled due to excessive file downloads. Setting: {maxDownloadThreshold}; Count: {count}");
-
-                        }
-                    }
-
-
-                }
-                else
-                {
-
-                    if (m_deviceRecord["ID"].ToString() == log["DeviceID"].ToString())
-                        m_adoDataConnection.ExecuteNonQuery("Update StatusLog SET LastFailure = {0}, Message = {1} WHERE DeviceID = {2}", DateTime.UtcNow, message, m_deviceRecord["ID"]);
-                    else
-                        m_adoDataConnection.ExecuteNonQuery("INSERT INTO StatusLog (LastFailure , Message, DeviceID) VALUES ({0},{1},{2})", DateTime.UtcNow, message, m_deviceRecord["ID"]);
+                    p.WaitForExit();
                 }
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                Program.Log("StatusLog Update (" + m_siteName + ") failed: " + ex.Message, m_tempDirectoryName);
+                Program.Log(ex.Message, true);
             }
+            finally
+            {
+                s_lock?.Release();
+            }
+
+
+
         }
 
         #endregion
@@ -549,20 +502,9 @@ namespace BenDownloader
         private string Get232Fn(DateTime myDate, string recordId, string timeStampType = "t")
         {
             DateTime dateUtc = myDate.ToUniversalTime();
-            long tzoffset = Math.Abs(DateAndTime.DateDiff(DateInterval.Hour, myDate, dateUtc)) * -1;
+            long tzoffset = Math.Abs((myDate - dateUtc).Hours) * -1;
             return myDate.ToString("yyMMdd,HHmmssfff") + "," + tzoffset + timeStampType + "," + m_siteName.Replace(" ", "_") + "," + m_serialNumber + ",TVA," + recordId;
         }
-
-        private string GetShortPath(string longPathName)
-        {
-            StringBuilder shortNameBuffer = new StringBuilder(256);
-            int bufferSize = GetShortPathName(longPathName, shortNameBuffer, shortNameBuffer.Capacity);
-            if (bufferSize == 0) throw new System.ComponentModel.Win32Exception();
-            return shortNameBuffer.ToString();
-        }
-
-        [DllImport("kernel32", EntryPoint = "GetShortPathName", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int GetShortPathName(string longPath, StringBuilder shortPath, int bufSize);
 
         private string GetLocalFileName( string fileName)
         {
@@ -595,36 +537,13 @@ namespace BenDownloader
                 }
                 catch (Exception ex)
                 {
-                    Program.Log($"Failed to create directory \"{directoryName}\": {ex.Message}", m_tempDirectoryName);
+                    Program.Log($"Failed to create directory \"{directoryName}\": {ex.Message}", true);
                     throw new InvalidOperationException($"Failed to create directory \"{directoryName}\": {ex.Message}", ex);
 
                 }
             }
 
             return fileName;
-        }
-
-        private void m_fileWatcher_Changed(object sender, FileSystemEventArgs e)
-        {
-            m_lastFileChangedTime = DateTime.UtcNow.Ticks;
-        }
-
-        private void m_activityMonitor_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            if (DateTime.UtcNow.Ticks - m_lastFileChangedTime > Ticks.FromSeconds(60.0D))
-            {
-                m_activityMonitor.Enabled = false;
-
-                try
-                {
-                    m_process?.Kill();
-                }
-                catch (Exception ex)
-                {
-                    Program.Log("Error while trying to kill non-responsive downloader: " + ex.Message);
-                    throw;
-                }
-            }
         }
 
         #endregion

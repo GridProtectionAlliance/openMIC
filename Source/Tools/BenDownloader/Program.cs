@@ -48,10 +48,6 @@ namespace BenDownloader
         static void Main(string[] args)
         {
 
-            int setting = s_openMicConfigurationFile.Settings["systemSettings"]["BenRunnerInstanceCount"]?.ValueAsInt32() ?? 0;
-
-            if(setting > 0)
-                s_lock = new Semaphore(setting, setting, "BenRunner");
 
             try
             {
@@ -61,25 +57,16 @@ namespace BenDownloader
                     return;
                 }
 
-                if (s_lock?.WaitOne(5000 * 60) ?? true)
+                using (BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1])))
                 {
-                    using (BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1])))
-                    {
-                        AppDomain.CurrentDomain.ProcessExit += (sender, arg) => br.Dispose();
 
-                        if (!br.XferAllFiles())
-                            throw new Exception("BEN Downloader failed...");
-                    }
+                    if (!br.XferAllFiles())
+                        throw new Exception("BEN Downloader failed...");
                 }
             }
             catch(Exception ex)
             {
                 Log("Ben Downloader failed. Message: " + ex);
-            }
-            finally
-            {   
-               
-                s_lock?.Release();
             }
 
         }
@@ -99,36 +86,15 @@ namespace BenDownloader
                 : str;
         }
 
-        public static void Log(string logMessage, string path ="")
+        public static void Log(string logMessage, bool error = false)
         {
-
-            lock (s_logLock)
+            if(error)
             {
-                try
-                {
-                    Directory.CreateDirectory(path + "Logs");
-                    FileInfo fi = new FileInfo(path + "Logs\\BenDownloaderLogFile.txt");
-                    if (fi.Exists && fi.Length > 1048576)
-                    {
-                        fi.MoveTo(FilePath.GetUniqueFilePathWithBinarySearch(path + $"Logs\\BenDownloaderLogFile[{DateTime.UtcNow.ToString("MM-dd-yy")}].txt"));
-                    }
-
-                    using (StreamWriter w = File.AppendText(path + "Logs\\BenDownloaderLogFile.txt"))
-                    {
-                        w.Write("\r\nLog Entry : ");
-                        w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
-                            DateTime.Now.ToLongDateString());
-                        w.WriteLine("  :");
-                        w.WriteLine("  :{0}", logMessage);
-                        w.WriteLine("-------------------------------");
-                        w.Flush();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
+                Console.Error.WriteLine("openMIC: " + logMessage);
+            }
+            else
+            {
+                Console.WriteLine("openMIC: " + logMessage);
             }
         }
         #endregion
