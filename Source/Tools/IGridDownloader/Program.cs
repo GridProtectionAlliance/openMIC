@@ -83,7 +83,7 @@ namespace IGridDownloader
                             foreach (ZipEntry zipEntry in zipFile)
                             {
                                 // Verify that zip file should be processed
-                                if (ProcessFile(zipEntry))
+                                if (ProcessEntry(zipEntry))
                                     zipEntry.Extract(s_localPath, ExtractExistingFileAction.OverwriteSilently);
 
                                 Console.WriteLine($"Processed \"{zipEntry.FileName}\", {++processedFiles} / {zipFile.Count} complete...");
@@ -152,11 +152,14 @@ namespace IGridDownloader
             s_synchronizeTimestamps = profileTaskSettings["synchronizeTimestamps"].ParseBoolean();
         }
 
-        private static bool ProcessFile(ZipEntry zipEntry)
+        private static bool ProcessEntry(ZipEntry zipEntry)
         {
             // Make sure zip file name matches configured file pattern specifications
             if (!FilePath.IsFilePatternMatch(s_fileSpecs, zipEntry.FileName, true))
+            {
+                Console.WriteLine($"Skipping file unzip for remote file \"{zipEntry.FileName}\": file name does not match allowed patterns \"{string.Join(", ", s_fileSpecs)}\".");
                 return false;
+            }
 
             string localFileName = Path.Combine(s_localPath, zipEntry.FileName);
 
