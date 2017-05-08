@@ -35,7 +35,7 @@ using System.Threading;
 
 namespace BenDownloader
 {
-    public class BenRunner : IDisposable
+    public class BenRunner
     {
         #region [Members]
         private const long BENMAXFILESIZE = 7000;
@@ -43,58 +43,35 @@ namespace BenDownloader
 
         private readonly string m_ipAddress;
         private readonly string m_localPath;
-        private readonly string m_folder;
         private readonly string m_siteName;
         private readonly string m_serialNumber;
         private readonly string m_tempDirectoryName;
         private readonly BenRecord m_lastFileDownloaded;
-        private readonly DataRow m_deviceRecord;
-        private readonly DataRow m_connectionProfile;
-        private readonly Dictionary<string, string> m_connectionProfileTaskSettings;
         private string m_lastFileDownloadedThisSession;
-        private readonly AdoDataConnection m_adoDataConnection;
         private Process m_process;
         private bool m_disposed;
         #endregion
 
         #region [Constructors]
 
-        public BenRunner(int deviceId, int taskId)
+        public BenRunner(string localPath, string siteName, string ip, string serialNumber)
         {
-            m_adoDataConnection = new AdoDataConnection(Program.OpenMiConfigurationFile.Settings["systemSettings"]["ConnectionString"].Value, Program.OpenMiConfigurationFile.Settings["systemSettings"]["DataProviderString"].Value);
+            m_localPath = localPath;
+            m_siteName = siteName;
+            m_ipAddress = ip;
+            m_serialNumber = serialNumber;
 
             try
             {
-
-                string taskSettingsString = m_adoDataConnection.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
-                m_connectionProfileTaskSettings = taskSettingsString.ParseKeyValuePairs();
-                m_deviceRecord = m_adoDataConnection.RetrieveRow("Select * From Device WHERE ID = {0}", deviceId);
-                Dictionary<string, string> deviceConnection = m_deviceRecord["connectionString"].ToString().ParseKeyValuePairs();
-
-                m_connectionProfile = m_adoDataConnection.RetrieveRow("SELECT * FROM connectionProfile WHERE ID = {0}", deviceConnection["connectionProfileID"]);
-                m_folder = m_deviceRecord["OriginalSource"].ToString();
-                m_ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
-                m_localPath = m_connectionProfileTaskSettings["localPath"];
-                m_siteName = m_deviceRecord["Name"].ToString();
-                m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
-
-                string tempDirectory = System.IO.Path.GetTempPath();
-                System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
+                string tempDirectory = Path.GetTempPath();
+                Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
                 m_tempDirectoryName = tempDirectory + "BenDownloader\\" + m_siteName + "\\";
-
-                m_lastFileDownloaded = GetLastDownloadedFile();
-                m_lastFileDownloadedThisSession = "";
-
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                Program.Log(ex.ToString(), true);
+                Program.Log("Failed to initialize BenRunner: " + ex.Message);
             }
-        }
 
-        ~BenRunner()
-        {
-            Dispose();
         }
 
         #endregion
@@ -113,22 +90,6 @@ namespace BenDownloader
         #endregion
 
         #region [Methods]
-
-        /// <summary>
-        /// Releases all the resources used by the <see cref="BenRunner"/> object.
-        /// </summary>
-        public void Dispose()
-        {
-            if (!m_disposed)
-            {
-                m_disposed = true;
-
-                m_process?.Kill();
-                m_adoDataConnection?.Dispose();
-
-                GC.SuppressFinalize(this);
-            }
-        }
 
         public bool XferAllFiles()
         {
@@ -209,9 +170,9 @@ namespace BenDownloader
 
                         if (Convert.ToInt32(curRow[2]) < BENMAXFILESIZE)
                         {
-                            BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
+                            BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]), Get232Fn(Convert.ToDateTime(curRow[1]), curRow[0]));
 
-                            if(curRecord.DateTime > DateTime.UtcNow.AddDays(-30) && curRecord.DateTime > m_lastFileDownloaded.DateTime)
+                            if(curRecord.DateTime > DateTime.UtcNow.AddDays(-30) && curRecord.DateTime > m_lastFileDownloaded.DateTime && !File.Exists(Path.Combine(m_localPath,curRecord.Name)))
                                 downloadList.Add(curRecord);
                         }
                         else
@@ -323,9 +284,9 @@ namespace BenDownloader
                             "Origin=1" + System.Environment.NewLine +
                             "OptionFlags=2" + System.Environment.NewLine +
                             "DataPath=" + m_tempDirectoryName + System.Environment.NewLine +
-                            "FileName=" + Get232Fn(currec.DateTime, currec.Id.ToString());
+                            "FileName=" + currec.Name;
 
-                Program.Log("FileList - " + Get232Fn(currec.DateTime, currec.Id.ToString()));
+                Program.Log("FileList:" + currec.Name);
             }
             Program.Log("EndFileList");
 
@@ -405,7 +366,7 @@ namespace BenDownloader
                         if(dateTime != file.LastWriteTime)
                             System.IO.File.SetLastWriteTime(file.FullName, dateTime);
 
-                        string newFileName = GetLocalFileName(file.Name);
+                        string newFileName = m_localPath + file.Name;
                         System.IO.FileInfo fi = new System.IO.FileInfo(newFileName);
                         if (!fi.Exists)
                         {
@@ -425,45 +386,6 @@ namespace BenDownloader
                     System.IO.File.Delete(file.FullName);
 
             }
-        }
-
-        private BenRecord GetLastDownloadedFile()
-        {
-            string[] files;
-            BenRecord lastFile = new BenRecord(0, DateTime.MinValue, 0);
-
-            try
-            {
-                files = System.IO.Directory.GetFiles(m_localPath + "\\" + m_folder);
-                foreach (string fileName in files)
-                {
-                    if (fileName.EndsWith("cfg"))
-                    {
-                        System.IO.FileInfo file = new System.IO.FileInfo(fileName);
-
-                        try
-                        {
-                            if (file.LastWriteTime > lastFile.DateTime)
-                                {
-                                    string[] dateFromFileName = System.IO.Path.GetFileNameWithoutExtension(file.Name).Split(',');
-                                    lastFile.DateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
-                                    lastFile.Id = int.Parse(dateFromFileName[dateFromFileName.Length - 1]);
-                                }
-                        }
-                        catch (Exception ex)
-                        {
-                            Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString(), true);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Program.Log("Get Last Downloaded File - Get Files \n\n" + ex.ToString(), true);
-            }
-
-
-            return lastFile;
         }
 
         private void ExecNotepad()
@@ -505,47 +427,6 @@ namespace BenDownloader
             long tzoffset = Math.Abs((myDate - dateUtc).Hours) * -1;
             return myDate.ToString("yyMMdd,HHmmssfff") + "," + tzoffset + timeStampType + "," + m_siteName.Replace(" ", "_") + "," + m_serialNumber + ",TVA," + recordId;
         }
-
-        private string GetLocalFileName( string fileName)
-        {
-            TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
-            Dictionary<string, string> substitutions = new Dictionary<string, string>
-            {
-                { "<YYYY>", $"{DateTime.Now.Year}" },
-                { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
-                { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
-                { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
-                { "<DeviceName>", (m_deviceRecord["Name"].ToString() ==""? "undefined": m_deviceRecord["Name"].ToString())},
-                { "<DeviceAcronym>", m_deviceRecord["Acronym"].ToString() },
-                { "<DeviceFolderName>", (m_deviceRecord["OriginalSource"].ToString() =="" ? m_deviceRecord["Acronym"].ToString() : m_deviceRecord["OriginalSource"].ToString())},
-                { "<ProfileName>", (m_connectionProfile["Name"].ToString() == "" ? "undefined" :m_connectionProfile["Name"].ToString()) }
-            };
-
-            directoryNameExpressionParser.TemplatedExpression = m_connectionProfileTaskSettings["directoryNamingExpression"].Replace("\\", "\\\\");
-
-            //         Possible UNC Path                            Sub Directory - duplicate path slashes are removed
-            fileName = m_localPath + $"{Path.DirectorySeparatorChar}{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}{fileName}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
-            //Console.WriteLine(fileName);
-
-            string directoryName = FilePath.GetDirectoryName(fileName);
-
-            if (!Directory.Exists(directoryName))
-            {
-                try
-                {
-                    Directory.CreateDirectory(directoryName);
-                }
-                catch (Exception ex)
-                {
-                    Program.Log($"Failed to create directory \"{directoryName}\": {ex.Message}", true);
-                    throw new InvalidOperationException($"Failed to create directory \"{directoryName}\": {ex.Message}", ex);
-
-                }
-            }
-
-            return fileName;
-        }
-
         #endregion
 
     }

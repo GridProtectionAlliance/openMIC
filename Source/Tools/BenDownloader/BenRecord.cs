@@ -36,14 +36,16 @@ namespace BenDownloader
         private int m_id;
         private DateTime m_dateTime;
         private int m_size;
+        private string m_name;
         #endregion
 
         #region [Constructors]
-        public BenRecord(int recordId, DateTime recordDateTime, int recordSize)
+        public BenRecord(int recordId, DateTime recordDateTime, int recordSize, string name)
         {
             m_id = recordId;
             m_dateTime = recordDateTime;
             m_size = recordSize;
+            m_name = name;
         }
         #endregion
 
@@ -81,6 +83,18 @@ namespace BenDownloader
             set
             {
                 m_size = value;
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                return m_name;
+            }
+            set
+            {
+                m_name = value;
             }
         }
         #endregion

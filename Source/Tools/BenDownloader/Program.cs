@@ -24,17 +24,12 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using GSF.Configuration;
-using GSF.IO;
 
 namespace BenDownloader
 {
     class Program
     {
-        private static Semaphore s_lock;
-
-        private static readonly object s_logLock = new object();
         private static readonly ConfigurationFile s_openMicConfigurationFile = ConfigurationFile.Open(Directory.GetCurrentDirectory() + "\\openMIC.exe.Config");
 
         public static ConfigurationFile OpenMiConfigurationFile
@@ -51,18 +46,17 @@ namespace BenDownloader
 
             try
             {
-                if (args.Length != 2)
+                if (args.Length != 4)
                 {
-                    Console.WriteLine("Please pass two and only two parameters...");
+                    Log("Please pass four and only four parameters to BenDownloader...");
                     return;
                 }
 
-                using (BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1])))
-                {
+                BenRunner br = new BenRunner(args[0], args[1], args[2], args[3]);
 
-                    if (!br.XferAllFiles())
-                        throw new Exception("BEN Downloader failed...");
-                }
+                if (!br.XferAllFiles())
+                    throw new Exception("BEN Downloader failed...");
+                
             }
             catch(Exception ex)
             {
@@ -72,20 +66,6 @@ namespace BenDownloader
         }
 
         #region [Helper Functions]
-        public static string Left(string str, int length)
-        {
-            str = (str ?? string.Empty);
-            return str.Substring(0, Math.Min(length, str.Length));
-        }
-
-        public static string Right(string str, int length)
-        {
-            str = (str ?? string.Empty);
-            return (str.Length >= length)
-                ? str.Substring(str.Length - length, length)
-                : str;
-        }
-
         public static void Log(string logMessage, bool error = false)
         {
             if(error)
