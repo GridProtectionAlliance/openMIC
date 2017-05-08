@@ -301,10 +301,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostgreSQL", "PostgreSQL", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenDownloader", "Tools\BenDownloader\BenDownloader.csproj", "{2A52F2C6-C11B-44FD-AC70-A4821F7C4881}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IGridDownloader", "Tools\IGridDownloader\IGridDownloader.csproj", "{1112CD98-32E6-445D-84F4-D7B8E60A67B0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DotNetZip", "DotNetZip", "{DAC37AD8-C332-4BE7-8180-4DE5D3F35C0E}"
+	ProjectSection(SolutionItems) = preProject
+		Dependencies\DotNetZip\Ionic.Zip.dll = Dependencies\DotNetZip\Ionic.Zip.dll
+	EndProjectSection
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86
@@ -439,6 +443,22 @@ Global
 		{2A52F2C6-C11B-44FD-AC70-A4821F7C4881}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2A52F2C6-C11B-44FD-AC70-A4821F7C4881}.Release|x86.ActiveCfg = Release|Any CPU
 		{2A52F2C6-C11B-44FD-AC70-A4821F7C4881}.Release|x86.Build.0 = Release|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Debug|x86.Build.0 = Debug|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Deploy|Any CPU.ActiveCfg = Debug|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Deploy|Any CPU.Build.0 = Debug|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Deploy|x86.ActiveCfg = Debug|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Deploy|x86.Build.0 = Debug|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Mono|Any CPU.Build.0 = Release|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Mono|x86.ActiveCfg = Release|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Mono|x86.Build.0 = Release|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Release|x86.ActiveCfg = Release|Any CPU
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -469,5 +489,7 @@ Global
 		{674F09A7-4477-4CED-90F6-B7512886BC74} = {CE260396-797B-45DF-AC53-E4FC553B57C0}
 		{011A01C9-BACD-43FD-8AF0-958EAC35A85C} = {E7006E3E-A430-4AB2-A6CA-7653D7F62D4B}
 		{2A52F2C6-C11B-44FD-AC70-A4821F7C4881} = {9EEDE95F-8333-4957-B270-02D3CD4629B5}
+		{1112CD98-32E6-445D-84F4-D7B8E60A67B0} = {9EEDE95F-8333-4957-B270-02D3CD4629B5}
+		{DAC37AD8-C332-4BE7-8180-4DE5D3F35C0E} = {A19659A8-EA00-4D5E-90C5-E8ABE7F4FB1C}
 	EndGlobalSection
 EndGlobal

@@ -63,6 +63,14 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Tools\IGridDownloader\IGridDownloader.csproj">
+      <Name>IGridDownloader</Name>
+      <Project>{1112cd98-32e6-445d-84f4-d7b8e60a67b0}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
     <ProjectReference Include="..\..\openMICManager\openMICManager\openMICManager.csproj">
       <Name>openMICManager</Name>
       <Project>{6903507c-c289-4f8f-887c-c2d94c72ba99}</Project>

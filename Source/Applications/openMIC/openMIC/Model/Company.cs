@@ -29,7 +29,7 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(10)]
-        [RegularExpression("^[A-Z0-9]+$", ErrorMessage = "Only three upper case letters or numbers are allowed.")]
+        [RegularExpression("^[A-Z0-9]+$", ErrorMessage = "Only upper case letters or numbers are allowed.")]
         public string MapAcronym
         {
             get
