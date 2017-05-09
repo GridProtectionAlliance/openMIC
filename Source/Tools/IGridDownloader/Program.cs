@@ -65,7 +65,7 @@ namespace IGridDownloader
                 {
                     ParseConfigurationSettings(connection, deviceID, profileTaskID);
 
-                    string tempZipFile = FilePath.GetUniqueFilePath(Path.Combine(s_localPath, "NewFiles.zip"));
+                    string tempZipFile = FilePath.GetUniqueFilePath($"{s_localPath}NewFiles.zip");
 
                     try
                     {
@@ -86,7 +86,7 @@ namespace IGridDownloader
                                 if (ProcessEntry(zipEntry))
                                     zipEntry.Extract(s_localPath, ExtractExistingFileAction.OverwriteSilently);
 
-                                Console.WriteLine($"Processed \"{zipEntry.FileName}\", {++processedFiles} / {zipFile.Count} complete...");
+                                Console.WriteLine($"Processed \"{zipEntry.FileName}\", {++processedFiles} out of {zipFile.Count} files complete...");
                             }
 
                             Console.WriteLine($"Completed processing {processedFiles} files from downloaded zip file.");
@@ -140,7 +140,7 @@ namespace IGridDownloader
             s_serialNumber = deviceConnectionString["serialNumber"];
 
             string subFolder = GetSubFolder(device, profile.Name, profileTaskSettings["directoryNamingExpression"]);
-            s_localPath = $"{profileTaskSettings["localPath"]}{Path.DirectorySeparatorChar}{subFolder}{Path.DirectorySeparatorChar}".RemoveDuplicates(Path.DirectorySeparatorChar.ToString());
+            s_localPath = $"{profileTaskSettings["localPath"]}{Path.DirectorySeparatorChar}{subFolder}";
 
             if (!Directory.Exists(s_localPath))
                 Directory.CreateDirectory(s_localPath);
@@ -161,7 +161,7 @@ namespace IGridDownloader
                 return false;
             }
 
-            string localFileName = Path.Combine(s_localPath, zipEntry.FileName);
+            string localFileName = $"{s_localPath}{zipEntry.FileName}";
 
             // Check for setting that skips download if file has not changed
             if (File.Exists(localFileName) && s_skipDownloadIfUnchanged)
@@ -192,8 +192,8 @@ namespace IGridDownloader
             {
                 try
                 {
-                    string directoryName = Path.Combine(FilePath.GetDirectoryName(localFileName), "Archive\\");
-                    string archiveFileName = Path.Combine(directoryName, zipEntry.FileName);
+                    string directoryName = $"{FilePath.GetDirectoryName(localFileName)}Archive\\";
+                    string archiveFileName = $"{directoryName}{zipEntry.FileName}";
 
                     Directory.CreateDirectory(directoryName);
 
@@ -236,7 +236,7 @@ namespace IGridDownloader
 
             directoryNameExpressionParser.TemplatedExpression = directoryNamingExpression.Replace("\\", "\\\\");
 
-            return FilePath.GetDirectoryName(directoryNameExpressionParser.Execute(substitutions));
+            return $"{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}";
         }
     }
 }

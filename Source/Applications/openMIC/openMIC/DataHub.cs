@@ -809,6 +809,8 @@ namespace openMIC
 
         #region [ I-Grid Operations ] 
 
+        public const string DefaultIGridConnectionProfileName = "I-Grid Connection Profile";
+
         public IEnumerable<IGridDevice> QueryIGridDevices(string baseURL)
         {
             TableOperations<Device> deviceTable = DataContext.Table<Device>();
@@ -869,6 +871,35 @@ namespace openMIC
                     Selected = deviceRecord.ID == 0
                 };
             }
+        }
+
+        public int GetDefaultIGridConnectionProfileID()
+        {
+            TableOperations<ConnectionProfile> profileTable = DataContext.Table<ConnectionProfile>();
+            ConnectionProfile profile = profileTable.QueryRecordWhere("Name = {0}", DefaultIGridConnectionProfileName);
+
+            if ((object)profile == null)
+            {
+                profile = profileTable.NewRecord();
+                profile.Name = DefaultIGridConnectionProfileName;
+                profile.Description = "Connection Profile for I-Grid Devices";
+                profileTable.AddNewRecord(profile);
+                profile.ID = GetDefaultIGridConnectionProfileID();
+
+                TableOperations<ConnectionProfileTask> profileTaskTable = DataContext.Table<ConnectionProfileTask>();
+                int taskCount = profileTaskTable.QueryRecordCountWhere("ConnectionProfileID = {0}", profile.ID);
+
+                if (taskCount == 0)
+                {
+                    ConnectionProfileTask profileTask = profileTaskTable.NewRecord();
+                    profileTask.ConnectionProfileID = profile.ID;
+                    profileTask.Name = "I-Grid Default Downloader Task";
+                    profileTask.Settings = $@"fileExtensions=*.*; remotePath=/; localPath={FilePath.GetAbsolutePath("Downloads")}; deleteOldLocalFiles=true; skipDownloadIfUnchanged=true; overwriteExistingLocalFiles=false; archiveExistingFilesBeforeDownload=false; synchronizeTimestamps=true; externalOperation=IGridDownloader.exe <DeviceID> <TaskID>; directoryNamingExpression=<YYYY><MM>\<DeviceFolderName>";
+                    profileTaskTable.AddNewRecord(profileTask);
+                }
+            }
+
+            return profile.ID;
         }
 
         #endregion

@@ -150,6 +150,7 @@
         "use strict";
 
         var viewModel = null;
+        var connectionProfileID = 0;
 
         function DeviceViewModel() {
             const self = this;
@@ -291,7 +292,7 @@
                     openMICDevice.OriginalSource = device.SerialNumber();
                     openMICDevice.Longitude = device.Longitude();
                     openMICDevice.Latitude = device.Longitude();
-                    openMICDevice.ConnectionString = String.format("baseURL={0}; serialNumber={1}; schedule=0 */4 * * *; modelNumber={2}; description={{3}}", self.baseURL(), device.SerialNumber(), device.ModelNumber(), device.Description());
+                    openMICDevice.ConnectionString = String.format("connectionHostName=www.igrid.com; baseURL={{0}}; serialNumber={1}; connectionProfileID={2}; schedule=0 */4 * * *; modelNumber={3}; description={{4}}", self.baseURL(), device.SerialNumber(), connectionProfileID, device.ModelNumber(), device.Description());
                     openMICDevice.ProtocolID = protocolID;
 
                     savePromises.push(self.saveDevice(device, openMICDevice));
@@ -305,6 +306,7 @@
                     return;
 
                 dataHub.getDownloaderProtocolID().done(function(protocolID) {
+                    const selectedDevices = [];
                     const loadPromises = [];
                     const savePromises = [];
 
@@ -312,6 +314,7 @@
 
                     self.devices().forEach(function(device) {
                         if (device.Selected()) {
+                            selectedDevices.push(device);
                             loadPromises.push(self.loadDevice(device, protocolID, savePromises));
                         }
                     });
@@ -319,6 +322,16 @@
                     $(loadPromises).whenAll().done(function() {
                         $(savePromises).whenAll().done(function() {
                             showInfoMessage("Save operation for i-Grid devices complete.");
+                            
+                            var index = 0;
+
+                            const initializeNextDevice = function() {
+                                if (index < selectedDevices.length) {
+                                    serviceHub.sendCommand(String.format("initialize {0}", selectedDevices[index++].Acronym())).done(initializeNextDevice);
+                                }
+                            };
+
+                            initializeNextDevice();
                         });
                     });
                 });
@@ -463,6 +476,12 @@
             // Let view model know about hub connectivity changes
             $(window).on("hubConnected", function() {
                 viewModel.dataHubIsConnected(true);
+
+                if (connectionProfileID === 0) {
+                    dataHub.getDefaultIGridConnectionProfileID().done(function(id) {
+                        connectionProfileID = id;
+                    });
+                }
             });
 
             $(window).on("hubDisconnected", function() {
@@ -488,7 +507,8 @@
             });
 
             $("#saveDevices").click(function() {
-                viewModel.saveDevices();
+                if (connectionProfileID > 0)
+                    viewModel.saveDevices();
             });
         });
     </script>
