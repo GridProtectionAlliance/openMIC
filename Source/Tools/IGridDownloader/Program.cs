@@ -55,7 +55,7 @@ namespace IGridDownloader
             try
             {
                 if (args.Length < 2)
-                    throw new ArgumentOutOfRangeException($"Expected 2 command line parameters - received {args.Length}.");
+                    throw new ArgumentOutOfRangeException($"Expected 2 command line parameters, received {args.Length}.");
 
                 int deviceID = int.Parse(args[0]);
                 int profileTaskID = int.Parse(args[1]);

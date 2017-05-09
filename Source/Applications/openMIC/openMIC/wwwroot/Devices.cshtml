@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using GSF.Data.Model
 @using GSF.Security.Model
 @using GSF.Web
 @using GSF.Web.Model
@@ -51,6 +52,16 @@
 
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext).ToString();
+
+    // Lookup default I-Grid connection profile ID
+    int iGridProfileID = -1;
+
+    TableOperations<ConnectionProfile> profileTable = dataContext.Table<ConnectionProfile>();
+    ConnectionProfile iGridProfile = profileTable.QueryRecordWhere("Name = {0}", DataHub.DefaultIGridConnectionProfileName);
+
+    if ((object)iGridProfile != null) {
+        iGridProfileID = iGridProfile.ID;
+    }
 
     // Add cron pattern validation to schedule connection string field
     dataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", @"(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|1?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[1-2]?[0-9]|3[0-1]|\*\/[0-9]+)\s+(\*|[0-9]|1[0-2]|\*\/[0-9]+)\s+(\*\/[0-9]+|\*|[0-7])\s*(\*\/[0-9]+|\*|[0-9]+)?", "Invalid cron syntax.");
@@ -286,10 +297,18 @@
         });
 
         function showViewScreen(record) {
-            if (record.ProtocolID === modbusProtocolID)
+            if (record.ProtocolID === modbusProtocolID) {
                 window.location.href = "/ModbusConfig.cshtml?DeviceID=" + record.ID;
-            else
-                viewModel.viewPageRecord(record);
+            }
+            else {
+                // Parse connection string
+                const connectionString = new Dictionary(record.ConnectionString.parseKeyValuePairs());
+
+                if (parseInt(connectionString.get("connectionProfileID")) === @iGridProfileID)
+                    window.location.href = "/IGridConfig.cshtml?DeviceID=" + record.ID;
+                else
+                    viewModel.viewPageRecord(record);                
+            }
         }
         
         function refreshEnabledState(record) {
