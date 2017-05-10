@@ -723,6 +723,12 @@ CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)wwwroot" "$(SolutionDir)Appl
 
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(ProjectDir)bin" "$(TargetDir)*.dll"
 
+CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\BenDownloader\BenDownloader.exe"
+
+CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\IGridDownloader\IGridDownloader.exe"
+
+CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\IGridDownloader\Ionic.Zip.dll"
+
 XCOPY "$(SolutionDir)Data\SerializedSchema.bin" "$(TargetDir)" /Y</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

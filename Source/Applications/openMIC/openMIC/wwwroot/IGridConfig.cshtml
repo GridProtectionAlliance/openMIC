@@ -177,7 +177,7 @@
 
             // Observable fields
             self.baseURL = ko.observable("https://www.igrid.com/igrid/DataExport.do?user=SCeg9ACW");
-            self.devices = ko.observableArray();
+            self.devices = ko.observableArray(); // IGridDevice array
             self.deviceCounts = ko.observable("Calculating...");
             self.errors = ko.validation.group(self);
 
@@ -254,7 +254,7 @@
                 self.devices.removeAll();
 
                 $("#responsiveTableDiv").show();
-                $("[id='deviceRow']").css("visibility", "hidden");
+                $("[id=deviceRow]").css("visibility", "hidden");
                 $("#bulkSelectionButtons").hide();
                 $("#loadingDataLabel").show();
                 self.deviceCounts("Calculating...");
@@ -277,7 +277,7 @@
                     self.errors = ko.validation.group(self.devices);
                     self.refreshValidationErrors();
 
-                    $("[id='deviceRow']").css("visibility", "visible");
+                    $("[id=deviceRow]").css("visibility", "visible");
                     $("#loadingDataLabel").hide();
                     $("#bulkSelectionButtons").show();
                         
@@ -423,11 +423,21 @@
                 setTimeout(function() {
                     showInfoMessage("Loading I-Grid Devices...");
                     viewModel.queryDevices().done(function() {
-                        viewModel.devices().forEach(function(device) {
+                        const devices = viewModel.devices();
+
+                        for (let i = 0; i < devices.length; i++) {
+                            const device = devices[i];
+
                             if (device.DeviceID() === openMICDevice.ID) {
                                 device.Selected(true);
+                                ko.tasks.runEarly();
+
+                                const textBox = $("[id=deviceRow]:eq(" + i + ")").find("input[type=text]")[0];
+                                textBox.scrollIntoView();
+                                textBox.focus();
+                                break;
                             }
-                        });
+                        }
                     });
                 }, 100);
             });
@@ -465,7 +475,7 @@
                     if (viewModel.dataHubIsConnected() && targetDevice.Selected()) {
                         // Lookup Device record by Acronym - this will return an empty record if not found
                         dataHub.queryDevice(newVal).done(function(device) {
-                            // Valid if device doesn't exist or is itself
+                                // Valid if device doesn't exist or is itself
                             callback(device.ID === 0 || device.ID === targetDevice.DeviceID());
                         })
                         .fail(function(error) {

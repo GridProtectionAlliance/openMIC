@@ -96,6 +96,7 @@ namespace openMIC
         // Static Fields
         private static int s_downloaderProtocolID;
         private static int s_modbusProtocolID;
+        private static int s_defaultIGridProfileID;
         private static string s_configurationCachePath;
         private static readonly Func<char, bool> s_isInvalidAcronymChar;
         private static readonly char[] s_digits;
@@ -810,6 +811,8 @@ namespace openMIC
         #region [ I-Grid Operations ] 
 
         public const string DefaultIGridConnectionProfileName = "I-Grid Connection Profile";
+
+        public int GetDefaultIGridProfileID() => DataContext.Connection.ExecuteScalar<int?>("SELECT ID FROM ConnectionProfile WHERE Name={0}", DefaultIGridConnectionProfileName) ?? 0;
 
         public IEnumerable<IGridDevice> QueryIGridDevices(string baseURL)
         {

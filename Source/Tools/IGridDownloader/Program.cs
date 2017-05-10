@@ -65,6 +65,8 @@ namespace IGridDownloader
                 {
                     ParseConfigurationSettings(connection, deviceID, profileTaskID);
 
+                    Console.WriteLine($"Target download folder = {FilePath.TrimFileName(s_localPath, 40)}");
+
                     string tempZipFile = FilePath.GetUniqueFilePath($"{s_localPath}NewFiles.zip");
 
                     try

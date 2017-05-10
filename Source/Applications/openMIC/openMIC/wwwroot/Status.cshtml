@@ -70,14 +70,14 @@
 
             // Gets record count
             self.recordCount = ko.pureComputed({
-                read: function () {
+                read: function() {
                     return self.items().length;
                 }
             });
 
             self.itemLimit = ko.pureComputed({
                 read: self._itemLimit,
-                write: function (value) {
+                write: function(value) {
                     if (value < 1)
                         value = 1;
 
@@ -89,7 +89,7 @@
             });
 
             // Return an array of rows where each row is an array of items
-            self.rows = ko.computed(function () {
+            self.rows = ko.computed(function() {
                 const result = [];
                 const columns = parseInt(self.columnLength(), 10);
                 var row;
@@ -113,16 +113,16 @@
                 return result;
             });
 
-            self.queryItems = function () {
+            self.queryItems = function() {
                 if (!hubIsConnected)
                     return;
 
-                dataHub.queryEnabledDevices(self.itemLimit(), self.filterText).done(function (devices) {
+                dataHub.queryEnabledDevices(self.itemLimit(), self.filterText).done(function(devices) {
                     self.items.removeAll();
                     self.items(devices);
 
-                    //$.each(devices, function (i, d) {
-                    //    dataHub.getStatusLogForDevice(d.Acronym).done(function (data) {
+                    //$.each(devices, function(i, d) {
+                    //    dataHub.getStatusLogForDevice(d.Acronym).done(function(data) {
                     //        $('#lastSuccessful' + d.Acronym).text(data.LastSuccess.formatDate(DateTimeFormat));
                     //        $('#lastUnsuccessful' + d.Acronym).text(data.LastFailure.formatDate(DateTimeFormat));
                     //        $('#lastMessage' + d.Acronym).text(data.Message);
@@ -132,12 +132,12 @@
                 });
             }
 
-            self.fixAcronym = function (acronym) {
+            self.fixAcronym = function(acronym) {
                 return acronym.replace(/[^A-Za-z0-9]/g, "");
             }
         }
 
-        //fixAcronyms = function (acronym) {
+        //fixAcronyms = function(acronym) {
         //    return acronym.replace(/[^A-Za-z0-9]/g, "");
         //}
 
@@ -151,10 +151,12 @@
             Finished: 4
         };
 
-        $(function () {
+        $(function() {
             var deviceProgress = { };
 
             dataHubClient.deviceProgressUpdate = function(update) {
+                update.DeviceName = viewModel.fixAcronym(update.DeviceName);
+
                 const messageWell = $("#" + update.DeviceName + "Message");
 
                 var progress = deviceProgress[update.DeviceName];
@@ -232,23 +234,18 @@
                         panel.addClass("panel-danger");
                         break;
                 }
-
-                //dataHub.getStatusLogForDevice(update.DeviceName).done(function (data) {
-                //    $('#lastSuccessful' + update.DeviceName).text(data.LastSuccess.formatDate(DateTimeFormat));
-                //    $('#lastUnsuccessful' + update.DeviceName).text(data.LastFailure.formatDate(DateTimeFormat));
-                //    $('#lastMessage' + update.DeviceName).text(data.Message);
-                //});
             }
 
             $("#pageHeader").append("@Raw(SearchFilter().ToString().RemoveDuplicateWhiteSpace().Replace("\r\n", ""))");
 
             $("#titleText").html("Records: <span data-bind='text: recordCount'>calculating...</span>");
-            $("#searchFilter").on("keyup", function (event) {
+
+            $("#searchFilter").on("keyup", function(event) {
                 if ($("#searchFilter").val().length === 0) {
                     $('.panel').show();
                 } else {
                     $('.panel').hide();
-                    $('.panel').filter(function (i,d) {
+                    $('.panel').filter(function(i,d) {
                         return $(d).attr('id').toLowerCase().indexOf($("#searchFilter").val().toLowerCase()) != -1
                     }).show();
                 }
@@ -257,7 +254,7 @@
             ko.applyBindings(viewModel);
         });
 
-        $(window).on("hubConnected", function (event) {
+        $(window).on("hubConnected", function(event) {
             viewModel.queryItems();
         });
 
