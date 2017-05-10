@@ -23,14 +23,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using GSF;
-using GSF.Data;
-using GSF.IO;
-using GSF.Parsing;
 using System.Threading;
 
 namespace BenDownloader
@@ -48,8 +43,6 @@ namespace BenDownloader
         private readonly string m_tempDirectoryName;
         private readonly BenRecord m_lastFileDownloaded;
         private string m_lastFileDownloadedThisSession;
-        private Process m_process;
-        private bool m_disposed;
         #endregion
 
         #region [Constructors]
@@ -215,7 +208,7 @@ namespace BenDownloader
                 try
                 {
                     s_lock?.WaitOne();
-                    using (m_process = Process.Start(psi))
+                    using (Process m_process = Process.Start(psi))
                     {
                         m_process.OutputDataReceived += (sender, args) => { Program.Log(args.Data); };
                         m_process.ErrorDataReceived += (sender, args) => { Program.Log(args.Data, true); };
