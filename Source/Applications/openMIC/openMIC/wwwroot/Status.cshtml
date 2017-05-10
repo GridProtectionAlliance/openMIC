@@ -131,7 +131,15 @@
 
                 });
             }
+
+            self.fixAcronym = function (acronym) {
+                return acronym.replace(/[^A-Za-z0-9]/g, "");
+            }
         }
+
+        //fixAcronyms = function (acronym) {
+        //    return acronym.replace(/[^A-Za-z0-9]/g, "");
+        //}
 
         const viewModel = new StatusViewModel();
 
@@ -269,24 +277,20 @@
 }
 <div class="bs-example">
     <div class="panel-group" id="accordion" data-bind="foreach: items">
-        <div class="panel panel-default" data-bind="attr: {id: Acronym + 'Panel'}">
+        <div class="panel panel-default" data-bind="attr: {id: $parent.fixAcronym(Acronym) + 'Panel'}">
             <div class="panel-heading" >
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" data-bind="attr: {id: Acronym+'Heading','data-target': '#sm' + Acronym}, text: Acronym"></a>
+                    <a data-toggle="collapse" data-parent="#accordion" data-bind="attr: {id: $parent.fixAcronym(Acronym) +'Heading','data-target': '#sm' + $parent.fixAcronym(Acronym)}, text: Acronym"></a>
                 </h4>
             </div>
-            <div data-bind="attr: {id: 'sm' + Acronym}" class="panel-collapse collapse">
+            <div data-bind="attr: {id: 'sm' + $parent.fixAcronym(Acronym)}" class="panel-collapse collapse">
                 <div class="panel-body">
-                    @*<div class="">Last Successful Download: <span data-bind="attr: {id: 'lastSuccessful' + Acronym}"></span></div>
-                    <div class="">Last Unsuccessful Download: <span data-bind="attr: {id: 'lastUnsuccessful' + Acronym}"></span></div>
-                    <div class="">Last Failure Message: <span data-bind="attr: {id: 'lastMessage' + Acronym}"></span></div>*@
-
-                    <div class="table-cell-wrap" data-bind="attr: {id: Acronym + 'Message'}" style="overflow-y: auto; height: 110px; padding: 5px; margin-bottom: 5px; border: 1px solid; border-color: #ddd"></div>
+                    <div class="table-cell-wrap" data-bind="attr: {id: $parent.fixAcronym(Acronym) + 'Message'}" style="overflow-y: auto; height: 110px; padding: 5px; margin-bottom: 5px; border: 1px solid; border-color: #ddd"></div>
                     <div class="progress" style="margin: 0">
-                        <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" data-bind="attr: {id: Acronym + 'CurrentProgress'}">0%</div>
+                        <div class="progress-bar progress-bar-striped active no-transition" role="progressbar" style="width: 0%" data-bind="attr: {id: $parent.fixAcronym(Acronym) + 'CurrentProgress'}">0%</div>
                     </div>
                     <div class="progress" style="margin-top: 5px; margin-bottom: -5px">
-                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%" data-bind="attr: {id: Acronym + 'OverallProgress'}">0%</div>
+                        <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%" data-bind="attr: {id: $parent.fixAcronym(Acronym) + 'OverallProgress'}">0%</div>
                     </div>
                 </div>
                 <div class="panel-footer">
