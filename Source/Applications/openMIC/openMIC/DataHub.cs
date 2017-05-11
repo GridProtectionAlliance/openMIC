@@ -923,7 +923,7 @@ namespace openMIC
                     ConnectionProfileTask profileTask = profileTaskTable.NewRecord();
                     profileTask.ConnectionProfileID = profile.ID;
                     profileTask.Name = "I-Grid Default Downloader Task";
-                    profileTask.Settings = $@"fileExtensions=*.*; remotePath=/; localPath={FilePath.GetAbsolutePath("Downloads")}; deleteOldLocalFiles=true; skipDownloadIfUnchanged=true; overwriteExistingLocalFiles=false; archiveExistingFilesBeforeDownload=false; synchronizeTimestamps=true; externalOperation=IGridDownloader.exe <DeviceID> <TaskID>; directoryNamingExpression=<YYYY><MM>\<DeviceFolderName>";
+                    profileTask.Settings = $@"fileExtensions=*.*; remotePath=/; localPath={Program.Host.Model.Global.DefaultLocalPath}; deleteOldLocalFiles=true; skipDownloadIfUnchanged=true; overwriteExistingLocalFiles=false; archiveExistingFilesBeforeDownload=false; synchronizeTimestamps=true; externalOperation=IGridDownloader.exe <DeviceID> <TaskID>; directoryNamingExpression=<YYYY><MM>\<DeviceFolderName>";
                     profileTaskTable.AddNewRecord(profileTask);
                 }
             }
