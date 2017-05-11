@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
 namespace openMIC.Model
@@ -17,7 +18,9 @@ namespace openMIC.Model
             set;
         }
 
-        public string Description
+        [Required]
+        [StringLength(200)]
+        public string SourceTable
         {
             get;
             set;

@@ -1846,6 +1846,10 @@ namespace openMIC
             s_dialupScheduler = new ConcurrentDictionary<string, LogicalThread>();
 
             s_ftpThreadCount = systemSettings["FTPThreadCount"].ValueAsInt32(DefaultFTPThreadCount);
+
+            if (s_ftpThreadCount <= 0)
+                s_ftpThreadCount = Environment.ProcessorCount;
+
             s_logicalThreadScheduler = new LogicalThreadScheduler();
             s_logicalThreadScheduler.MaxThreadCount = s_ftpThreadCount;
 

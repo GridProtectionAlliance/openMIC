@@ -345,9 +345,15 @@
                             
                             var index = 0;
 
+                            // Chain intializations for all selected devices that were updated
                             const initializeNextDevice = function() {
                                 if (index < selectedDevices.length) {
-                                    serviceHub.sendCommand(String.format("initialize {0}", selectedDevices[index++].Acronym())).done(initializeNextDevice);
+                                    dataHub.queryRuntimeID("Device", selectedDevices[index++].DeviceID()).done(function(runtimeID) {
+                                        if (runtimeID > 0)
+                                            serviceHub.sendCommand(String.format("initialize {0}", runtimeID)).done(initializeNextDevice);
+                                        else
+                                            initializeNextDevice();
+                                    });
                                 }
                             };
 

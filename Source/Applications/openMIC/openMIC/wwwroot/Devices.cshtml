@@ -213,13 +213,6 @@
             delete observableRecord._connectionstring;
         });
 
-        @* This is now handled by the model
-        $(viewModel).on("newRecord", function(event, record) {
-            // Initialize default values for new record
-            record.CompanyID = @Raw(companyID == null ? "\"\"" : companyID.ToString());
-        });
-        *@
-
         $(viewModel).on("currentRecordChanged", function(event) {
             viewModel.loadingConnectionString = true;
 
@@ -293,22 +286,22 @@
             $("#checkUseDialUp").parent().parent().css("margin", 0);
         });
 
-        function showEditScreen(readOnly) {
-            if (this.ProtocolID === modbusProtocolID) {
-                window.location.href = "/ModbusConfig.cshtml?DeviceID=" + this.ID;
+        function showEditScreen(readOnly, record) {
+            if (record.ProtocolID === modbusProtocolID) {
+                window.location.href = "/ModbusConfig.cshtml?DeviceID=" + record.ID;
             }
             else {
                 // Parse connection string
-                const connectionString = new Dictionary(this.ConnectionString.parseKeyValuePairs());
+                const connectionString = new Dictionary(record.ConnectionString.parseKeyValuePairs());
 
-                if (parseInt(connectionString.get("connectionProfileID")) === defaultIGridProfileID){
-                    window.location.href = "/IGridConfig.cshtml?DeviceID=" + this.ID;
+                if (parseInt(connectionString.get("connectionProfileID")) === defaultIGridProfileID) {
+                    window.location.href = "/IGridConfig.cshtml?DeviceID=" + record.ID;
                 }
                 else {
                     if (readOnly)
-                        viewModel.viewPageRecord(this);
+                        viewModel.viewPageRecord(record);
                     else
-                        viewModel.editPageRecord(this);
+                        viewModel.editPageRecord(record);
                 }
             }
         }

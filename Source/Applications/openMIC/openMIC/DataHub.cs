@@ -96,7 +96,6 @@ namespace openMIC
         // Static Fields
         private static int s_downloaderProtocolID;
         private static int s_modbusProtocolID;
-        private static int s_defaultIGridProfileID;
         private static string s_configurationCachePath;
         private static readonly Func<char, bool> s_isInvalidAcronymChar;
         private static readonly char[] s_digits;
@@ -608,6 +607,33 @@ namespace openMIC
         public void UpdateSignalType(SignalType signalType)
         {
             DataContext.Table<SignalType>().UpdateRecord(signalType);
+        }
+
+        #endregion
+
+        #region [ RunTime Table Operations ]
+
+        public int QueryRuntimeID(string sourceTable, int sourceID)
+        {
+            Runtime runtime = DataContext.Table<Runtime>().QueryRecordWhere("SourceTable = {0} AND SourceID = {1}", sourceTable, sourceID);
+            return runtime?.ID ?? -1;
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        public void DeleteRuntime(string sourceTable, int sourceID)
+        {
+            DataContext.Table<Runtime>().DeleteRecordWhere("SourceTable = {0} AND SourceID = {1}", sourceTable, sourceID);
+        }
+
+        public Runtime NewRuntime()
+        {
+            return DataContext.Table<Runtime>().NewRecord();
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        public void AddNewRuntime(Runtime runtime)
+        {
+            DataContext.Table<Runtime>().AddNewRecord(runtime);
         }
 
         #endregion
