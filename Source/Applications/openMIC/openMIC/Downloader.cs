@@ -16,7 +16,7 @@
 //
 //  Code Modification History:
 //  ----------------------------------------------------------------------------------------------------
-//  12/08/2015 - J. Ritchie Carroll
+//  02/08/2016 - J. Ritchie Carroll
 //       Generated original version of source code.
 //
 //******************************************************************************************************
@@ -36,6 +36,7 @@ using System.Text;
 using System.Threading;
 using DotRas;
 using GSF;
+using GSF.Collections;
 using GSF.Configuration;
 using GSF.Console;
 using GSF.Data;
@@ -68,224 +69,6 @@ namespace openMIC
         #region [ Members ]
 
         // Nested Types
-
-        // Defines connection profile task settings
-        private class ConnectionProfileTaskSettings
-        {
-            private string m_fileExtensions;
-            private string[] m_fileSpecs;
-
-            public ConnectionProfileTaskSettings(string name, int id)
-            {
-                Name = name;
-                ID = id;
-            }
-
-            public string Name
-            {
-                get;
-            }
-
-            public int ID
-            {
-                get;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines file names or patterns to download."),
-            DefaultValue("*.*")]
-            public string FileExtensions
-            {
-                get
-                {
-                    return m_fileExtensions;
-                }
-                set
-                {
-                    m_fileExtensions = value;
-                    m_fileSpecs = null;
-                }
-            }
-
-            public string[] FileSpecs
-            {
-                get
-                {
-                    return m_fileSpecs ?? (m_fileSpecs = (m_fileExtensions ?? "*.*").Split(',').Select(pattern => pattern.Trim()).ToArray());
-                }
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines remote path to download files from ."),
-            DefaultValue("/")]
-            public string RemotePath
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines local path to download files to."),
-            DefaultValue("")]
-            public string LocalPath
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Determines if remote folders should scanned for matching downloads - file structure will be replicated locally."),
-            DefaultValue(false)]
-            public bool RecursiveDownload
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Determines if remote files should be deleted after download."),
-            DefaultValue(false)]
-            public bool DeleteRemoteFilesAfterDownload
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Determines if total remote files to download should be limited by age."),
-            DefaultValue(false)]
-            public bool LimitRemoteFileDownloadByAge
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Determines if old local files should be deleted."),
-            DefaultValue(false)]
-            public bool DeleteOldLocalFiles
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Determines if download should be skipped if local file already exists and matches remote."),
-            DefaultValue(false)]
-            public bool SkipDownloadIfUnchanged
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Determines if existing local files should be overwritten."),
-            DefaultValue(false)]
-            public bool OverwriteExistingLocalFiles
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Determines if existing local files should be archived before new ones are downloaded."),
-            DefaultValue(false)]
-            public bool ArchiveExistingFilesBeforeDownload
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Determines if downloaded file timestamps should be synchronized to remote file timestamps."),
-            DefaultValue(true)]
-            public bool SynchronizeTimestamps
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines external operation application."),
-            DefaultValue("")]
-            public string ExternalOperation
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines maximum amount of time, in seconds, to allow the external operation to sit idle."),
-            DefaultValue(null)]
-            public double? ExternalOperationTimeout
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines maximum file size to download."),
-            DefaultValue(1000)]
-            public int MaximumFileSize
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines maximum file count to download."),
-            DefaultValue(-1)]
-            public int MaximumFileCount
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines directory naming expression."),
-            DefaultValue("<YYYY><MM>\\<DeviceFolderName>")]
-            public string DirectoryNamingExpression
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines directory authentication user name."),
-            DefaultValue("")]
-            public string DirectoryAuthUserName
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines directory authentication password."),
-            DefaultValue("")]
-            public string DirectoryAuthPassword
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Determines if an e-mail should be sent if the downloaded files have been updated."),
-            DefaultValue(false)]
-            public bool EmailOnFileUpdate
-            {
-                get;
-                set;
-            }
-
-            [ConnectionStringParameter,
-            Description("Defines the recipient e-mail addresses to use when sending e-mails on file updates."),
-            DefaultValue("")]
-            public string EmailRecipients
-            {
-                get;
-                set;
-            }
-        }
 
         // Define a IDevice implementation for to provide daily reports
         private class DeviceProxy : IDevice
@@ -388,10 +171,8 @@ namespace openMIC
         private readonly object m_connectionProfileLock;
         private Device m_deviceRecord;
         private ConnectionProfile m_connectionProfile;
-        private ConnectionProfileTaskSettings[] m_connectionProfileTaskSettings;
-        private LogicalThreadOperation m_dialUpOperation;
-        private LogicalThreadOperation m_ftpOperation;
-        private LongSynchronizedOperation m_executeTasks;
+        private ConnectionProfileTaskQueue m_connectionProfileTaskQueue;
+        private ConnectionProfileTask[] m_connectionProfileTasks;
         private readonly ICancellationToken m_cancellationToken;
         private int m_overallTasksCompleted;
         private int m_overallTasksCount;
@@ -557,11 +338,6 @@ namespace openMIC
             get;
             set;
         }
-
-        /// <summary>
-        /// Gets or sets flag that determines if this connection will use logical threads scheduler.
-        /// </summary>
-        public bool UseLogicalThread => s_ftpThreadCount > 0;
 
         /// <summary>
         /// Gets or sets dial-up entry name.
@@ -840,7 +616,7 @@ namespace openMIC
                     status.AppendLine();
                 }
 
-                status.AppendFormat(" Connection profiles tasks: {0}", m_connectionProfileTaskSettings.Length);
+                status.AppendFormat(" Connection profiles tasks: {0}", m_connectionProfileTasks.Length);
                 status.AppendLine();
                 status.AppendFormat("          Files downloaded: {0}", FilesDownloaded);
                 status.AppendLine();
@@ -915,13 +691,14 @@ namespace openMIC
         /// </summary>
         protected override void AttemptConnection()
         {
-            ConnectionProfileTaskSettings[] taskSettings;
+            ConnectionProfileTask[] tasks;
 
             lock (m_connectionProfileLock)
-                taskSettings = m_connectionProfileTaskSettings;
+                tasks = m_connectionProfileTasks;
 
-            foreach (ConnectionProfileTaskSettings settings in taskSettings)
+            foreach (ConnectionProfileTask task in tasks)
             {
+                ConnectionProfileTaskSettings settings = task.Settings;
                 string localPath = settings.LocalPath.ToNonNullString().Trim();
 
                 if (localPath.StartsWith(@"\\") && !string.IsNullOrWhiteSpace(settings.DirectoryAuthUserName) && !string.IsNullOrWhiteSpace(settings.DirectoryAuthPassword))
@@ -973,24 +750,8 @@ namespace openMIC
         [AdapterCommand("Queues scheduled tasks for immediate execution.", "Administrator", "Editor")]
         public void QueueTasks()
         {
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                AttemptedConnections++;
-
-                if (UseDialUp)
-                {
-                    m_dialUpOperation.Priority = HighPriority;
-                    m_dialUpOperation.RunOnce();
-                    m_dialUpOperation.Priority = NormalPriorty;
-                }
-                else if (UseLogicalThread)
-                {
-                    m_ftpOperation.RunOnce();
-                }
-                else { 
-                    m_executeTasks.RunOnce();
-                }
-            });
+            if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks))
+                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Queued, true, "Queued tasks at high priority.", 0, 1));
         }
 
         private void LoadTasks()
@@ -1002,22 +763,43 @@ namespace openMIC
                 TableOperations<Device> deviceTable = new TableOperations<Device>(connection);
                 TableOperations<ConnectionProfile> connectionProfileTable = new TableOperations<ConnectionProfile>(connection);
                 TableOperations<ConnectionProfileTask> connectionProfileTaskTable = new TableOperations<ConnectionProfileTask>(connection);
+                TableOperations<ConnectionProfileTaskQueue> connectionProfileTaskQueueTable = new TableOperations<ConnectionProfileTaskQueue>(connection);
 
                 lock (m_connectionProfileLock)
                 {
-                    m_deviceRecord = deviceTable.QueryRecordWhere("Acronym = {0}", Name);
-                    m_connectionProfile = connectionProfileTable.LoadRecord(ConnectionProfileID);
-                    IEnumerable<ConnectionProfileTask> tasks = connectionProfileTaskTable.QueryRecords(restriction: new RecordRestriction("ConnectionProfileID={0}", ConnectionProfileID));
-                    List<ConnectionProfileTaskSettings> connectionProfileTaskSettings = new List<ConnectionProfileTaskSettings>();
+                    string connectionProfileTaskQueueName;
+                    ConnectionProfileTaskQueue taskQueue = null;
 
-                    foreach (ConnectionProfileTask task in tasks)
+                    if ((object)taskQueue == null && UseDialUp && !string.IsNullOrWhiteSpace(DialUpEntryName))
                     {
-                        ConnectionProfileTaskSettings settings = new ConnectionProfileTaskSettings(task.Name, task.ID);
-                        parser.ParseConnectionString(task.Settings, settings);
-                        connectionProfileTaskSettings.Add(settings);
+                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", DialUpEntryName)
+                            ?? new ConnectionProfileTaskQueue() { Name = DialUpEntryName };
+
+                        taskQueue.MaxThreadCount = 1;
                     }
 
-                    m_connectionProfileTaskSettings = connectionProfileTaskSettings.ToArray();
+                    if (Settings.TryGetValue(nameof(connectionProfileTaskQueueName), out connectionProfileTaskQueueName) && !string.IsNullOrWhiteSpace(connectionProfileTaskQueueName))
+                    {
+                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", connectionProfileTaskQueueName)
+                            ?? new ConnectionProfileTaskQueue() { Name = connectionProfileTaskQueueName };
+                    }
+
+                    m_deviceRecord = deviceTable.QueryRecordWhere("Acronym = {0}", Name);
+                    m_connectionProfile = connectionProfileTable.LoadRecord(ConnectionProfileID);
+                    IEnumerable<ConnectionProfileTask> tasks = connectionProfileTaskTable.QueryRecords("LoadOrder ASC", new RecordRestriction("ConnectionProfileID={0}", ConnectionProfileID));
+
+                    if ((object)taskQueue == null && (object)m_connectionProfile.DefaultTaskQueueID != null)
+                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("ID = {0}", m_connectionProfile.DefaultTaskQueueID.GetValueOrDefault());
+
+                    if ((object)taskQueue == null)
+                    {
+                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", m_connectionProfile.Name)
+                            ?? new ConnectionProfileTaskQueue() { Name = m_connectionProfile.Name };
+                    }
+
+                    taskQueue.RegisterExceptionHandler(ex => OnProcessException(MessageLevel.Error, ex, "Task Execution"));
+                    m_connectionProfileTaskQueue = taskQueue;
+                    m_connectionProfileTasks = tasks.ToArray();
                 }
             }
         }
@@ -1030,31 +812,27 @@ namespace openMIC
             FtpClient client = null;
             Ticks connectionStartTime = DateTime.UtcNow.Ticks;
             string connectionProfileName = m_connectionProfile?.Name ?? "Undefined";
+            bool dialUpConnected = false;
 
             try
             {
-                ConnectionProfileTaskSettings[] taskSettings;
-                List<ConnectionProfileTaskSettings> ftpTaskSettings;
-                List<ConnectionProfileTaskSettings> externalOperationTaskSettings;
+                ConnectionProfileTask[] tasks;
 
                 lock (m_connectionProfileLock)
-                    taskSettings = m_connectionProfileTaskSettings;
+                    tasks = m_connectionProfileTasks;
 
-                if (taskSettings.Length == 0)
+                if (tasks.Length == 0)
                 {
                     OnProgressUpdated(this, new ProgressUpdate(ProgressState.Skipped, true, $"Skipped \"{connectionProfileName}\" connection profile processing: No tasks defined.", 0, 1));
                     return;
                 }
 
-                ftpTaskSettings = taskSettings.Where(settings => string.IsNullOrWhiteSpace(settings.ExternalOperation)).ToList();
-                externalOperationTaskSettings = taskSettings.Where(settings => !string.IsNullOrWhiteSpace(settings.ExternalOperation)).ToList();
-
                 FilesDownloaded = 0;
                 m_overallTasksCompleted = 0;
-                m_overallTasksCount = taskSettings.Length;
+                m_overallTasksCount = tasks.Length;
                 OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, $"Starting \"{connectionProfileName}\" connection profile processing...", m_overallTasksCompleted, m_overallTasksCount));
 
-                if (ftpTaskSettings.Count > 0)
+                if (tasks.Any(task => string.IsNullOrWhiteSpace(task.Settings.ExternalOperation)))
                 {
                     if (string.IsNullOrWhiteSpace(ConnectionHostName))
                     {
@@ -1063,6 +841,9 @@ namespace openMIC
                     else
                     {
                         OnStatusMessage(MessageLevel.Info, $"Attempting connection to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"...");
+                        AttemptedConnections++;
+
+                        dialUpConnected = ConnectDialUp();
 
                         client = new FtpClient();
                         client.CommandSent += FtpClient_CommandSent;
@@ -1094,28 +875,23 @@ namespace openMIC
                     }
                 }
 
-                foreach (ConnectionProfileTaskSettings settings in ftpTaskSettings)
+                foreach (ConnectionProfileTask task in tasks)
                 {
-                    OnStatusMessage(MessageLevel.Info, $"Starting \"{connectionProfileName}\" connection profile \"{settings.Name}\" task processing:");
+                    ConnectionProfileTaskSettings settings = task.Settings;
 
-                    ProcessFTPTask(settings, client);
+                    if (m_cancellationToken.IsCancelled)
+                        return;
+
+                    OnStatusMessage(MessageLevel.Info, $"Starting \"{connectionProfileName}\" connection profile \"{task.Name}\" task processing:");
+
+                    if (string.IsNullOrWhiteSpace(task.Settings.ExternalOperation))
+                        ProcessFTPTask(task, client);
+                    else
+                        ProcessExternalOperationTask(task);
 
                     // Handle local file age limit processing, if enabled
                     if (settings.DeleteOldLocalFiles)
-                        HandleLocalFileAgeLimitProcessing(settings);
-
-                    OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
-                }
-
-                foreach (ConnectionProfileTaskSettings settings in externalOperationTaskSettings)
-                {
-                    OnStatusMessage(MessageLevel.Info, $"Starting \"{connectionProfileName}\" connection profile \"{settings.Name}\" task processing:");
-
-                    ProcessExternalOperationTask(settings);
-
-                    // Handle local file age limit processing, if enabled
-                    if (settings.DeleteOldLocalFiles)
-                        HandleLocalFileAgeLimitProcessing(settings);
+                        HandleLocalFileAgeLimitProcessing(task);
 
                     OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++m_overallTasksCompleted, m_overallTasksCount));
                 }
@@ -1124,10 +900,9 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                FailedConnections++;
-
                 if ((object)client != null)
                 {
+                    FailedConnections++;
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                     OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", m_overallTasksCompleted, m_overallTasksCount));
                 }
@@ -1149,6 +924,9 @@ namespace openMIC
                     client.FileTransferNotification -= FtpClient_FileTransferNotification;
                     client.Dispose();
 
+                    if (dialUpConnected)
+                        DisconnectDialUp();
+
                     Ticks connectedTime = DateTime.UtcNow.Ticks - connectionStartTime;
                     OnStatusMessage(MessageLevel.Info, $"FTP session connected for {connectedTime.ToElapsedTimeString(2)}");
                     TotalConnectedTime += connectedTime;
@@ -1158,18 +936,18 @@ namespace openMIC
             }
         }
 
-        private void ProcessFTPTask(ConnectionProfileTaskSettings settings, FtpClient client)
+        private void ProcessFTPTask(ConnectionProfileTask task, FtpClient client)
         {
-            string remotePath = GetRemotePathDirectory(settings);
-            string localDirectoryPath = GetLocalPathDirectory(settings);
+            string remotePath = GetRemotePathDirectory(task.Settings);
+            string localDirectoryPath = GetLocalPathDirectory(task.Settings);
             List<FtpFileWrapper> files = new List<FtpFileWrapper>();
 
             OnStatusMessage(MessageLevel.Info, $"Ensuring local path \"{localDirectoryPath}\" exists.");
             Directory.CreateDirectory(localDirectoryPath);
 
             OnStatusMessage(MessageLevel.Info, $"Building list of files to be downloaded from \"{remotePath}\".");
-            BuildFileList(files, settings, client, remotePath, localDirectoryPath);
-            DownloadAllFiles(files, client, settings);
+            BuildFileList(files, task.Settings, client, remotePath, localDirectoryPath);
+            DownloadAllFiles(files, client, task);
         }
 
         private void BuildFileList(List<FtpFileWrapper> fileList, ConnectionProfileTaskSettings settings, FtpClient client, string remotePath, string localDirectoryPath)
@@ -1273,8 +1051,10 @@ namespace openMIC
             }
         }
 
-        private void DownloadAllFiles(List<FtpFileWrapper> files, FtpClient client, ConnectionProfileTaskSettings settings)
+        private void DownloadAllFiles(List<FtpFileWrapper> files, FtpClient client, ConnectionProfileTask task)
         {
+            ConnectionProfileTaskSettings settings = task.Settings;
+
             long progress = 0L;
             long totalBytes = files.Sum(wrapper => wrapper.RemoteFile.Size);
 
@@ -1396,7 +1176,7 @@ namespace openMIC
                             try
                             {
                                 GlobalSettings global = Program.Host.Model.Global;
-                                string subject = $"File changed for \"{Name}: {settings.Name}\"";
+                                string subject = $"File changed for \"{Name}: {task.Name}\"";
                                 string body = $"<b>File Name = {wrapper.LocalPath}</b></br>";
 
                                 if (string.IsNullOrWhiteSpace(global.SmtpUserName))
@@ -1478,8 +1258,9 @@ namespace openMIC
             return substitutions.Aggregate(settings.RemotePath, (path, sub) => path.Replace(sub.Key, sub.Value));
         }
 
-        private void ProcessExternalOperationTask(ConnectionProfileTaskSettings settings)
+        private void ProcessExternalOperationTask(ConnectionProfileTask task)
         {
+            ConnectionProfileTaskSettings settings = task.Settings;
             string localPathDirectory = GetLocalPathDirectory(settings);
 
             Dictionary<string, string> substitutions = new Dictionary<string, string>
@@ -1490,7 +1271,7 @@ namespace openMIC
                 { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
                 { "<DeviceFolderPath>", GetLocalPathDirectory(settings) },
                 { "<ProfileName>", m_connectionProfile.Name ?? "undefined" },
-                { "<TaskID>", settings.ID.ToString() }
+                { "<TaskID>", task.ID.ToString() }
             };
 
             string command = substitutions.Aggregate(settings.ExternalOperation.Trim(), (str, kvp) => str.Replace(kvp.Key, kvp.Value));
@@ -1579,11 +1360,13 @@ namespace openMIC
             }
         }
 
-        private void HandleLocalFileAgeLimitProcessing(ConnectionProfileTaskSettings settings)
+        private void HandleLocalFileAgeLimitProcessing(ConnectionProfileTask task)
         {
+            ConnectionProfileTaskSettings settings = task.Settings;
+
             if (string.IsNullOrWhiteSpace(settings.LocalPath) || !Directory.Exists(settings.LocalPath))
             {
-                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Cannot handle local file age limit processing for connection profile task \"{settings.Name}\": Local path \"{settings.LocalPath ?? ""}\" does not exist."));
+                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Cannot handle local file age limit processing for connection profile task \"{task.Name}\": Local path \"{settings.LocalPath ?? ""}\" does not exist."));
                 return;
             }
 
@@ -1811,9 +1594,6 @@ namespace openMIC
         // Static Fields
         private static readonly ScheduleManager s_scheduleManager;
         private static readonly ConcurrentDictionary<string, Downloader> s_instances;
-        private static readonly ConcurrentDictionary<string, LogicalThread> s_dialupScheduler;
-        private static readonly LogicalThreadScheduler s_logicalThreadScheduler;
-        private static readonly int s_ftpThreadCount;
         private static readonly int s_maxDownloadThreshold;
         private static readonly int s_maxDownloadThresholdTimeWindow;
         private static readonly string[] s_statusLogInclusions;
@@ -1829,29 +1609,18 @@ namespace openMIC
         // Static Constructor
         static Downloader()
         {
-            const int DefaultFTPThreadCount = 20;
             const int DefaultMaxDownloadThreshold = 0;
             const int DefaultMaxDownloadThresholdTimeWindow = 24;
             const string DefaultStatusLogInclusions = ".rcd,.d00,.dat,.ctl,.cfg,.pcd";
             const string DefaultStatusLogExclusions = "rms.,trend.";
 
             CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
-            systemSettings.Add("FTPThreadCount", DefaultFTPThreadCount, "Max thread count for FTP operations. Set to zero for no limit.");
             systemSettings.Add("MaxDownloadThreshold", DefaultMaxDownloadThreshold, "Maximum downloads a meter can have in a specified time range before disabling the meter, subject to specified StatusLog inclusions and exclusions. Set to 0 to disable.");
             systemSettings.Add("MaxDownloadThresholdTimeWindow", DefaultMaxDownloadThresholdTimeWindow, "Time window for the MaxDownloadThreshold in hours.");
             systemSettings.Add("StatusLogInclusions", DefaultStatusLogInclusions, "Default inclusions to apply when writing updates to StatusLog table and checking MaxDownloadThreshold.");
             systemSettings.Add("StatusLogExclusions", DefaultStatusLogExclusions, "Default exclusions to apply when writing updates to StatusLog table and checking MaxDownloadThreshold.");
 
             s_instances = new ConcurrentDictionary<string, Downloader>();
-            s_dialupScheduler = new ConcurrentDictionary<string, LogicalThread>();
-
-            s_ftpThreadCount = systemSettings["FTPThreadCount"].ValueAsInt32(DefaultFTPThreadCount);
-
-            if (s_ftpThreadCount <= 0)
-                s_ftpThreadCount = Environment.ProcessorCount;
-
-            s_logicalThreadScheduler = new LogicalThreadScheduler();
-            s_logicalThreadScheduler.MaxThreadCount = s_ftpThreadCount;
 
             s_scheduleManager = new ScheduleManager();
             s_scheduleManager.ScheduleDue += s_scheduleManager_ScheduleDue;
@@ -1870,14 +1639,8 @@ namespace openMIC
 
             if (s_instances.TryGetValue(schedule.Name, out instance))
             {
-                instance.AttemptedConnections++;
-
-                if (instance.UseDialUp)
-                    instance.m_dialUpOperation.RunOnceAsync();
-                else if(instance.UseLogicalThread)
-                    instance.m_ftpOperation.RunOnceAsync();
-                else
-                    instance.m_executeTasks.RunOnceAsync();
+                if (instance.m_connectionProfileTaskQueue.QueueAction(instance.ExecuteTasks))
+                    OnProgressUpdated(instance, new ProgressUpdate(ProgressState.Queued, true, "Queued tasks at normal priority.", 0, 1));
             }
         }
 
@@ -1886,47 +1649,6 @@ namespace openMIC
         private static void RegisterSchedule(Downloader instance)
         {
             s_instances.TryAdd(instance.Name, instance);
-
-            if (instance.UseDialUp)
-            {
-                // Make sure dial-up's using the same resource (i.e., modem) are executed synchronously
-                LogicalThread thread = s_dialupScheduler.GetOrAdd(instance.DialUpEntryName, entryName => new LogicalThread(2));
-                WeakReference<Downloader> reference = new WeakReference<Downloader>(instance);
-
-                thread.UnhandledException += (sender, e) =>
-                {
-                    Downloader downloader;
-                    if (reference.TryGetTarget(out downloader))
-                        downloader.OnProcessException(MessageLevel.Warning, e.Argument);
-                };
-
-                instance.m_dialUpOperation = new LogicalThreadOperation(thread, () =>
-                {
-                    if (instance.ConnectDialUp())
-                    {
-                        instance.ExecuteTasks();
-                        instance.DisconnectDialUp();
-                    }
-                }, NormalPriorty);
-            }
-            else if (s_logicalThreadScheduler.MaxThreadCount > 0)
-            {
-                LogicalThread thread = s_logicalThreadScheduler.CreateThread();
-                thread.UnhandledException += (sender, e) =>
-                {
-                    WeakReference<Downloader> reference = new WeakReference<Downloader>(instance);
-                    Downloader downloader;
-                    if (reference.TryGetTarget(out downloader))
-                        downloader.OnProcessException(MessageLevel.Warning, e.Argument);
-                };
-
-                instance.m_ftpOperation = new LogicalThreadOperation(thread, instance.ExecuteTasks);
-            }
-            else
-            {
-                instance.m_executeTasks = new LongSynchronizedOperation(instance.ExecuteTasks, exception => instance.OnProcessException(MessageLevel.Warning, exception));
-            }
-
             s_scheduleManager.AddSchedule(instance.Name, instance.Schedule, $"Download schedule for \"{instance.Name}\"", true);
         }
 

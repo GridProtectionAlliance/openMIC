@@ -136,22 +136,22 @@ namespace IGridDownloader
 
             TableOperations<ConnectionProfileTask> profileTaskTable = new TableOperations<ConnectionProfileTask>(connection);
             ConnectionProfileTask profileTask = profileTaskTable.QueryRecordWhere("ID = {0}", profileTaskID);
-            Dictionary<string, string> profileTaskSettings = profileTask.Settings.ParseKeyValuePairs();
+            ConnectionProfileTaskSettings profileTaskSettings = profileTask.Settings;
 
             s_baseUrl = deviceConnectionString["baseURL"];
             s_serialNumber = deviceConnectionString["serialNumber"];
 
-            string subFolder = GetSubFolder(device, profile.Name, profileTaskSettings["directoryNamingExpression"]);
-            s_localPath = $"{profileTaskSettings["localPath"]}{Path.DirectorySeparatorChar}{subFolder}";
+            string subFolder = GetSubFolder(device, profile.Name, profileTaskSettings.DirectoryNamingExpression);
+            s_localPath = $"{profileTaskSettings.LocalPath}{Path.DirectorySeparatorChar}{subFolder}";
 
             if (!Directory.Exists(s_localPath))
                 Directory.CreateDirectory(s_localPath);
 
-            s_fileSpecs = profileTaskSettings["fileExtensions"].Split(',').Select(pattern => pattern.Trim()).ToArray();
-            s_skipDownloadIfUnchanged = profileTaskSettings["skipDownloadIfUnchanged"].ParseBoolean();
-            s_overwriteExistingLocalFiles = profileTaskSettings["overwriteExistingLocalFiles"].ParseBoolean();
-            s_archiveExistingFilesBeforeDownload = profileTaskSettings["archiveExistingFilesBeforeDownload"].ParseBoolean();
-            s_synchronizeTimestamps = profileTaskSettings["synchronizeTimestamps"].ParseBoolean();
+            s_fileSpecs = profileTaskSettings.FileExtensions.Split(',').Select(pattern => pattern.Trim()).ToArray();
+            s_skipDownloadIfUnchanged = profileTaskSettings.SkipDownloadIfUnchanged;
+            s_overwriteExistingLocalFiles = profileTaskSettings.OverwriteExistingLocalFiles;
+            s_archiveExistingFilesBeforeDownload = profileTaskSettings.ArchiveExistingFilesBeforeDownload;
+            s_synchronizeTimestamps = profileTaskSettings.SynchronizeTimestamps;
         }
 
         private static bool ProcessEntry(ZipEntry zipEntry)

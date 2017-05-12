@@ -144,11 +144,12 @@
         const viewModel = new StatusViewModel();
 
         const ProgressState = {
-            Processing: 0,
-            Skipped: 1,
-            Succeeded: 2,
-            Failed: 3,
-            Finished: 4
+            Queued: 0,
+            Processing: 1,
+            Skipped: 2,
+            Succeeded: 3,
+            Failed: 4,
+            Finished: 5
         };
 
         $(function() {
@@ -164,7 +165,7 @@
                 if (!progress || progress.finished) {
                     deviceProgress[update.DeviceName] = progress = {
                         finished: false,
-                        state: ProgressState.Processing,
+                        state: ProgressState.Queued,
                         updates: []
                     };
 
@@ -200,11 +201,12 @@
                 }
 
                 const panel = $("#" + update.DeviceName + "Panel");
-                panel.removeClass("panel-default panel-info panel-success panel-warning panel-danger");
+                panel.removeClass("panel-default panel-primary panel-info panel-success panel-warning panel-danger");
 
                 switch (update.State) {
+                    case ProgressState.Queued:
                     case ProgressState.Failed:
-                        progress.state = ProgressState.Failed;
+                        progress.state = update.State;
                         break;
 
                     case ProgressState.Finished:
@@ -218,9 +220,18 @@
                         progress.finished = true;
 
                         break;
+
+                    default:
+                        if (progress.State != ProgressState.Failed)
+                            progress.state = ProgressState.Processing;
+
+                        break;
                 }
 
                 switch (progress.state) {
+                    case ProgressState.Queued:
+                        panel.addClass("panel-primary");
+                        break;
                     case ProgressState.Processing:
                         panel.addClass("panel-info");
                         break;

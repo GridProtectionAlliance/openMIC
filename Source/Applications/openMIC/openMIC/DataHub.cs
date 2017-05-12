@@ -837,6 +837,7 @@ namespace openMIC
         #region [ I-Grid Operations ] 
 
         public const string DefaultIGridConnectionProfileName = "I-Grid Connection Profile";
+        public const string DefaultIGridConnectionProfileTaskQueueName = "I-Grid Connection Profile Task Queue";
 
         public int GetDefaultIGridProfileID() => DataContext.Connection.ExecuteScalar<int?>("SELECT ID FROM ConnectionProfile WHERE Name={0}", DefaultIGridConnectionProfileName) ?? 0;
 
@@ -904,14 +905,24 @@ namespace openMIC
 
         public int GetDefaultIGridConnectionProfileID()
         {
+            TableOperations<ConnectionProfileTaskQueue> profileTaskQueueTable = DataContext.Table<ConnectionProfileTaskQueue>();
             TableOperations<ConnectionProfile> profileTable = DataContext.Table<ConnectionProfile>();
             ConnectionProfile profile = profileTable.QueryRecordWhere("Name = {0}", DefaultIGridConnectionProfileName);
 
             if ((object)profile == null)
             {
+                ConnectionProfileTaskQueue profileTaskQueue = profileTaskQueueTable.NewRecord();
+                profileTaskQueue.Name = DefaultIGridConnectionProfileTaskQueueName;
+                profileTaskQueue.MaxThreadCount = 1;
+                profileTaskQueue.UseBackgroundThreads = false;
+                profileTaskQueue.Description = "Connection Profile Task for I-Grid Devices";
+                profileTaskQueueTable.AddNewRecord(profileTaskQueue);
+                profileTaskQueue = profileTaskQueueTable.QueryRecordWhere("Name = {0}", DefaultIGridConnectionProfileTaskQueueName);
+
                 profile = profileTable.NewRecord();
                 profile.Name = DefaultIGridConnectionProfileName;
                 profile.Description = "Connection Profile for I-Grid Devices";
+                profile.DefaultTaskQueueID = profileTaskQueue.ID;
                 profileTable.AddNewRecord(profile);
                 profile.ID = GetDefaultIGridConnectionProfileID();
 
@@ -921,9 +932,22 @@ namespace openMIC
                 if (taskCount == 0)
                 {
                     ConnectionProfileTask profileTask = profileTaskTable.NewRecord();
+                    ConnectionProfileTaskSettings profileTaskSettings = profileTask.Settings;
+
                     profileTask.ConnectionProfileID = profile.ID;
                     profileTask.Name = "I-Grid Default Downloader Task";
-                    profileTask.Settings = $@"fileExtensions=*.*; remotePath=/; localPath={Program.Host.Model.Global.DefaultLocalPath}; deleteOldLocalFiles=true; skipDownloadIfUnchanged=true; overwriteExistingLocalFiles=false; archiveExistingFilesBeforeDownload=false; synchronizeTimestamps=true; externalOperation=IGridDownloader.exe <DeviceID> <TaskID>; directoryNamingExpression=<YYYY><MM>\<DeviceFolderName>";
+
+                    profileTaskSettings.FileExtensions = "*.*";
+                    profileTaskSettings.RemotePath = "/";
+                    profileTaskSettings.LocalPath = Program.Host.Model.Global.DefaultLocalPath;
+                    profileTaskSettings.DeleteOldLocalFiles = true;
+                    profileTaskSettings.SkipDownloadIfUnchanged = true;
+                    profileTaskSettings.OverwriteExistingLocalFiles = false;
+                    profileTaskSettings.ArchiveExistingFilesBeforeDownload = false;
+                    profileTaskSettings.SynchronizeTimestamps = true;
+                    profileTaskSettings.ExternalOperation = "IGridDownloader.exe <DeviceID> <TaskID>";
+                    profileTaskSettings.DirectoryNamingExpression = @"<YYYY><MM>\<DeviceFolderName>";
+
                     profileTaskTable.AddNewRecord(profileTask);
                 }
             }
