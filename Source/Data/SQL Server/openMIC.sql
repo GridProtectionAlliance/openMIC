@@ -2988,6 +2988,34 @@ GO
 --END
 
 --GO 
+-- *******************************************************************************************
+-- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
+-- *******************************************************************************************
+CREATE VIEW [dbo].[LocalSchemaVersion] AS
+SELECT 1 AS VersionNumber
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ConnectionProfileTaskQueue](
+    [ID] [int] IDENTITY(1,1) NOT NULL,
+    [Name] [varchar](200) NOT NULL,
+    [MaxThreadCount] [int] NOT NULL CONSTRAINT [DF_ConnectionProfileTaskQueue_MaxThreadCount]  DEFAULT ((0)),
+    [UseBackgroundThreads] [bit] NOT NULL CONSTRAINT [DF_ConnectionProfileTaskQueue_UseBackgroundThreads]  DEFAULT ((0)),
+    [Description] [varchar](max) NULL,
+    [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTaskQueue_CreatedOn]  DEFAULT (getutcdate()),
+    [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTaskQueue_CreatedBy]  DEFAULT (suser_name()),
+    [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTaskQueue_UpdatedOn]  DEFAULT (getutcdate()),
+    [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTaskQueue_UpdatedBy]  DEFAULT (suser_name()),
+ CONSTRAINT [PK_ConnectionProfileTaskQueue] PRIMARY KEY CLUSTERED 
+(
+    [ID] ASC
+)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2995,6 +3023,7 @@ GO
 CREATE TABLE [dbo].[ConnectionProfile](
     [ID] [int] IDENTITY(1,1) NOT NULL,
     [Name] [varchar](200) NOT NULL,
+    [DefaultTaskQueueID] [int] NULL,
     [Description] [varchar](max) NULL,
     [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfile_CreatedOn]  DEFAULT (getutcdate()),
     [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfile_CreatedBy]  DEFAULT (suser_name()),
@@ -3005,8 +3034,8 @@ CREATE TABLE [dbo].[ConnectionProfile](
     [ID] ASC
 )WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-
 GO
+
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3016,6 +3045,7 @@ CREATE TABLE [dbo].[ConnectionProfileTask](
     [ConnectionProfileID] [int] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_ConnectionProfileID] DEFAULT (0),
     [Name] [varchar](200) NOT NULL,
     [Settings] [varchar](max) NULL,
+    [LoadOrder] [int] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_LoadOrder]  DEFAULT ((0)),
     [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_CreatedOn]  DEFAULT (getutcdate()),
     [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_CreatedBy]  DEFAULT (suser_name()),
     [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedOn]  DEFAULT (getutcdate()),
@@ -3025,50 +3055,48 @@ CREATE TABLE [dbo].[ConnectionProfileTask](
     [ID] ASC
 )WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-
 GO
 
 CREATE TABLE [dbo].[StatusLog](		
       [ID] [int] IDENTITY(1,1) NOT NULL,		
       [DeviceID] [int] NOT NULL,		
       [LastSuccess] [DateTime2] NULL,		
-	  [LastFailure] [DateTime2] NULL,		
+      [LastFailure] [DateTime2] NULL,		
       [Message] [varchar](max) NULL,
-	  [LastFile] [varchar](max) NULL,
+      [LastFile] [varchar](max) NULL,
       FileDownloadTimestamp [DateTime2](7) NULL
-
 )
-
 GO
 
 CREATE TABLE [dbo].[DownloadedFile](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
-	[DeviceID] [int] NOT NULL,
-	[File] [nvarchar](200) NOT NULL,
-	[Timestamp] [datetime2](7) NOT NULL,
-	[CreationTime] [datetime2](7) NOT NULL,
-	FileSize int Not NULL,
+    [ID] [int] IDENTITY(1,1) NOT NULL,
+    [DeviceID] [int] NOT NULL,
+    [File] [nvarchar](200) NOT NULL,
+    [Timestamp] [datetime2](7) NOT NULL,
+    [CreationTime] [datetime2](7) NOT NULL,
+    FileSize int Not NULL,
  CONSTRAINT [PK_DownloadedFile] PRIMARY KEY CLUSTERED 
 (
-	[ID] ASC
+    [ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-
 GO
 
 CREATE TABLE [dbo].[SentEmail](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
-	[DeviceID] [int] NOT NULL,
-	[Message] [nvarchar](max) NOT NULL,
-	[Timestamp] [datetime2](7) NOT NULL,
+    [ID] [int] IDENTITY(1,1) NOT NULL,
+    [DeviceID] [int] NOT NULL,
+    [Message] [nvarchar](max) NOT NULL,
+    [Timestamp] [datetime2](7) NOT NULL,
  CONSTRAINT [PK_SentEmail] PRIMARY KEY CLUSTERED 
 (
-	[ID] ASC
+    [ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-
 GO
 
+ALTER TABLE [dbo].[ConnectionProfile]  WITH CHECK ADD  CONSTRAINT [FK_ConnectionProfile_ConnectionProfileTaskQueue] FOREIGN KEY([DefaultTaskQueueID])
+REFERENCES [dbo].[ConnectionProfileTaskQueue] ([ID])
+GO
 
 ALTER TABLE [dbo].[ConnectionProfileTask]  WITH CHECK ADD  CONSTRAINT [FK_ConnectionProfileTask_ConnectionProfile] FOREIGN KEY([ConnectionProfileID])
 REFERENCES [dbo].[ConnectionProfile] ([ID])
@@ -3082,19 +3110,19 @@ GO
 
 CREATE NONCLUSTERED INDEX [IX_DownloadedFile_DeviceID] ON [dbo].[DownloadedFile]
 (
-	[DeviceID] ASC
+    [DeviceID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 
 CREATE NONCLUSTERED INDEX [IX_SentEmail_DeviceID] ON [dbo].[SentEmail]
 (
-	[DeviceID] ASC
+    [DeviceID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 
 CREATE NONCLUSTERED INDEX [IX_SentEmail_Timestamp] ON [dbo].[SentEmail]
 (
-	[Timestamp] ASC
+    [Timestamp] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 
@@ -3109,11 +3137,11 @@ GO
 --   AFTER UPDATE
 --AS 
 --BEGIN
-	
+
 --	SET NOCOUNT ON;
-	 
+
 --	DECLARE @html nvarchar(MAX);
-	
+
 --	SELECT * INTO #inserted FROM inserted
 
 --	EXEC spQueryToHtmlTable @html = @html OUTPUT,  @query = N'SELECT * FROM #inserted';
