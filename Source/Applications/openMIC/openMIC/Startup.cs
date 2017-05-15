@@ -21,6 +21,7 @@
 //
 //******************************************************************************************************
 
+using System;
 using System.Net;
 using System.Web.Http;
 using GSF.Web.Hosting;
@@ -60,6 +61,10 @@ namespace openMIC
 
             // Enabled detailed client errors
             hubConfig.EnableDetailedErrors = true;
+
+#if DEBUG
+            GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromMinutes(30);
+#endif
 
             // Enable cross-domain scripting
             app.UseCors(CorsOptions.AllowAll);

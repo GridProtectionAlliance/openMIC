@@ -29,6 +29,7 @@ using GSF.ComponentModel;
 using GSF.Configuration;
 using GSF.Data.Model;
 using GSF.TimeSeries.Adapters;
+using Newtonsoft.Json;
 
 namespace openMIC.Model
 {
@@ -236,6 +237,13 @@ namespace openMIC.Model
 
     public class ConnectionProfileTask
     {
+        #region [ Members ]
+
+        // Fields
+        private bool m_success;
+
+        #endregion
+
         #region [ Constructors ]
 
         public ConnectionProfileTask()
@@ -284,6 +292,7 @@ namespace openMIC.Model
         }
 
         [NonRecordField]
+        [JsonIgnore]
         public ConnectionProfileTaskSettings Settings
         {
             get;
@@ -321,6 +330,24 @@ namespace openMIC.Model
         {
             get;
             set;
+        }
+
+        [NonRecordField]
+        [JsonIgnore]
+        public bool Success => m_success;
+
+        #endregion
+
+        #region [ Methods ]
+
+        public void Reset()
+        {
+            m_success = true;
+        }
+
+        public void Fail()
+        {
+            m_success = false;
         }
 
         #endregion

@@ -596,12 +596,25 @@ namespace openMIC
                 Ticks timestamp = DateTime.UtcNow.Ticks;
                 Dictionary<MeasurementKey, Measurement> measurements = OutputMeasurements.Select(measurement => Measurement.Clone(measurement, timestamp)).ToDictionary(measurement => measurement.Key, measurement => measurement);
                 Group[] groups = m_sequences.SelectMany(sequence => sequence.Groups).ToArray();
-                int measurementsReceived = 0;
 
+                int measurementsReceived = 0;
                 int overallTasksCompleted = 0;
                 int overallTasksCount = m_sequences.Count + 1;
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, "Starting polling operation...", overallTasksCompleted, overallTasksCount));
+
                 OnStatusMessage(MessageLevel.Info, $"Executing poll operation {m_pollOperations + 1}.");
+
+                // Entering the queued state will clear the message well on the UI
+                OnProgressUpdated(this, new ProgressUpdate() { State = ProgressState.Queued });
+
+                OnProgressUpdated(this, new ProgressUpdate()
+                {
+                    State = ProgressState.Processing,
+                    Message = "Starting polling operation...",
+                    OverallProgress = overallTasksCompleted,
+                    OverallProgressTotal = overallTasksCount,
+                    Progress = 0,
+                    ProgressTotal = 1
+                });
 
                 // Handle read/write operations for sequence groups
                 try
@@ -610,7 +623,11 @@ namespace openMIC
                     {
                         foreach (Group group in sequence.Groups)
                         {
-                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Executing poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\"...", 0, group.PointCount));
+                            OnProgressUpdated(this, new ProgressUpdate()
+                            {
+                                Message = $"Executing poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\"...",
+                                Progress = 0
+                            });
 
                             switch (group.Type)
                             {
@@ -634,11 +651,16 @@ namespace openMIC
                                     break;
                             }
 
-                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Completed poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\".", group.PointCount, group.PointCount));
+                            OnProgressUpdated(this, new ProgressUpdate()
+                            {
+                                Message = $"Completed poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\".",
+                                Progress = 1
+                            });
+
                             Thread.Sleep(m_interSequenceGroupPollDelay);
                         }
 
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++overallTasksCompleted, overallTasksCount));
+                        OnProgressUpdated(this, new ProgressUpdate() { OverallProgress = ++overallTasksCompleted });
                     }
                 }
                 catch
@@ -647,7 +669,7 @@ namespace openMIC
                     throw;
                 }
 
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, "Processing derived values...", 0, m_derivedValues.Count));
+                OnProgressUpdated(this, new ProgressUpdate() { Message = "Processing derived values...", Progress = 0, ProgressTotal = m_derivedValues.Count });
 
                 // Calculate derived values
                 foreach (KeyValuePair<MeasurementKey, DerivedValue> item in m_derivedValues)
@@ -753,20 +775,31 @@ namespace openMIC
                     }
 
                     if (measurementsReceived % 20 == 0)
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, null, measurementsReceived, m_derivedValues.Count));
+                        OnProgressUpdated(this, new ProgressUpdate() { Progress = measurementsReceived });
                 }
 
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, "Completed derived value processing.", m_derivedValues.Count, m_derivedValues.Count));
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, "Polling operation complete.", overallTasksCount, overallTasksCount));
-
                 OnNewMeasurements(measurements.Values.ToArray());
-
                 m_measurementsReceived += measurementsReceived;
                 m_pollOperations++;
+
+                OnProgressUpdated(this, new ProgressUpdate()
+                {
+                    State = ProgressState.Success,
+                    Message = "Polling operation complete",
+                    Summary = $"{m_measurementsReceived} Values Processed",
+                    Progress = m_derivedValues.Count,
+                    OverallProgress = overallTasksCount
+                });
             }
             catch (Exception ex)
             {
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed during poll operation: {ex.Message}", 1, 1));
+                OnProgressUpdated(this, new ProgressUpdate()
+                {
+                    State = ProgressState.Fail,
+                    Message = $"Failed during poll operation: {ex.Message}",
+                    OverallProgress = 1,
+                    OverallProgressTotal = 1
+                });
 
                 // Restart connection cycle when an exception occurs
                 Start();
@@ -775,7 +808,6 @@ namespace openMIC
             finally
             {
                 m_measurementsExpected += OutputMeasurements.Length;
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Finished, true, null, 1, 1));
             }
         }
 

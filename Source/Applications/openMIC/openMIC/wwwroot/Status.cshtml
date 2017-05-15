@@ -117,7 +117,7 @@
                 if (!hubIsConnected)
                     return;
 
-                dataHub.queryEnabledDevices(self.itemLimit(), self.filterText).done(function(devices) {
+                return dataHub.queryEnabledDevices(self.itemLimit(), self.filterText).done(function(devices) {
                     self.items.removeAll();
                     self.items(devices);
 
@@ -146,105 +146,110 @@
         const ProgressState = {
             Queued: 0,
             Processing: 1,
-            Skipped: 2,
-            Succeeded: 3,
-            Failed: 4,
-            Finished: 5
+            PartialSuccess: 2,
+            Success: 3,
+            Fail: 4
         };
 
         $(function() {
             var deviceProgress = { };
 
-            dataHubClient.deviceProgressUpdate = function(update) {
-                update.DeviceName = viewModel.fixAcronym(update.DeviceName);
+            dataHubClient.deviceProgressUpdate = function(deviceName, updates) {
+                var fixedDeviceName = viewModel.fixAcronym(deviceName);
+                const messageWell = $("#" + fixedDeviceName + "Message");
+                var progress = deviceProgress[deviceName];
 
-                const messageWell = $("#" + update.DeviceName + "Message");
+                $.each(updates, function (_, update) {
+                    if (!progress || update.State === ProgressState.Queued) {
+                        deviceProgress[deviceName] = progress = {
+                            state: update.State,
+                            lastMessageText: "",
+                            lastErrorMessageText: "",
+                            progress: 0,
+                            progressTotal: 1,
+                            overallProgress: 0,
+                            overallProgressTotal: 1,
+                            messages: []
+                        };
 
-                var progress = deviceProgress[update.DeviceName];
-
-                if (!progress || progress.finished) {
-                    deviceProgress[update.DeviceName] = progress = {
-                        finished: false,
-                        state: ProgressState.Queued,
-                        updates: []
-                    };
-
-                    messageWell.text("");
-                }
-
-                if (notNull(update.ProgressMessage).length > 0) {
-                    var messageText = update.ProgressMessage.substring("[yyyy-MM-dd HH:mm:ss.fff] ".length);
-                    var lastMessageText = "";
-
-                    if (progress.updates.length > 0)
-                        lastMessageText = progress.updates[progress.updates.length - 1].message.substring("[yyyy-MM-dd HH:mm:ss.fff] ".length);
-
-                    if (messageText !== lastMessageText) {
-                        progress.updates.push({ state: update.State, message: update.ProgressMessage });
-                        messageWell.append(update.ProgressMessage).append($("<br>"));
+                        messageWell.text("");
                     }
-                }
 
-                if (update.TotalFilesDownloaded > 0)
-                    $("#" + update.DeviceName + "Heading").text(update.DeviceName + ": " + update.FilesDownloaded.toLocaleString() + " Downloads (" + update.TotalFilesDownloaded.toLocaleString() + " Total)");
-                else if (update.ValuesProcessed > 0)
-                    $("#" + update.DeviceName + "Heading").text(update.DeviceName + ": " + update.ValuesProcessed.toLocaleString() + " Processed Values");
-                else
-                    $("#" + update.DeviceName + "Heading").text(update.DeviceName);
-
-                const progressBar = $("#" + update.DeviceName + (update.TargetIsOverall ? "Overall" : "Current") + "Progress");
-                const progressValue = Math.ceil(update.ProgressComplete / update.ProgressTotal * 100.0);
-
-                if (isNumber(progressValue)) {
-                    progressBar.text(progressValue.toString() + "%");
-                    progressBar.css("width", progressBar.text());
-                }
-
-                const panel = $("#" + update.DeviceName + "Panel");
-                panel.removeClass("panel-default panel-primary panel-info panel-success panel-warning panel-danger");
-
-                switch (update.State) {
-                    case ProgressState.Queued:
-                    case ProgressState.Failed:
+                    if (update.State !== undefined)
                         progress.state = update.State;
-                        break;
 
-                    case ProgressState.Finished:
-                        if (progress.state == ProgressState.Processing) {
-                            if (update.FilesDownloaded > 0 || update.ValuesProcessed > 0)
-                                progress.state = ProgressState.Succeeded;
-                            else
-                                progress.state = ProgressState.Skipped;
+                    if (notNull(update.Message).length > 0) {
+                        var messageText = update.Message.substring("[yyyy-MM-dd HH:mm:ss.fff] ".length);
+
+                        if (messageText !== progress.lastMessageText) {
+                            progress.lastMessageText = messageText;
+                            progress.messages.push(update.Message);
+                            messageWell.append(update.Message).append($("<br>"));
                         }
+                    }
 
-                        progress.finished = true;
+                    if (notNull(update.ErrorMessage).length > 0) {
+                        var messageText = update.ErrorMessage.substring("[yyyy-MM-dd HH:mm:ss.fff] ".length);
 
-                        break;
+                        if (messageText !== progress.lastErrorMessageText) {
+                            progress.lastErrorMessageText = messageText;
 
-                    default:
-                        if (progress.State != ProgressState.Failed)
-                            progress.state = ProgressState.Processing;
+                            var message = '<span style="color: red">' + update.ErrorMessage + '</span>'
+                            progress.messages.push(message);
+                            messageWell.append(message).append($("<br>"));
+                        }
+                    }
 
-                        break;
-                }
+                    if (notNull(update.Summary).length > 0)
+                        $("#" + fixedDeviceName + "Heading").text(deviceName + ": " + update.Summary);
 
-                switch (progress.state) {
-                    case ProgressState.Queued:
-                        panel.addClass("panel-primary");
-                        break;
-                    case ProgressState.Processing:
-                        panel.addClass("panel-info");
-                        break;
-                    case ProgressState.Skipped:
-                        panel.addClass("panel-warning");
-                        break;
-                    case ProgressState.Succeeded:
-                        panel.addClass("panel-success");
-                        break;
-                    case ProgressState.Failed:
-                        panel.addClass("panel-danger");
-                        break;
-                }
+                    if (update.Progress !== undefined || update.ProgressTotal !== undefined) {
+                        var progressBar = $("#" + fixedDeviceName + "CurrentProgress");
+
+                        progress.progress = update.Progress || progress.progress;
+                        progress.progressTotal = update.ProgressTotal || progress.progressTotal;
+                        var progressValue = Math.ceil(progress.progress / progress.progressTotal * 100.0);
+
+                        if (isNumber(progressValue)) {
+                            progressBar.text(progressValue.toString() + "%");
+                            progressBar.css("width", progressBar.text());
+                        }
+                    }
+
+                    if (update.OverallProgress !== undefined || update.OverallProgressTotal !== undefined) {
+                        var progressBar = $("#" + fixedDeviceName + "OverallProgress");
+
+                        progress.overallProgress = update.OverallProgress || progress.overallProgress;
+                        progress.overallProgressTotal = update.OverallProgressTotal || progress.overallProgressTotal;
+                        var progressValue = Math.ceil(progress.overallProgress / progress.overallProgressTotal * 100.0);
+
+                        if (isNumber(progressValue)) {
+                            progressBar.text(progressValue.toString() + "%");
+                            progressBar.css("width", progressBar.text());
+                        }
+                    }
+
+                    const panel = $("#" + fixedDeviceName + "Panel");
+                    panel.removeClass("panel-default panel-primary panel-info panel-success panel-warning panel-danger");
+
+                    switch (progress.state) {
+                        case ProgressState.Queued:
+                            panel.addClass("panel-primary");
+                            break;
+                        case ProgressState.Processing:
+                            panel.addClass("panel-info");
+                            break;
+                        case ProgressState.PartialSuccess:
+                            panel.addClass("panel-warning");
+                            break;
+                        case ProgressState.Success:
+                            panel.addClass("panel-success");
+                            break;
+                        case ProgressState.Fail:
+                            panel.addClass("panel-danger");
+                            break;
+                    }
+                });
             }
 
             $("#pageHeader").append("@Raw(SearchFilter().ToString().RemoveDuplicateWhiteSpace().Replace("\r\n", ""))");
@@ -265,8 +270,10 @@
             ko.applyBindings(viewModel);
         });
 
-        $(window).on("hubConnected", function(event) {
-            viewModel.queryItems();
+        $(window).on("hubConnected", function (event) {
+            viewModel.queryItems().done(function () {
+                dataHub.queryDeviceStatus();
+            });
         });
 
         function queueNow(record) {

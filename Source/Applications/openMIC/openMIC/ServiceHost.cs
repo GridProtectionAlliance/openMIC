@@ -22,22 +22,21 @@
 //******************************************************************************************************
 
 using System;
-using System.Net;
-using System.Xml.Linq;
-using Microsoft.Owin.Hosting;
+using System.Collections.Generic;
+using System.Linq;
 using GSF;
 using GSF.ComponentModel;
 using GSF.Configuration;
 using GSF.IO;
 using GSF.Reflection;
-using GSF.TimeSeries;
 using GSF.Security.Model;
 using GSF.ServiceProcess;
-using GSF.Threading;
+using GSF.TimeSeries;
 using GSF.Web.Hosting;
 using GSF.Web.Model;
 using GSF.Web.Model.Handlers;
 using GSF.Web.Security;
+using Microsoft.Owin.Hosting;
 using openMIC.Model;
 
 namespace openMIC
@@ -94,6 +93,20 @@ namespace openMIC
         {
             get;
             private set;
+        }
+
+        /// <summary>
+        /// Gets the list of downloaders that were loaded into the input adapter collection.
+        /// </summary>
+        public List<Downloader> Downloaders
+        {
+            get
+            {
+                lock (InputAdapters)
+                {
+                    return InputAdapters.OfType<Downloader>().ToList();
+                }
+            }
         }
 
         /// <summary>

@@ -58,7 +58,7 @@
 @helper BodyRows()
 {
     <td width="35%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Name, click: $parent.viewPageRecord"></button></td>
-    <td width="60%" class="text-center"><div data-bind="text: $($element.parentElement).truncateToWidth(notNull(Settings).parseKeyValuePairs().get('fileextensions'), 2)"></div></td>
+    <td width="60%" class="text-center"><div data-bind="text: $($element.parentElement).truncateToWidth(notNull(ConnectionString).parseKeyValuePairs().get('fileextensions'), 2)"></div></td>
     <td width="5%" class="text-center valign-middle" nowrap>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
@@ -102,7 +102,7 @@
     <div class="col-md-6">
         @Raw(dataContext.AddInputField("get('externaloperation')", false, fieldLabel: "External operation application", fieldID: "inputExternalOperation", groupDataBinding: "with: $root.connectionString", toolTip: "External operation application will be provided connection profile task ID for parameter lookup", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('maximumfilesize')", false, inputType: "number", fieldLabel: "Maximum File Size to Download (MB)", fieldID: "inputMaximumFileSize", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddInputField("get('maximumfilecount')", false, inputType: "number", fieldLabel: "Maximum Files to Download (-1 = no limit)", fieldID: "inputMaximumFileCount", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))        
+        @Raw(dataContext.AddInputField("get('maximumfilecount')", false, inputType: "number", fieldLabel: "Maximum Files to Download (-1 = no limit)", fieldID: "inputMaximumFileCount", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('directorynamingexpression')", false, inputType: "text", fieldLabel: "Directory Naming Expression", fieldID: "inputDirectoryNamingExpression", groupDataBinding: "with: $root.connectionString", toolTip: "Available template fields include year as <YYYY> or <YY>, month as <MM>, day as <DD>, device name as <DeviceName>, device acronym as <DeviceAcronym>, device folder name as <DeviceFolderName> and connection profile name as <ProfileName>", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('directoryauthusername')", false, fieldLabel: "Local Path Authentication User Name", fieldID: "inputDirectoryAuthUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('directoryauthpassword')", false, inputType: "password", fieldLabel: "Local Path Authentication Password", fieldID: "inputDirectoryAuthPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
@@ -111,7 +111,7 @@
     <div class="col-md-12">
         <div class="form-group">
             <label for="textConnectionString">Task Settings:</label>
-            <textarea class="form-control" rows="2" data-bind="text: Settings" id="textConnectionString" readonly></textarea>
+            <textarea class="form-control" rows="2" data-bind="text: ConnectionString" id="textConnectionString" readonly></textarea>
         </div>
     </div>
 }
@@ -157,12 +157,19 @@
             // Update connection string applying camel-case key names as defined in default connection string
             const updates = new Dictionary(defaultConnectionString);
             updates.pushAll(viewModel.connectionString.toJSON());
-            viewModel.currentRecord().Settings(updates.joinKeyValuePairs());
+            viewModel.currentRecord().ConnectionString(updates.joinKeyValuePairs());
+        });
+
+        $(viewModel).on("newRecord", function (event, newRecord) {
+            // Update connection string applying camel-case key names as defined in default connection string
+            const updates = new Dictionary(defaultConnectionString);
+            newRecord.ConnectionString = updates.joinKeyValuePairs();
         });
 
         $(viewModel).on("beforeEdit", function(event, observableRecord) {
             // Add connection string reference to current observable record so it can participate in the validation group
             observableRecord._connectionstring = viewModel.connectionString;
+
             // Initialize selected connection profile ID
             observableRecord.ConnectionProfileID(@parentID);
         });
@@ -188,7 +195,7 @@
             }
 
             // Update observable dictionary with parsed key/value pairs of current connection string
-            const currentConnectionString = notNull(viewModel.currentRecord().Settings()).parseKeyValuePairs();
+            const currentConnectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
             currentConnectionString.updateObservableDictionary(viewModel.connectionString, true);
 
             viewModel.isDirty(false);
@@ -209,12 +216,6 @@
                 const dismissButtons = $("#editTasksDialog", window.parent.document).find("button[data-dismiss]");
                 dismissButtons.prop("disabled", true);
                 dismissButtons.invisible();
-
-                if (viewModel.recordMode() == RecordMode.AddNew) {
-                    viewModel.currentRecord().Settings(defaultConnectionString.joinKeyValuePairs());
-                    $('#textConnectionString').val(viewModel.currentRecord().Settings());
-                }
-
             });
 
             $("#addNewEditDialog").on("hidden.bs.modal", function () {

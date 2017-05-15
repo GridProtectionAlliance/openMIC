@@ -24,10 +24,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.AspNet.SignalR;
 using GSF;
 using GSF.ComponentModel.DataAnnotations;
 using GSF.Configuration;
@@ -37,6 +37,7 @@ using GSF.IO;
 using GSF.Web.Hubs;
 using GSF.Web.Model.HubOperations;
 using GSF.Web.Security;
+using Microsoft.AspNet.SignalR;
 using openMIC.Model;
 
 namespace openMIC
@@ -91,8 +92,6 @@ namespace openMIC
 
         #region [ Static ]
 
-        // Static Properties
-
         // Static Fields
         private static int s_downloaderProtocolID;
         private static int s_modbusProtocolID;
@@ -104,7 +103,7 @@ namespace openMIC
         static DataHub()
         {
             Downloader.ProgressUpdated += ProgressUpdated;
-            ModbusPoller.ProgressUpdated += ProgressUpdated;
+            ModbusPoller.ProgressUpdated += (sender, args) => ProgressUpdated(sender, new EventArgs<string, List<ProgressUpdate>>(null, new List<ProgressUpdate>() { args.Argument }));
 
             s_digits = "0123456789".ToCharArray();
 
@@ -117,31 +116,32 @@ namespace openMIC
             };
         }
 
-        private static void ProgressUpdated(object sender, EventArgs<ProgressUpdate> e)
+        private static void ProgressUpdated(object sender, EventArgs<string, List<ProgressUpdate>> e)
         {
-            ProgressUpdate update = e.Argument;
-
             Downloader downloader = sender as Downloader;
+            string deviceName = null;
 
             if ((object)downloader != null)
-            {
-                update.DeviceName = downloader.Name;
-                update.FilesDownloaded = downloader.FilesDownloaded;
-                update.TotalFilesDownloaded = downloader.TotalFilesDownloaded;
-            }
+                deviceName = downloader.Name;
 
             ModbusPoller modbusPoller = sender as ModbusPoller;
 
             if ((object)modbusPoller != null)
-            {
-                update.DeviceName = modbusPoller.Name;
-                update.ValuesProcessed = modbusPoller.MeasurementsReceived;
-            }
+                deviceName = modbusPoller.Name;
 
-            if (!string.IsNullOrEmpty(update.ProgressMessage))
-                update.ProgressMessage = $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}] {update.ProgressMessage}";
+            if ((object)deviceName == null)
+                return;
 
-            GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(e.Argument);
+            string clientID = e.Argument1;
+
+            List<object> updates = e.Argument2
+                .Select(update => update.AsExpandoObject())
+                .ToList();
+
+            if ((object)clientID != null)
+                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.Client(clientID).deviceProgressUpdate(deviceName, updates);
+            else
+                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(deviceName, updates);
         }
 
         #endregion
@@ -638,7 +638,7 @@ namespace openMIC
 
         #endregion
 
-        #region [ StatusLog Operations]
+        #region [ StatusLog Operations ]
 
         public StatusLog GetStatusLogForDevice(string deviceName)
         {
@@ -987,6 +987,15 @@ namespace openMIC
         #endregion
 
         #region [ Miscellaneous Functions ]
+
+        /// <summary>
+        /// Requests that the device send the current list of progress updates.
+        /// </summary>
+        public void QueryDeviceStatus()
+        {
+            foreach (Downloader downloader in Program.Host.Downloaders)
+                downloader.SendAllProgressUpdates(ConnectionID);
+        }
 
         /// <summary>
         /// Gets current user ID.

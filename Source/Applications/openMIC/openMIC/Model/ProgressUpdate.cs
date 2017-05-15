@@ -21,85 +21,99 @@
 //
 //******************************************************************************************************
 
+using System;
+using System.Dynamic;
+
 namespace openMIC.Model
 {
     public enum ProgressState
     {
         Queued,
         Processing,
-        Skipped,
-        Succeeded,
-        Failed,
-        Finished
+        PartialSuccess,
+        Success,
+        Fail
     }
 
     public class ProgressUpdate
     {
-        public ProgressUpdate()
-        {            
-        }
-
-        public ProgressUpdate(ProgressState state, bool targetIsOverall, string progressMessage, long progressComplete, long progressTotal)
-        {
-            State = state;
-            TargetIsOverall = targetIsOverall;
-            ProgressMessage = progressMessage;
-            ProgressComplete = progressComplete;
-            ProgressTotal = progressTotal;
-        }
-
-        public bool TargetIsOverall
+        public ProgressState? State
         {
             get;
             set;
         }
 
-        public ProgressState State
+        public long? OverallProgress
         {
             get;
             set;
         }
 
-        public string DeviceName
+        public long? OverallProgressTotal
         {
             get;
             set;
         }
 
-        public long ValuesProcessed
+        public long? Progress
         {
             get;
             set;
         }
 
-        public long FilesDownloaded
+        public long? ProgressTotal
         {
             get;
             set;
         }
 
-        public long TotalFilesDownloaded
+        public string Message
         {
             get;
             set;
         }
 
-        public long ProgressComplete
+        public string ErrorMessage
         {
             get;
             set;
         }
 
-        public long ProgressTotal
+        public string Summary
         {
             get;
             set;
         }
 
-        public string ProgressMessage
+        public object AsExpandoObject()
         {
-            get;
-            set;
+            dynamic obj = new ExpandoObject();
+
+            if (State != null)
+                obj.State = State;
+
+            if (OverallProgress != null)
+                obj.OverallProgress = OverallProgress;
+
+            if (OverallProgressTotal != null)
+                obj.OverallProgressTotal = OverallProgressTotal;
+
+            if (Progress != null)
+                obj.Progress = Progress;
+
+            if (ProgressTotal != null)
+                obj.ProgressTotal = ProgressTotal;
+
+            if (Message != null)
+                obj.Message = $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}] {Message}";
+
+            if (ErrorMessage != null)
+                obj.ErrorMessage = $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}] {ErrorMessage}";
+
+            if (Summary != null)
+                obj.Summary = Summary;
+
+            return obj;
         }
     }
 }
