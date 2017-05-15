@@ -23,6 +23,7 @@
 
 using System;
 using System.Net;
+using System.Security;
 using System.Web.Http;
 using GSF.Web.Hosting;
 using GSF.Web.Security;
@@ -47,9 +48,16 @@ namespace openMIC
             GlobalHost.DependencyResolver.Register(typeof(JsonSerializer), () => serializer);
 
             // Load security hub in application domain before establishing SignalR hub configuration
-            using (new SecurityHub()) { }
+            try
+            {
+                using (new SecurityHub()) { }
+            }
+            catch (Exception ex)
+            {
+                throw new SecurityException($"Failed to load Security Hub, validate database connection string in configuration file: {ex.Message}", ex);
+            }
 
-            // Configuration Windows Authentication for self-hosted web service
+            // Configure Windows Authentication for self-hosted web service
             HttpListener listener = (HttpListener)app.Properties["System.Net.HttpListener"];
             listener.AuthenticationSchemes = AuthenticationSchemes.Ntlm;
 
