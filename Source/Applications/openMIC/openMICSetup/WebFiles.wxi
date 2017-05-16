@@ -30,6 +30,9 @@
   <Component Id="Help_cshtml">
     <File Id="Help.cshtml" Name="Help.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Help.cshtml" />
   </Component>
+  <Component Id="IGridConfig_cshtml">
+    <File Id="IGridConfig.cshtml" Name="IGridConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\IGridConfig.cshtml" />
+  </Component>
   <Component Id="index_cshtml">
     <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
   </Component>
