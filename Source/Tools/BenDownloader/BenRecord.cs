@@ -21,25 +21,24 @@
 //
 //******************************************************************************************************
 
-
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BenDownloader
 {
     public class BenRecord
     {
-        #region [Members]
+        #region [ Members ]
+
+        // Fields
         private int m_id;
         private DateTime m_dateTime;
         private int m_size;
         private string m_name;
+
         #endregion
 
-        #region [Constructors]
+        #region [ Constructors ]
+
         public BenRecord(int recordId, DateTime recordDateTime, int recordSize, string name)
         {
             m_id = recordId;
@@ -47,9 +46,11 @@ namespace BenDownloader
             m_size = recordSize;
             m_name = name;
         }
+
         #endregion
 
-        #region [Accessors]
+        #region [ Properties ]
+
         public int Id
         {
             get
@@ -97,6 +98,7 @@ namespace BenDownloader
                 m_name = value;
             }
         }
+
         #endregion
     }
 }

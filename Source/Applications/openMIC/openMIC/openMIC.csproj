@@ -726,6 +726,8 @@ CALL "$(ProjectDir)PostBuildSetup.bat" "$(ProjectDir)bin" "$(TargetDir)*.dll"
 
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\BenDownloader\BenDownloader.exe"
 
+CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\BenDownloader\BenDownloader.exe.config"
+
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\IGridDownloader\IGridDownloader.exe"
 
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\IGridDownloader\Ionic.Zip.dll"

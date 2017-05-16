@@ -1360,6 +1360,10 @@ namespace openMIC
                 { "<DeviceAcronym>", m_deviceRecord.Acronym },
                 { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
                 { "<DeviceFolderPath>", GetLocalPathDirectory(settings) },
+                { "<ConnectionHostName>", ConnectionHostName },
+                { "<ConnectionUserName>", ConnectionUserName },
+                { "<ConnectionPassword>", ConnectionPassword },
+                { "<ConnectionTimeout>", ConnectionTimeout.ToString() },
                 { "<ProfileName>", m_connectionProfile.Name ?? "undefined" },
                 { "<TaskID>", task.ID.ToString() }
             };

@@ -1,4 +1,4 @@
-﻿ //******************************************************************************************************
+﻿//******************************************************************************************************
 //  Program.cs - Gbtc
 //
 //  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
@@ -21,7 +21,6 @@
 //
 //******************************************************************************************************
 
-
 using System;
 using System.IO;
 using GSF.Configuration;
@@ -30,54 +29,31 @@ namespace BenDownloader
 {
     class Program
     {
-        private static readonly ConfigurationFile s_openMicConfigurationFile = ConfigurationFile.Open(Directory.GetCurrentDirectory() + "\\openMIC.exe.Config");
-
-        public static ConfigurationFile OpenMiConfigurationFile
-        {
-            get
-            {
-                return s_openMicConfigurationFile;
-            }
-        }
-
         static void Main(string[] args)
         {
-
-
             try
             {
                 if (args.Length != 4)
                 {
-                    Log("Please pass four and only four parameters to BenDownloader...");
+                    Log("Please pass four and only four parameters to BenDownloader...", true);
                     return;
                 }
 
                 BenRunner br = new BenRunner(args[0], args[1], args[2], args[3]);
-
-                if (!br.XferAllFiles())
-                    throw new Exception("BEN Downloader failed...");
-                
+                br.TransferAllFiles();
             }
             catch(Exception ex)
             {
-                Log("Ben Downloader failed. Message: " + ex);
+                Log("Ben Downloader failed. Message: " + ex, true);
             }
-
         }
 
-        #region [Helper Functions]
         public static void Log(string logMessage, bool error = false)
         {
-            if(error)
-            {
-                Console.Error.WriteLine("openMIC: " + logMessage);
-            }
+            if (!error)
+                Console.WriteLine(logMessage);
             else
-            {
-                Console.WriteLine("openMIC: " + logMessage);
-            }
+                Console.Error.WriteLine(logMessage);
         }
-        #endregion
-
     }
 }
