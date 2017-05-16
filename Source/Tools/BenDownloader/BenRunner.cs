@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -249,7 +250,7 @@ namespace BenDownloader
         {
             string benLinCmdLine = ConfigurationFile.Current.Settings["systemSettings"]["BenlinkCommandLine"].Value;
             string benLogFilePath = Path.Combine(workingDirectory, BenLogFileName);
-            string cmdLine = string.Format(benLinCmdLine, workingDirectory.QuoteWrap(), benLogFilePath.QuoteWrap());
+            string cmdLine = string.Format(benLinCmdLine, GetShortPath(workingDirectory), GetShortPath(benLogFilePath));
             string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
 
             ProcessStartInfo psi = new ProcessStartInfo(cmdLineSplit[0])
@@ -264,6 +265,8 @@ namespace BenDownloader
             try
             {
                 s_lock?.WaitOne();
+
+                Program.Log($"Executing command \"{cmdLine}\"...");
 
                 using (Process m_process = Process.Start(psi))
                 {
@@ -363,12 +366,22 @@ namespace BenDownloader
             return myDate.ToString("yyMMdd,HHmmssfff") + "," + tzoffset + timeStampType + "," + m_siteName.Replace(" ", "_") + "," + m_serialNumber + ",TVA," + recordId;
         }
 
+        private string GetShortPath(string longPathName)
+        {
+            StringBuilder shortNameBuffer = new StringBuilder(256);
+            int bufferSize = GetShortPathName(longPathName, shortNameBuffer, shortNameBuffer.Capacity);
+            if (bufferSize == 0) throw new System.ComponentModel.Win32Exception();
+            return shortNameBuffer.ToString();
+        }
+
         #endregion
 
         #region [ Static ]
 
+        // Static Fields
         private static Semaphore s_lock;
 
+        // Static Constructor
         static BenRunner()
         {
             int setting = ConfigurationFile.Current.Settings["systemSettings"]["BenlinkInstanceCount"]?.ValueAsInt32() ?? 0;
@@ -376,6 +389,10 @@ namespace BenDownloader
             if (setting > 0)
                 s_lock = new Semaphore(setting, setting, "BenRunner");
         }
+
+        // Static Methods
+        [DllImport("kernel32", EntryPoint = "GetShortPathName", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int GetShortPathName(string longPath, StringBuilder shortPath, int bufSize);
 
         #endregion
     }
