@@ -306,7 +306,10 @@ namespace BenDownloader
                 }
             }
 
-            Program.Log($"Successfully downloaded {fileCount} files.");
+            if (fileCount > 0)
+                Program.Log($"Successfully downloaded {fileCount} files.");
+            else
+                Program.Log("Failed to download any files.", true);
         }
 
         private BenRecord GetLastDownloadedFile()
