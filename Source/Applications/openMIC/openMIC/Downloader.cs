@@ -756,16 +756,15 @@ namespace openMIC
             {
                 if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks))
                 {
-                    ProgressUpdate lastUpdate = m_trackedProgressUpdates.LastOrDefault();
-
-                    if (lastUpdate?.State != ProgressState.Queued)
-                        m_trackedProgressUpdates.Clear();
+                    ProgressUpdate lastSummary = m_trackedProgressUpdates.LastOrDefault(update => update.Summary != null);
+                    string summary = "Queued for download... " + (lastSummary?.Summary ?? string.Empty);
+                    m_trackedProgressUpdates.Clear();
 
                     OnProgressUpdated(this, new ProgressUpdate()
                     {
                         State = ProgressState.Queued,
                         Message = "Connection profile tasks queued at high priority.",
-                        Summary = "Queued for download...",
+                        Summary = summary.Trim(),
                         Progress = 0,
                         ProgressTotal = 1,
                         OverallProgress = 0,
@@ -1762,13 +1761,15 @@ namespace openMIC
                 {
                     if (instance.m_connectionProfileTaskQueue.QueueAction(instance.ExecuteTasks))
                     {
+                        ProgressUpdate lastSummary = instance.m_trackedProgressUpdates.LastOrDefault(update => update.Summary != null);
+                        string summary = "Queued for download... " + (lastSummary?.Summary ?? string.Empty);
                         instance.m_trackedProgressUpdates.Clear();
 
                         OnProgressUpdated(instance, new ProgressUpdate()
                         {
                             State = ProgressState.Queued,
                             Message = "Queued tasks at normal priority.",
-                            Summary = "Queued for download...",
+                            Summary = summary.Trim(),
                             Progress = 0,
                             ProgressTotal = 1,
                             OverallProgress = 0,
