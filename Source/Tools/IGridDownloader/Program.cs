@@ -135,6 +135,8 @@ namespace IGridDownloader
             ConnectionProfile profile = profileTable.QueryRecordWhere("ID = {0}", deviceConnectionString["connectionProfileID"]);
 
             TableOperations<ConnectionProfileTask> profileTaskTable = new TableOperations<ConnectionProfileTask>(connection);
+            profileTaskTable.RootQueryRestriction[0] = profile.ID;
+
             ConnectionProfileTask profileTask = profileTaskTable.QueryRecordWhere("ID = {0}", profileTaskID);
             ConnectionProfileTaskSettings profileTaskSettings = profileTask.Settings;
 

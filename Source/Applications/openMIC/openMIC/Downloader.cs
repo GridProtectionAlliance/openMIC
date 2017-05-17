@@ -530,23 +530,25 @@ namespace openMIC
             {
                 return base.DataSource;
             }
-
             set
             {
                 base.DataSource = value;
 
-                // ReloadConfig was requested, take this opportunity to reload connection profile tasks...
-                ThreadPool.QueueUserWorkItem(state =>
+                if (Initialized)
                 {
-                    try
+                    // ReloadConfig was requested, take this opportunity to reload connection profile tasks...
+                    ThreadPool.QueueUserWorkItem(state =>
                     {
-                        LoadTasks();
-                    }
-                    catch (Exception ex)
-                    {
-                        OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to reload connection profile tasks: {ex.Message}", ex));
-                    }
-                });
+                        try
+                        {
+                            LoadTasks();
+                        }
+                        catch (Exception ex)
+                        {
+                            OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to reload connection profile tasks: {ex.Message}", ex));
+                        }
+                    });
+                }
             }
         }
 
@@ -806,7 +808,9 @@ namespace openMIC
 
                     m_deviceRecord = deviceTable.QueryRecordWhere("Acronym = {0}", Name);
                     m_connectionProfile = connectionProfileTable.LoadRecord(ConnectionProfileID);
-                    IEnumerable<ConnectionProfileTask> tasks = connectionProfileTaskTable.QueryRecords("LoadOrder ASC", new RecordRestriction("ConnectionProfileID={0}", ConnectionProfileID));
+
+                    connectionProfileTaskTable.RootQueryRestriction[0] = ConnectionProfileID;
+                    IEnumerable<ConnectionProfileTask> tasks = connectionProfileTaskTable.QueryRecords("LoadOrder");
 
                     if ((object)taskQueue == null && (object)m_connectionProfile.DefaultTaskQueueID != null)
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("ID = {0}", m_connectionProfile.DefaultTaskQueueID.GetValueOrDefault());

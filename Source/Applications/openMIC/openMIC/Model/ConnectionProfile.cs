@@ -24,10 +24,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using GSF.ComponentModel;
+using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
 namespace openMIC.Model
 {
+    [PrimaryLabel("Name")]
     public class ConnectionProfile
     {
         [PrimaryKey(true)]

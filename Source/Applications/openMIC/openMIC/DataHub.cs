@@ -395,14 +395,16 @@ namespace openMIC
         public int QueryConnectionProfileTaskCount(int parentID, string filterText)
         {
             TableOperations<ConnectionProfileTask> connectionProfileTaskTable = DataContext.Table<ConnectionProfileTask>();
-            return connectionProfileTaskTable.QueryRecordCount(new RecordRestriction("ConnectionProfileID = {0}", parentID) + connectionProfileTaskTable.GetSearchRestriction(filterText));
+            connectionProfileTaskTable.RootQueryRestriction[0] = parentID;
+            return connectionProfileTaskTable.QueryRecordCount(filterText);
         }
 
         [RecordOperation(typeof(ConnectionProfileTask), RecordOperation.QueryRecords)]
         public IEnumerable<ConnectionProfileTask> QueryConnectionProfileTasks(int parentID, string sortField, bool ascending, int page, int pageSize, string filterText)
         {
             TableOperations<ConnectionProfileTask> connectionProfileTaskTable = DataContext.Table<ConnectionProfileTask>();
-            return connectionProfileTaskTable.QueryRecords(sortField, ascending, page, pageSize, new RecordRestriction("ConnectionProfileID = {0}", parentID) + connectionProfileTaskTable.GetSearchRestriction(filterText));
+            connectionProfileTaskTable.RootQueryRestriction[0] = parentID;
+            return connectionProfileTaskTable.QueryRecords(sortField, ascending, page, pageSize, filterText);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -927,7 +929,8 @@ namespace openMIC
                 profile.ID = GetDefaultIGridConnectionProfileID();
 
                 TableOperations<ConnectionProfileTask> profileTaskTable = DataContext.Table<ConnectionProfileTask>();
-                int taskCount = profileTaskTable.QueryRecordCountWhere("ConnectionProfileID = {0}", profile.ID);
+                profileTaskTable.RootQueryRestriction[0] = profile.ID;
+                int taskCount = profileTaskTable.QueryRecordCount();
 
                 if (taskCount == 0)
                 {

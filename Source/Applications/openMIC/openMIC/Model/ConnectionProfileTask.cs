@@ -26,6 +26,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using GSF.ComponentModel;
+using GSF.ComponentModel.DataAnnotations;
 using GSF.Configuration;
 using GSF.Data.Model;
 using GSF.TimeSeries.Adapters;
@@ -235,6 +236,8 @@ namespace openMIC.Model
         }
     }
 
+    [PrimaryLabel("Name")]
+    [RootQueryRestriction("ConnectionProfileID = {0}", 0)]
     public class ConnectionProfileTask
     {
         #region [ Members ]
