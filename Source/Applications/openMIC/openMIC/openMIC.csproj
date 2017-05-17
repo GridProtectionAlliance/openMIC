@@ -327,6 +327,8 @@
     <Content Include="wwwroot\Content\bootstrap-theme.min.css.map" />
     <Content Include="wwwroot\Content\bootstrap.css.map" />
     <Content Include="wwwroot\Content\bootstrap.min.css.map" />
+    <Content Include="wwwroot\Content\jquery.jspanel.css" />
+    <Content Include="wwwroot\Content\jquery.jspanel.min.css" />
     <Content Include="wwwroot\fonts\fontawesome-webfont.eot" />
     <Content Include="wwwroot\fonts\fontawesome-webfont.ttf" />
     <Content Include="wwwroot\fonts\fontawesome-webfont.woff" />
@@ -473,6 +475,8 @@
     <Content Include="wwwroot\Scripts\flot\Makefile" />
     <Content Include="wwwroot\Scripts\flot\NEWS.md" />
     <Content Include="wwwroot\Scripts\jquery-2.2.1.min.map" />
+    <Content Include="wwwroot\Scripts\jquery.jspanel.js" />
+    <Content Include="wwwroot\Scripts\jquery.jspanel.min.js" />
     <Content Include="wwwroot\Scripts\knockout.validation.min.js.map" />
     <Content Include="wwwroot\ConnectionProfileTasks.cshtml" />
     <Content Include="wwwroot\DirectoryBrowser.cshtml" />

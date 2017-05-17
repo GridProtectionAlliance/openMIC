@@ -149,6 +149,12 @@
   <Component Id="Content_jquery_ui_theme_min_css">
     <File Id="Content_jquery_ui.theme.min.css" Name="jquery-ui.theme.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery-ui.theme.min.css" />
   </Component>
+  <Component Id="Content_jquery_jspanel_css">
+    <File Id="Content_jquery.jspanel.css" Name="jquery.jspanel.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery.jspanel.css" />
+  </Component>
+  <Component Id="Content_jquery_jspanel_min_css">
+    <File Id="Content_jquery.jspanel.min.css" Name="jquery.jspanel.min.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery.jspanel.min.css" />
+  </Component>
   <Component Id="Content_Popup_css">
     <File Id="Content_Popup.css" Name="Popup.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Popup.css" />
   </Component>
@@ -859,6 +865,12 @@
   </Component>
   <Component Id="Scripts_jquery_ui_min_js">
     <File Id="Scripts_jquery_ui.min.js" Name="jquery-ui.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery-ui.min.js" />
+  </Component>
+  <Component Id="Scripts_jquery_jspanel_js">
+    <File Id="Scripts_jquery.jspanel.js" Name="jquery.jspanel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.jspanel.js" />
+  </Component>
+  <Component Id="Scripts_jquery_jspanel_min_js">
+    <File Id="Scripts_jquery.jspanel.min.js" Name="jquery.jspanel.min.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.jspanel.min.js" />
   </Component>
   <Component Id="Scripts_jquery_signalR_2_2_0_js">
     <File Id="Scripts_jquery.signalR_2.2.0.js" Name="jquery.signalR-2.2.0.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.signalR-2.2.0.js" />
