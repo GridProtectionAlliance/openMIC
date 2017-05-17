@@ -44,6 +44,7 @@ function hideInfoMessage() {
 }
 
 function showErrorMessage(message, timeout) {
+    hideErrorMessage();
     errorPanel = $.jsPanel({
         autoclose: timeout,
         template: jsPanel.tplContentOnly,
@@ -91,6 +92,7 @@ function showErrorMessage(message, timeout) {
 }
 
 function showInfoMessage(message, timeout) {
+    hideInfoMessage();
     infoPanel = $.jsPanel({
         autoclose: timeout,
         template: jsPanel.tplContentOnly,

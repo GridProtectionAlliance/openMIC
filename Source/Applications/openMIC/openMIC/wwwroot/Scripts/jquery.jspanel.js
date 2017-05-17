@@ -466,8 +466,14 @@ var jsPanel = {
             if (jsPop.autoposition || ( typeof jsPop === 'string' && jsPop.match(/DOWN|RIGHT|UP|LEFT/i))) {
 
                 const regex = /left-top|center-top|right-top|left-center|center|right-center|left-bottom|center-bottom|right-bottom/,
-                    parent = $(panel).parent(),
-                    match = document.getElementById(id).className.match(regex);
+                    parent = $(panel).parent();
+                var match;
+                    try{
+                        match = document.getElementById(id).className.match(regex);
+                    }
+                    catch(ex){
+                        match = false;
+                    }
 
                 if (match) {
                     jsPanel.lastbeforeclose = {
