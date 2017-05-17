@@ -1242,7 +1242,12 @@ namespace openMIC
                         if (settings.SynchronizeTimestamps)
                         {
                             FileInfo info = new FileInfo(wrapper.LocalPath);
-                            info.LastAccessTime = info.LastWriteTime = wrapper.RemoteFile.Timestamp;
+                            
+                            while (info.LastAccessTime != wrapper.RemoteFile.Timestamp || info.LastWriteTime != wrapper.RemoteFile.Timestamp)
+                            {
+                                info.LastAccessTime = info.LastWriteTime = wrapper.RemoteFile.Timestamp;
+                                info.Refresh();
+                            }
                         }
 
                         TryUpdateStatusLogTable(wrapper.RemoteFile, wrapper.LocalPath, true);
