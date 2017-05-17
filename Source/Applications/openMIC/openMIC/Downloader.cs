@@ -161,6 +161,18 @@ namespace openMIC
             }
         }
 
+        private class ProgressUpdateWrapper
+        {
+            public Downloader Instance { get; }
+            public ProgressUpdate Update { get; }
+
+            public ProgressUpdateWrapper(Downloader instance, ProgressUpdate update)
+            {
+                Instance = instance;
+                Update = update;
+            }
+        }
+
         // Constants
         private const int NormalPriorty = 1;
         private const int HighPriority = 2;
@@ -754,25 +766,17 @@ namespace openMIC
         [AdapterCommand("Queues scheduled tasks for immediate execution.", "Administrator", "Editor")]
         public void QueueTasks()
         {
-            lock (m_trackedProgressUpdates)
+            if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks))
             {
-                if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks))
+                OnProgressUpdated(this, new ProgressUpdate()
                 {
-                    ProgressUpdate lastSummary = m_trackedProgressUpdates.LastOrDefault(update => update.Summary != null);
-                    string summary = "Queued for download... " + (lastSummary?.Summary ?? string.Empty);
-                    m_trackedProgressUpdates.Clear();
-
-                    OnProgressUpdated(this, new ProgressUpdate()
-                    {
-                        State = ProgressState.Queued,
-                        Message = "Connection profile tasks queued at high priority.",
-                        Summary = summary.Trim(),
-                        Progress = 0,
-                        ProgressTotal = 1,
-                        OverallProgress = 0,
-                        OverallProgressTotal = 1
-                    });
-                }
+                    State = ProgressState.Queued,
+                    Message = "Connection profile tasks queued at high priority.",
+                    Progress = 0,
+                    ProgressTotal = 1,
+                    OverallProgress = 0,
+                    OverallProgressTotal = 1
+                });
             }
         }
 
@@ -1721,10 +1725,12 @@ namespace openMIC
         // Static Fields
         private static readonly ScheduleManager s_scheduleManager;
         private static readonly ConcurrentDictionary<string, Downloader> s_instances;
+        private static readonly List<ProgressUpdateWrapper> s_queuedProgressUpdates;
         private static readonly int s_maxDownloadThreshold;
         private static readonly int s_maxDownloadThresholdTimeWindow;
         private static readonly string[] s_statusLogInclusions;
         private static readonly string[] s_statusLogExclusions;
+        private static ICancellationToken s_progressUpdateCancellationToken;
 
         // Static Events
 
@@ -1749,6 +1755,8 @@ namespace openMIC
 
             s_instances = new ConcurrentDictionary<string, Downloader>();
 
+            s_queuedProgressUpdates = new List<ProgressUpdateWrapper>();
+
             s_scheduleManager = new ScheduleManager();
             s_scheduleManager.ScheduleDue += ScheduleManager_ScheduleDue;
             s_scheduleManager.Start();
@@ -1766,25 +1774,17 @@ namespace openMIC
 
             if (s_instances.TryGetValue(schedule.Name, out instance))
             {
-                lock (instance.m_trackedProgressUpdates)
+                if (instance.m_connectionProfileTaskQueue.QueueAction(instance.ExecuteTasks))
                 {
-                    if (instance.m_connectionProfileTaskQueue.QueueAction(instance.ExecuteTasks))
+                    OnProgressUpdated(instance, new ProgressUpdate()
                     {
-                        ProgressUpdate lastSummary = instance.m_trackedProgressUpdates.LastOrDefault(update => update.Summary != null);
-                        string summary = "Queued for download... " + (lastSummary?.Summary ?? string.Empty);
-                        instance.m_trackedProgressUpdates.Clear();
-
-                        OnProgressUpdated(instance, new ProgressUpdate()
-                        {
-                            State = ProgressState.Queued,
-                            Message = "Queued tasks at normal priority.",
-                            Summary = summary.Trim(),
-                            Progress = 0,
-                            ProgressTotal = 1,
-                            OverallProgress = 0,
-                            OverallProgressTotal = 1
-                        });
-                    }
+                        State = ProgressState.Queued,
+                        Message = "Queued tasks at normal priority.",
+                        Progress = 0,
+                        ProgressTotal = 1,
+                        OverallProgress = 0,
+                        OverallProgressTotal = 1
+                    });
                 }
             }
         }
@@ -1805,10 +1805,49 @@ namespace openMIC
 
         private static void OnProgressUpdated(Downloader instance, ProgressUpdate update)
         {
-            lock (instance.m_trackedProgressUpdates)
+            Action sendProgressUpdates = null;
+
+            sendProgressUpdates = new Action(() =>
             {
-                instance.m_trackedProgressUpdates.Add(update);
-                ProgressUpdated?.Invoke(instance, new EventArgs<string, List<ProgressUpdate>>(null, new List<ProgressUpdate>() { update }));
+                List<ProgressUpdateWrapper> queuedProgressUpdates;
+
+                lock (s_queuedProgressUpdates)
+                {
+                    queuedProgressUpdates = new List<ProgressUpdateWrapper>(s_queuedProgressUpdates);
+                    s_queuedProgressUpdates.Clear();
+                }
+
+                foreach (IGrouping<Downloader, ProgressUpdateWrapper> grouping in queuedProgressUpdates.GroupBy(wrapper => wrapper.Instance))
+                {
+                    lock (grouping.Key.m_trackedProgressUpdates)
+                    {
+                        foreach (ProgressUpdateWrapper wrapper in grouping)
+                        {
+                            if (wrapper.Update.State == ProgressState.Queued)
+                                wrapper.Instance.m_trackedProgressUpdates.Clear();
+
+                            wrapper.Instance.m_trackedProgressUpdates.Add(wrapper.Update);
+                        }
+
+                        ProgressUpdated?.Invoke(grouping.Key, new EventArgs<string, List<ProgressUpdate>>(null, ProgressUpdate.Flatten(grouping.Select(wrapper => wrapper.Update).ToList())));
+                    }
+                }
+
+                lock (s_queuedProgressUpdates)
+                {
+                    if (s_queuedProgressUpdates.Count > 0)
+                        s_progressUpdateCancellationToken = sendProgressUpdates.DelayAndExecute(100);
+                    else
+                        s_progressUpdateCancellationToken = null;
+                }
+            });
+
+            lock (s_queuedProgressUpdates)
+            {
+                s_queuedProgressUpdates.Add(new ProgressUpdateWrapper(instance, update));
+
+                if (s_progressUpdateCancellationToken == null)
+                    s_progressUpdateCancellationToken = sendProgressUpdates.DelayAndExecute(100);
             }
         }
 

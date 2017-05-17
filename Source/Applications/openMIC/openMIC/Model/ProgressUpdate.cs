@@ -151,6 +151,12 @@ namespace openMIC.Model
 
             foreach (ProgressUpdate update in updates)
             {
+                if (update.State == ProgressState.Queued)
+                {
+                    flatState = new ProgressUpdate();
+                    flattenedUpdates.Add(flatState);
+                }
+
                 if (update.State != null)
                     flatState.State = update.State;
 
