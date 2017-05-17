@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
 
 namespace openMIC.Model
@@ -37,6 +38,23 @@ namespace openMIC.Model
 
     public class ProgressUpdate
     {
+        #region [ Constructors ]
+
+        public ProgressUpdate()
+        {
+            Timestamp = DateTime.UtcNow;
+        }
+
+        #endregion
+
+        #region [ Properties ]
+
+        public DateTime Timestamp
+        {
+            get;
+            private set;
+        }
+
         public ProgressState? State
         {
             get;
@@ -85,6 +103,10 @@ namespace openMIC.Model
             set;
         }
 
+        #endregion
+
+        #region [ Methods ]
+
         public object AsExpandoObject()
         {
             dynamic obj = new ExpandoObject();
@@ -105,15 +127,74 @@ namespace openMIC.Model
                 obj.ProgressTotal = ProgressTotal;
 
             if (Message != null)
-                obj.Message = $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}] {Message}";
+                obj.Message = $"[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] {Message}";
 
             if (ErrorMessage != null)
-                obj.ErrorMessage = $"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}] {ErrorMessage}";
+                obj.ErrorMessage = $"[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] {ErrorMessage}";
 
             if (Summary != null)
                 obj.Summary = Summary;
 
             return obj;
         }
+
+        #endregion
+
+        #region [ Static ]
+
+        // Static Methods
+        public static List<ProgressUpdate> Flatten(List<ProgressUpdate> updates)
+        {
+            ProgressUpdate flatState = new ProgressUpdate();
+            List<ProgressUpdate> flattenedUpdates = new List<ProgressUpdate>() { flatState };
+            string lastMessage = null;
+
+            foreach (ProgressUpdate update in updates)
+            {
+                if (update.State != null)
+                    flatState.State = update.State;
+
+                if (update.OverallProgress != null)
+                    flatState.OverallProgress = update.OverallProgress;
+
+                if (update.OverallProgressTotal != null)
+                    flatState.OverallProgressTotal = update.OverallProgressTotal;
+
+                if (update.Progress != null)
+                    flatState.Progress = update.Progress;
+
+                if (update.ProgressTotal != null)
+                    flatState.ProgressTotal = update.ProgressTotal;
+
+                if (update.Summary != null)
+                    flatState.Summary = update.Summary;
+
+                if (update.Message != null && update.Message != lastMessage)
+                {
+                    lastMessage = update.Message;
+
+                    flattenedUpdates.Add(new ProgressUpdate()
+                    {
+                        Timestamp = update.Timestamp,
+                        Message = update.Message
+                    });
+                }
+
+                if (update.ErrorMessage != null && update.ErrorMessage != lastMessage)
+                {
+                    lastMessage = update.ErrorMessage;
+
+                    flattenedUpdates.Add(new ProgressUpdate()
+                    {
+                        Timestamp = update.Timestamp,
+                        ErrorMessage = update.ErrorMessage
+                    });
+                }
+            }
+
+            return flattenedUpdates;
+        }
+
+        #endregion
     }
 }

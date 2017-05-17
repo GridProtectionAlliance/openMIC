@@ -206,7 +206,9 @@
                     if (update.Progress !== undefined || update.ProgressTotal !== undefined) {
                         var progressBar = $("#" + fixedDeviceName + "CurrentProgress");
 
-                        progress.progress = update.Progress || progress.progress;
+                        if (update.Progress !== undefined)
+                            progress.progress = update.Progress;
+
                         progress.progressTotal = update.ProgressTotal || progress.progressTotal;
                         var progressValue = Math.ceil(progress.progress / progress.progressTotal * 100.0);
 
@@ -219,7 +221,9 @@
                     if (update.OverallProgress !== undefined || update.OverallProgressTotal !== undefined) {
                         var progressBar = $("#" + fixedDeviceName + "OverallProgress");
 
-                        progress.overallProgress = update.OverallProgress || progress.overallProgress;
+                        if (update.OverallProgress !== undefined)
+                            progress.overallProgress = update.OverallProgress;
+
                         progress.overallProgressTotal = update.OverallProgressTotal || progress.overallProgressTotal;
                         var progressValue = Math.ceil(progress.overallProgress / progress.overallProgressTotal * 100.0);
 

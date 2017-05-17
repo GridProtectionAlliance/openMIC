@@ -994,7 +994,7 @@ namespace openMIC
         public void QueryDeviceStatus()
         {
             foreach (Downloader downloader in Program.Host.Downloaders)
-                downloader.SendAllProgressUpdates(ConnectionID);
+                downloader.SendCurrentProgressState(ConnectionID);
         }
 
         /// <summary>

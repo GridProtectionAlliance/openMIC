@@ -1136,7 +1136,7 @@ namespace openMIC
             if (m_cancellationToken.IsCancelled)
                 return;
 
-            OnProgressUpdated(this, new ProgressUpdate() { OverallProgressTotal = totalBytes * m_overallTasksCount });
+            OnProgressUpdated(this, new ProgressUpdate() { OverallProgress = m_overallTasksCompleted * totalBytes, OverallProgressTotal = totalBytes * m_overallTasksCount });
 
             // Group files by destination directory so we can skip whole groups
             // of files if the directory does not exist and cannot be created
@@ -1632,11 +1632,12 @@ namespace openMIC
             OnProcessException(MessageLevel.Warning, e.GetException());
         }
 
-        public void SendAllProgressUpdates(string clientID)
+        public void SendCurrentProgressState(string clientID)
         {
             lock (m_trackedProgressUpdates)
             {
-                ProgressUpdated?.Invoke(this, new EventArgs<string, List<ProgressUpdate>>(clientID, m_trackedProgressUpdates));
+                List<ProgressUpdate> updates = ProgressUpdate.Flatten(m_trackedProgressUpdates);
+                ProgressUpdated?.Invoke(this, new EventArgs<string, List<ProgressUpdate>>(clientID, updates));
             }
         }
 
