@@ -75,6 +75,20 @@
             display: inline-table;
             vertical-align: middle;
         }
+
+        @@media screen {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -18px;
+            }
+        }
+
+        @@media screen and (min-width: 992px) {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -8px;
+            }
+        }
     </style>
 }
 @functions {
@@ -96,7 +110,7 @@
     }
 }
 <div style="display: none" search-header></div>
-<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span></h3>
+<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" src="Images/iGridConfigEditor.png" /></h3>
 <form class="form-inline">
     <label for="inputBaseURL">Base URL:</label>
     <div id="baseURLArea" class="input-group" data-bind="css: { 'has-error': !fieldIsValid(baseURL, true), 'has-feedback': !fieldIsValid(baseURL, true) }">

@@ -343,6 +343,27 @@
         input[type=text].exists {
             border: 3px solid #0C0;
         }
+
+        @@media screen {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -50px;
+            }
+        }
+
+        @@media screen and (min-width: 567px) {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -24px;
+            }
+        }
+
+        @@media screen and (min-width: 992px) {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -20px;
+            }
+        }
     </style>
     <!--[if IE]>
     <style type="text/css">
@@ -1376,6 +1397,8 @@
         });
 
         $(function() {
+            $("#pageHeader").css("margin-bottom", "-20px");
+
             viewModel.setReorderSequencePanels(reorderSequencePanels);
             viewModel.setLoadMappingComplete(loadMappingComplete);
 
@@ -1584,7 +1607,7 @@
         return principal.IsInRole("Administrator") || principal.IsInRole("Editor");
     }
 }
-<h3>Modbus Configuration Map Builder <span class="label label-info" id="editDeviceName"></span> <img class="pull-right" style="margin-top: -14px" src="Images/ModbusConfigEditor.png"/></h3>
+<h3>Modbus Configuration Map Builder <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" src="Images/ModbusConfigEditor.png"/></h3>
 @* Connection Settings and Status Panel *@
 <div class="panel panel-primary">
     <div class="panel-heading clearfix">

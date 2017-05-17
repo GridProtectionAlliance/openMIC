@@ -338,6 +338,7 @@
     <Content Include="wwwroot\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="wwwroot\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="wwwroot\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="wwwroot\Images\iGridConfigEditor.png" />
     <Content Include="wwwroot\ModbusConfigs\CellWatch\Global Information\Battery 1.json" />
     <Content Include="wwwroot\ModbusConfigs\CellWatch\Global Information\Battery 2.json" />
     <Content Include="wwwroot\ModbusConfigs\CellWatch\Global Information\Battery 3.json" />
