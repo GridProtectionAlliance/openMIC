@@ -157,9 +157,53 @@
             dataHubClient.deviceProgressUpdate = function(deviceName, updates) {
                 var fixedDeviceName = viewModel.fixAcronym(deviceName);
                 const messageWell = $("#" + fixedDeviceName + "Message");
+                const heading = $("#" + fixedDeviceName + "Heading");
                 var progress = deviceProgress[deviceName];
 
                 $.each(updates, function (_, update) {
+                    if (!progress) {
+                        heading.click(function () {
+                            $.each(viewModel.items(), function (_, item) {
+                                $("#" + viewModel.fixAcronym(item.Acronym) + "Message").text("");
+                            });
+
+                            var progress = deviceProgress[deviceName];
+
+                            $.each(progress.messages, function (_, message) {
+                                messageWell.append(message).append($("<br>"));
+                            });
+
+                            var progressBar;
+                            var progressValue;
+
+                            progressBar = $("#" + fixedDeviceName + "CurrentProgress");
+                            progressValue = Math.ceil(progress.progress / progress.progressTotal * 100.0);
+
+                            if (isNumber(progressValue)) {
+                                progressBar.text(progressValue.toString() + "%");
+                                progressBar.css("width", progressBar.text());
+
+                                if (progressValue < 100 && !progressBar.hasClass("active"))
+                                    progressBar.addClass("active");
+                                else if (progressValue == 100 && progressBar.hasClass("active"))
+                                    progressBar.removeClass("active");
+                            }
+
+                            progressBar = $("#" + fixedDeviceName + "OverallProgress");
+                            progressValue = Math.ceil(progress.overallProgress / progress.overallProgressTotal * 100.0);
+
+                            if (isNumber(progressValue)) {
+                                progressBar.text(progressValue.toString() + "%");
+                                progressBar.css("width", progressBar.text());
+
+                                if (progressValue < 100 && !progressBar.hasClass("active"))
+                                    progressBar.addClass("active");
+                                else if (progressValue == 100 && progressBar.hasClass("active"))
+                                    progressBar.removeClass("active");
+                            }
+                        });
+                    }
+
                     if (!progress || update.State === ProgressState.Queued) {
                         deviceProgress[deviceName] = progress = {
                             state: update.State,
@@ -175,8 +219,35 @@
                         messageWell.text("");
                     }
 
-                    if (update.State !== undefined)
+                    if (update.State !== undefined) {
+                        const panel = $("#" + fixedDeviceName + "Panel");
+                        panel.removeClass("panel-default panel-primary panel-info panel-success panel-warning panel-danger");
                         progress.state = update.State;
+
+                        switch (progress.state) {
+                            case ProgressState.Queued:
+                                panel.addClass("panel-primary");
+                                break;
+                            case ProgressState.Processing:
+                                panel.addClass("panel-info");
+                                break;
+                            case ProgressState.PartialSuccess:
+                                panel.addClass("panel-warning");
+                                break;
+                            case ProgressState.Success:
+                                panel.addClass("panel-success");
+                                break;
+                            case ProgressState.Fail:
+                                panel.addClass("panel-danger");
+                                break;
+                        }
+                    }
+
+                    if (notNull(update.Summary).length > 0)
+                        heading.text(deviceName + ": " + update.Summary);
+
+                    if (heading.hasClass("collapsed"))
+                        return;
 
                     if (notNull(update.Message).length > 0) {
                         var messageText = update.Message.substring("[yyyy-MM-dd HH:mm:ss.fff] ".length);
@@ -199,9 +270,6 @@
                             messageWell.append(message).append($("<br>"));
                         }
                     }
-
-                    if (notNull(update.Summary).length > 0)
-                        $("#" + fixedDeviceName + "Heading").text(deviceName + ": " + update.Summary);
 
                     if (update.Progress !== undefined || update.ProgressTotal !== undefined) {
                         var progressBar = $("#" + fixedDeviceName + "CurrentProgress");
@@ -241,27 +309,6 @@
                             else if (progressValue == 100 && progressBar.hasClass("active"))
                                 progressBar.removeClass("active");
                         }
-                    }
-
-                    const panel = $("#" + fixedDeviceName + "Panel");
-                    panel.removeClass("panel-default panel-primary panel-info panel-success panel-warning panel-danger");
-
-                    switch (progress.state) {
-                        case ProgressState.Queued:
-                            panel.addClass("panel-primary");
-                            break;
-                        case ProgressState.Processing:
-                            panel.addClass("panel-info");
-                            break;
-                        case ProgressState.PartialSuccess:
-                            panel.addClass("panel-warning");
-                            break;
-                        case ProgressState.Success:
-                            panel.addClass("panel-success");
-                            break;
-                        case ProgressState.Fail:
-                            panel.addClass("panel-danger");
-                            break;
                     }
                 });
             }
