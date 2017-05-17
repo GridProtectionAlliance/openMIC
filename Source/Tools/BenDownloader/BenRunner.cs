@@ -55,6 +55,7 @@ namespace BenDownloader
         private readonly string m_tempDirectoryPath;
         private readonly BenRecord m_lastFileDownloaded;
         private readonly int m_maxRetriesOnFileInUse;
+        private bool m_saveRequestsOnError;
 
         #endregion
 
@@ -77,6 +78,8 @@ namespace BenDownloader
                 Directory.Delete(m_tempDirectoryPath, true);
 
             Directory.CreateDirectory(m_tempDirectoryPath);
+
+            m_saveRequestsOnError = true;
         }
 
         #endregion
@@ -85,19 +88,81 @@ namespace BenDownloader
 
         public void TransferAllFiles()
         {
-            List<BenRecord> myFiles = GetFileList();
-
-            if (!myFiles.Any())
+            try
             {
-                Program.Log("File list retrieved. There are no files to download.");
-                return;
-            }
+                List<BenRecord> myFiles = GetFileList();
 
-            Program.Log($"File list retrieved. Proceeding to download {myFiles.Count} records.");
-            string workingDirectory = Path.Combine(m_tempDirectoryPath, "benfiles.req");
-            BuildBenLinkDLINI(workingDirectory, myFiles);
-            ExecBenCommand(workingDirectory);
-            UpdateTimestampsAndMoveFiles(workingDirectory);
+                if (!myFiles.Any())
+                {
+                    Program.Log("File list retrieved. There are no files to download.");
+                    return;
+                }
+
+                Program.Log($"File list retrieved. Proceeding to download {myFiles.Count} records.");
+                string workingDirectory = Path.Combine(m_tempDirectoryPath, "benfiles.req");
+
+                Directory.CreateDirectory(workingDirectory);
+
+                foreach (FileInfo file in new DirectoryInfo(Path.Combine(m_tempDirectoryPath, "bendir.req")).GetFiles())
+                {
+                    bool moveFile =
+                        !file.Name.Equals(BenDirFileName, StringComparison.OrdinalIgnoreCase) &&
+                        !file.Name.Equals(BenReqFileName, StringComparison.OrdinalIgnoreCase) &&
+                        !file.Name.Equals(BenRspFileName, StringComparison.OrdinalIgnoreCase) &&
+                        !file.Name.Equals(BenLogFileName, StringComparison.OrdinalIgnoreCase);
+
+                    if (moveFile)
+                        file.MoveTo(Path.Combine(workingDirectory, file.Name));
+                }
+
+                BuildBenLinkDLINI(workingDirectory, myFiles);
+                ExecBenCommand(workingDirectory);
+                UpdateTimestampsAndMoveFiles(workingDirectory);
+            }
+            catch
+            {
+                if (m_saveRequestsOnError)
+                {
+                    try
+                    {
+                        string now = DateTime.UtcNow.ToString("yyyy-MM-dd HH.mm");
+                        string tempDirectory = Path.Combine(Path.GetTempPath(), "BenDownloader", m_siteName);
+                        string request1FilePath = Path.Combine(tempDirectory, "bendir.req", BenReqFileName);
+                        string response1FilePath = Path.Combine(tempDirectory, "bendir.req", BenRspFileName);
+                        string log1FilePath = Path.Combine(tempDirectory, "bendir.req", BenLogFileName);
+                        string request2FilePath = Path.Combine(tempDirectory, "benfiles.req", BenReqFileName);
+                        string response2FilePath = Path.Combine(tempDirectory, "benfiles.req", BenRspFileName);
+                        string log2FilePath = Path.Combine(tempDirectory, "benfiles.req", BenLogFileName);
+
+                        Directory.CreateDirectory(Path.Combine("BenDownloader.logs", m_siteName, now, "bendir.req"));
+                        Directory.CreateDirectory(Path.Combine("BenDownloader.logs", m_siteName, now, "benfiles.req"));
+
+                        if (File.Exists(request1FilePath))
+                            File.Copy(request1FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "bendir.req", BenReqFileName), true);
+
+                        if (File.Exists(response1FilePath))
+                            File.Copy(response1FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "bendir.req", BenRspFileName), true);
+
+                        if (File.Exists(log1FilePath))
+                            File.Copy(log1FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "bendir.req", BenLogFileName), true);
+
+                        if (File.Exists(request2FilePath))
+                            File.Copy(request2FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "benfiles.req", BenReqFileName), true);
+
+                        if (File.Exists(response2FilePath))
+                            File.Copy(response2FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "benfiles.req", BenRspFileName), true);
+
+                        if (File.Exists(log2FilePath))
+                            File.Copy(log2FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "benfiles.req", BenLogFileName), true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.Log($"Failed to copy requests to BenDownloader.logs: {ex}", true);
+                    }
+                }
+
+                throw;
+            }
         }
 
         private List<BenRecord> GetFileList()
@@ -132,7 +197,10 @@ namespace BenDownloader
                     throw new Exception($"Error received from benlink: {errorMessage}");
 
                 if (m_maxRetriesOnFileInUse >= 0 && retries++ > m_maxRetriesOnFileInUse)
+                {
+                    m_saveRequestsOnError = false;
                     throw new Exception("Exceeded maximum number of benlink retries");
+                }
 
                 Program.Log($"Encountered FILE IN USE error; initiating retry attempt {retries}");
             }
@@ -152,7 +220,7 @@ namespace BenDownloader
                         continue;
                     }
 
-                    BenRecord record = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]), Get232Fn(Convert.ToDateTime(curRow[1]), curRow[0]));
+                    BenRecord record = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]), Get232Fn(Convert.ToDateTime(curRow[1]), curRow[0].Trim()));
 
                     if (record.DateTime > DateTime.UtcNow.AddDays(-30) && record.DateTime > m_lastFileDownloaded.DateTime && !File.Exists(Path.Combine(m_localPath, record.Name)))
                         downloadList.Add(record);
@@ -248,9 +316,12 @@ namespace BenDownloader
 
         private void ExecBenCommand(string workingDirectory)
         {
+            Directory.CreateDirectory(workingDirectory);
+
             string benLinCmdLine = ConfigurationFile.Current.Settings["systemSettings"]["BenlinkCommandLine"].Value;
-            string benLogFilePath = Path.Combine(workingDirectory, BenLogFileName);
-            string cmdLine = string.Format(benLinCmdLine, GetShortPath(workingDirectory), GetShortPath(benLogFilePath));
+            string shortPath = GetShortPath(workingDirectory);
+            string benLogFilePath = Path.Combine(shortPath, BenLogFileName);
+            string cmdLine = string.Format(benLinCmdLine, shortPath, benLogFilePath);
             string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
 
             ProcessStartInfo psi = new ProcessStartInfo(cmdLineSplit[0])
