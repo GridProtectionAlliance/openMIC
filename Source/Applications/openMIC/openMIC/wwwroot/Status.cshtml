@@ -215,6 +215,11 @@
                         if (isNumber(progressValue)) {
                             progressBar.text(progressValue.toString() + "%");
                             progressBar.css("width", progressBar.text());
+
+                            if (progressValue < 100 && !progressBar.hasClass("active"))
+                                progressBar.addClass("active");
+                            else if (progressValue == 100 && progressBar.hasClass("active"))
+                                progressBar.removeClass("active");
                         }
                     }
 
@@ -230,6 +235,11 @@
                         if (isNumber(progressValue)) {
                             progressBar.text(progressValue.toString() + "%");
                             progressBar.css("width", progressBar.text());
+
+                            if (progressValue < 100 && !progressBar.hasClass("active"))
+                                progressBar.addClass("active");
+                            else if (progressValue == 100 && progressBar.hasClass("active"))
+                                progressBar.removeClass("active");
                         }
                     }
 
