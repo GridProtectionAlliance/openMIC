@@ -246,16 +246,15 @@
                     if (notNull(update.Summary).length > 0)
                         heading.text(deviceName + ": " + update.Summary);
 
-                    if (heading.hasClass("collapsed"))
-                        return;
-
                     if (notNull(update.Message).length > 0) {
                         var messageText = update.Message.substring("[yyyy-MM-dd HH:mm:ss.fff] ".length);
 
                         if (messageText !== progress.lastMessageText) {
                             progress.lastMessageText = messageText;
                             progress.messages.push(update.Message);
-                            messageWell.append(update.Message).append($("<br>"));
+
+                            if (!heading.hasClass("collapsed"))
+                                messageWell.append(update.Message).append($("<br>"));
                         }
                     }
 
@@ -267,7 +266,9 @@
 
                             var message = '<span style="color: red">' + update.ErrorMessage + '</span>'
                             progress.messages.push(message);
-                            messageWell.append(message).append($("<br>"));
+
+                            if (!heading.hasClass("collapsed"))
+                                messageWell.append(message).append($("<br>"));
                         }
                     }
 
@@ -280,7 +281,7 @@
                         progress.progressTotal = update.ProgressTotal || progress.progressTotal;
                         var progressValue = Math.ceil(progress.progress / progress.progressTotal * 100.0);
 
-                        if (isNumber(progressValue)) {
+                        if (!heading.hasClass("collapsed") && isNumber(progressValue)) {
                             progressBar.text(progressValue.toString() + "%");
                             progressBar.css("width", progressBar.text());
 
@@ -300,7 +301,7 @@
                         progress.overallProgressTotal = update.OverallProgressTotal || progress.overallProgressTotal;
                         var progressValue = Math.ceil(progress.overallProgress / progress.overallProgressTotal * 100.0);
 
-                        if (isNumber(progressValue)) {
+                        if (!heading.hasClass("collapsed") && isNumber(progressValue)) {
                             progressBar.text(progressValue.toString() + "%");
                             progressBar.css("width", progressBar.text());
 
