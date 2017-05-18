@@ -8477,9 +8477,10 @@
             Defines a parameterized record restriction that can be applied to queries.
             </summary>
             <remarks>
-            Instances of <see cref="T:GSF.Data.Model.RecordRestriction"/> should be considered temporal and non-reusable
-            once used against a function in <see cref="T:GSF.Data.Model.TableOperations`1"/>. If a record restriction 
-            needs to be cached for re-use, use <see cref="M:GSF.Data.Model.RecordRestriction.Clone"/> for the table operation function.
+            For versatility, values in the <see cref="F:GSF.Data.Model.RecordRestriction.Parameters"/> array are mutable, however, this makes the
+            array vulnerable to unintended updates for long-lived instances. Consequently, the normal use-case
+            of record restriction instances should be considered temporal. If an instance needs to be cached,
+            consider use of the <see cref="M:GSF.Data.Model.RecordRestriction.Clone"/> function to reduce risk of unintended array updates.
             </remarks>
         </member>
         <member name="F:GSF.Data.Model.RecordRestriction.FilterExpression">
@@ -8540,12 +8541,6 @@
             Creates a deep copy of this record restriction.
             </summary>
             <returns>Deep copy of this record restriction.</returns>
-            <remarks>
-            Functions in the <see cref="T:GSF.Data.AdoDataConnection"/> will convert parameters into
-            <see cref="T:System.Data.IDbDataParameter"/> instances tied to a new <see cref="T:System.Data.IDbCommand"/>,
-            for this reason <see cref="T:GSF.Data.Model.RecordRestriction"/> instances are typically only
-            good for a single use. This function allows a cached instance to be re-used.
-            </remarks>
         </member>
         <member name="M:GSF.Data.Model.RecordRestriction.Equals(System.Object)">
             <summary>
@@ -8644,12 +8639,6 @@
             </summary>
             <param name="source">Record restriction to clone.</param>
             <returns>Deep copy of the <paramref name="source"/> record restriction.</returns>
-            <remarks>
-            Functions in the <see cref="T:GSF.Data.AdoDataConnection"/> will convert parameters into
-            <see cref="T:System.Data.IDbDataParameter"/> instances tied to a new <see cref="T:System.Data.IDbCommand"/>,
-            for this reason <see cref="T:GSF.Data.Model.RecordRestriction"/> instances are typically only
-            good for a single use. This function allows a cached instance to be re-used.
-            </remarks>
         </member>
         <member name="M:GSF.Data.Model.RecordRestriction.CombineAnd(GSF.Data.Model.RecordRestriction,GSF.Data.Model.RecordRestriction)">
             <summary>
