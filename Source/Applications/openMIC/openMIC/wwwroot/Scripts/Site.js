@@ -30,26 +30,25 @@ var securityHub, securityHubClient;
 var serviceHub, serviceHubClient;
 var hubIsConnecting = false;
 var hubIsConnected = false;
-var errorPanel = null;
-var infoPanel = null;
 
 function hideErrorMessage() {
-    if (errorPanel)
-        errorPanel.close();
+    if (jsPanel.activePanels.list.indexOf('errorPanel') >= 0)
+        jsPanel.activePanels.getPanel('errorPanel').close();
 }
 
 function hideInfoMessage() {
-    if (infoPanel)
-        infoPanel.close();
+    if (jsPanel.activePanels.list.indexOf('infoPanel') >= 0)
+        jsPanel.activePanels.getPanel('infoPanel').close();
 }
 
 function showErrorMessage(message, timeout) {
     hideErrorMessage();
-    errorPanel = $.jsPanel({
+    $.jsPanel({
+        id: 'errorPanel',
         autoclose: timeout,
         template: jsPanel.tplContentOnly,
         paneltype: 'hint',
-        position: 'right-top -5 5 DOWN',
+        position: "right-top -4 4",
         theme: 'red filledlight',
         border: '2px solid',
         contentSize: '500 auto',
@@ -89,15 +88,23 @@ function showErrorMessage(message, timeout) {
         }
     });
 
+    $(window).on('resize', function () {
+        if (jsPanel.activePanels.list.indexOf('errorPanel') >= 0)
+            jsPanel.activePanels.getPanel('errorPanel').reposition("right-top -4 4");
+        else
+            $(this).off('resize');
+    });
+
 }
 
 function showInfoMessage(message, timeout) {
     hideInfoMessage();
-    infoPanel = $.jsPanel({
+    $.jsPanel({
+        id: 'infoPanel',
         autoclose: timeout,
         template: jsPanel.tplContentOnly,
         paneltype: 'hint',
-        position: 'right-top -5 5 DOWN',
+        position: "right-top -4 4",
         theme: 'green filledlight',
         border: '2px solid',
         contentSize: '500 auto',
@@ -136,6 +143,15 @@ function showInfoMessage(message, timeout) {
             }).click(function () { panel.close(); });
         }
     });
+
+    $(window).on('resize', function () {
+        if (jsPanel.activePanels.list.indexOf('infoPanel') >= 0)
+            jsPanel.activePanels.getPanel('infoPanel').reposition("right-top -4 4");
+        else
+            $(this).off('resize');
+
+    });
+
 }
 
 function calculateRemainingBodyHeight() {

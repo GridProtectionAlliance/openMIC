@@ -77,8 +77,12 @@
     <link href="Content/primeui-theme.css" rel="stylesheet">
     <link href="Content/font-awesome@(min).css" rel="stylesheet">
     <link href="Content/primeui@(min).css" rel="stylesheet">
-    <link href="Content/jquery.jspanel@(min).css" />
+    <link href="Content/jquery.jspanel@(min).css" rel="stylesheet">
     <link href="Content/Site.css" rel="stylesheet">
+    <link href="fonts/fontawesome-webfont.woff" rel="prefetch">
+    <link href="fonts/fontawesome-webfont.woff2" rel="prefetch">
+    <link href="fonts/fontawesome-webfont.ttf" rel="prefetch">
+
     @RenderSection("StyleSheets", false)
     <style>
         @@media (max-width: 995px) {
@@ -137,6 +141,8 @@
     <link rel="icon" type="image/png" href="Images/Icons/favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="Images/Icons/favicon-16x16.png" sizes="16x16" />
     <link rel="icon" type="image/png" href="Images/Icons/favicon-128.png" sizes="128x128" />
+    <link rel="preload" as="image" href="map.png" media="(max-width: 600px)">
+
     <link rel="shortcut icon" href="Images/Icons/favicon.ico" />
     <meta name="msapplication-TileColor" content="#AABBAA" />
     <meta name="msapplication-TileImage" content="Images/Icons/mstile-144x144.png" />
