@@ -326,7 +326,7 @@
                     openMICDevice.OriginalSource = device.SerialNumber();
                     openMICDevice.Longitude = device.Longitude();
                     openMICDevice.Latitude = device.Longitude();
-                    openMICDevice.ConnectionString = String.format("connectionHostName=www.igrid.com; baseURL={{0}}; serialNumber={1}; connectionProfileID={2}; schedule=0 */4 * * *; modelNumber={3}; description={{4}}", self.baseURL(), device.SerialNumber(), connectionProfileID, device.ModelNumber(), device.Description());
+                    openMICDevice.ConnectionString = String.format("connectionHostName=www.igrid.com; baseURL={{0}}; serialNumber={1}; connectionProfileID={2}; schedule=0 0 * * *; modelNumber={3}; description={{4}}", self.baseURL(), device.SerialNumber(), connectionProfileID, device.ModelNumber(), device.Description());
                     openMICDevice.ProtocolID = protocolID;
 
                     savePromises.push(self.saveDevice(device, openMICDevice));
