@@ -190,7 +190,7 @@
             const self = this;
 
             // Observable fields
-            self.baseURL = ko.observable("https://www.igrid.com/igrid/DataExport.do?user=SCeg9ACW");
+            self.baseURL = ko.observable("https://www.igrid.com/igrid/DataExport.do?user=USER_TOKEN_GOES_HERE");
             self.devices = ko.observableArray(); // IGridDevice array
             self.deviceCounts = ko.observable("Calculating...");
             self.errors = ko.validation.group(self);
