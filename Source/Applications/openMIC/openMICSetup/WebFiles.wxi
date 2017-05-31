@@ -33,8 +33,8 @@
   <Component Id="IGridConfig_cshtml">
     <File Id="IGridConfig.cshtml" Name="IGridConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\IGridConfig.cshtml" />
   </Component>
-  <Component Id="index_cshtml">
-    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
+  <Component Id="Index_cshtml">
+    <File Id="Index.cshtml" Name="Index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Index.cshtml" />
   </Component>
   <Component Id="Layout_cshtml">
     <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
@@ -259,6 +259,9 @@
   </Component>
   <Component Id="Images_gpa_smalllock_png">
     <File Id="Images_gpa_smalllock.png" Name="gpa-smalllock.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\gpa-smalllock.png" />
+  </Component>
+  <Component Id="Images_iGridConfigEditor_png">
+    <File Id="Images_iGridConfigEditor.png" Name="iGridConfigEditor.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\iGridConfigEditor.png" />
   </Component>
   <Component Id="Images_ModbusConfigEditor_png">
     <File Id="Images_ModbusConfigEditor.png" Name="ModbusConfigEditor.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\ModbusConfigEditor.png" />
