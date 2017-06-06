@@ -20,6 +20,8 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using GSF.Data.Model
+@using GSF.Security.Model
 @using GSF.Web
 @using GSF.Web.Model
 @using openMIC
@@ -48,18 +50,6 @@
         new[] { "Enabled", "Enabled", "text-center" }
     };
 
-    // Lookup default company ID
-    int? companyID;
-
-    try
-    {
-        companyID = dataContext.Connection.ExecuteScalar<int?>("SELECT ID FROM Company WHERE Acronym={0}", Model.Global.CompanyAcronym);
-    }
-    catch
-    {
-        companyID = null;
-    }
-
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext).ToString();
 
@@ -68,25 +58,27 @@
 }
 @helper BodyRows() {
     <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/Small/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="Images/StatusLights/Small/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
-    <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: showViewScreen"></button></td>
+    <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: showEditScreen.bind($data, true)"></button></td>
     <td width="20%" class="text-center" data-bind="text: notNull(ConnectionString).parseKeyValuePairs().get('schedule')"></td>
-    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled" disabled/></td>
+    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled, click: enabledStateChanged.bind($data), enable: $parent.dataHubIsConnected" /></td>
     <td width="5%" class="text-center valign-middle" nowrap>
-        <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
+        <button type="button" class="btn btn-xs" data-bind="click: showEditScreen.bind($data, false), enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
     </td>
 }
 @helper AddNewEditDialog(DataContext dataContext) {
     <div class="col-md-6">
-        @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus:true, enableHotLinks: false))
+        @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus: true, enableHotLinks: false))
         @Raw(dataContext.AddInputField<Device>("Name", enableHotLinks: false))
         @Raw(dataContext.AddInputField<Device>("OriginalSource", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP [ <em>:port</em> ]", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionusername')", false, fieldLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('connectionpassword')", false, inputType: "password", fieldLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('connectionTimeout')", false, fieldLabel: "Connection Timeout", fieldID: "inputConnectionTimeout", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
         @Raw(dataContext.AddInputField("get('schedule')", true, fieldLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name"))
+        @*@Raw(dataContext.AddSelectField<Device, openMIC.Model.Node>("NodeID", "ID", "Name"))*@
     </div>
     <div class="col-md-6">
         <div class="panel panel-default" data-bind="css: {'panel-readonly': $root.recordMode()===RecordMode.View, 'panel-primary': $root.connectionString.get('usedialup')}">
@@ -176,6 +168,7 @@
 
         var downloaderProtocolID = 0;
         var modbusProtocolID = 0;
+        var defaultIGridProfileID = 0;
 
         // Define default connection string keys needed for binding
         const defaultConnectionString = new Dictionary();
@@ -192,6 +185,7 @@
         defaultConnectionString.set("dialUpPassword", "");
         defaultConnectionString.set("dialUpRetries", @Model.Global.DefaultDialUpRetries);
         defaultConnectionString.set("dialUpTimeout", @Model.Global.DefaultDialUpTimeout);
+        defaultConnectionString.set("connectionTimeout", "30000");
         defaultConnectionString.set("logConnectionMessages", false);
 
         // Create an observable key/value pair connection string dictionary
@@ -217,11 +211,6 @@
         $(viewModel).on("beforeSave", function(event, observableRecord) {
             // Remove added connection string reference before serialization
             delete observableRecord._connectionstring;
-        });
-
-        $(viewModel).on("newRecord", function(event, record) {
-            // Initialize default values for new record
-            record.CompanyID = @Raw(companyID == null ? "\"\"" : companyID.ToString());
         });
 
         $(viewModel).on("currentRecordChanged", function(event) {
@@ -274,6 +263,12 @@
                     modbusProtocolID = protocolID;
                 });
             }
+
+            if (defaultIGridProfileID === 0) {
+                dataHub.getDefaultIGridProfileID().done(function(profileID) {
+                    defaultIGridProfileID = profileID;
+                });
+            }
         });
 
         function updateSchedule(schedule) {
@@ -291,11 +286,45 @@
             $("#checkUseDialUp").parent().parent().css("margin", 0);
         });
 
-        function showViewScreen(record) {
-            if (record.ProtocolID === downloaderProtocolID)
-                viewModel.viewPageRecord(record);
-            else if (record.ProtocolID === modbusProtocolID)
+        function showEditScreen(readOnly, record) {
+            if (record.ProtocolID === modbusProtocolID) {
                 window.location.href = "/ModbusConfig.cshtml?DeviceID=" + record.ID;
+            }
+            else {
+                // Parse connection string
+                const connectionString = new Dictionary(record.ConnectionString.parseKeyValuePairs());
+
+                if (parseInt(connectionString.get("connectionProfileID")) === defaultIGridProfileID) {
+                    window.location.href = "/IGridConfig.cshtml?DeviceID=" + record.ID;
+                }
+                else {
+                    if (readOnly)
+                        viewModel.viewPageRecord(record);
+                    else
+                        viewModel.editPageRecord(record);
+                }
+            }
+        }
+        
+        function refreshEnabledState(record) {
+            if (!hubIsConnected)
+                return;
+
+            if (record.Enabled)
+                serviceHub.sendCommand("initialize " + record.Acronym);
+            else
+                serviceHub.sendCommand("reloadconfig");
+        }
+
+        function enabledStateChanged(record) {
+            if (hubIsConnected) {
+                record.Enable = !record.Enable;
+
+                dataHub.updateDevice(record).done(function() {
+                    viewModel.queryPageRecords();
+                    refreshEnabledState(record);
+                });
+            }
         }
     </script>
 }

@@ -1,5 +1,8 @@
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using GSF.ComponentModel;
+using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
 namespace openMIC.Model
@@ -17,6 +20,7 @@ namespace openMIC.Model
 
         [Label("Unique Signal ID")]
         [Searchable]
+        [DefaultValueExpression("Guid.NewGuid()")]
         public Guid SignalID
         {
             get;
@@ -38,6 +42,7 @@ namespace openMIC.Model
         [Label("Tag Name")]
         [Required]
         [StringLength(200)]
+        [AcronymValidation]
         [Searchable]
         public string PointTag
         {
@@ -76,12 +81,14 @@ namespace openMIC.Model
             set;
         }
 
+        [DefaultValue(0.0D)]
         public double Adder
         {
             get;
             set;
         }
 
+        [DefaultValue(1.0D)]
         public double Multiplier
         {
             get;
@@ -94,6 +101,7 @@ namespace openMIC.Model
             set;
         }
 
+        [DefaultValue(true)]
         public bool Internal
         {
             get;
@@ -112,6 +120,7 @@ namespace openMIC.Model
             set;
         }
 
+        [DefaultValueExpression("DateTime.UtcNow")]
         public DateTime CreatedOn
         {
             get;
@@ -120,12 +129,15 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
+        [DefaultValueExpression("UserInfo.CurrentUserID")]
         public string CreatedBy
         {
             get;
             set;
         }
 
+        [DefaultValueExpression("this.CreatedOn", EvaluationOrder = 1)]
+        [UpdateValueExpression("DateTime.UtcNow")]
         public DateTime UpdatedOn
         {
             get;
@@ -134,6 +146,8 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
+        [DefaultValueExpression("this.CreatedBy", EvaluationOrder = 1)]
+        [UpdateValueExpression("UserInfo.CurrentUserID")]
         public string UpdatedBy
         {
             get;

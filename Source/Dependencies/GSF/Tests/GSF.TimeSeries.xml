@@ -2029,6 +2029,11 @@
             interval while a value of 0 means to process data as fast as possible.
             </remarks>
         </member>
+        <member name="P:GSF.TimeSeries.Adapters.AdapterCollectionBase`1.RunTime">
+            <summary>
+            Gets the total amount of time, in seconds, that the adapter has been active.
+            </summary>
+        </member>
         <member name="P:GSF.TimeSeries.Adapters.AdapterCollectionBase`1.ProcessedMeasurements">
             <summary>
             Gets the total number of measurements processed thus far by each <see cref="T:GSF.TimeSeries.Adapters.IAdapter"/> implementation
@@ -2038,6 +2043,16 @@
         <member name="P:GSF.TimeSeries.Adapters.AdapterCollectionBase`1.Enabled">
             <summary>
             Gets or sets enabled state of this <see cref="T:GSF.TimeSeries.Adapters.AdapterCollectionBase`1"/>.
+            </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.Adapters.AdapterCollectionBase`1.StartTime">
+            <summary>
+            Gets the UTC time this <see cref="T:GSF.TimeSeries.Adapters.AdapterCollectionBase`1"/> was started.
+            </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.Adapters.AdapterCollectionBase`1.StopTime">
+            <summary>
+            Gets the UTC time this <see cref="T:GSF.TimeSeries.Adapters.AdapterCollectionBase`1"/> was stopped.
             </summary>
         </member>
         <member name="P:GSF.TimeSeries.Adapters.AdapterCollectionBase`1.IsDisposed">
@@ -4287,7 +4302,7 @@
             <param name="measurementValueFilter">the measurementValueFilter to set.</param>
             <returns>New instance of <see cref="T:GSF.TimeSeries.MeasurementMetadata"/> using the provided <paramref name="measurementValueFilter"/>.</returns>
         </member>
-        <member name="F:GSF.TimeSeries.MeasurementMetadata.Undefined">
+        <member name="P:GSF.TimeSeries.MeasurementMetadata.Undefined">
             <summary>
             Represents an undefined <see cref="T:GSF.TimeSeries.MeasurementMetadata"/>.
             </summary>
@@ -5871,6 +5886,16 @@
             Gets or sets total measurements expected to have been received for this <see cref="T:GSF.TimeSeries.IDevice"/>.
             </summary>
         </member>
+        <member name="P:GSF.TimeSeries.IDevice.MeasurementsWithError">
+            <summary>
+            Gets or sets the number of measurements recevied while this <see cref="T:GSF.TimeSeries.IDevice"/> was reporting errors.
+            </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.IDevice.MeasurementsDefined">
+            <summary>
+            Gets or sets the number of measurements (per frame) defined for this <see cref="T:GSF.TimeSeries.IDevice"/>.
+            </summary>
+        </member>
         <member name="T:GSF.TimeSeries.IFrame">
             <summary>
             Abstract frame interface representing a collection of measurements at an exact moment in time.
@@ -7077,6 +7102,22 @@
             <param name="arguments">Any needed arguments for statistic calculation.</param>
             <returns>Measurements Expected Statistic.</returns>
         </member>
+        <member name="M:GSF.TimeSeries.Statistics.DeviceStatistics.GetDeviceStatistic_MeasurementsWithError(System.Object,System.String)">
+            <summary>
+            Calculates expected number of measurements received while device was reporting errors during last reporting interval.
+            </summary>
+            <param name="source">Source Device.</param>
+            <param name="arguments">Any needed arguments for statistic calculation.</param>
+            <returns>Measurements Expected Statistic.</returns>
+        </member>
+        <member name="M:GSF.TimeSeries.Statistics.DeviceStatistics.GetDeviceStatistic_MeasurementsDefined(System.Object,System.String)">
+            <summary>
+            Calculates number of defined measurements from device during last reporting interval.
+            </summary>
+            <param name="source">Source Device.</param>
+            <param name="arguments">Any needed arguments for statistic calculation.</param>
+            <returns>Defined Measurements Statistic.</returns>
+        </member>
         <member name="T:GSF.TimeSeries.Statistics.DeviceStatisticsHelper`1">
             <summary>
             Helper class for calculating device statistics.
@@ -7109,6 +7150,16 @@
             to properly track the <see cref="P:GSF.TimeSeries.IDevice.MeasurementsReceived"/> statistic.
             </remarks>
         </member>
+        <member name="M:GSF.TimeSeries.Statistics.DeviceStatisticsHelper`1.AddToMeasurementsWithError(System.Int32)">
+            <summary>
+            Increases the count of the number of measurements received while the device is reporting errors.
+            </summary>
+            <param name="count">The number of measurements received while the device is reporting errors since the last time this method was called.</param>
+            <remarks>
+            Call this each time measurements with errors have been received by the device in order
+            to properly track the <see cref="P:GSF.TimeSeries.IDevice.MeasurementsWithError"/> statistic.
+            </remarks>
+        </member>
         <member name="M:GSF.TimeSeries.Statistics.DeviceStatisticsHelper`1.Update">
             <summary>
             Updates the statistics for the number of measurements received and the number
@@ -7116,7 +7167,8 @@
             </summary>
             <remarks>
             Call this periodically, preferably on a slow timer (e.g., once per second),
-            in order to update the <see cref="P:GSF.TimeSeries.IDevice.MeasurementsReceived"/> and
+            in order to update the <see cref="P:GSF.TimeSeries.IDevice.MeasurementsReceived"/>,
+            <see cref="P:GSF.TimeSeries.IDevice.MeasurementsWithError"/>, and
             <see cref="P:GSF.TimeSeries.IDevice.MeasurementsExpected"/> statistics.
             </remarks>
         </member>
@@ -7128,7 +7180,8 @@
             <param name="nowTicks">The current time, in ticks.</param>
             <remarks>
             Call this periodically, preferably on a slow timer (e.g., once per second),
-            in order to update the <see cref="P:GSF.TimeSeries.IDevice.MeasurementsReceived"/> and
+            in order to update the <see cref="P:GSF.TimeSeries.IDevice.MeasurementsReceived"/>,
+            <see cref="P:GSF.TimeSeries.IDevice.MeasurementsWithError"/>, and
             <see cref="P:GSF.TimeSeries.IDevice.MeasurementsExpected"/> statistics. This method is preferred
             when tracking statistics for multiple <see cref="T:GSF.TimeSeries.IDevice"/>s to reduce the number
             of calls to <see cref="P:System.DateTime.UtcNow"/>.
@@ -7439,6 +7492,31 @@
         <member name="P:GSF.TimeSeries.BufferBlockMeasurement.Length">
             <summary>
             Valid length of cached buffer image.
+            </summary>
+        </member>
+        <member name="T:GSF.TimeSeries.Transport.CommandMeasurement">
+            <summary>
+            Model for measurements published by the subscriber.
+            </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.Transport.CommandMeasurement.SignalID">
+            <summary>
+            Gets or sets the signal ID of the measurement.
+            </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.Transport.CommandMeasurement.Timestamp">
+            <summary>
+            Gets or sets the time that the measurement was taken.
+            </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.Transport.CommandMeasurement.Value">
+            <summary>
+            Gets or sets the value of the measurement.
+            </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.Transport.CommandMeasurement.StateFlags">
+            <summary>
+            Gets or sets the flags that define the quality of the measurement.
             </summary>
         </member>
         <member name="T:GSF.TimeSeries.Transport.SubscriberRightsLookup">
@@ -7775,6 +7853,15 @@
             </summary>
             <remarks>
             This message is sent in response to <see cref="F:GSF.TimeSeries.Transport.ServerResponse.BufferBlock"/>.
+            </remarks>
+        </member>
+        <member name="F:GSF.TimeSeries.Transport.ServerCommand.PublishCommandMeasurements">
+            <summary>
+            Provides measurements to the publisher over the command channel.
+            </summary>
+            <remarks>
+            Allows for unsolicited publication of measurement data to the server
+            so that consumers of data can also provide data to other consumers.
             </remarks>
         </member>
         <member name="F:GSF.TimeSeries.Transport.ServerCommand.UserCommand00">
@@ -8783,6 +8870,16 @@
             Default value for <see cref="P:GSF.TimeSeries.Transport.DataGapRecoverer.UseMillisecondResolution"/>.
             </summary>
         </member>
+        <member name="F:GSF.TimeSeries.Transport.DataGapRecoverer.DefaultStartRecoveryBuffer">
+            <summary>
+            Default value for <see cref="P:GSF.TimeSeries.Transport.DataGapRecoverer.StartRecoveryBuffer"/>.
+            </summary>
+        </member>
+        <member name="F:GSF.TimeSeries.Transport.DataGapRecoverer.DefaultEndRecoveryBuffer">
+            <summary>
+            Default value for <see cref="P:GSF.TimeSeries.Transport.DataGapRecoverer.EndRecoveryBuffer"/>.
+            </summary>
+        </member>
         <member name="E:GSF.TimeSeries.Transport.DataGapRecoverer.RecoveredMeasurements">
             <summary>
             Provides recovered measurements from temporal subscription.
@@ -8942,6 +9039,16 @@
             a timestamp with only millisecond resolution.
             </remarks>
         </member>
+        <member name="P:GSF.TimeSeries.Transport.DataGapRecoverer.StartRecoveryBuffer">
+            <summary>
+            Gets or sets start buffer time, in seconds, to add to start of outage window to ensure all missing data is recovered.
+            </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.Transport.DataGapRecoverer.EndRecoveryBuffer">
+            <summary>
+            Gets or sets end buffer time, in seconds, to add to end of outage window to ensure all missing data is recovered.
+            </summary>
+        </member>
         <member name="P:GSF.TimeSeries.Transport.DataGapRecoverer.ConstraintParameters">
             <summary>
             Gets or sets any additional constraint parameters that will be supplied to adapters in temporal
@@ -8994,40 +9101,32 @@
             Initializes the <see cref="T:GSF.TimeSeries.Transport.DataGapRecoverer"/>.
             </summary>
         </member>
-        <member name="M:GSF.TimeSeries.Transport.DataGapRecoverer.LogDataGap(System.DateTimeOffset,System.DateTimeOffset)">
+        <member name="M:GSF.TimeSeries.Transport.DataGapRecoverer.LogDataGap(System.DateTimeOffset,System.DateTimeOffset,System.Boolean)">
             <summary>
             Logs a new data gap for processing.
             </summary>
             <param name="startTime">Start time of data gap.</param>
             <param name="endTime">End time of data gap.</param>
+            <param name="forceLog">Indicates whether to skip data gap validation and force the outage to be logged.</param>
             <returns><c>true</c> if data gap was logged for processing; otherwise, <c>false</c>.</returns>
             <remarks>
             Data gap will not be logged for processing if the <paramref name="startTime"/> and <paramref name="endTime"/> do not represent
             a valid time span for recovery according to <see cref="P:GSF.TimeSeries.Transport.DataGapRecoverer.MinimumRecoverySpan"/> and <see cref="P:GSF.TimeSeries.Transport.DataGapRecoverer.MaximumRecoverySpan"/>.
             </remarks>
         </member>
-        <member name="M:GSF.TimeSeries.Transport.DataGapRecoverer.FlushLogAsync">
+        <member name="M:GSF.TimeSeries.Transport.DataGapRecoverer.RemoveDataGap(System.DateTimeOffset,System.DateTimeOffset)">
             <summary>
-            Queues up a flush to happen asynchronously.
+            Removes a data gap from the outage log so that it will not be processed.
             </summary>
+            <param name="startTime">Start time of data gap.</param>
+            <param name="endTime">End time of data gap.</param>
+            <returns>True if the data gap was successfully removed; false otherwise.</returns>
         </member>
-        <member name="M:GSF.TimeSeries.Transport.DataGapRecoverer.FlushLog(System.Int32)">
+        <member name="M:GSF.TimeSeries.Transport.DataGapRecoverer.DumpOutageLog">
             <summary>
-            Blocks calling thread until data gap <see cref="T:GSF.IO.OutageLog"/> has been flushed to disk.
+            Produces a dump of the contents of the outage log.
             </summary>
-            <param name="timeout">Optional time-out for waiting thread block. Defaults to waiting indefinitely.</param>
-            <remarks>
-            <para>
-            Data gap log is automatically persisted to disk as <see cref="T:GSF.IO.Outage"/> items are added or removed from the log.
-            This function only exists to force a flush and block calling thread until flush has completed.
-            </para>
-            <para>
-            Function first waits for any pending data gap operation to complete then waits for data gap log to
-            be flushed. Both waits use the same <paramref name="timeout"/> value, as a result it is possible that
-            total wait time could be longer than specified wait time.
-            </para>
-            </remarks>
-            <returns><c>true</c> if log was flushed successfully; otherwise, <c>false</c> if flush timed out.</returns>
+            <returns>The contents of the outage log.</returns>
         </member>
         <member name="M:GSF.TimeSeries.Transport.DataGapRecoverer.OnRecoveredMeasurements(System.Collections.Generic.ICollection{GSF.TimeSeries.IMeasurement})">
             <summary>
@@ -9364,9 +9463,21 @@
             Gets the flag indicating if this adapter supports temporal processing.
             </summary>
             <remarks>
+            <para>
             Although the data subscriber provisions support for temporal processing by receiving historical data from a remote source,
             the adapter opens sockets and does not need to be engaged within an actual temporal <see cref="T:GSF.TimeSeries.Adapters.IaonSession"/>, therefore
-            this method returns <c>false</c> to make sure the adapter doesn't get instantiated within a temporal session.
+            this method normally returns <c>false</c> to make sure the adapter doesn't get instantiated within a temporal session.
+            </para>
+            <para>
+            Setting this to <c>true</c> means that a subscriber will be initialized within a temporal session to provide historical
+            data from a remote source - this should only be enabled in cases where (1) there is no locally defined, e.g., in-process,
+            historian that can already provide historical data for temporal sessions, and (2) a remote subscriber should be allowed
+            to proxy temporal requests, e.g., those requested for data gap recovery, to an up-stream subscription. This is useful in
+            cases where a primary data subscriber that has data gap recovery enabled can also allow a remote subscription to proxy in
+            data gap recovery requests. It is recommended that remote data gap recovery request parameters be (1) either slightly
+            looser than those of local system to reduce the possibility of duplicated recovery sessions for the same data loss, or
+            (2) only enabled in the end-most system that most needs the recovered data, like a historian.
+            </para>
             </remarks>
         </member>
         <member name="P:GSF.TimeSeries.Transport.DataSubscriber.ProcessingInterval">
@@ -9407,6 +9518,11 @@
         <member name="P:GSF.TimeSeries.Transport.DataSubscriber.DataSource">
             <summary>
             Gets or sets <see cref="T:System.Data.DataSet"/> based data source available to this <see cref="T:GSF.TimeSeries.Transport.DataSubscriber"/>.
+            </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.Transport.DataSubscriber.OutputMeasurements">
+            <summary>
+            Gets or sets output measurements that the <see cref="T:GSF.TimeSeries.Adapters.AdapterBase"/> will produce, if any.
             </summary>
         </member>
         <member name="P:GSF.TimeSeries.Transport.DataSubscriber.ConnectionInfo">
@@ -9757,6 +9873,24 @@
             <summary>
             Initiate a meta-data refresh.
             </summary>
+        </member>
+        <member name="M:GSF.TimeSeries.Transport.DataSubscriber.LogDataGap(System.String)">
+            <summary>
+            Log a data gap for data gap recovery.
+            </summary>
+            <param name="timeString">The string representing the data gap.</param>
+        </member>
+        <member name="M:GSF.TimeSeries.Transport.DataSubscriber.RemoveDataGap(System.String)">
+            <summary>
+            Remove a data gap from data gap recovery.
+            </summary>
+            <param name="timeString">The string representing the data gap.</param>
+        </member>
+        <member name="M:GSF.TimeSeries.Transport.DataSubscriber.DumpOutageLog">
+            <summary>
+            Displays the contents of the outage log.
+            </summary>
+            <returns>The contents of the outage log.</returns>
         </member>
         <member name="M:GSF.TimeSeries.Transport.DataSubscriber.GetDataGapRecoverySubscriptionStatus">
             <summary>
@@ -10430,37 +10564,6 @@
             <param name="startIndex">0-based starting index in the <paramref name="buffer"/> to start parsing.</param>
             <param name="length">Valid number of bytes within <paramref name="buffer"/> to read from <paramref name="startIndex"/>.</param>
             <returns>The number of bytes used for initialization in the <paramref name="buffer"/> (i.e., the number of bytes parsed).</returns>
-        </member>
-        <member name="T:GSF.TimeSeries.Transport.SourceDevice">
-            <summary>
-            Represents a device which acts as a source for
-            measurements provided to a <see cref="T:GSF.TimeSeries.Transport.DataSubscriber"/>.
-            </summary>
-        </member>
-        <member name="P:GSF.TimeSeries.Transport.SourceDevice.DataQualityErrors">
-            <summary>
-            Gets or sets total data quality errors of this <see cref="T:GSF.TimeSeries.Transport.SourceDevice"/>.
-            </summary>
-        </member>
-        <member name="P:GSF.TimeSeries.Transport.SourceDevice.TimeQualityErrors">
-            <summary>
-            Gets or sets total time quality errors of this <see cref="T:GSF.TimeSeries.Transport.SourceDevice"/>.
-            </summary>
-        </member>
-        <member name="P:GSF.TimeSeries.Transport.SourceDevice.DeviceErrors">
-            <summary>
-            Gets or sets total device errors of this <see cref="T:GSF.TimeSeries.Transport.SourceDevice"/>.
-            </summary>
-        </member>
-        <member name="P:GSF.TimeSeries.Transport.SourceDevice.MeasurementsReceived">
-            <summary>
-            Gets or sets total measurements received for this <see cref="T:GSF.TimeSeries.Transport.SourceDevice"/>.
-            </summary>
-        </member>
-        <member name="P:GSF.TimeSeries.Transport.SourceDevice.MeasurementsExpected">
-            <summary>
-            Gets or sets total measurements expected to have been received for this <see cref="T:GSF.TimeSeries.Transport.SourceDevice"/>.
-            </summary>
         </member>
         <member name="T:GSF.TimeSeries.Transport.SubscriptionInfo">
             <summary>

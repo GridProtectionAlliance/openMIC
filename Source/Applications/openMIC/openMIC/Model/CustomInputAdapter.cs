@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using GSF.ComponentModel;
 
 namespace openMIC.Model
 {
@@ -57,6 +58,7 @@ namespace openMIC.Model
             set;
         }
 
+        [DefaultValueExpression("DateTime.UtcNow")]
         public DateTime CreatedOn
         {
             get;
@@ -65,12 +67,15 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
+        [DefaultValueExpression("UserInfo.CurrentUserID")]
         public string CreatedBy
         {
             get;
             set;
         }
 
+        [DefaultValueExpression("this.CreatedOn", EvaluationOrder = 1)]
+        [UpdateValueExpression("DateTime.UtcNow")]
         public DateTime UpdatedOn
         {
             get;
@@ -79,6 +84,8 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
+        [DefaultValueExpression("this.CreatedBy", EvaluationOrder = 1)]
+        [UpdateValueExpression("UserInfo.CurrentUserID")]
         public string UpdatedBy
         {
             get;

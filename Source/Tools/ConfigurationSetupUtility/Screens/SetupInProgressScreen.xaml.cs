@@ -439,6 +439,8 @@ namespace ConfigurationSetupUtility.Screens
                             sqlServerSetup.UserName = userName;
                             sqlServerSetup.Password = password;
 
+                            sqlServerSetup.IntegratedSecurity = null;
+
                             AppendStatusMessage("");
                             UpdateProgressBar(90);
                         }

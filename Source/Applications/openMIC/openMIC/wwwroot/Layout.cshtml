@@ -40,6 +40,9 @@
 
     // Define ViewBag.CustomTitle in page code for custom page titles
     string pageTitle = ViewBag.CustomTitle ?? ViewBag.Title;
+    bool pageHasSidebar = ViewBag.PageHasSidebar ?? false;
+    bool setFullWidth = ViewBag.SetFullWidth ?? pageHasSidebar;
+
 
     bool hidePageTitle = false;
 
@@ -74,7 +77,12 @@
     <link href="Content/primeui-theme.css" rel="stylesheet">
     <link href="Content/font-awesome@(min).css" rel="stylesheet">
     <link href="Content/primeui@(min).css" rel="stylesheet">
+    <link href="Content/jquery.jspanel@(min).css" rel="stylesheet">
     <link href="Content/Site.css" rel="stylesheet">
+    <link href="fonts/fontawesome-webfont.woff" rel="prefetch">
+    <link href="fonts/fontawesome-webfont.woff2" rel="prefetch">
+    <link href="fonts/fontawesome-webfont.ttf" rel="prefetch">
+
     @RenderSection("StyleSheets", false)
     <style>
         @@media (max-width: 995px) {
@@ -133,6 +141,8 @@
     <link rel="icon" type="image/png" href="Images/Icons/favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="Images/Icons/favicon-16x16.png" sizes="16x16" />
     <link rel="icon" type="image/png" href="Images/Icons/favicon-128.png" sizes="128x128" />
+    <link rel="preload" as="image" href="map.png" media="(max-width: 600px)">
+
     <link rel="shortcut icon" href="Images/Icons/favicon.ico" />
     <meta name="msapplication-TileColor" content="#AABBAA" />
     <meta name="msapplication-TileImage" content="Images/Icons/mstile-144x144.png" />
@@ -141,6 +151,14 @@
     <meta name="msapplication-wide310x150logo" content="Images/Icons/mstile-310x150.png" />
     <meta name="msapplication-square310x310logo" content="Images/Icons/mstile-310x310.png"/>
     <script src="Scripts/modernizr-2.8.3.js"></script>
+    <script src="Scripts/json2.js"></script>
+    <script src="Scripts/jquery-2.2.1@(min).js"></script>
+    <script src="Scripts/jquery-ui@(min).js"></script>
+    <script src="Scripts/jstorage.js"></script>
+
+    <!-- Angular Material requires Angular.js Libraries -->
+    <script src="Scripts/angular.js"></script>
+
     <script>
         const DateFormat = "@Model.Global.DateFormat";
         const TimeFormat = "@Model.Global.TimeFormat";
@@ -175,24 +193,25 @@
                         </ul>
                     </li>
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Meta-data <span class="caret"></span></a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configuration <span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li><a href="ConnectionProfiles.cshtml">Connection Profiles</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a href="ModbusConfig.cshtml">Modbus Configuration Builder</a></li>
+                            <li><a href="IGridConfig.cshtml">Manage I-Grid Connections</a></li>
+                        </ul>
+                    </li>
+                    @if (UserIsAdmin()) {
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="Users.cshtml">Users</a></li>
+                            <li><a href="Groups.cshtml">Groups</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a href="Companies.cshtml">Companies</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a href="Vendors.cshtml">Vendors</a></li>
                             <li><a href="VendorDevices.cshtml">Vendor Devices</a></li>
-                        </ul>
-                    </li>
-                    @if (UserIsAdmin()) {
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="Users.cshtml">Users</a></li>
-                            <li><a href="Groups.cshtml">Groups</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a href="SelectTheme.cshtml">Select Theme</a></li>
                         </ul>
@@ -213,7 +232,7 @@
 else {
     <div id="menuBar"></div>
 }
-    <div class="container theme-showcase" role="main" id="bodyContainer">
+    <div class="container theme-showcase" @Raw(setFullWidth ? " style=\"width: 100%\"" : "") role="main" id="bodyContainer">
         <div class="page-header" id="pageHeader">
             <span class="glyphicon glyphicon-refresh pre-cache"></span>
             <span class="glyphicon glyphicon-info-sign pre-cache"></span>
@@ -240,8 +259,6 @@ else {
         @RenderBody()
 
     </div><!--/.container -->
-    <script src="Scripts/jquery-2.2.1@(min).js"></script>
-    <script src="Scripts/jquery-ui@(min).js"></script>
     <script src="Scripts/bootstrap@(min).js"></script>
     <script src="Scripts/ie10-viewport-bug-workaround.js"></script>
     <script src="Scripts/respond@(min).js"></script>
@@ -252,6 +269,7 @@ else {
     <script src="signalr/hubs"></script>
     <script src="Scripts/plugins-all.js"></script>
     <script src="Scripts/primeui@(min).js"></script>
+    <script src="Scripts/jquery.jspanel@(min).js"></script>
     <script src="Scripts/Site.js"></script>
     @Raw(ViewBag.PageControlScripts.ToString())
     @RenderSection("Scripts", false)

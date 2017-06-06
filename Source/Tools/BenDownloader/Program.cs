@@ -1,4 +1,4 @@
-﻿ //******************************************************************************************************
+﻿//******************************************************************************************************
 //  Program.cs - Gbtc
 //
 //  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
@@ -21,87 +21,39 @@
 //
 //******************************************************************************************************
 
-
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Configuration;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Net.Mail;
-using System.Net.Mime;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using GSF;
 using GSF.Configuration;
-using GSF.Data;
-using Microsoft.VisualBasic;
-using Microsoft.VisualBasic.CompilerServices;
-using Microsoft.VisualBasic.FileIO;
-using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace BenDownloader
 {
     class Program
     {
-
-        private static object s_logLock = new object();
-
         static void Main(string[] args)
         {
-//#if DEBUG
-//            Console.Write("Press enter to continue... ");
-//            var name = Console.ReadLine();
-//#endif        
-
-            if(args.Length != 2)
+            try
             {
-                Console.WriteLine("Please pass two and only two parameters...");
-                return;
-            }
-
-            //ConfigurationFile openMicConfigurationFile = ConfigurationFile.Open("");
-            BenRunner br = new BenRunner(int.Parse(args[0]), int.Parse(args[1]));
-            if (!br.XferAllFiles()) 
-                throw new Exception("BEN Downloader failed...");
-
-        }
-
-#region [Helper Functions]
-        public static string Left(string str, int length)
-        {
-            str = (str ?? string.Empty);
-            return str.Substring(0, Math.Min(length, str.Length));
-        }
-
-        public static string Right(string str, int length)
-        {
-            str = (str ?? string.Empty);
-            return (str.Length >= length)
-                ? str.Substring(str.Length - length, length)
-                : str;
-        }
-
-        public static void Log(string logMessage)
-        {
-            lock (s_logLock)
-            {
-                using (StreamWriter w = File.AppendText("BenDownloaderLogFile.txt"))
+                if (args.Length != 4)
                 {
-                    w.Write("\r\nLog Entry : ");
-                    w.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(),
-                        DateTime.Now.ToLongDateString());
-                    w.WriteLine("  :");
-                    w.WriteLine("  :{0}", logMessage);
-                    w.WriteLine("-------------------------------");
-                    w.Flush();
+                    Log("Please pass four and only four parameters to BenDownloader...", true);
+                    return;
                 }
 
+                BenRunner br = new BenRunner(args[0], args[1], args[2], args[3]);
+                br.TransferAllFiles();
+            }
+            catch(Exception ex)
+            {
+                Log("Ben Downloader failed. Message: " + ex, true);
             }
         }
-        #endregion
 
+        public static void Log(string logMessage, bool error = false)
+        {
+            if (!error)
+                Console.WriteLine(logMessage);
+            else
+                Console.Error.WriteLine(logMessage);
+        }
     }
 }

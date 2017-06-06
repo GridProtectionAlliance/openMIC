@@ -61,6 +61,9 @@ GO
 INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('QUAL', 'Qualitrol LLC', '', '', 'http://www.qualitrolcorp.com/')
 GO
 
+INSERT INTO Vendor(Acronym, Name, PhoneNumber, ContactEmail, URL) VALUES('IGRID', 'I-Grid - Rockwell Automation, Inc.', '', '', 'https://www.igrid.com/')
+GO
+
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(2, 'APP-501', 'APP-501 Multifunction Recorder', 'http://appengineering.com/products/601_Sales_Literature_Rev_4.pdf')
 GO
 
@@ -80,4 +83,7 @@ INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(4, 'BEN-5000',
 GO
 
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(4, 'BEN-6000', 'BEN 6000 Portable DFR', 'http://www.qualitrolcorp.com/Products/BEN_6000_Portable_digital_fault_recorder_(with_options_for_power_quality_and_PMU)/')
+GO
+
+INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(5, 'ISENSE', 'I-Sense Monitor', 'https://www.igrid.com/igrid/SupportV3.jsp')
 GO

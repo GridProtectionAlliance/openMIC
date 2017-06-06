@@ -343,6 +343,27 @@
         input[type=text].exists {
             border: 3px solid #0C0;
         }
+
+        @@media screen {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -50px;
+            }
+        }
+
+        @@media screen and (min-width: 567px) {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -24px;
+            }
+        }
+
+        @@media screen and (min-width: 992px) {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -20px;
+            }
+        }
     </style>
     <!--[if IE]>
     <style type="text/css">
@@ -929,7 +950,7 @@
                 
                 // Pre-select all mappings
                 for (let j = 0; j < records.length; j++) {
-                    records[j].mapped(true);
+                    records[j].mapped(records[j].signalReference().length <= 200);
                 }
 
                 for (let j = 0; j < groups.length; j++) {
@@ -1376,6 +1397,8 @@
         });
 
         $(function() {
+            $("#pageHeader").css("margin-bottom", "-20px");
+
             viewModel.setReorderSequencePanels(reorderSequencePanels);
             viewModel.setLoadMappingComplete(loadMappingComplete);
 
@@ -1393,22 +1416,6 @@
                 errorMessageClass: "help-block",
                 grouping: { deep: true, observable: true, live: true }
             }, true);
-
-            // Handle special validation error message location when using bootstap add-on fields
-            ko.bindingHandlers.validationCore = {
-                init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-                    const parent = $(element).parent().closest(".input-group");
-                    const message = document.createElement("em");
-                    message.className = "validationMessage small";
-
-                    if (parent.length > 0)
-                        $(parent).after(message);
-                    else
-                        $(element).after(message);
-
-                    ko.applyBindingsToNode(message, { validationMessage: valueAccessor() });
-                }
-            };
 
             ko.bindingHandlers.applyVerticalText = {
                 init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
@@ -1600,7 +1607,7 @@
         return principal.IsInRole("Administrator") || principal.IsInRole("Editor");
     }
 }
-<h3>Modbus Configuration Map Builder <span class="label label-info" id="editDeviceName"></span> <img class="pull-right" style="margin-top: -14px" src="Images/ModbusConfigEditor.png"/></h3>
+<h3>Modbus Configuration Map Builder <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" src="Images/ModbusConfigEditor.png"/></h3>
 @* Connection Settings and Status Panel *@
 <div class="panel panel-primary">
     <div class="panel-heading clearfix">

@@ -34,6 +34,7 @@ using System.Threading;
 using System.Timers;
 using GSF;
 using GSF.Configuration;
+using GSF.Diagnostics;
 using GSF.Threading;
 using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
@@ -208,6 +209,32 @@ namespace openMIC
                 get
                 {
                     return m_parent.m_measurementsExpected;
+                }
+                set
+                {
+                    // Ignoring updates
+                }
+            }
+
+            // Gets or sets the number of measurements recevied while this <see cref="IDevice"/> was reporting errors.
+            public long MeasurementsWithError
+            {
+                get
+                {
+                    return 0;
+                }
+                set
+                {
+                    // Ignoring updates
+                }
+            }
+
+            // Gets or sets the number of measurements (per frame) defined for this <see cref="IDevice"/>.
+            public long MeasurementsDefined
+            {
+                get
+                {
+                    return m_parent.OutputMeasurements.Length;
                 }
                 set
                 {
@@ -504,7 +531,7 @@ namespace openMIC
                 throw new InvalidOperationException("No sequences defined, cannot start Modbus polling.");
 
             // Define synchronized polling operation
-            m_pollingOperation = new ShortSynchronizedOperation(PollingOperation, OnProcessException);
+            m_pollingOperation = new ShortSynchronizedOperation(PollingOperation, exception => OnProcessException(MessageLevel.Warning, exception));
 
             // Define polling timer
             m_pollingTimer = new Timer(m_pollingRate);
@@ -569,12 +596,25 @@ namespace openMIC
                 Ticks timestamp = DateTime.UtcNow.Ticks;
                 Dictionary<MeasurementKey, Measurement> measurements = OutputMeasurements.Select(measurement => Measurement.Clone(measurement, timestamp)).ToDictionary(measurement => measurement.Key, measurement => measurement);
                 Group[] groups = m_sequences.SelectMany(sequence => sequence.Groups).ToArray();
-                int measurementsReceived = 0;
 
+                int measurementsReceived = 0;
                 int overallTasksCompleted = 0;
                 int overallTasksCount = m_sequences.Count + 1;
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, "Starting polling operation...", overallTasksCompleted, overallTasksCount));
-                OnStatusMessage($"Executing poll operation {m_pollOperations + 1}.");
+
+                OnStatusMessage(MessageLevel.Info, $"Executing poll operation {m_pollOperations + 1}.");
+
+                // Entering the queued state will clear the message well on the UI
+                OnProgressUpdated(this, new ProgressUpdate() { State = ProgressState.Queued });
+
+                OnProgressUpdated(this, new ProgressUpdate()
+                {
+                    State = ProgressState.Processing,
+                    Message = "Starting polling operation...",
+                    OverallProgress = overallTasksCompleted,
+                    OverallProgressTotal = overallTasksCount,
+                    Progress = 0,
+                    ProgressTotal = 1
+                });
 
                 // Handle read/write operations for sequence groups
                 try
@@ -583,7 +623,11 @@ namespace openMIC
                     {
                         foreach (Group group in sequence.Groups)
                         {
-                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Executing poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\"...", 0, group.PointCount));
+                            OnProgressUpdated(this, new ProgressUpdate()
+                            {
+                                Message = $"Executing poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\"...",
+                                Progress = 0
+                            });
 
                             switch (group.Type)
                             {
@@ -607,11 +651,16 @@ namespace openMIC
                                     break;
                             }
 
-                            OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, $"Completed poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\".", group.PointCount, group.PointCount));
+                            OnProgressUpdated(this, new ProgressUpdate()
+                            {
+                                Message = $"Completed poll for {sequence.Type.ToString().ToLowerInvariant()} sequence group \"{group.Type}@{group.StartAddress}\".",
+                                Progress = 1
+                            });
+
                             Thread.Sleep(m_interSequenceGroupPollDelay);
                         }
 
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, true, null, ++overallTasksCompleted, overallTasksCount));
+                        OnProgressUpdated(this, new ProgressUpdate() { OverallProgress = ++overallTasksCompleted });
                     }
                 }
                 catch
@@ -620,7 +669,7 @@ namespace openMIC
                     throw;
                 }
 
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, "Processing derived values...", 0, m_derivedValues.Count));
+                OnProgressUpdated(this, new ProgressUpdate() { Message = "Processing derived values...", Progress = 0, ProgressTotal = m_derivedValues.Count });
 
                 // Calculate derived values
                 foreach (KeyValuePair<MeasurementKey, DerivedValue> item in m_derivedValues)
@@ -642,7 +691,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: No address records defined for derived String value \"{0}\".", item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"No address records defined for derived String value \"{item.Key}\".");
                                 }
                                 break;
                             case DerivedType.Single:
@@ -653,7 +702,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived Single value \"{1}\", expected 2.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived Single value \"{item.Key}\", expected 2.");
                                 }
                                 break;
                             case DerivedType.Double:
@@ -664,7 +713,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived Double value \"{1}\", expected 4.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived Double value \"{item.Key}\", expected 4.");
                                 }
                                 break;
                             case DerivedType.UInt16:
@@ -675,7 +724,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: No address records defined for UInt16 value \"{0}\".", item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"No address records defined for UInt16 value \"{item.Key}\".");
                                 }
                                 break;
                             case DerivedType.Int32:
@@ -686,7 +735,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived Int32 value \"{1}\", expected 2.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived Int32 value \"{item.Key}\", expected 2.");
                                 }
                                 break;
                             case DerivedType.UInt32:
@@ -697,7 +746,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived UInt32 value \"{1}\", expected 2.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived UInt32 value \"{item.Key}\", expected 2.");
                                 }
                                 break;
                             case DerivedType.Int64:
@@ -708,7 +757,7 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived Int64 value \"{1}\", expected 4.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived Int64 value \"{item.Key}\", expected 4.");
                                 }
                                 break;
                             case DerivedType.UInt64:
@@ -719,27 +768,38 @@ namespace openMIC
                                 }
                                 else
                                 {
-                                    OnStatusMessage("WARNING: {0} address records defined for derived UInt64 value \"{1}\", expected 4.", derivedValue.AddressRecords.Count, item.Key);
+                                    OnStatusMessage(MessageLevel.Warning, $"{derivedValue.AddressRecords.Count} address records defined for derived UInt64 value \"{item.Key}\", expected 4.");
                                 }
                                 break;
                         }
                     }
 
                     if (measurementsReceived % 20 == 0)
-                        OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, null, measurementsReceived, m_derivedValues.Count));
+                        OnProgressUpdated(this, new ProgressUpdate() { Progress = measurementsReceived });
                 }
 
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Processing, false, "Completed derived value processing.", m_derivedValues.Count, m_derivedValues.Count));
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Succeeded, true, "Polling operation complete.", overallTasksCount, overallTasksCount));
-
                 OnNewMeasurements(measurements.Values.ToArray());
-
                 m_measurementsReceived += measurementsReceived;
                 m_pollOperations++;
+
+                OnProgressUpdated(this, new ProgressUpdate()
+                {
+                    State = ProgressState.Success,
+                    Message = "Polling operation complete",
+                    Summary = $"{m_measurementsReceived} Values Processed",
+                    Progress = m_derivedValues.Count,
+                    OverallProgress = overallTasksCount
+                });
             }
             catch (Exception ex)
             {
-                OnProgressUpdated(this, new ProgressUpdate(ProgressState.Failed, true, $"Failed during poll operation: {ex.Message}", 0, 1));
+                OnProgressUpdated(this, new ProgressUpdate()
+                {
+                    State = ProgressState.Fail,
+                    Message = $"Failed during poll operation: {ex.Message}",
+                    OverallProgress = 1,
+                    OverallProgressTotal = 1
+                });
 
                 // Restart connection cycle when an exception occurs
                 Start();
@@ -859,7 +919,7 @@ namespace openMIC
                 m_pollingTimer.Enabled = false;
 
             DisposeConnections();
-            OnStatusMessage("Device disconnected.");
+            OnStatusMessage(MessageLevel.Info, "Device disconnected.");
         }
 
         /// <summary>

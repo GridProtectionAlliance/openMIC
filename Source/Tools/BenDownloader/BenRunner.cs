@@ -21,463 +21,419 @@
 //
 //******************************************************************************************************
 
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Net.Mail;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using GSF;
-using GSF.Identity;
-using System.Security.Principal;
+using GSF.Collections;
 using GSF.Configuration;
-using GSF.Data;
-using Microsoft.VisualBasic;
-using Microsoft.VisualBasic.FileIO;
-using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace BenDownloader
 {
     public class BenRunner
     {
+        #region [ Members ]
 
-        #region [Members]
         private const long BENMAXFILESIZE = 7000;
         private const int MAXFILELIMIT = 100;
 
+        private const string BenReqFileName = "benlink.req";
+        private const string BenRspFileName = "benlink.rsp";
+        private const string BenDirFileName = "bendir.txt";
+        private const string BenLogFileName = "benlog.txt";
+
         private readonly string m_ipAddress;
         private readonly string m_localPath;
-        private readonly string m_folder;
         private readonly string m_siteName;
         private readonly string m_serialNumber;
-        private readonly string m_domain;
-        private readonly string m_userName;
-        private readonly string m_passWord;
-        private readonly string m_tempDirectoryName;
-        private readonly WindowsImpersonationContext m_context;
+        private readonly string m_tempDirectoryPath;
         private readonly BenRecord m_lastFileDownloaded;
-        private static Mutex s_mutex;
+        private readonly int m_maxRetriesOnFileInUse;
+        private bool m_saveRequestsOnError;
+
         #endregion
 
-        #region [Constructors]
-        public BenRunner(int deviceId, int taskId)
+        #region [ Constructors ]
+
+        public BenRunner(string localPath, string siteName, string ip, string serialNumber)
+        {
+            m_localPath = localPath;
+            m_siteName = siteName;
+            m_ipAddress = ip;
+            m_serialNumber = serialNumber;
+
+            Directory.CreateDirectory(m_localPath);
+            m_lastFileDownloaded = GetLastDownloadedFile();
+            m_maxRetriesOnFileInUse = ConfigurationFile.Current.Settings["systemSettings"]["MaxRetriesOnFileInUse"]?.ValueAsInt32() ?? 8;
+
+            m_tempDirectoryPath = Path.Combine(Path.GetTempPath(), "BenDownloader", m_siteName);
+
+            if (Directory.Exists(m_tempDirectoryPath))
+                Directory.Delete(m_tempDirectoryPath, true);
+
+            Directory.CreateDirectory(m_tempDirectoryPath);
+
+            m_saveRequestsOnError = true;
+        }
+
+        #endregion
+
+        #region [ Methods ]
+
+        public void TransferAllFiles()
         {
             try
             {
+                List<BenRecord> myFiles = GetFileList();
 
-                using (AdoDataConnection conn = new AdoDataConnection("systemSettings"))
+                if (!myFiles.Any())
                 {
-                    string taskSettingsString = conn.ExecuteScalar<string>("Select Settings From ConnectionProfileTask WHERE ID = {0}", taskId);
-                    Dictionary<string, string> taskSettings = taskSettingsString.ParseKeyValuePairs();
-                    string deviceConnectionString = conn.ExecuteScalar<string>("Select ConnectionString From Device WHERE ID = {0}", deviceId);
-                    Dictionary<string, string> deviceConnection = deviceConnectionString.ParseKeyValuePairs();
-                    m_folder = conn.ExecuteScalar<string>("Select OriginalSource From Device WHERE ID = {0}", deviceId);
+                    Program.Log("File list retrieved. There are no files to download.");
+                    return;
+                }
 
-                    m_ipAddress = deviceConnection["connectionUserName"].Split('&')[0];
-                    m_localPath = taskSettings["localPath"];
-                    m_siteName = conn.ExecuteScalar<string>("Select Name From Device WHERE ID = {0}", deviceId);
-                    m_serialNumber = deviceConnection["connectionUserName"].Split('&')[1];
-                    m_domain = taskSettings["directoryAuthUserName"].Split('\\')[0];
-                    m_userName = taskSettings["directoryAuthUserName"].Split('\\')[1];
-                    m_passWord = taskSettings["directoryAuthPassword"];
-                    string tempDirectory = System.IO.Path.GetTempPath();
-                    System.IO.Directory.CreateDirectory(tempDirectory + "\\BenDownloader\\" + m_siteName);
-                    m_tempDirectoryName = tempDirectory + "\\BenDownloader\\" + m_siteName;
+                Program.Log($"File list retrieved. Proceeding to download {myFiles.Count} records.");
+                string workingDirectory = Path.Combine(m_tempDirectoryPath, "benfiles.req");
 
+                Directory.CreateDirectory(workingDirectory);
+
+                foreach (FileInfo file in new DirectoryInfo(Path.Combine(m_tempDirectoryPath, "bendir.req")).GetFiles())
+                {
+                    bool moveFile =
+                        !file.Name.Equals(BenDirFileName, StringComparison.OrdinalIgnoreCase) &&
+                        !file.Name.Equals(BenReqFileName, StringComparison.OrdinalIgnoreCase) &&
+                        !file.Name.Equals(BenRspFileName, StringComparison.OrdinalIgnoreCase) &&
+                        !file.Name.Equals(BenLogFileName, StringComparison.OrdinalIgnoreCase);
+
+                    if (moveFile)
+                        file.MoveTo(Path.Combine(workingDirectory, file.Name));
+                }
+
+                BuildBenLinkDLINI(workingDirectory, myFiles);
+                ExecBenCommand(workingDirectory);
+                UpdateTimestampsAndMoveFiles(workingDirectory);
+            }
+            catch
+            {
+                if (m_saveRequestsOnError)
+                {
                     try
                     {
-                        GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
+                        string now = DateTime.UtcNow.ToString("yyyy-MM-dd HH.mm");
+                        string tempDirectory = Path.Combine(Path.GetTempPath(), "BenDownloader", m_siteName);
+                        string request1FilePath = Path.Combine(tempDirectory, "bendir.req", BenReqFileName);
+                        string response1FilePath = Path.Combine(tempDirectory, "bendir.req", BenRspFileName);
+                        string log1FilePath = Path.Combine(tempDirectory, "bendir.req", BenLogFileName);
+                        string request2FilePath = Path.Combine(tempDirectory, "benfiles.req", BenReqFileName);
+                        string response2FilePath = Path.Combine(tempDirectory, "benfiles.req", BenRspFileName);
+                        string log2FilePath = Path.Combine(tempDirectory, "benfiles.req", BenLogFileName);
+
+                        Directory.CreateDirectory(Path.Combine("BenDownloader.logs", m_siteName, now, "bendir.req"));
+                        Directory.CreateDirectory(Path.Combine("BenDownloader.logs", m_siteName, now, "benfiles.req"));
+
+                        if (File.Exists(request1FilePath))
+                            File.Copy(request1FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "bendir.req", BenReqFileName), true);
+
+                        if (File.Exists(response1FilePath))
+                            File.Copy(response1FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "bendir.req", BenRspFileName), true);
+
+                        if (File.Exists(log1FilePath))
+                            File.Copy(log1FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "bendir.req", BenLogFileName), true);
+
+                        if (File.Exists(request2FilePath))
+                            File.Copy(request2FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "benfiles.req", BenReqFileName), true);
+
+                        if (File.Exists(response2FilePath))
+                            File.Copy(response2FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "benfiles.req", BenRspFileName), true);
+
+                        if (File.Exists(log2FilePath))
+                            File.Copy(log2FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "benfiles.req", BenLogFileName), true);
                     }
                     catch (Exception ex)
                     {
-
-                    }
-
-                    s_mutex = new Mutex(false, m_serialNumber);
-                    GSF.IO.FilePath.ConnectToNetworkShare(m_localPath, m_userName, m_passWord, m_domain);
-                    //m_context = GSF.Identity.UserInfo.ImpersonateUser(m_domain, m_userName, m_passWord);
-                    m_lastFileDownloaded = GetLastDownloadedFile();
-
-                }
-            }
-            catch(Exception ex)
-            {
-                Program.Log(ex.ToString());
-            }
-        }
-
-        ~BenRunner()
-        {
-            GSF.IO.FilePath.DisconnectFromNetworkShare(m_localPath);
-            //GSF.Identity.UserInfo.EndImpersonation(m_context);
-            s_mutex.Dispose();
-        }
-        #endregion
-
-        #region [Methods]
-        public bool XferAllFiles()
-        {
-            try
-            {
-                XferDataFiles();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Ben5K XferAllFiles (" + m_siteName + "): " + ex.ToString());
-                Program.Log("Ben5K XferAllFiles (" + m_siteName + "): " + ex.ToString());
-                return false;
-            }
-        }
-
-        private void XferDataFiles()
-        {
-            List<BenRecord> myFiles = GetFileList();
-
-            try
-            {
-                int numFiles = myFiles.Count;
-
-                if (numFiles > 0)
-                {
-                    //if there are less than 25 records to download then begin downloading files
-                    if (numFiles + 50 < MAXFILELIMIT)
-                    {
-                        BuildBenLinkDLINI(myFiles);
-                        ExecBenCommand();
-                        UpdateTimestamps();
-                    }
-                    else
-                    {
-                        SendTooManyFilesEmailNotification(numFiles);
-                        throw new System.Exception("Site " + m_siteName + " has too many files, aborting download.");
+                        Program.Log($"Failed to copy requests to BenDownloader.logs: {ex}", true);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Program.Log("XFER Error/Site: " + m_siteName + " - " + ex.ToString());
 
-                throw new System.Exception("XFER Error/Site: " + m_siteName + " - " + ex.ToString());
-
-            }
-            finally
-            {
-                //lastFileDownloaded = curRecId.ToString();
-                FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\bendir.txt");
-
+                throw;
             }
         }
 
         private List<BenRecord> GetFileList()
         {
             List<BenRecord> downloadList = new List<BenRecord>();
-            string dirFile = m_localPath + "\\" + m_folder + "\\bendir.txt";
+            string workingDirectory = Path.Combine(m_tempDirectoryPath, "bendir.req");
+            string dirFilePath = Path.Combine(workingDirectory, BenDirFileName);
+            string logFilePath = Path.Combine(workingDirectory, BenLogFileName);
 
-            try
+            // Delete the existing dir file if one exists
+            if (File.Exists(dirFilePath))
+                File.Delete(dirFilePath);
+
+            // Build new dir file
+            Program.Log("Requesting list of files to be downloaded from the device...");
+            BuildBenLinkDirINI(workingDirectory);
+
+            int retries = 0;
+
+            while (true)
             {
-                //delete the existing dir file if one exists.
-                if (FileSystem.FileExists(dirFile))
-                    FileSystem.DeleteFile(dirFile);
+                ExecBenCommand(workingDirectory);
 
-                //build new dir files.
-                BuildBenLinkDirINI();
-                
-                ExecBenCommand();
+                if (File.Exists(dirFilePath))
+                    break;
 
-                // build list of records to download
-                // todo: build an algroithm for rollover of record numbers
-                if (FileSystem.FileExists(dirFile))
+                string lastLogEntry = File.ReadAllLines(logFilePath).LastOrDefault() ?? string.Empty;
+                string errorMessage = Regex.Match(lastLogEntry, "ERROR.*", RegexOptions.IgnoreCase).Value;
+                bool fileInUse = Regex.IsMatch(errorMessage, "FILE ALREADY IN USE", RegexOptions.IgnoreCase);
+
+                if (!fileInUse)
+                    throw new Exception($"Error received from benlink: {errorMessage}");
+
+                if (m_maxRetriesOnFileInUse >= 0 && retries++ > m_maxRetriesOnFileInUse)
                 {
-                    TextFieldParser dirReader = FileSystem.OpenTextFieldParser(dirFile, new string[] {"\t" });
-                    while (!dirReader.EndOfData)
+                    m_saveRequestsOnError = false;
+                    throw new Exception("Exceeded maximum number of benlink retries");
+                }
+
+                Program.Log($"Encountered FILE IN USE error; initiating retry attempt {retries}");
+            }
+
+            // Build list of records to download
+            using (TextReader dirFileReader = File.OpenText(dirFilePath))
+            {
+                string line;
+
+                while ((line = dirFileReader.ReadLine()) != null)
+                {
+                    string[] curRow = line.Split('\t');
+
+                    if (Convert.ToInt32(curRow[2]) >= BENMAXFILESIZE)
                     {
-                        string[] curRow = dirReader.ReadFields();
-
-                        if(Convert.ToInt32(curRow[0]) < m_lastFileDownloaded.Id)
-                        {
-                            SendFileNumberLargerEmailNotification(curRow[0], m_lastFileDownloaded.Id);
-                        }
-
-                        if (Convert.ToInt32(curRow[2]) < BENMAXFILESIZE)
-                        {
-                            BenRecord curRecord = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]));
-
-                            // John Shugart wants to know that here is where we are compairing each line of the bendir.txt against the date of the
-                            // last downloaded file.
-                            if(curRecord.DateTime > m_lastFileDownloaded.DateTime)
-                                downloadList.Add(curRecord);
-                        }
-                        else
-                        {
-                            SendFileTooLargeEmailNotification("Record id: " + curRow[0]);
-                        }
-                     
+                        Program.Log("File too large Error: " + m_siteName + " - " + Convert.ToString(curRow[0]), true);
+                        continue;
                     }
-                    dirReader.Close();
 
+                    BenRecord record = new BenRecord(Convert.ToInt32(curRow[0]), Convert.ToDateTime(curRow[1]), Convert.ToInt32(curRow[2]), Get232Fn(Convert.ToDateTime(curRow[1]), curRow[0].Trim()));
+
+                    if (record.DateTime > DateTime.UtcNow.AddDays(-30) && record.DateTime > m_lastFileDownloaded.DateTime && !File.Exists(Path.Combine(m_localPath, record.Name)))
+                        downloadList.Add(record);
                 }
-                else
-                {
-                    throw new Exception("GetFileList Error: " + m_siteName + " - dir file does not exist.");
-                }
-
             }
-            catch (Exception ex)
-            {
-                Program.Log("GetFileList Error: " + m_siteName + " - " + ex.ToString());
 
-                throw new Exception("GetFileList Error: " + m_siteName + " - " + ex.ToString());
-            }
             return downloadList;
         }
 
-        private void ExecBenCommand()
+        private void BuildBenLinkDirINI(string workingDirectory)
         {
-            try
-            {
-                string benLinCmdLine = ConfigurationFile.Current.Settings["systemSettings"]["BenLinkCommandLine"].Value;
-                string cmdLine = benLinCmdLine.Replace("xxx", GetShortPath(m_localPath + "\\" + m_folder));
-                string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
-                var psi = new ProcessStartInfo(cmdLineSplit[0])
-                {
-                    Arguments = cmdLineSplit[1],
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
+            string requestFileName = Path.Combine(workingDirectory, BenReqFileName);
 
-                bool flag = true;
-                while (flag)
-                {
-                    try
-                    {
-                        s_mutex.WaitOne();
-                        using (Process p = Process.Start(psi))
-                        {
-                            p.WaitForExit();
-                            if (p.ExitCode == 0)
-                                flag = false;
-                        }
-                    }
-                    finally
-                    {
-                        s_mutex.ReleaseMutex();
-                    }
+            StringBuilder iniFileBuilder = new StringBuilder()
+                .AppendLine($"[Signature]")
+                .AppendLine($"Program=BenLink")
+                .AppendLine($"FileType=Request")
+                .AppendLine($"FileVersion=1")
+                .AppendLine()
+                .AppendLine($"[General]")
+                .AppendLine($"NbRequest=1")
+                .AppendLine()
+                .AppendLine($"[Device]")
+                .AppendLine($"DeviceType=5")
+                .AppendLine($"DeviceSN={m_serialNumber}")
+                .AppendLine($"NominalFrequency=60")
+                .AppendLine($"DataDirectory={workingDirectory}")
+                .AppendLine()
+                .AppendLine($"[ConnectionParam]")
+                .AppendLine($"AccessType=0")
+                .AppendLine($"UserName=0")
+                .AppendLine($"CommAddress=1")
+                .AppendLine($"IPAddress={m_ipAddress}")
+                .AppendLine($"HangupTimeout=0")
+                .AppendLine()
+                .AppendLine($"[Request1]")
+                .AppendLine($"RequestType=1")
+                .AppendLine($"Origin=1")
+                .AppendLine($"SubBens=1")
+                .AppendLine($"DataPath={workingDirectory}");
 
-                }
-
-                FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\benlink.req");
-                FileSystem.DeleteFile(m_localPath + "\\" + m_folder + "\\benlink.rsp");
-                
-            }
-            catch (Exception ex)
-            {
-                Program.Log("ExecBenCommand error: " + m_siteName + " - " + ex.ToString());
-
-                throw new Exception("ExecBenCommand error: " + m_siteName + " - " + ex.ToString());
-            }
+            FileInfo file = new FileInfo(requestFileName);
+            file.Directory.Create();
+            File.WriteAllText(file.FullName, iniFileBuilder.ToString(), Encoding.ASCII);
         }
 
-        private void BuildBenLinkDLINI(List<BenRecord> fileList)
+        private void BuildBenLinkDLINI(string workingDirectory, List<BenRecord> fileList)
         {
-            string requestfilename = m_localPath + "\\" + m_folder + "\\benlink.req";
+            string requestfilename = Path.Combine(workingDirectory, BenReqFileName);
 
-            string myINIFile = "[Signature]" + System.Environment.NewLine +
-                               "Program=BenLink" + System.Environment.NewLine +
-                               "FileType=Request" + System.Environment.NewLine +
-                               "FileVersion=1" + System.Environment.NewLine +
-                                System.Environment.NewLine +
-                                "[General]" + System.Environment.NewLine +
-                                "NbRequest=" + fileList.Count.ToString() + System.Environment.NewLine +
-                                System.Environment.NewLine +
-                                "[Device]" + System.Environment.NewLine +
-                                "DeviceType=5" + System.Environment.NewLine +
-                                "DeviceSN=" + m_serialNumber + System.Environment.NewLine +
-                                "NominalFrequency=60" + System.Environment.NewLine +
-                                "DataDirectory=" + m_localPath + "\\" + m_folder + '\\' + System.Environment.NewLine +
-                                System.Environment.NewLine +
-                                "CommAddress=1" + System.Environment.NewLine +
-                                "[ConnectionParam]" + System.Environment.NewLine +
-                                "AccessType=0" + System.Environment.NewLine +
-                                "UserName=0" + System.Environment.NewLine +
-                                "IPAddress=" + m_ipAddress + System.Environment.NewLine +
-                                "HangupTimeout=0";
+            StringBuilder iniFileBuilder = new StringBuilder()
+                .AppendLine($"[Signature]")
+                .AppendLine($"Program=BenLink")
+                .AppendLine($"FileType=Request")
+                .AppendLine($"FileVersion=1")
+                .AppendLine()
+                .AppendLine($"[General]")
+                .AppendLine($"NbRequest={fileList.Count}")
+                .AppendLine()
+                .AppendLine($"[Device]")
+                .AppendLine($"DeviceType=5")
+                .AppendLine($"DeviceSN={m_serialNumber}")
+                .AppendLine($"NominalFrequency=60")
+                .AppendLine($"DataDirectory={workingDirectory}")
+                .AppendLine()
+                .AppendLine($"CommAddress=1")
+                .AppendLine($"[ConnectionParam]")
+                .AppendLine($"AccessType=0")
+                .AppendLine($"UserName=0")
+                .AppendLine($"IPAddress={m_ipAddress}")
+                .AppendLine($"HangupTimeout=0");
 
             int i = 1;
-            int curYear = DateTime.Now.Year;
 
             foreach (BenRecord currec in fileList)
             {
-                if (currec.DateTime.Year > curYear)
-                {
-                    SendFileFromFutureNotification("Record ID: " + currec.Id);
-                    throw new System.Exception("FileID " + currec.Id + " at site " + m_siteName + " from the future. Fix DFR clock.");
-                }
-                if (currec.Id < m_lastFileDownloaded.Id)
-                {
-                    SendFileNumberLargerEmailNotification("Record ID: " + currec.Id.ToString(), currec.Id);
-                    throw new System.Exception("FileID " + currec.Id + " at site " + m_siteName + " Id less than last downloaded.");
-                }
-
-
-                myINIFile += System.Environment.NewLine + System.Environment.NewLine + System.Environment.NewLine + "[Request" + i++ + "]" + System.Environment.NewLine +
-                            "RequestType=2" + System.Environment.NewLine +
-                            "RecordNum=" + currec.Id + System.Environment.NewLine +
-                            "SubBenNum=0" + System.Environment.NewLine +
-                            "Origin=1" + System.Environment.NewLine +
-                            "OptionFlags=1" + System.Environment.NewLine +
-                            "DataPath=" + m_tempDirectoryName + System.Environment.NewLine +
-                            "FileName=" + Get232Fn(currec.DateTime, currec.Id.ToString());
-                
+                iniFileBuilder
+                    .AppendLine()
+                    .AppendLine($"[Request{i++}]")
+                    .AppendLine($"RequestType=2")
+                    .AppendLine($"RecordNum={currec.Id}")
+                    .AppendLine($"SubBenNum=0")
+                    .AppendLine($"Origin=1")
+                    .AppendLine($"OptionFlags=2")
+                    .AppendLine($"DataPath={workingDirectory}")
+                    .AppendLine($"FileName={currec.Name}");
             }
 
+            FileInfo file = new FileInfo(requestfilename);
+            file.Directory.Create();
+            File.WriteAllText(file.FullName, iniFileBuilder.ToString(), Encoding.ASCII);
+        }
+
+        private void ExecBenCommand(string workingDirectory)
+        {
+            Directory.CreateDirectory(workingDirectory);
+
+            string benLinCmdLine = ConfigurationFile.Current.Settings["systemSettings"]["BenlinkCommandLine"].Value;
+            string shortPath = GetShortPath(workingDirectory);
+            string benLogFilePath = Path.Combine(shortPath, BenLogFileName);
+            string cmdLine = string.Format(benLinCmdLine, shortPath, benLogFilePath);
+            string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
+
+            ProcessStartInfo psi = new ProcessStartInfo(cmdLineSplit[0])
+            {
+                Arguments = cmdLineSplit[1],
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
+            };
 
             try
             {
-                System.IO.FileInfo file = new System.IO.FileInfo(requestfilename);
-                file.Directory.Create();
-                FileSystem.WriteAllText(file.FullName, myINIFile, false, System.Text.Encoding.ASCII);
-            }
-            catch (Exception ex)
-            {
-                Program.Log("BuildBenLinkDLINI error: " + m_siteName + " - " + ex.ToString());
+                s_lock?.WaitOne();
 
-                throw new System.Exception("BuildBenLinkDLINI error: " + m_siteName + " - " + ex.ToString());
+                Program.Log($"Executing command \"{cmdLine}\"...");
+
+                using (Process m_process = Process.Start(psi))
+                {
+                    m_process.OutputDataReceived += (sender, args) => { Program.Log(args.Data); };
+                    m_process.ErrorDataReceived += (sender, args) => { Program.Log(args.Data, true); };
+                    m_process.WaitForExit();
+                }
+            }
+            finally
+            {
+                s_lock?.Release();
             }
         }
 
-        private void BuildBenLinkDirINI()
+        private void UpdateTimestampsAndMoveFiles(string workingDirectory)
         {
-            string requestFileName = m_localPath + "\\" + m_folder + "\\benlink.req";
-
-            string myINIFile = "[Signature]" + System.Environment.NewLine +
-                               "Program=BenLink" + System.Environment.NewLine +
-                               "FileType=Request" + System.Environment.NewLine +
-                               "FileVersion=1" + System.Environment.NewLine +
-                                System.Environment.NewLine +
-                                "[General]" + System.Environment.NewLine +
-                                "NbRequest=1" + System.Environment.NewLine +
-                                System.Environment.NewLine +
-                                "[Device]" + System.Environment.NewLine +
-                                "DeviceType=5" + System.Environment.NewLine +
-                                "DeviceSN=" + m_serialNumber + System.Environment.NewLine +
-                                "NominalFrequency=60" + System.Environment.NewLine +
-                                "DataDirectory=" + m_localPath + "\\" + m_folder + '\\' + System.Environment.NewLine +
-                                System.Environment.NewLine +
-                                "[ConnectionParam]" + System.Environment.NewLine +
-                                "AccessType=0" + System.Environment.NewLine +
-                                "UserName=0" + System.Environment.NewLine +
-                                "CommAddress=1" + System.Environment.NewLine +
-                                "IPAddress=" + m_ipAddress + System.Environment.NewLine +
-                                "HangupTimeout=0" + System.Environment.NewLine +
-                                System.Environment.NewLine +
-                                "[Request1]" + System.Environment.NewLine +
-                                "RequestType=1" + System.Environment.NewLine +
-                                "Origin=1" + System.Environment.NewLine +
-                                "SubBens=1" + System.Environment.NewLine +
-                                "DataPath=" + m_localPath + "\\" + m_folder;
-
-            try
-            {
-                System.IO.FileInfo file = new System.IO.FileInfo(requestFileName);
-                file.Directory.Create();
-                FileSystem.WriteAllText(file.FullName, myINIFile, false, System.Text.Encoding.ASCII);
-            }
-            catch (Exception ex)
-            {
-                Program.Log("BuildBenLinkDirINI error: " + m_siteName + '-' + ex.ToString());
-
-                throw new SystemException("BuildBenLinkDirINI error: " + m_siteName + '-' + ex.ToString());
-            }
-
-        }
-
-        private void UpdateTimestamps()
-        {
-
-            string[] files = System.IO.Directory.GetFiles(m_tempDirectoryName);
+            string[] files = Directory.GetFiles(workingDirectory);
+            int fileCount = 0;
 
             foreach (string fileName in files)
             {
-                System.IO.FileInfo file = new System.IO.FileInfo(fileName);
-                if(file.Name.EndsWith("cfg") || file.Name.EndsWith("dat"))
-                {
-                    try
-                    {
-                        string[] dateFromFileName = file.Name.Split(',');
-                        DateTime dateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
-                        if(dateTime != file.LastWriteTime)
-                        {
-                            System.IO.File.SetLastWriteTime(file.FullName, dateTime);
-                            string newFileName = m_localPath + "\\" + m_folder + '\\' + file.Name;
-                            System.IO.File.Copy(file.FullName, newFileName);
-                            System.IO.File.Delete(file.FullName);
-                        }
-                    }
-                    catch(Exception ex)
-                    {
-                        Program.Log("File timestamp update error: " + file.Name + '-' + ex.ToString());
+                FileInfo file = new FileInfo(fileName);
 
-                        throw new SystemException("File timestamp update error: " + file.Name + '-' + ex.ToString());
+                if (file.Extension.Equals(".cfg", StringComparison.OrdinalIgnoreCase) || file.Extension.Equals(".dat", StringComparison.OrdinalIgnoreCase))
+                {
+                    string[] dateFromFileName = file.Name.Split(',');
+                    DateTime dateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
+
+                    if (dateTime != file.LastWriteTime)
+                        File.SetLastWriteTime(file.FullName, dateTime);
+
+                    string newFilePath = Path.Combine(m_localPath, file.Name);
+
+                    if (!File.Exists(newFilePath))
+                    {
+                        file.CopyTo(newFilePath);
+                        file.Delete();
+                        fileCount++;
                     }
                 }
             }
-            System.IO.Directory.Delete(m_tempDirectoryName);
+
+            if (fileCount > 0)
+                Program.Log($"Successfully downloaded {fileCount} files.");
+            else
+                Program.Log("Failed to download any files.", true);
         }
 
         private BenRecord GetLastDownloadedFile()
         {
-            string[] files;
-            BenRecord lastFile = new BenRecord(0, DateTime.MinValue, 0);
+            FileInfo lastFile = new DirectoryInfo(m_localPath)
+                .EnumerateFiles()
+                .Where(fileInfo => fileInfo.Extension.Equals(".cfg", StringComparison.OrdinalIgnoreCase))
+                .MaxBy(fileInfo => fileInfo.LastWriteTime);
+
+            if ((object)lastFile == null)
+                return new BenRecord(0, DateTime.MinValue, 0, string.Empty);
+
+            int recordID = Convert.ToInt32(Path.GetFileNameWithoutExtension(lastFile.Name).Split(',').Last());
+            DateTime lastWriteTime = lastFile.LastWriteTime;
+            string fileName = lastFile.Name;
+
+            return new BenRecord(recordID, lastWriteTime, 0, fileName);
+        }
+
+        private void ExecNotepad()
+        {
+            var psi = new ProcessStartInfo("C:\\Windows\\notepad.exe")
+            {
+                Arguments = "",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
 
             try
             {
-                files = System.IO.Directory.GetFiles(m_localPath + "\\" + m_folder);
-
-            foreach (string fileName in files)
-            {
-                System.IO.FileInfo file = new System.IO.FileInfo(fileName);
-                if (file.Name.EndsWith("cfg") || file.Name.EndsWith("dat"))
+                s_lock?.WaitOne();
+                using (Process p = Process.Start(psi))
                 {
-                    try
-                    {
-                    if (file.LastWriteTime > lastFile.DateTime)
-                        {
-                            string[] dateFromFileName = System.IO.Path.GetFileNameWithoutExtension(file.Name).Split(',');
-                            lastFile.DateTime = DateTime.ParseExact(dateFromFileName[0] + ',' + dateFromFileName[1], "yyMMdd,HHmmssfff", null);
-                            lastFile.Id = int.Parse(dateFromFileName[dateFromFileName.Length - 1]);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Program.Log("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
-
-                        throw new SystemException("Retrieving Last Downloaded File error: " + file.Name + '-' + ex.ToString());
-                    }
+                    p.WaitForExit();
                 }
             }
-            }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                Program.Log("Get Last Downloaded File - Get Files \n\n" + ex.ToString());
+                Program.Log(ex.Message, true);
             }
-
-
-            return lastFile;
+            finally
+            {
+                s_lock?.Release();
+            }
         }
 
-
-        #endregion
-
-        #region [File System]
         private string Get232Fn(DateTime myDate, string recordId, string timeStampType = "t")
         {
             DateTime dateUtc = myDate.ToUniversalTime();
-            long tzoffset = Math.Abs(DateAndTime.DateDiff(DateInterval.Hour, myDate, dateUtc)) * -1;
+            long tzoffset = Math.Abs((myDate - dateUtc).Hours) * -1;
             return myDate.ToString("yyMMdd,HHmmssfff") + "," + tzoffset + timeStampType + "," + m_siteName.Replace(" ", "_") + "," + m_serialNumber + ",TVA," + recordId;
         }
 
@@ -489,73 +445,26 @@ namespace BenDownloader
             return shortNameBuffer.ToString();
         }
 
+        #endregion
+
+        #region [ Static ]
+
+        // Static Fields
+        private static Semaphore s_lock;
+
+        // Static Constructor
+        static BenRunner()
+        {
+            int setting = ConfigurationFile.Current.Settings["systemSettings"]["BenlinkInstanceCount"]?.ValueAsInt32() ?? 0;
+
+            if (setting > 0)
+                s_lock = new Semaphore(setting, setting, "BenRunner");
+        }
+
+        // Static Methods
         [DllImport("kernel32", EntryPoint = "GetShortPathName", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int GetShortPathName(string longPath, StringBuilder shortPath, int bufSize);
-        #endregion
-
-        #region [Email/PQMS]
-        private void SendFileNumberLargerEmailNotification(string filename, int downloadFileNumber)
-        {
-            string msgBody = "Largest file on DFR is " + filename + ". The largest file already downloaded is " + downloadFileNumber + ".  " +
-                             "This site may need to be checked.  It appears files were deleted from the DFR.  The counter on the Downloader should be reset.";
-            SendEmailDefault(msgBody);
-        }
-
-        private void SendFileTooLargeEmailNotification(string filename)
-        {
-            string msgBody = "File " + filename + " too large to download (greater than 4 MB).  Please check site...";
-            SendEmailDefault(msgBody);
-        }
-
-        private void SendFileFromFutureNotification(string filename)
-        {
-            string msgBody = "File " + filename + " has a timestamp from the future, please check the DFR clock.";
-            SendEmailDefault(msgBody);
-        }
-
-        private void SendTooManyFilesEmailNotification(int fileCount)
-        {
-            string msgBody = "Site has " + fileCount + " files to download.  This site may be a candidate for chip failure.  Please check...";
-            SendEmailDefault(msgBody);
-        }
-
-        private void SendExceptionEmail(string exception)
-        {
-            SendEmail("tllaughner@tva.gov", "bendownloader@gpa.org", "Exception from bendownloader", exception);
-        }
-
-
-        private void SendEmailDefault(string msgBody)
-        {
-#if DEBUG
-            string msgTo = "tllaughner@tva.gov";
-#else
-            string msgTo = "powerquality@tva.gov";
-#endif
-            string msgFrom = "powerquality@tva.gov";
-            string msgSubject = "Site " + m_siteName + " problem";
-
-            SendEmail(msgTo, msgFrom, msgSubject, msgBody);
-        }
-
-        private void SendEmail(string msgTo, string msgFrom, string msgSubject, string msgBody)
-        {
-            if (bool.Parse(ConfigurationFile.Current.Settings["systemSettings"]["EmailNotificationsEnabled"].Value))
-            {
-                MailAddress mf = new MailAddress(msgFrom);
-                MailAddress mt = new MailAddress(msgTo);
-                MailMessage msg = new MailMessage(mf, mt);
-                msg.Subject = msgSubject;
-                msg.Body = msgBody;
-
-                SmtpClient mclient = new SmtpClient(ConfigurationFile.Current.Settings["systemSettings"]["Mailserver"].Value);
-                mclient.Send(msg);
-            }
-        }
-
 
         #endregion
-
     }
-
 }

@@ -157,6 +157,28 @@
             read and write operations, defaults to 30 seconds.
             </summary>
         </member>
+        <member name="P:GSF.Net.Ftp.FtpClient.Passive">
+            <summary>
+            Gets or sets the passive/active mode of the server.
+            </summary>
+        </member>
+        <member name="P:GSF.Net.Ftp.FtpClient.ActiveAddress">
+            <summary>
+            Gets or sets the IP address to send with the PORT command.
+            </summary>
+        </member>
+        <member name="P:GSF.Net.Ftp.FtpClient.MinActivePort">
+            <summary>
+            Gets or sets the minimum value in the range of ports
+            used when listening for connections in active mode.
+            </summary>
+        </member>
+        <member name="P:GSF.Net.Ftp.FtpClient.MaxActivePort">
+            <summary>
+            Gets or sets the maximum value in the range of ports
+            used when listening for connections in active mode.
+            </summary>
+        </member>
         <member name="P:GSF.Net.Ftp.FtpClient.CurrentDirectory">
             <summary>
             Gets or sets current FTP session directory.
@@ -761,6 +783,22 @@
             Gets parent directory of file.
             </summary>
         </member>
+        <member name="M:GSF.Net.Ftp.FtpFile.Get">
+            <summary>
+            Downloads remote file.
+            </summary>
+        </member>
+        <member name="M:GSF.Net.Ftp.FtpFile.Get(System.String)">
+            <summary>
+            Downloads remote file using alternate local filename.
+            </summary>
+            <param name="localFile">Local filename to use for download.</param>
+        </member>
+        <member name="M:GSF.Net.Ftp.FtpFile.Remove">
+            <summary>
+            Removes remote file.
+            </summary>
+        </member>
         <member name="M:GSF.Net.Ftp.FtpFile.GetInputStream">
             <summary>
             Gets FTP input stream for file.
@@ -1276,6 +1314,28 @@
             <summary>
             Gets or sets the timeout, in milliseconds, for
             read and write operations, defaults to 30 seconds.
+            </summary>
+        </member>
+        <member name="P:GSF.Net.Ftp.IFtpSessionState.Passive">
+            <summary>
+            Gets or sets the passive/active mode of the FTP server.
+            </summary>
+        </member>
+        <member name="P:GSF.Net.Ftp.IFtpSessionState.ActiveAddress">
+            <summary>
+            Gets or sets the IP address to send with the PORT command.
+            </summary>
+        </member>
+        <member name="P:GSF.Net.Ftp.IFtpSessionState.MinActivePort">
+            <summary>
+            Gets or sets the minimum value in the range of ports
+            used when listening for connections in active mode.
+            </summary>
+        </member>
+        <member name="P:GSF.Net.Ftp.IFtpSessionState.MaxActivePort">
+            <summary>
+            Gets or sets the maximum value in the range of ports
+            used when listening for connections in active mode.
             </summary>
         </member>
         <member name="P:GSF.Net.Ftp.IFtpSessionState.CurrentDirectory">

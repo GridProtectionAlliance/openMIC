@@ -1,0 +1,597 @@
+﻿@*******************************************************************************************************
+//  IGridConfig.cshtml - Gbtc
+//
+//  Copyright © 2017, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  04/11/2017 - Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System.Net.Http
+@using System.Security.Principal
+@using System.Threading
+@using GSF.Identity
+@using GSF.Security
+@using GSF.Web
+@using openMIC.Model
+@using GSF.Web.Model
+@inherits ExtendedTemplateBase<AppModel>
+@{ 
+    Layout = "Layout.cshtml";
+    ViewBag.HidePageTitle = true;
+    ViewBag.Title = "Manage I-Grid Connections";
+
+    HttpRequestMessage request = ViewBag.Request;
+    Dictionary<string, string> parameters = request.QueryParameters();
+    string parameter;
+    int deviceID;
+
+    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
+        deviceID = 0;
+    }
+
+    bool userIsEditor = UserIsEditor();
+}
+@section StyleSheets {
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        span.new-record {
+            border: red;
+            border-style: solid;
+            border-width: 4px;
+            display: inline-block;
+            padding-left: 3px;
+            padding-right: 4px;
+        }
+
+        span.existing-record {
+            border: lawngreen;
+            border-style: solid;
+            border-width: 4px;
+            display: inline-block;
+            padding-left: 3px;
+            padding-right: 4px;
+        }
+
+        /* Prevent label wrapping */
+        #baseURLArea {
+            width: 80%;
+            display: inline-table;
+            vertical-align: middle;
+        }
+
+        @@media screen {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -18px;
+            }
+        }
+
+        @@media screen and (min-width: 992px) {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -8px;
+            }
+        }
+    </style>
+}
+@functions {
+    public string GetCurrentUserID()
+    {
+        if (Thread.CurrentPrincipal.Identity == null)
+            return UserInfo.CurrentUserID;
+
+        return Thread.CurrentPrincipal.Identity.Name;
+    }
+
+    // This function simply limits access to UI elements that the user does not have access to, server-side
+    // functions will further validate user rights even if UI restriction was somehow bypassed
+    public bool UserIsEditor()
+    {
+        SecurityProviderCache.ValidateCurrentProvider();
+        IPrincipal principal = Thread.CurrentPrincipal;
+        return principal.IsInRole("Administrator") || principal.IsInRole("Editor");
+    }
+}
+<div style="display: none" search-header></div>
+<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" src="Images/iGridConfigEditor.png" /></h3>
+<form class="form-inline">
+    <label for="inputBaseURL">Base URL:</label>
+    <div id="baseURLArea" class="input-group" data-bind="css: { 'has-error': !fieldIsValid(baseURL, true), 'has-feedback': !fieldIsValid(baseURL, true) }">
+        <input type="text" class="form-control" style="width: 100%" data-bind="textInput: baseURL" id="inputBaseURL" required>
+        <span class="input-group-addon" style="border-left: none; background-color: #fff; width: 100px">&amp;action=getMonitorList</span>
+        <span class="input-group-btn">
+            <button class="btn btn-default" id="queryDevices" data-bind="enable: dataHubIsConnected">Query Devices</button>
+        </span>
+        <span class="glyphicon glyphicon-remove form-control-feedback" style="margin-right: 290px; z-index: 5; display: none" data-bind="visible: !fieldIsValid(baseURL, true)"></span>
+    </div>
+</form>
+<hr class="quarter-break" />
+<div id="contentWell" class="well well-dynamic-content" content-fill-height>
+    <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">        
+        <span id="deviceCounts">i-Grid Monitor Records: <span data-bind='html: deviceCounts'></span></span>
+        <span class="pull-right" style="text-align: right">
+            @if (userIsEditor) {
+                <span id="bulkSelectionButtons">
+                    <button type="button" class="btn btn-sm btn-default" id="selectAll">Select All</button>
+                    <button type="button" class="btn btn-sm btn-default" id="unselectAll">Unselect All</button>&nbsp;
+                </span>
+                <button type="button" class="btn btn-sm btn-primary pull-right" id="saveDevices" data-bind="disable: selectedDeviceCount() == 0 || validationErrors() > 0 || !dataHubIsConnected()">
+                    <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New&nbsp;/&nbsp;Update&nbsp;<span data-bind="text: selectedDeviceCount"></span>&nbsp;Selected
+                </button>
+            } else {
+                <span class="label label-danger label-md">User "@GetCurrentUserID()" does not have rights to add devices.</span>
+            }
+            <em data-bind="visible: validationErrors() > 0">
+                <br/>
+                <span data-bind="text: validationErrors()"></span> validation error<span data-bind="visible: validationErrors() > 1">s</span>...
+            </em>
+        </span>
+        <table class="table table-condensed table-striped table-hover">
+            <thead>
+            <tr>
+                <th class="text-center">Selected</th>
+                <th class="text-left">openMIC&nbsp;Device&nbsp;Acronym</th>
+                <th class="text-center">Serial&nbsp;Number</th>
+                <th class="text-left">Name</th>
+                <th class="text-left">Description</th>
+            </tr>
+            </thead>
+            <tbody data-bind="foreach: { data: devices }">
+            <tr id="deviceRow" style="visibility: hidden">
+                <td width="5%"class="text-center valign-middle"><input type="checkbox" data-bind="checked: Selected"/></td>
+                <td width="25%" class="text-left valign-middle">
+                    <div class="input-group" data-bind="css: { 'has-error': !fieldIsValid(Acronym, true), 'has-feedback': !fieldIsValid(Acronym, true) }">
+                        <input type="text" class="form-control" style="width: 250px" data-bind="acronym: Acronym, textInput: Acronym, enable: Selected" required>
+                        <span class="glyphicon glyphicon-remove form-control-feedback" style="z-index: 5" data-bind="visible: !fieldIsValid(Acronym, true)"></span>
+                    </div>
+                </td>
+                <td width="15%" class="text-center valign-middle" style="white-space: nowrap"><span data-bind="text: SerialNumber, css: DeviceStatus, attr: { title: DeviceID() === 0 ? 'Device does not exist in openMIC' : 'Device already exists within openMIC' }"></span></td>
+                <td width="25%" class="text-left valign-middle"><span data-bind="text: Name, css: { 'disabled': !Selected() }"></span></td>
+                <td width="30%" class="text-left valign-middle"><span data-bind="text: Description, css: { 'disabled': !Selected() }"></span></td>
+            </tr>
+            </tbody>
+        </table>
+        <div id="loadingDataLabel" style="display: none">
+            Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="Scripts/knockout-3.4.0.js"></script>
+    <script src="Scripts/knockout.mapping-latest.js"></script>
+    <script src="Scripts/knockout.validation.js"></script>
+    <script src="@("@GSF/Web/Model/Scripts/ko-reactor.min.js")"></script>
+    <script src="@("@GSF/Web/Model/Scripts/gsf.web.knockout.js")"></script>
+    <script>
+        "use strict";
+
+        var viewModel = null;
+        var deviceID = @deviceID;
+        var connectionProfileID = 0;
+
+        function DeviceViewModel() {
+            const self = this;
+
+            // Observable fields
+            self.baseURL = ko.observable("https://www.igrid.com/igrid/DataExport.do?user=USER_TOKEN_GOES_HERE");
+            self.devices = ko.observableArray(); // IGridDevice array
+            self.deviceCounts = ko.observable("Calculating...");
+            self.errors = ko.validation.group(self);
+
+            // Internal fields
+            self._dataHubIsConnected = ko.observable(false);
+            self._isDirty = ko.observable(false);
+
+            // Properties
+            self.dataHubIsConnected = ko.pureComputed({
+                read: self._dataHubIsConnected,
+                write: function(value) {
+                    if (value === undefined)
+                        value = false;
+
+                    self._dataHubIsConnected(value);
+
+                    if (value)
+                        self.refreshValidationErrors();
+                },
+                owner: self
+            });
+
+            self.isDirty = ko.pureComputed({
+                read: self._isDirty,
+                write: function(value) {
+                    if (value === undefined)
+                        value = true;
+
+                    self._isDirty(value);
+                },
+                owner: self
+            });
+
+            self.newDeviceCount = ko.pureComputed({
+                read: function() {
+                    var count = 0;
+
+                    self.devices().forEach(function(device) {
+                        if (device.DeviceID() === 0)
+                            count++;
+                    });
+
+                    return count;
+                },
+                owner: self
+            });
+
+            self.existingDeviceCount = ko.pureComputed({
+                read: function() {
+                    return self.devices().length - self.newDeviceCount();
+                },
+                owner: self
+            });
+
+            self.selectedDeviceCount = ko.pureComputed({
+                read: function() {
+                    var count = 0;
+
+                    self.devices().forEach(function(device) {
+                        if (device.Selected())
+                            count++;
+                    });
+
+                    return count;
+                },
+                owner: self
+            });
+
+            // Methods
+            self.queryDevices = function() {
+                if (!self.dataHubIsConnected())
+                    return $.Deferred().resolve().promise();
+
+                self.devices.removeAll();
+
+                $("#responsiveTableDiv").show();
+                $("[id=deviceRow]").css("visibility", "hidden");
+                $("#bulkSelectionButtons").hide();
+                $("#loadingDataLabel").show();
+                self.deviceCounts("Calculating...");
+
+                return dataHub.queryIGridDevices(self.baseURL()).done(function(devices) {
+                    var observableDevices = [];
+
+                    // Make each JSON record observable so per row editing and validation can occur
+                    devices.forEach(function(device) {
+                        const observableDevice = self.deriveObservableDevice(device, false);
+                        observableDevices.push(observableDevice);
+                    });
+
+                    self.devices(observableDevices);
+
+                    // Make sure table is refreshed
+                    if (ko.options.deferUpdates)
+                        ko.tasks.runEarly();
+
+                    self.errors = ko.validation.group(self.devices);
+                    self.refreshValidationErrors();
+
+                    $("[id=deviceRow]").css("visibility", "visible");
+                    $("#loadingDataLabel").hide();
+                    $("#bulkSelectionButtons").show();
+                        
+                    self.deviceCounts(String.format("{0} &ndash; <span class='existing-record'>{1} Existing</span> &ndash; <span class='new-record'>{2} New</span>", self.devices().length, self.existingDeviceCount(), self.newDeviceCount()));
+                    self.isDirty(false);
+                }).fail(function(error) {
+                    showErrorMessage(error);
+                });
+            }
+
+            self.saveDevice = function(device, openMICDevice)  {
+                // Update device record (or add a new one if primary key is undefined)
+                return dataHub.addNewOrUpdateDevice(openMICDevice).done(function() {
+                    showInfoMessage(String.format("Saved device \"{0}\"...", openMICDevice.Acronym));
+
+                    // Update data model with new device ID
+                    dataHub.queryDevice(openMICDevice.Acronym).done(function(savedDevice) {
+                        device.DeviceID(savedDevice.ID);
+                        device.Selected(false);
+                    });
+                }).fail(function(error){
+                    showErrorMessage(String.format("Failed to save device \"{0}\": {1}", openMICDevice.Acronym, error));
+                });
+            }
+
+            self.loadDevice = function(device, protocolID, savePromises) {
+                // Query existing device (or create a new one)
+                return dataHub.queryDeviceByID(device.DeviceID()).done(function(openMICDevice) {
+                    // Update device properties
+                    openMICDevice.Acronym = device.Acronym();
+                    openMICDevice.Name = device.Name();
+                    openMICDevice.OriginalSource = device.SerialNumber();
+                    openMICDevice.Longitude = device.Longitude();
+                    openMICDevice.Latitude = device.Longitude();
+                    openMICDevice.ConnectionString = String.format("connectionHostName=www.igrid.com; baseURL={{0}}; serialNumber={1}; connectionProfileID={2}; schedule=0 0 * * *; modelNumber={3}; description={{4}}", self.baseURL(), device.SerialNumber(), connectionProfileID, device.ModelNumber(), device.Description());
+                    openMICDevice.ProtocolID = protocolID;
+
+                    savePromises.push(self.saveDevice(device, openMICDevice));
+                }).fail(function(error) {
+                    showErrorMessage(String.format("Failed to load device \"{0}\": {1}", device.Acronym(), error));
+                });
+            }
+
+            self.saveDevices = function() {
+                if (!self.dataHubIsConnected())
+                    return;
+
+                dataHub.getDownloaderProtocolID().done(function(protocolID) {
+                    const selectedDevices = [];
+                    const loadPromises = [];
+                    const savePromises = [];
+
+                    showInfoMessage("Saving i-Grid devices...");
+
+                    self.devices().forEach(function(device) {
+                        if (device.Selected()) {
+                            selectedDevices.push(device);
+                            loadPromises.push(self.loadDevice(device, protocolID, savePromises));
+                        }
+                    });
+
+                    $(loadPromises).whenAll().done(function() {
+                        $(savePromises).whenAll().done(function() {
+                            showInfoMessage("Save operation for i-Grid devices complete.");
+                            
+                            var index = 0;
+
+                            // Chain intializations for all selected devices that were updated
+                            const initializeNextDevice = function() {
+                                if (index < selectedDevices.length) {
+                                    dataHub.queryRuntimeID("Device", selectedDevices[index++].DeviceID()).done(function(runtimeID) {
+                                        if (runtimeID > 0)
+                                            serviceHub.sendCommand(String.format("initialize {0}", runtimeID)).done(initializeNextDevice);
+                                        else
+                                            initializeNextDevice();
+                                    });
+                                }
+                            };
+
+                            initializeNextDevice();
+                            $("#editDeviceName").hide();
+                        });
+                    });
+                });
+            }
+
+            self.refreshValidationErrors = function() {
+                // Force re-evaluation of persnickety validation properties
+                self.devices().forEach(function(device) {
+                    device.Acronym.valueHasMutated();
+                });
+
+                // Make sure any initial validation error messages are visible
+                self.errors.showAllMessages();
+            }
+
+            self.deriveObservableDevice = function(device, refreshValidationErrors) {
+                // Map all JSON elements as validated observables
+                const observableDevice = ko.mapping.fromJS(device);
+
+                // Make sure device Acronym field meet specifications
+                observableDevice.Acronym.extend({
+                    required: { onlyIf: observableDevice.Selected },
+                    pattern: {
+                        onlyIf: observableDevice.Selected,
+                        message: "Only upper case letters, numbers, '!', '-', '@@', '#', '_' , '.' and '$' are allowed.", 
+                        params: "^[A-Z0-9\\-!_\\.@@#\\$]+$"
+                    },
+                    uniqueOnPage: {
+                        devices: self.devices,
+                        targetDevice: observableDevice
+                    },
+                    uniqueInDatabase: {
+                        targetDevice: observableDevice
+                    }
+                });
+
+                observableDevice.DeviceStatus = ko.pureComputed(function() {
+                    return (observableDevice.DeviceID() === 0 ? "new-record" : "existing-record") + (observableDevice.Selected() ? "" : " disabled");
+                });
+
+                if (refreshValidationErrors === undefined)
+                    refreshValidationErrors = true;
+
+                if (refreshValidationErrors)
+                    self.refreshValidationErrors();
+
+                return observableDevice;
+            }
+
+            self.validationErrors = ko.pureComputed(function() {
+                return self.errors().length;
+            }).extend({ notify: "always" });
+        }
+
+        // Load existing device data
+        function loadDeviceConnection(id) {
+            if (!hubIsConnected)
+                return;
+
+            dataHub.queryDeviceByID(id).done(function(openMICDevice) {
+                $("#editDeviceName").html("Editing&nbsp;" + openMICDevice.Acronym);
+
+                // Parse connection string
+                const connectionString = new Dictionary(openMICDevice.ConnectionString.parseKeyValuePairs());
+
+                viewModel.baseURL(connectionString.get("baseURL"));
+
+                setTimeout(function() {
+                    showInfoMessage("Loading I-Grid Devices...");
+                    viewModel.queryDevices().done(function() {
+                        const devices = viewModel.devices();
+
+                        for (let i = 0; i < devices.length; i++) {
+                            const device = devices[i];
+
+                            if (device.DeviceID() === openMICDevice.ID) {
+                                device.Selected(true);
+                                ko.tasks.runEarly();
+
+                                const textBox = $("[id=deviceRow]:eq(" + i + ")").find("input[type=text]")[0];
+                                textBox.scrollIntoView();
+                                textBox.focus();
+                                break;
+                            }
+                        }
+                    });
+                }, 100);
+            });
+        }
+
+        // Page initialization function
+        $(function() {
+            $("#bodyContainer").addClass("fill-height");
+            
+            // Define local rule that will check that Acronym is unique on the page
+            ko.validation.rules["uniqueOnPage"] = {
+                validator: function (newVal, options) {
+                    const targetDevice = options.targetDevice;
+                    var count = 0;
+
+                    if (targetDevice.Selected()) {
+                        // Count the number of times acronym matches when selected
+                        ko.utils.arrayForEach(options.devices(), function(device) {
+                            if (device.Selected() && device.Acronym() === targetDevice.Acronym())
+                                count++;
+                        });
+                    }
+
+                    return count < 2;
+                },
+                message: "This device acronym already exists on the page. Acronyms must be unique."
+            };
+
+            // Define local rule that will check that Acronym is unique in the database
+            ko.validation.rules["uniqueInDatabase"] = {
+                async: true,
+                validator: function(newVal, options, callback) {
+                    const targetDevice = options.targetDevice;
+
+                    if (viewModel.dataHubIsConnected() && targetDevice.Selected()) {
+                        // Lookup Device record by Acronym - this will return an empty record if not found
+                        dataHub.queryDevice(newVal).done(function(device) {
+                                // Valid if device doesn't exist or is itself
+                            callback(device.ID === 0 || device.ID === targetDevice.DeviceID());
+                        })
+                        .fail(function(error) {
+                            showErrorMessage(error);
+
+                            // Do not display validation failure message for connection issues
+                            callback(true);
+                        });
+                    }
+                    else {
+                        callback(true);
+                    }
+                },
+                message: "This device acronym already exists in the database. Acronyms must be unique."
+            };
+
+            ko.validation.rules.pattern.message = "Invalid.";
+
+            // Enable knockout validation
+            ko.validation.init({
+                registerExtenders: true,
+                messagesOnModified: true,
+                insertMessages: true,
+                parseInputAttributes: true,
+                allowHtmlMessages: true,
+                messageTemplate: null,
+                decorateElement: true,
+                errorElementClass: "has-error",
+                errorMessageClass: "help-block",
+                grouping: { deep: true, observable: true, live: true }
+            }, true);
+
+            // Enable deferred updates for better performance
+            ko.options.deferUpdates = true;
+
+            // Create the primary view model
+            viewModel = new DeviceViewModel();
+
+            // Apply URL validation to baseURL field
+            viewModel.baseURL.extend({
+                pattern: {
+                    message: "Invalid URL.", 
+                    params: "^(?:(?:[a-zA-Z][a-zA-Z0-9.+-]*:\\/\\/)?[a-zA-Z0-9][a-zA-Z0-9.-]*(?::[0-9]+)?(?:\\/[^ \"]*)?)$"
+                }
+            });
+
+            // Initialize primary view model
+            ko.applyBindings(viewModel);
+
+            // Monitor for view model changes
+            ko.watch(viewModel.devices, { depth: -1 }, function(parents, child, item) {
+                viewModel.isDirty(true);
+            });
+
+            // Let view model know about hub connectivity changes
+            $(window).on("hubConnected", function() {
+                viewModel.dataHubIsConnected(true);
+
+                if (connectionProfileID === 0) {
+                    dataHub.getDefaultIGridConnectionProfileID().done(function(id) {
+                        connectionProfileID = id;
+                    });
+                }
+
+                if (deviceID > 0) {
+                    loadDeviceConnection(deviceID);
+                    deviceID = 0;
+                }
+            });
+
+            $(window).on("hubDisconnected", function() {
+                viewModel.dataHubIsConnected(false);
+            });
+
+            // Define button handlers
+            $("#queryDevices").click(function(event) {
+                event.preventDefault(); // Stop form submission :-p
+                viewModel.queryDevices();
+            });
+
+            $("#selectAll").click(function() {
+                viewModel.devices().forEach(function(device) {
+                    device.Selected(true);
+                });
+            });
+
+            $("#unselectAll").click(function() {
+                viewModel.devices().forEach(function(device) {
+                    device.Selected(false);
+                });
+            });
+
+            $("#saveDevices").click(function() {
+                if (connectionProfileID > 0)
+                    viewModel.saveDevices();
+            });
+        });
+    </script>
+}

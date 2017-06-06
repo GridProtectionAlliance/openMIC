@@ -58,6 +58,9 @@
         <Feature Id="BenDownloaderFeature" Title="Ben Downloader">
           <ComponentGroupRef Id="BenDownloaderComponents" />
         </Feature>
+        <Feature Id="IGridDownloaderFeature" Title="I-Grid Downloader">
+          <ComponentGroupRef Id="IGridDownloaderComponents" />
+        </Feature>
         <Feature Id="HistorianPlaybackUtilityFeature" Title="Historian Playback Utility">
           <ComponentGroupRef Id="HistorianPlaybackUtilityComponents" />
         </Feature>
@@ -319,6 +322,7 @@
       <ComponentGroupRef Id="ConfigCrypterComponents" />
       <ComponentGroupRef Id="ConfigurationEditorComponents" />
       <ComponentGroupRef Id="BenDownloaderComponents"/>
+      <ComponentGroupRef Id="IGridDownloaderComponents"/>
       <ComponentGroupRef Id="HistorianPlaybackUtilityComponents" />
       <ComponentGroupRef Id="HistorianViewComponents" />
       <ComponentGroupRef Id="LogFileViewerComponents" />
@@ -363,6 +367,15 @@
       </Component>
     </ComponentGroup>
 
+    <ComponentGroup Id="IGridDownloaderComponents" Directory="INSTALLFOLDER">
+      <Component Id="IGridDownloader">
+        <File Id="IGridDownloader.exe" Name="IGridDownloader.exe" Source="$(var.IGridDownloader.TargetPath)" />
+      </Component>
+      <Component Id="IGridDownloaderConfig">
+        <File Id="IGridDownloader.exe.config" Name="IGridDownloader.exe.config" Source="$(var.IGridDownloader.TargetPath).config" />
+      </Component>
+    </ComponentGroup>
+
     <ComponentGroup Id="ConfigurationSetupUtilityComponents" Directory="INSTALLFOLDER">
       <Component Id="ConfigurationSetupUtility">
         <File Id="ConfigurationSetupUtility.exe" Name="$(var.ConfigurationSetupUtility.TargetFileName)" Source="$(var.ConfigurationSetupUtility.TargetPath)" />
@@ -396,7 +409,7 @@
     <ComponentGroup Id="LogFileViewerComponents" Directory="INSTALLFOLDER">
       <Component Id="LogFileViewer">
         <File Id="LogFileViewer.exe" Name="LogFileViewer.exe" Source="$(var.ProjectDir)\LogFileViewer.exe" />
-        <Shortcut Id="LogFileViewerStartMenuShortcut" Name="Log File Viewer" Icon="LogFileViewer.ico.exe" Description="Tool used to analyze log files produced by the openHistorian." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
+        <Shortcut Id="LogFileViewerStartMenuShortcut" Name="Log File Viewer" Icon="LogFileViewer.ico.exe" Description="Tool used to analyze log files produced by the openMIC." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
       </Component>
     </ComponentGroup>
 
@@ -498,6 +511,9 @@
       <Component Id="WavInputAdapter">
         <File Id="WavInputAdapter.dll" Name="WavInputAdapter.dll" Source="$(var.SolutionDir)\Dependencies\GSF\WavInputAdapter.dll" />
       </Component>
+      <Component Id="NModbus4"> <!-- Dependency for Modbus connectivity -->
+        <File Id="NModbus4.dll" Name="NModbus4.dll" Source="$(var.SolutionDir)Dependencies\NuGet\NModbus4.2.1.0\lib\net40\NModbus4.dll" />
+      </Component>
     </ComponentGroup>
 
     <!-- GSF Dependencies -->
@@ -568,6 +584,12 @@
       <Component Id="GSF.Windows">
         <File Id="GSF.Windows.dll" Name="GSF.Windows.dll" Source="$(var.SolutionDir)\Dependencies\GSF\GSF.Windows.dll" />
       </Component>
+      <Component Id="Antlr3.Runtime">
+        <File Id="Antlr3.Runtime.dll" Name="Antlr3.Runtime.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Antlr3.Runtime.dll" />
+      </Component>
+      <Component Id="ExpressionEvaluator">
+        <File Id="ExpressionEvaluator.dll" Name="ExpressionEvaluator.dll" Source="$(var.SolutionDir)\Dependencies\GSF\ExpressionEvaluator.dll" />
+      </Component>
     </ComponentGroup>
     
     <!-- Microsoft Dependencies -->
@@ -593,6 +615,11 @@
         <File Id="DotRas.dll" Name="DotRas.dll" Source="$(var.SolutionDir)Dependencies\NuGet\DotRas.for.Win7.1.3.0\lib\net40\DotRas.dll" />
       </Component>
 
+      <!-- DotNetZip components -->
+      <Component Id="Ionic.Zip">
+        <File Id="Ionic.Zip.dll" Name="Ionic.Zip.dll" Source="$(var.SolutionDir)\Dependencies\DotNetZip\Ionic.Zip.dll" />
+      </Component>
+
       <!-- Self Hosting SignalR, WebAPI and Razor Engine Components (from NuGet) -->
       <Component Id="Microsoft.AspNet.Razor">
         <File Id="Microsoft.AspNet.Razor.dll" Name="Microsoft.AspNet.Razor.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.AspNet.Razor.4.0.0-beta7\lib\net45\Microsoft.AspNet.Razor.dll" />
@@ -613,19 +640,22 @@
         <File Id="Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll" Name="Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll" />
       </Component>
       <Component Id="Microsoft.Owin">
-        <File Id="Microsoft.Owin.dll" Name="Microsoft.Owin.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll" />
+        <File Id="Microsoft.Owin.dll" Name="Microsoft.Owin.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll" />
+      </Component>
+      <Component Id="Microsoft.Owin.Cors">
+        <File Id="Microsoft.Owin.Cors.dll" Name="Microsoft.Owin.Cors.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.Cors.3.1.0\lib\net45\Microsoft.Owin.Cors.dll" />
       </Component>
       <Component Id="Microsoft.Owin.Diagnostics">
-        <File Id="Microsoft.Owin.Diagnostics.dll" Name="Microsoft.Owin.Diagnostics.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.Diagnostics.2.1.0\lib\net40\Microsoft.Owin.Diagnostics.dll" />
+        <File Id="Microsoft.Owin.Diagnostics.dll" Name="Microsoft.Owin.Diagnostics.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.Diagnostics.3.1.0\lib\net45\Microsoft.Owin.Diagnostics.dll" />
       </Component>
       <Component Id="Microsoft.Owin.Host.HttpListener">
-        <File Id="Microsoft.Owin.Host.HttpListener.dll" Name="Microsoft.Owin.Host.HttpListener.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.Host.HttpListener.3.0.1\lib\net45\Microsoft.Owin.Host.HttpListener.dll" />
+        <File Id="Microsoft.Owin.Host.HttpListener.dll" Name="Microsoft.Owin.Host.HttpListener.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.Host.HttpListener.3.1.0\lib\net45\Microsoft.Owin.Host.HttpListener.dll" />
       </Component>
       <Component Id="Microsoft.Owin.Hosting">
-        <File Id="Microsoft.Owin.Hosting.dll" Name="Microsoft.Owin.Hosting.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.Hosting.2.1.0\lib\net45\Microsoft.Owin.Hosting.dll" />
+        <File Id="Microsoft.Owin.Hosting.dll" Name="Microsoft.Owin.Hosting.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.Hosting.3.1.0\lib\net45\Microsoft.Owin.Hosting.dll" />
       </Component>
       <Component Id="Microsoft.Owin.Security">
-        <File Id="Microsoft.Owin.Security.dll" Name="Microsoft.Owin.Security.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll" />
+        <File Id="Microsoft.Owin.Security.dll" Name="Microsoft.Owin.Security.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.Owin.Security.3.1.0\lib\net45\Microsoft.Owin.Security.dll" />
       </Component>
       <Component Id="Newtonsoft.Json">
         <File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll" />
@@ -638,6 +668,9 @@
       </Component>
       <Component Id="System.Web.Razor">
         <File Id="System.Web.Razor.dll" Name="System.Web.Razor.dll" Source="$(var.SolutionDir)Dependencies\Microsoft\System.Web.Razor.dll" />
+      </Component>
+      <Component Id="System.Web.Cors">
+        <File Id="System.Web.Cors.dll" Name="System.Web.Cors.dll" Source="$(var.SolutionDir)Dependencies\NuGet\Microsoft.AspNet.Cors.5.0.0\lib\net45\System.Web.Cors.dll" />
       </Component>
       <Component Id="AjaxMin">
         <File Id="AjaxMin.dll" Name="AjaxMin.dll" Source="$(var.SolutionDir)Dependencies\GSF\AjaxMin.dll" />

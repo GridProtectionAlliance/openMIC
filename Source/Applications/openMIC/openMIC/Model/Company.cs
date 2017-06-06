@@ -1,5 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using GSF.ComponentModel;
+using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
 namespace openMIC.Model
@@ -17,7 +19,7 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
-        [RegularExpression("^[A-Z0-9\\-!_\\.@#\\$]+$", ErrorMessage = "Only upper case letters, numbers, '!', '-', '@', '#', '_' , '.'and '$' are allowed.")]
+        [AcronymValidation]
         [Searchable]
         public string Acronym
         {
@@ -27,7 +29,7 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(10)]
-        [RegularExpression("^[A-Z0-9]+$", ErrorMessage = "Only three upper case letters or numbers are allowed.")]
+        [RegularExpression("^[A-Z0-9]+$", ErrorMessage = "Only upper case letters or numbers are allowed.")]
         public string MapAcronym
         {
             get
@@ -61,6 +63,7 @@ namespace openMIC.Model
             set;
         }
 
+        [DefaultValueExpression("DateTime.UtcNow")]
         public DateTime CreatedOn
         {
             get;
@@ -69,12 +72,15 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
+        [DefaultValueExpression("UserInfo.CurrentUserID")]
         public string CreatedBy
         {
             get;
             set;
         }
 
+        [DefaultValueExpression("this.CreatedOn", EvaluationOrder = 1)]
+        [UpdateValueExpression("DateTime.UtcNow")]
         public DateTime UpdatedOn
         {
             get;
@@ -83,6 +89,8 @@ namespace openMIC.Model
 
         [Required]
         [StringLength(200)]
+        [DefaultValueExpression("this.CreatedBy", EvaluationOrder = 1)]
+        [UpdateValueExpression("UserInfo.CurrentUserID")]
         public string UpdatedBy
         {
             get;

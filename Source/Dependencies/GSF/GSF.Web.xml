@@ -1579,7 +1579,7 @@
         </member>
         <member name="M:GSF.Web.Hosting.WebPageController.PostPage(System.String,System.String,System.Threading.CancellationToken)">
             <summary>
-            // Sub-folder post handler - depth 1.
+            Sub-folder post handler - depth 1.
             </summary>
             <param name="folder1">First folder.</param>
             <param name="pageName">Page name to render.</param>
@@ -1953,6 +1953,52 @@
             <param name="razorEngineVB">Razor engine instance for .vbhtml templates; uses default instance if not provided.</param>
             <returns>Shared <see cref="T:GSF.Web.Hosting.WebServer"/> instance created based on configured options.</returns>
         </member>
+        <member name="T:GSF.Web.Hubs.DataContextHubClient">
+            <summary>
+            Represents a SignalR <see cref="T:Microsoft.AspNet.SignalR.Hub"/> client session instance of a data context.
+            </summary>
+        </member>
+        <member name="M:GSF.Web.Hubs.DataContextHubClient.#ctor">
+            <summary>
+            Creates a new <see cref="T:GSF.Web.Hubs.DataContextHubClient"/>.
+            </summary>
+        </member>
+        <member name="P:GSF.Web.Hubs.DataContextHubClient.PrimaryKeySessionCache">
+            <summary>
+            Gets primary key cache for current session.
+            </summary>
+        </member>
+        <member name="M:GSF.Web.Hubs.DataContextHubClient.GetDataContext(System.String)">
+            <summary>
+            Gets a new <see cref="T:GSF.Web.Model.DataContext"/> instance for the current SignalR hub session, applying
+            any existing primary key caches.
+            </summary>
+        </member>
+        <member name="T:GSF.Web.Hubs.DataContextOperations">
+            <summary>
+            Represents hub operations for using <see cref="T:GSF.Web.Hubs.DataContextHubClient"/> instances.
+            </summary>
+        </member>
+        <member name="M:GSF.Web.Hubs.DataContextOperations.#ctor(Microsoft.AspNet.SignalR.Hubs.IHub,System.String,System.Action{System.String,GSF.UpdateType},System.Action{System.Exception})">
+            <summary>
+            Creates a new <see cref="T:GSF.Web.Hubs.DataContextOperations"/> instance.
+            </summary>
+            <param name="hub">Parent hub.</param>
+            <param name="settingsCategory">Setting category that contains the connection settings.</param>
+            <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
+            <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
+        </member>
+        <member name="P:GSF.Web.Hubs.DataContextOperations.PrimaryKeySessionCache">
+            <summary>
+            Gets primary key cache for current session.
+            </summary>
+        </member>
+        <member name="P:GSF.Web.Hubs.DataContextOperations.DataContext">
+            <summary>
+            Gets a new <see cref="T:GSF.Web.Model.DataContext"/> instance for the current SignalR hub session, applying
+            any existing primary key caches.
+            </summary>
+        </member>
         <member name="T:GSF.Web.Hubs.HubClientBase">
             <summary>
             Represents a base class implementation for <see cref="T:GSF.Web.Hubs.IHubClient"/> implementations.
@@ -2105,11 +2151,11 @@
             <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
             <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
         </member>
-        <member name="M:GSF.Web.Hubs.RecordOperationsHub`1.#ctor(GSF.Web.Model.DataContext,System.Action{System.String,GSF.UpdateType},System.Action{System.Exception})">
+        <member name="M:GSF.Web.Hubs.RecordOperationsHub`1.#ctor(System.String,System.Action{System.String,GSF.UpdateType},System.Action{System.Exception})">
             <summary>
             Creates a new <see cref="T:GSF.Web.Hubs.RecordOperationsHub`1"/> with the specified <see cref="P:GSF.Web.Hubs.RecordOperationsHub`1.DataContext"/> and logging functions.
             </summary>
-            <param name="dataContext">Data context to use for this hub; set to <c>null</c> for default data context.</param>
+            <param name="settingsCategory">Setting category that contains the connection settings.</param>
             <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
             <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
         </member>
@@ -2118,6 +2164,14 @@
             Gets <see cref="P:GSF.Web.Hubs.IRecordOperationsHub.RecordOperationsCache"/> for SignalR hub.
             </summary>
         </member>
+        <member name="P:GSF.Web.Hubs.RecordOperationsHub`1.DataContext">
+            <summary>
+            Gets <see cref="T:GSF.Web.Model.DataContext"/> created for this <see cref="T:GSF.Web.Hubs.RecordOperationsHub`1"/> instance.
+            </summary>
+            <remarks>
+            Primary key caches for data context table operations are cached per user session.
+            </remarks>
+        </member>
         <member name="P:GSF.Web.Hubs.RecordOperationsHub`1.ClientScript">
             <summary>
             Gets reference to SignalR hub client browser DOM functionality.
@@ -2125,11 +2179,6 @@
             <remarks>
             This property can be used to call registered Javascript hub functions.
             </remarks>
-        </member>
-        <member name="P:GSF.Web.Hubs.RecordOperationsHub`1.DataContext">
-            <summary>
-            Gets <see cref="T:GSF.Web.Model.DataContext"/> created for this <see cref="T:GSF.Web.Hubs.RecordOperationsHub`1"/> instance.
-            </summary>
         </member>
         <member name="P:GSF.Web.Hubs.RecordOperationsHub`1.ConnectionID">
             <summary>
@@ -2368,6 +2417,40 @@
         <member name="P:GSF.Web.Model.DataContext.AddCheckBoxFieldTemplate">
             <summary>
             Gets or sets the check box field razor template file name.
+            </summary>
+        </member>
+        <member name="P:GSF.Web.Model.DataContext.CustomTableOperationTokens">
+            <summary>
+            Gets dictionary of per-model custom tokens to use with <see cref="T:GSF.Data.Model.AmendExpressionAttribute"/> values for <see cref="T:GSF.Data.Model.TableOperations`1"/> in this <see cref="T:GSF.Web.Model.DataContext"/> .
+            </summary>
+            <remarks>
+            The returned dictionary can be used to apply run-time tokens to any defined <see cref="T:GSF.Data.Model.AmendExpressionAttribute"/> values,
+            for example, given the following amendment expression applied to a modeled class:
+            <code>
+            [AmendExpression("TOP {count}", 
+                TargetExpression = TargetExpression.FieldList,
+                AffixPosition = AffixPosition.Prefix,
+                StatementTypes = StatementTypes.SelectSet)]]
+            public class MyTable
+            {
+                string MyField;
+            }
+            </code>
+            The per-model key/value pairs could be set as follows at run-time:
+            <code>
+            int count = 200;
+            dataContext.CustomTableOperationTokens[typeof(MyTable)] = new[] { new KeyValuePair&lt;string, string&gt;("{count}", $"{count}") };
+            </code>
+            </remarks>        
+        </member>
+        <member name="P:GSF.Web.Model.DataContext.TableOperationsCache">
+            <summary>
+            Gets table operations cache for data context.
+            </summary>
+        </member>
+        <member name="P:GSF.Web.Model.DataContext.PrimaryKeySessionCache">
+            <summary>
+            Gets or sets session based primary key cache of table operations, creating it if needed.
             </summary>
         </member>
         <member name="M:GSF.Web.Model.DataContext.Dispose">
@@ -2685,7 +2768,7 @@
             Adds a new field value initializer.
             </summary>
             <param name="fieldName">Field name (as defined in model).</param>
-            <param name="initialValue">Javascript based initial value for field.</param>
+            <param name="initialValueScript">Javascript based initial value for field.</param>
         </member>
         <member name="M:GSF.Web.Model.DataContext.AddFieldValueInitializer``1(System.String)">
             <summary>
@@ -2722,7 +2805,7 @@
             <typeparam name="TModel">Modeled table.</typeparam>
             <param name="fieldName">Field name for input date field.</param>
             <param name="inputType">Input field type, defaults to text.</param>
-            <param name="fieldLabel">Label name for input date field, pulls from <see cref="T:GSF.Data.Model.LabelAttribute"/> if defined, otherwise defaults to <paramref name="fieldName"/>.</param>
+            <param name="fieldLabel">Label name for input date field, pulls from <see cref="T:GSF.ComponentModel.DataAnnotations.LabelAttribute"/> if defined, otherwise defaults to <paramref name="fieldName"/>.</param>
             <param name="fieldID">ID to use for input field; defaults to date + <paramref name="fieldName"/>.</param>
             <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
             <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
@@ -2759,7 +2842,7 @@
             <typeparam name="TModel">Modeled table.</typeparam>
             <param name="fieldName">Field name for input text field.</param>
             <param name="inputType">Input field type, defaults to appropriate model field type.</param>
-            <param name="fieldLabel">Label name for input text field, pulls from <see cref="T:GSF.Data.Model.LabelAttribute"/> if defined, otherwise defaults to <paramref name="fieldName"/>.</param>
+            <param name="fieldLabel">Label name for input text field, pulls from <see cref="T:GSF.ComponentModel.DataAnnotations.LabelAttribute"/> if defined, otherwise defaults to <paramref name="fieldName"/>.</param>
             <param name="fieldID">ID to use for input field; defaults to input + <paramref name="fieldName"/>.</param>
             <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
             <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
@@ -2798,7 +2881,7 @@
             <typeparam name="TModel">Modeled table.</typeparam>
             <param name="fieldName">Field name for text area field.</param>
             <param name="rows">Number of rows for text area.</param>
-            <param name="fieldLabel">Label name for text area field, pulls from <see cref="T:GSF.Data.Model.LabelAttribute"/> if defined, otherwise defaults to <paramref name="fieldName"/>.</param>
+            <param name="fieldLabel">Label name for text area field, pulls from <see cref="T:GSF.ComponentModel.DataAnnotations.LabelAttribute"/> if defined, otherwise defaults to <paramref name="fieldName"/>.</param>
             <param name="fieldID">ID to use for text area field; defaults to text + <paramref name="fieldName"/>.</param>
             <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
             <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
@@ -2840,7 +2923,7 @@
             <param name="optionValueFieldName">Field name for ID of option data.</param>
             <param name="optionLabelFieldName">Field name for label of option data, defaults to <paramref name="optionValueFieldName"/></param>
             <param name="optionSortFieldName">Field name for sort order of option data, defaults to <paramref name="optionLabelFieldName"/></param>
-            <param name="fieldLabel">Label name for select field, pulls from <see cref="T:GSF.Data.Model.LabelAttribute"/> if defined, otherwise defaults to <paramref name="fieldName"/>.</param>
+            <param name="fieldLabel">Label name for select field, pulls from <see cref="T:GSF.ComponentModel.DataAnnotations.LabelAttribute"/> if defined, otherwise defaults to <paramref name="fieldName"/>.</param>
             <param name="fieldID">ID to use for select field; defaults to select + <paramref name="fieldName"/>.</param>
             <param name="groupDataBinding">Data-bind operations to apply to outer form-group div, if any.</param>
             <param name="labelDataBinding">Data-bind operations to apply to label, if any.</param>
@@ -3804,11 +3887,11 @@
             <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
             <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
         </member>
-        <member name="M:GSF.Web.Security.SecurityHub.#ctor(GSF.Web.Model.DataContext,System.Action{System.String,GSF.UpdateType},System.Action{System.Exception})">
+        <member name="M:GSF.Web.Security.SecurityHub.#ctor(System.String,System.Action{System.String,GSF.UpdateType},System.Action{System.Exception})">
             <summary>
             Creates a new <see cref="T:GSF.Web.Security.SecurityHub"/> with the specified <see cref="T:GSF.Web.Model.DataContext"/> and logging functions.
             </summary>
-            <param name="dataContext">Data context to use for this hub; set to <c>null</c> for default security provider context.</param>
+            <param name="settingsCategory">Setting category that contains the connection settings. Defaults to "securityProvider".</param>
             <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
             <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
         </member>
@@ -3955,6 +4038,12 @@
             </summary>
             <param name="sid">SID to convert to a account name.</param>
             <returns>Account name for a given SID.</returns>
+        </member>
+        <member name="M:GSF.Web.Security.SecurityHub.GetDefaultNodeID">
+            <summary>
+            Gets the default NodeID based on the current configuration.
+            </summary>
+            <returns>Default NodeID based on the current configuration.</returns>
         </member>
         <member name="M:GSF.Web.Security.SecurityHub.QueryUserAccountCount(System.String)">
             <summary>

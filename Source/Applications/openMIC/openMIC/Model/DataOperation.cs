@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace openMIC.Model
@@ -48,6 +49,7 @@ namespace openMIC.Model
             set;
         }
 
+        [DefaultValue(true)]
         public bool Enabled
         {
             get;

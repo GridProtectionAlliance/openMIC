@@ -334,9 +334,9 @@
         </member>
         <member name="M:GSF.PhasorProtocols.ChannelCellBase.ToString">
             <summary>
-            Gets the string respresentation of this <see cref="T:GSF.PhasorProtocols.ChannelCellBase"/>.
+            Gets the string representation of this <see cref="T:GSF.PhasorProtocols.ChannelCellBase"/>.
             </summary>
-            <returns>String respresentation of this <see cref="T:GSF.PhasorProtocols.ChannelCellBase"/>.</returns>
+            <returns>String representation of this <see cref="T:GSF.PhasorProtocols.ChannelCellBase"/>.</returns>
         </member>
         <member name="M:GSF.PhasorProtocols.ChannelCellBase.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
             <summary>
@@ -725,9 +725,9 @@
         </member>
         <member name="M:GSF.PhasorProtocols.ChannelDefinitionBase.ToString">
             <summary>
-            Gets the string respresentation of this <see cref="T:GSF.PhasorProtocols.ChannelDefinitionBase"/>.
+            Gets the string representation of this <see cref="T:GSF.PhasorProtocols.ChannelDefinitionBase"/>.
             </summary>
-            <returns>String respresentation of this <see cref="T:GSF.PhasorProtocols.ChannelDefinitionBase"/>.</returns>
+            <returns>String representation of this <see cref="T:GSF.PhasorProtocols.ChannelDefinitionBase"/>.</returns>
         </member>
         <member name="M:GSF.PhasorProtocols.ChannelDefinitionBase.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
             <summary>
@@ -1823,9 +1823,9 @@
         </member>
         <member name="M:GSF.PhasorProtocols.ConfigurationCellBase.ToString">
             <summary>
-            Gets the string respresentation of this <see cref="T:GSF.PhasorProtocols.ConfigurationCellBase"/>.
+            Gets the string representation of this <see cref="T:GSF.PhasorProtocols.ConfigurationCellBase"/>.
             </summary>
-            <returns>String respresentation of this <see cref="T:GSF.PhasorProtocols.ConfigurationCellBase"/>.</returns>
+            <returns>String representation of this <see cref="T:GSF.PhasorProtocols.ConfigurationCellBase"/>.</returns>
         </member>
         <member name="M:GSF.PhasorProtocols.ConfigurationCellBase.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
             <summary>
@@ -6615,6 +6615,16 @@
             Stops the <see cref="T:GSF.PhasorProtocols.MultiProtocolFrameParser"/>.
             </summary>
         </member>
+        <member name="M:GSF.PhasorProtocols.MultiProtocolFrameParser.SendRawDeviceCommand(System.UInt16)">
+            <summary>
+            Sends the specified raw command to the remote device.
+            </summary>
+            <param name="rawCommand"><see cref="T:System.UInt16"/> to send to the remote device.</param>
+            <remarks>
+            Command will only be sent if <see cref="P:GSF.PhasorProtocols.MultiProtocolFrameParser.DeviceSupportsCommands"/> is <c>true</c> and <see cref="T:GSF.PhasorProtocols.MultiProtocolFrameParser"/>.
+            </remarks>
+            <returns>A <see cref="T:System.Threading.WaitHandle"/>.</returns>
+        </member>
         <member name="M:GSF.PhasorProtocols.MultiProtocolFrameParser.SendDeviceCommand(GSF.PhasorProtocols.DeviceCommand)">
             <summary>
             Sends the specified <see cref="T:GSF.PhasorProtocols.DeviceCommand"/> to the remote device.
@@ -6751,9 +6761,9 @@
         </member>
         <member name="M:GSF.PhasorProtocols.PhasorDefinitionBase.ToString">
             <summary>
-            Gets the string respresentation of this <see cref="T:GSF.PhasorProtocols.PhasorDefinitionBase"/>.
+            Gets the string representation of this <see cref="T:GSF.PhasorProtocols.PhasorDefinitionBase"/>.
             </summary>
-            <returns>String respresentation of this <see cref="T:GSF.PhasorProtocols.PhasorDefinitionBase"/>.</returns>
+            <returns>String representation of this <see cref="T:GSF.PhasorProtocols.PhasorDefinitionBase"/>.</returns>
         </member>
         <member name="M:GSF.PhasorProtocols.PhasorDefinitionBase.GetObjectData(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
             <summary>
@@ -7121,6 +7131,16 @@
             Gets or sets total measurements expected to have been received for this <see cref="T:GSF.PhasorProtocols.Anonymous.ConfigurationCell"/>.
             </summary>
         </member>
+        <member name="P:GSF.PhasorProtocols.Anonymous.ConfigurationCell.MeasurementsWithError">
+            <summary>
+            Gets or sets the number of measurements received while this <see cref="T:GSF.TimeSeries.IDevice"/> was reporting errors.
+            </summary>
+        </member>
+        <member name="P:GSF.PhasorProtocols.Anonymous.ConfigurationCell.MeasurementsDefined">
+            <summary>
+            Gets or sets the number of measurements (per frame) defined for this <see cref="T:GSF.PhasorProtocols.Anonymous.ConfigurationCell"/>.
+            </summary>
+        </member>
         <member name="P:GSF.PhasorProtocols.Anonymous.ConfigurationCell.Source">
             <summary>
             Gets or sets the reference to the source of this <see cref="T:GSF.PhasorProtocols.Anonymous.ConfigurationCell"/>.
@@ -7142,7 +7162,7 @@
             <param name="count">Number of signals defined for this <see cref="T:GSF.Units.EE.SignalKind"/>.</param>
             <returns>Signal reference of given <see cref="T:GSF.Units.EE.SignalKind"/> and <paramref name="index"/>.</returns>
         </member>
-        <member name="M:GSF.PhasorProtocols.Anonymous.ConfigurationCell.GetMetadata(System.Collections.Generic.Dictionary{System.String,GSF.TimeSeries.MeasurementMetadata},GSF.Units.EE.SignalKind)">
+        <member name="M:GSF.PhasorProtocols.Anonymous.ConfigurationCell.GetMetadata(System.Collections.Generic.Dictionary{System.String,GSF.TimeSeries.MeasurementKey},GSF.Units.EE.SignalKind)">
             <summary>
             Get <see cref="T:GSF.TimeSeries.MeasurementMetadata"/> for specified <see cref="T:GSF.Units.EE.SignalKind"/>.
             </summary>
@@ -7150,7 +7170,7 @@
             <param name="type"><see cref="T:GSF.Units.EE.SignalKind"/> to request signal reference for.</param>
             <returns>The <see cref="T:GSF.TimeSeries.MeasurementMetadata"/> for a given <see cref="T:GSF.Units.EE.SignalKind"/>; otherwise <c>null</c> if value does not exist.</returns>
         </member>
-        <member name="M:GSF.PhasorProtocols.Anonymous.ConfigurationCell.GetMetadata(System.Collections.Generic.Dictionary{System.String,GSF.TimeSeries.MeasurementMetadata},GSF.Units.EE.SignalKind,System.Int32,System.Int32)">
+        <member name="M:GSF.PhasorProtocols.Anonymous.ConfigurationCell.GetMetadata(System.Collections.Generic.Dictionary{System.String,GSF.TimeSeries.MeasurementKey},GSF.Units.EE.SignalKind,System.Int32,System.Int32)">
             <summary>
             Get <see cref="T:GSF.TimeSeries.MeasurementMetadata"/> for specified <see cref="T:GSF.Units.EE.SignalKind"/>.
             </summary>

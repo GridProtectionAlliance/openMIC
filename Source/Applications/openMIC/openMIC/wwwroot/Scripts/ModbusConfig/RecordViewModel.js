@@ -262,10 +262,18 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
 
     self.tagName = ko.pureComputed({
         read: function() {
-            if (isEmpty(self._tagName()))
-                return self.signalReference();
+            var tagName;
 
-            return self._tagName().toUpperCase();
+            if (isEmpty(self._tagName()))
+                tagName = self.signalReference();
+            else
+                tagName = self._tagName().toUpperCase();
+
+            // Database defines maximum length of tag names and signal references to 200 characters
+            if (tagName.length > 200 || self.signalReference().length > 200)
+                self.mapped(false);
+
+            return tagName;
         },
         write: function(value) {
             self._tagName(notNull(value).toUpperCase());
@@ -298,11 +306,4 @@ function RecordViewModel(parent, recordType, address, deserializedRecord) {
             required: true
         })}
     );
-
-    self.signalReference = ko.pureComputed({
-        read: function() {
-            return String.format(self.signalReferenceFormat(), notNull(viewModel.deviceName(), "<DeviceName>"));
-        },
-        owner: self
-    });
 }
