@@ -89,7 +89,10 @@ namespace IGridDownloader
                             {
                                 // Verify that zip file should be processed
                                 if (ProcessEntry(zipEntry))
+                                {
                                     zipEntry.Extract(s_localPath, ExtractExistingFileAction.OverwriteSilently);
+                                    Console.WriteLine($"openMIC :: Log Downloaded File :: {Path.Combine(s_localPath, zipEntry.FileName)}");
+                                }
 
                                 Console.WriteLine($"Processed \"{zipEntry.FileName}\", {++processedFiles} out of {zipFile.Count} files complete...");
                             }

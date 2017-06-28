@@ -10,12 +10,15 @@ namespace openMIC.Model
 
         public int DeviceID { get; set; }
 
-        [UseEscapedName]
-        public string File { get; set; }
+        public string FilePath { get; set; }
 
         public DateTime Timestamp { get; set; }
 
         public DateTime CreationTime { get; set; }
+
+        public DateTime LastWriteTime { get; set; }
+
+        public DateTime LastAccessTime { get; set; }
 
         public int FileSize { get; set; }
     }

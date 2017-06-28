@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[LocalSchemaVersion] AS
-SELECT 1 AS VersionNumber
+SELECT 2 AS VersionNumber
 GO
 
 SET ANSI_NULLS ON
@@ -19,7 +19,7 @@ CREATE TABLE [dbo].[ConnectionProfileTaskQueue](
     [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTaskQueue_CreatedBy]  DEFAULT (suser_name()),
     [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTaskQueue_UpdatedOn]  DEFAULT (getutcdate()),
     [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTaskQueue_UpdatedBy]  DEFAULT (suser_name()),
- CONSTRAINT [PK_ConnectionProfileTaskQueue] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_ConnectionProfileTaskQueue] PRIMARY KEY CLUSTERED
 (
     [ID] ASC
 )WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
@@ -39,7 +39,7 @@ CREATE TABLE [dbo].[ConnectionProfile](
     [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfile_CreatedBy]  DEFAULT (suser_name()),
     [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfile_UpdatedOn]  DEFAULT (getutcdate()),
     [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfile_UpdatedBy]  DEFAULT (suser_name()),
- CONSTRAINT [PK_ConnectionProfile] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_ConnectionProfile] PRIMARY KEY CLUSTERED
 (
     [ID] ASC
 )WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
@@ -60,35 +60,44 @@ CREATE TABLE [dbo].[ConnectionProfileTask](
     [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_CreatedBy]  DEFAULT (suser_name()),
     [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedOn]  DEFAULT (getutcdate()),
     [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedBy]  DEFAULT (suser_name()),
- CONSTRAINT [PK_ConnectionProfileTask] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_ConnectionProfileTask] PRIMARY KEY CLUSTERED
 (
     [ID] ASC
 )WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
-CREATE TABLE [dbo].[StatusLog](		
-      [ID] [int] IDENTITY(1,1) NOT NULL,		
-      [DeviceID] [int] NOT NULL,		
-      [LastSuccess] [DateTime2] NULL,		
-      [LastFailure] [DateTime2] NULL,		
-      [Message] [varchar](max) NULL,
-      [LastFile] [varchar](max) NULL,
-      FileDownloadTimestamp [DateTime2](7) NULL
-)
-GO
-
 CREATE TABLE [dbo].[DownloadedFile](
     [ID] [int] IDENTITY(1,1) NOT NULL,
     [DeviceID] [int] NOT NULL,
-    [File] [nvarchar](200) NOT NULL,
-    [Timestamp] [datetime2](7) NOT NULL,
-    [CreationTime] [datetime2](7) NOT NULL,
-    FileSize int Not NULL,
- CONSTRAINT [PK_DownloadedFile] PRIMARY KEY CLUSTERED 
+    [FilePath] [nvarchar](200) NOT NULL,
+    [Timestamp] [datetime2] NOT NULL,
+    [CreationTime] [datetime] NOT NULL,
+    [LastWriteTime] [datetime] NOT NULL,
+    [LastAccessTime] [datetime] NOT NULL,
+    [FileSize] [int] NOT NULL,
+ CONSTRAINT [PK_DownloadedFile] PRIMARY KEY CLUSTERED
 (
     [ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE TABLE [dbo].[StatusLog](
+      [ID] [int] IDENTITY(1,1) NOT NULL,
+      [DeviceID] [int] NOT NULL,
+      [LastDownloadedFileID] [int] NULL,
+      [LastOutcome] [nvarchar](50) NULL,
+      [LastRun] [DateTime2] NULL,
+      [LastFailure] [DateTime2] NULL,
+      [LastErrorMessage] [nvarchar](max) NULL,
+      [LastDownloadStartTime] [DateTime2] NULL,
+      [LastDownloadEndTime] [DateTime2] NULL,
+      [LastDownloadFileCount] [int] NULL,
+    CONSTRAINT [PK_StatusLog] PRIMARY KEY CLUSTERED
+    (
+        [ID] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
@@ -97,7 +106,7 @@ CREATE TABLE [dbo].[SentEmail](
     [DeviceID] [int] NOT NULL,
     [Message] [nvarchar](max) NOT NULL,
     [Timestamp] [datetime2](7) NOT NULL,
- CONSTRAINT [PK_SentEmail] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_SentEmail] PRIMARY KEY CLUSTERED
 (
     [ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
@@ -114,13 +123,19 @@ GO
 
 CREATE UNIQUE NONCLUSTERED INDEX [IX_StatusLog_DeviceID] ON [dbo].[StatusLog]
 (
-       [DeviceID] ASC
+    [DeviceID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 
 CREATE NONCLUSTERED INDEX [IX_DownloadedFile_DeviceID] ON [dbo].[DownloadedFile]
 (
     [DeviceID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [IX_DownloadedFile_FilePath] ON [dbo].[DownloadedFile]
+(
+    [FilePath] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 
@@ -142,10 +157,12 @@ GO
 -- make a semicolon separated list of recipients in the @recipents field and set the db email service name in the @profile_name field
 -- update if expressions to ensure emails are sent when desired.
 
---CREATE TRIGGER [dbo].[StatusLog_Email] 
+-- This trigger will need to be updated before it will work with LocalSchemaVersion 2.
+
+--CREATE TRIGGER [dbo].[StatusLog_Email]
 --   ON  [dbo].[StatusLog]
 --   AFTER UPDATE
---AS 
+--AS
 --BEGIN
 
 --	SET NOCOUNT ON;
@@ -168,9 +185,9 @@ GO
 --	DECLARE @lastSuccess DateTime = (SELECT LastSuccess FROM StatusLog WHERE DeviceID = @deviceID)
 --	DECLARE @lastFailure DateTime = (SELECT LastFailure FROM StatusLog WHERE DeviceID = @deviceID)
 --	DECLARE @fileSize int = (SELECT FileSize FROM DownloadedFile WHERE DeviceID = @deviceID)
---	DECLARE @fileDate DateTime 
+--	DECLARE @fileDate DateTime
 --	IF @lastFile IS NOT NULL
---	BEGIN	
+--	BEGIN
 --		BEGIN TRY
 --			SET @fileDate = '20' + (Select TOP 1 SUBSTRING(@lastFile, 1,2)) + '-' +
 --									(Select TOP 1 SUBSTRING(@LastFile, 3,2)) + '-' +
@@ -179,7 +196,7 @@ GO
 -- 									(Select TOP 1 SUBSTRING(@LastFile, 10,2)) + ':' +
 -- 									(Select TOP 1 SUBSTRING(@LastFile, 12,2))
 --		END TRY
---		BEGIN CATCH 
+--		BEGIN CATCH
 --		 SET @fileDate = (SELECT GETDATE())
 --		END CATCH
 --	END
@@ -222,14 +239,14 @@ GO
 --	END
 
 
---	IF @emailFlag = 1 
+--	IF @emailFlag = 1
 --	BEGIN
 --		SET @html = @intro + @html;
 --		DECLARE @subject nvarchar(max) = N'OpenMIC ' +@Name + N' problems ...'
---		EXEC msdb.dbo.sp_send_dbmail 
---			@profile_name =	@profile_name,  
---			@recipients=@recipients,  
---			@subject = @subject,  
+--		EXEC msdb.dbo.sp_send_dbmail
+--			@profile_name =	@profile_name,
+--			@recipients=@recipients,
+--			@subject = @subject,
 --			@body = @html,
 --			@body_format = 'HTML';
 

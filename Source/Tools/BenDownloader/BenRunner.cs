@@ -376,6 +376,8 @@ namespace BenDownloader
                         file.CopyTo(newFilePath);
                         file.Delete();
                         fileCount++;
+
+                        Program.Log($"openMIC :: Log Downloaded File :: {newFilePath}");
                     }
                 }
             }

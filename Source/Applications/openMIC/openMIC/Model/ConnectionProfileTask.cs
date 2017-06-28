@@ -244,6 +244,7 @@ namespace openMIC.Model
 
         // Fields
         private bool m_success;
+        private string m_failMessage;
 
         #endregion
 
@@ -339,6 +340,10 @@ namespace openMIC.Model
         [JsonIgnore]
         public bool Success => m_success;
 
+        [NonRecordField]
+        [JsonIgnore]
+        public string FailMessage => m_failMessage;
+
         #endregion
 
         #region [ Methods ]
@@ -348,9 +353,10 @@ namespace openMIC.Model
             m_success = true;
         }
 
-        public void Fail()
+        public void Fail(string message = null)
         {
             m_success = false;
+            m_failMessage = message;
         }
 
         #endregion

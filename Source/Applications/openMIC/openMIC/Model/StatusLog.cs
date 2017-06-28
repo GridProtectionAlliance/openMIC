@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using GSF.ComponentModel;
 using GSF.Data;
 using GSF.Data.Model;
@@ -18,16 +19,24 @@ namespace openMIC.Model
 
         public int DeviceID { get; set; }
 
-        [DefaultValueExpression("DateTime.UtcNow")]
-        public DateTime? LastSuccess { get; set; }
+        public int? LastDownloadedFileID { get; set; }
 
-        [DefaultValueExpression("DateTime.UtcNow")]
+        public string LastOutcome { get; set; }
+
+        [FieldDataType(DbType.DateTime2)]
+        public DateTime? LastRun { get; set; }
+
+        [FieldDataType(DbType.DateTime2)]
         public DateTime? LastFailure { get; set; }
 
-        public string Message { get; set; }
+        public string LastErrorMessage { get; set; }
 
-        public string LastFile { get; set; }
+        [FieldDataType(DbType.DateTime2)]
+        public DateTime? LastDownloadStartTime { get; set; }
 
-        public DateTime? FileDownloadTimestamp { get; set; }
+        [FieldDataType(DbType.DateTime2)]
+        public DateTime? LastDownloadEndTime { get; set; }
+
+        public int? LastDownloadFileCount { get; set; }
     }
 }

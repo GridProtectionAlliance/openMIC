@@ -41,24 +41,29 @@ CREATE TABLE ConnectionProfileTask(
     CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID)
 );
 
-CREATE TABLE StatusLog(
-    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    DeviceID INTEGER NOT NULL,
-    LastSuccess DATETIME NULL,		
-    LastFailure DATETIME NULL,
-    Message TEXT NULL,
-    LastFile TEXT NULL,
-    FileDownloadTimestamp DATETIME NULL,
-    CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID ASC)
-);
-
 CREATE TABLE DownloadedFile(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     DeviceID INTEGER NOT NULL,
-    File VARCHAR(200) NOT NULL,
+    FilepATH VARCHAR(200) NOT NULL,
     Timestamp DATETIME NOT NULL,
     CreationTime DATETIME NOT NULL,
+    LastWriteTime DATETIME NOT NULL,
+    LastAccessTime DATETIME NOT NULL,
     FileSize INTEGER NOT NULL
+);
+
+CREATE TABLE StatusLog(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    DeviceID INTEGER NOT NULL,
+    LastDownloadedFileID INTEGER NULL,
+    LastOutcome VARCHAR(50) NULL,
+    LastRun DATETIME NULL,
+    LastFailure DATETIME NULL,
+    LastErrorMessage TEXT NULL,
+    LastDownloadStartTime DATETIME NULL,
+    LastDownloadEndTime DATETIME NULL,
+    LastDownloadFileCount INTEGER NULL,
+    CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID ASC)
 );
 
  CREATE TABLE SentEmail(
@@ -69,6 +74,7 @@ CREATE TABLE DownloadedFile(
 );
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
+CREATE INDEX IX_DownloadedFile_FilePath ON DownloadedFile (FilePath);
 CREATE INDEX IX_SentEmail_DeviceID ON SentEmail (DeviceID);
 CREATE INDEX IX_SentEmail_Timestamp ON SentEmail (Timestamp);
 

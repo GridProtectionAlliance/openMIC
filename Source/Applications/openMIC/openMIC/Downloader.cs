@@ -33,6 +33,7 @@ using System.Management;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using DotRas;
 using GSF;
@@ -189,6 +190,7 @@ namespace openMIC
         private ConnectionProfileTask[] m_connectionProfileTasks;
         private int m_overallTasksCompleted;
         private int m_overallTasksCount;
+        private int m_lastDownloadedFileID;
         private long m_startDialUpTime;
         private bool m_disposed;
 
@@ -949,6 +951,9 @@ namespace openMIC
                         OverallProgress = ++m_overallTasksCompleted,
                         OverallProgressTotal = m_overallTasksCount
                     });
+
+                    if (!task.Success)
+                        LogFailure(task.FailMessage);
                 }
 
                 ProgressUpdate finalUpdate = new ProgressUpdate()
@@ -965,6 +970,11 @@ namespace openMIC
                     finalUpdate.State = ProgressState.PartialSuccess;
 
                 OnProgressUpdated(this, finalUpdate);
+
+                LogOutcome(finalUpdate.State.GetValueOrDefault());
+
+                if (FilesDownloaded > 0)
+                    LogDownload(m_lastDownloadedFileID, connectionStartTime, DateTime.UtcNow);
             }
             catch (Exception ex)
             {
@@ -1021,7 +1031,7 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                task.Fail();
+                task.Fail(ex.Message);
                 OnProcessException(MessageLevel.Error, ex, "ProcessFTPTask");
             }
         }
@@ -1100,7 +1110,7 @@ namespace openMIC
                 }
                 catch (Exception ex)
                 {
-                    task.Fail();
+                    task.Fail(ex.Message);
                     OnProcessException(MessageLevel.Error, new Exception($"Failed to enumerate remote directories in \"{remotePath}\" due to exception: {ex.Message}", ex));
                     OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"Failed to enumerate remote directories in \"{remotePath}\": {ex.Message}" });
                 }
@@ -1125,7 +1135,7 @@ namespace openMIC
                     }
                     catch (Exception ex)
                     {
-                        task.Fail();
+                        task.Fail(ex.Message);
                         OnProcessException(MessageLevel.Error, new Exception($"Failed to add remote files from remote directory \"{directory.Name}\" to file list due to exception: {ex.Message}", ex));
                         OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"Failed to build file list for remote directory \"{directory.Name}\": {ex.Message}" });
                     }
@@ -1158,7 +1168,7 @@ namespace openMIC
                 }
                 catch (Exception ex)
                 {
-                    task.Fail();
+                    task.Fail(ex.Message);
 
                     string message = $"Failed to create local directory for {grouping.Count()} remote files due to exception: {ex.Message}";
                     OnProcessException(MessageLevel.Error, new Exception(message, ex));
@@ -1203,7 +1213,7 @@ namespace openMIC
 
                     if (File.Exists(wrapper.LocalPath) && !settings.OverwriteExistingLocalFiles)
                     {
-                        task.Fail();
+                        task.Fail("Local file already exists and settings do not allow overwrite.");
                         OnStatusMessage(MessageLevel.Info, $"Skipping file download for remote file \"{wrapper.RemoteFile.Name}\": Local file already exists and settings do not allow overwrite.");
                         OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"File \"{wrapper.RemoteFile.Name}\" skipped: Local file already exists", OverallProgress = m_overallTasksCompleted * totalBytes + progress });
                         continue;
@@ -1225,7 +1235,7 @@ namespace openMIC
                             }
                             catch (Exception ex)
                             {
-                                task.Fail();
+                                task.Fail(ex.Message);
 
                                 string message = $"Failed to remove file \"{wrapper.RemoteFile.FullPath}\" from remote server due to exception: {ex.Message}";
                                 OnProcessException(MessageLevel.Warning, new InvalidOperationException(message, ex));
@@ -1258,16 +1268,15 @@ namespace openMIC
                             }
                         }
 
-                        TryUpdateStatusLogTable(wrapper.RemoteFile, wrapper.LocalPath, true);
+                        m_lastDownloadedFileID = LogDownloadedFile(wrapper.LocalPath);
                     }
                     catch (Exception ex)
                     {
-                        task.Fail();
+                        task.Fail(ex.Message);
 
                         string message = $"Failed to download remote file \"{wrapper.RemoteFile.FullPath}\" due to exception: {ex.Message}";
                         OnProcessException(MessageLevel.Warning, new InvalidOperationException(message, ex));
                         OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
-                        TryUpdateStatusLogTable(wrapper.RemoteFile, wrapper.LocalPath, false);
                     }
 
                     // Send e-mail on file update, if requested
@@ -1414,6 +1423,9 @@ namespace openMIC
                         if (string.IsNullOrWhiteSpace(processArgs.Data))
                             return;
 
+                        if (ProcessExternalOperationMessage(processArgs.Data))
+                            return;
+
                         lastUpdate = DateTime.UtcNow;
                         OnStatusMessage(MessageLevel.Info, processArgs.Data);
                         OnProgressUpdated(this, new ProgressUpdate() { Message = processArgs.Data });
@@ -1424,7 +1436,7 @@ namespace openMIC
                         if (string.IsNullOrWhiteSpace(processArgs.Data))
                             return;
 
-                        task.Fail();
+                        task.Fail(processArgs.Data);
                         lastUpdate = DateTime.UtcNow;
                         OnProcessException(MessageLevel.Error, new Exception(processArgs.Data));
                         OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = processArgs.Data });
@@ -1464,16 +1476,27 @@ namespace openMIC
                     OnProgressUpdated(this, new ProgressUpdate()
                     {
                         Message = $"External action complete: exit code {externalOperation.ExitCode}.",
-                        Summary = $"{FilesDownloaded} Files Downloaded ({TotalFilesDownloaded} Total)",
+                        Summary = $"{FilesDownloaded} Files Downloaded ({TotalFilesDownloaded} Total)"
                     });
                 }
             }
             catch (Exception ex)
             {
-                task.Fail();
+                task.Fail(ex.Message);
                 OnProcessException(MessageLevel.Error, new InvalidOperationException($"Failed to execute external operation \"{command}\": {ex.Message}", ex));
                 OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"Failed to execute external action: {ex.Message}" });
             }
+        }
+
+        private bool ProcessExternalOperationMessage(string message)
+        {
+            const string LogDownloadedFilePattern = "openMIC :: Log Downloaded File :: (?<FilePath>.+)";
+            Match match = Regex.Match(message, LogDownloadedFilePattern);
+
+            if (match.Success)
+                m_lastDownloadedFileID = LogDownloadedFile(match.Groups["FilePath"].Value);
+
+            return match.Success;
         }
 
         private void HandleLocalFileAgeLimitProcessing(ConnectionProfileTask task)
@@ -1653,68 +1676,94 @@ namespace openMIC
             }
         }
 
-        private bool TryUpdateStatusLogTable(FtpFile file, string localFileName, bool success, string message = null)
+        private int LogDownloadedFile(string filePath)
         {
             try
             {
-                UpdateStatusLogTable(file, localFileName, success, message);
-                return true;
+                FileInfo fileInfo = new FileInfo(filePath);
+
+                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                {
+                    TableOperations<DownloadedFile> downloadedFileTable = new TableOperations<DownloadedFile>(connection);
+                    DownloadedFile downloadedFile = new DownloadedFile();
+                    downloadedFile.DeviceID = m_deviceRecord.ID;
+                    downloadedFile.FilePath = filePath;
+                    downloadedFile.Timestamp = DateTime.UtcNow;
+                    downloadedFile.CreationTime = fileInfo.CreationTimeUtc;
+                    downloadedFile.LastWriteTime = fileInfo.LastWriteTimeUtc;
+                    downloadedFile.LastAccessTime = fileInfo.LastAccessTimeUtc;
+                    downloadedFile.FileSize = (int)fileInfo.Length;
+                    downloadedFileTable.AddNewRecord(downloadedFile);
+
+                    return downloadedFileTable.QueryRecordWhere("FilePath = {0}", filePath).ID;
+                }
             }
             catch (Exception ex)
             {
-                OnProcessException(MessageLevel.Warning, new Exception($"Failed to update status log due to exception: {ex.Message}", ex));
-                return false;
+                OnProcessException(MessageLevel.Error, ex);
+                return 0;
             }
         }
 
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        private void UpdateStatusLogTable(FtpFile file, string localFileName, bool success, string message = null)
+        private void LogOutcome(ProgressState outcome)
         {
-            if (!m_deviceRecord.Enabled)
-                return;
-
             try
             {
                 using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
                 {
                     TableOperations<StatusLog> statusLogTable = new TableOperations<StatusLog>(connection);
-                    TableOperations<DownloadedFile> downloadedFileTable = new TableOperations<DownloadedFile>(connection);
                     StatusLog log = statusLogTable.QueryRecordWhere("DeviceID = {0}", m_deviceRecord.ID) ?? statusLogTable.NewRecord();
-
-                    if (!success)
-                    {
-                        log.Message = message;
-                        log.LastFailure = DateTime.UtcNow;
-                    }
-                    else if (s_statusLogInclusions.Any(extension => file.Name.EndsWith(extension)) && !s_statusLogExclusions.Any(exclusion => file.Name.EndsWith(exclusion)))
-                    {
-                        log.LastFile = file.Name;
-                        log.FileDownloadTimestamp = log.LastSuccess;
-
-                        downloadedFileTable.AddNewRecord(new DownloadedFile()
-                        {
-                            DeviceID = m_deviceRecord.ID,
-                            CreationTime = new FileInfo(localFileName).CreationTimeUtc,
-                            File = file.Name,
-                            FileSize = (int)(new FileInfo(localFileName).Length / 1028), // FileSize in KB
-                            Timestamp = log.LastSuccess.GetValueOrDefault()
-                        });
-                    }
-
-                    if (log.DeviceID != m_deviceRecord.ID)
-                    {
-                        log.DeviceID = m_deviceRecord.ID;
-                        statusLogTable.AddNewRecord(log);
-                    }
-                    else
-                    {
-                        statusLogTable.UpdateRecord(log);
-                    }
+                    log.DeviceID = m_deviceRecord.ID;
+                    log.LastOutcome = outcome.ToString();
+                    log.LastRun = DateTime.UtcNow;
+                    statusLogTable.AddNewOrUpdateRecord(log);
                 }
             }
             catch (Exception ex)
             {
-                OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to update StatusLog database for device \"{m_deviceRecord.Acronym}\": {ex.Message}"));
+                OnProcessException(MessageLevel.Error, ex);
+            }
+        }
+
+        private void LogFailure(string message)
+        {
+            try
+            {
+                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                {
+                    TableOperations<StatusLog> statusLogTable = new TableOperations<StatusLog>(connection);
+                    StatusLog log = statusLogTable.QueryRecordWhere("DeviceID = {0}", m_deviceRecord.ID) ?? statusLogTable.NewRecord();
+                    log.DeviceID = m_deviceRecord.ID;
+                    log.LastFailure = DateTime.UtcNow;
+                    log.LastErrorMessage = message;
+                    statusLogTable.AddNewOrUpdateRecord(log);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnProcessException(MessageLevel.Error, ex);
+            }
+        }
+
+        private void LogDownload(int lastDownloadedFileID, DateTime startTime, DateTime endTime)
+        {
+            try
+            {
+                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                {
+                    TableOperations<StatusLog> statusLogTable = new TableOperations<StatusLog>(connection);
+                    StatusLog log = statusLogTable.QueryRecordWhere("DeviceID = {0}", m_deviceRecord.ID) ?? statusLogTable.NewRecord();
+                    log.DeviceID = m_deviceRecord.ID;
+                    log.LastDownloadedFileID = lastDownloadedFileID;
+                    log.LastDownloadStartTime = startTime;
+                    log.LastDownloadEndTime = endTime;
+                    log.LastDownloadFileCount = (int)FilesDownloaded;
+                    statusLogTable.AddNewOrUpdateRecord(log);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnProcessException(MessageLevel.Error, ex);
             }
         }
 

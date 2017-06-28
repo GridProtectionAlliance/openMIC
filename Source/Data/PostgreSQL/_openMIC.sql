@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 1 AS VersionNumber;
+SELECT 2 AS VersionNumber;
 
 CREATE TABLE ConnectionProfileTaskQueue(
     ID SERIAL NOT NULL PRIMARY KEY,
@@ -41,25 +41,30 @@ CREATE TABLE ConnectionProfileTask(
     CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID)
 );
 
-CREATE TABLE StatusLog(		
-    ID SERIAL NOT NULL PRIMARY KEY,
-    DeviceID INTEGER NOT NULL,
-    LastSuccess TIMESTAMP NULL,
-    LastFailure TIMESTAMP NULL,
-    Message TEXT NULL,
-    LastFile TEXT NULL,
-    CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID),
-    FileDownloadTimestamp TIMESTAMP NULL
-);
-
 CREATE TABLE DownloadedFile(
     ID SERIAL NOT NULL PRIMARY KEY,
     DeviceID INTEGER NOT NULL,
-    File VARCHAR(200) NOT NULL,
+    FilePath VARCHAR(200) NOT NULL,
     Timestamp TIMESTAMP NOT NULL,
-    FileSize INTEGER NOT NULL,
-    CreationTime TIMESTAMP NOT NULL
+    CreationTime TIMESTAMP NOT NULL,
+    LastWriteTime TIMESTAMP NOT NULL,
+    LastAccessTime TIMESTAMP NOT NULL,
+    FileSize INTEGER NOT NULL
  );
+
+CREATE TABLE StatusLog(		
+    ID SERIAL NOT NULL PRIMARY KEY,
+    DeviceID INTEGER NOT NULL,
+    LastDownloadedFileID INTEGER NULL,
+    LastOutcome VARCHAR(50) NULL,
+    LastRun TIMESTAMP NULL,
+    LastFailure TIMESTAMP NULL,
+    LastErrorMessage TEXT NULL,
+    LastDownloadStartTime TIMESTAMP NULL,
+    LastDownloadEndTime TIMESTAMP NULL,
+    LastDownloadFileCount INTEGER NULL,
+    CONSTRAINT IX_StatusLog_DeviceID UNIQUE (DeviceID)
+);
 
  CREATE TABLE SentEmail(
     ID SERIAL NOT NULL PRIMARY KEY,
@@ -69,6 +74,7 @@ CREATE TABLE DownloadedFile(
  );
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
+CREATE INDEX IX_DownloadedFile_FilePath ON DownloadedFile (FilePath);
 CREATE INDEX IX_SentEmail_DeviceID ON SentEmail (DeviceID);
 CREATE INDEX IX_SentEmail_Timestamp ON SentEmail (Timestamp);
 
