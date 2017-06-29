@@ -2665,7 +2665,7 @@ END;
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 1 AS VersionNumber
+SELECT 2 AS VersionNumber
 FROM dual;
 
 CREATE TABLE ConnectionProfileTaskQueue(
@@ -2736,14 +2736,41 @@ CREATE TRIGGER AI_ConnectionProfileTask BEFORE INSERT ON ConnectionProfileTask
 END;
 /
 
+CREATE TABLE DownloadedFile(
+    ID NUMBER NOT NULL,
+    DeviceID NUMBER NOT NULL,
+    FilePath VARCHAR2(200) NOT NULL,
+    Timestamp DATE NOT NULL,
+    CreationTime DATE NOT NULL,
+    LastWriteTime DATE NOT NULL,
+    LastAccessTime DATE NOT NULL,
+    FileSize NUMBER NOT NULL
+ );
+
+CREATE UNIQUE INDEX IX_DownloadedFile_ID ON DownloadedFile (ID ASC) TABLESPACE openMIC_INDEX;
+CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID)  TABLESPACE openMIC_INDEX;
+CREATE INDEX IX_DownloadedFile_FilePath ON DownloadedFile (FilePath)  TABLESPACE openMIC_INDEX;
+
+ALTER TABLE DownloadedFile ADD CONSTRAINT PK_DownloadedFile PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_DownloadedFile START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_DownloadedFile BEFORE INSERT ON DownloadedFile
+    FOR EACH ROW BEGIN SELECT SEQ_DownloadedFile.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
 CREATE TABLE StatusLog(
     ID NUMBER NOT NULL,
     DeviceID NUMBER NOT NULL,
-    LastSuccess DATE NULL,
+    LastDownloadedFileID NUMBER NULL,
+    LastOutcome VARCHAR2(50) NULL,
+    LastRun DATE NULL,
     LastFailure DATE NULL,
-    Message VARCHAR2(4000) NULL,
-    LastFile VARCHAR2(4000) NULL,
-    FileDownloadTimestamp DATE NULL
+    LastErrorMessage VARCHAR2(4000) NULL,
+    LastDownloadStartTime DATE NULL,
+    LastDownloadEndTime DATE NULL,
+    LastDownloadFileCount NUMBER NULL
 );
 
 CREATE UNIQUE INDEX IX_StatusLog_ID ON StatusLog (ID ASC) TABLESPACE openMIC_INDEX;
@@ -2755,26 +2782,6 @@ CREATE SEQUENCE SEQ_StatusLog START WITH 1 INCREMENT BY 1;
 
 CREATE TRIGGER AI_StatusLog BEFORE INSERT ON StatusLog
     FOR EACH ROW BEGIN SELECT SEQ_StatusLog.nextval INTO :NEW.ID FROM dual;
-END;
-/
-
-CREATE TABLE DownloadedFile(
-    ID NUMBER NOT NULL,
-    DeviceID NUMBER NOT NULL,
-    File VARCHAR2(200) NOT NULL,
-    Timestamp DATE NOT NULL,
-    CreationTime DATE NOT NULL
- );
-
-CREATE UNIQUE INDEX IX_DownloadedFile_ID ON DownloadedFile (ID ASC) TABLESPACE openMIC_INDEX;
-CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID)  TABLESPACE openMIC_INDEX;
-
-ALTER TABLE DownloadedFile ADD CONSTRAINT PK_DownloadedFile PRIMARY KEY (ID);
-
-CREATE SEQUENCE SEQ_DownloadedFile START WITH 1 INCREMENT BY 1;
-
-CREATE TRIGGER AI_DownloadedFile BEFORE INSERT ON DownloadedFile
-    FOR EACH ROW BEGIN SELECT SEQ_DownloadedFile.nextval INTO :NEW.ID FROM dual;
 END;
 /
 

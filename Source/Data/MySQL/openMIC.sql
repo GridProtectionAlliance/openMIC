@@ -1764,7 +1764,7 @@ DELIMITER ;
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 1 AS VersionNumber;
+SELECT 2 AS VersionNumber;
 
 CREATE TABLE ConnectionProfileTaskQueue(
     ID INT AUTO_INCREMENT NOT NULL,
@@ -1804,26 +1804,32 @@ CREATE TABLE ConnectionProfileTask(
     CONSTRAINT PK_ConnectionProfileTask PRIMARY KEY (ID ASC)
 );
 
-CREATE TABLE StatusLog(
-    ID INT AUTO_INCREMENT NOT NULL,
-    DeviceID INT NOT NULL,
-    LastSuccess DATETIME NULL,
-    LastFailure DATETIME NULL,
-    Message TEXT NULL,
-    LastFile TEXT NULL,
-    FileDownloadTimestamp DATETIME NULL,
-    CONSTRAINT PK_StatusLog PRIMARY KEY (ID ASC),
-    CONSTRAINT IX_StatusLog_DeviceID UNIQUE KEY (DeviceID ASC)
-);
-
 CREATE TABLE DownloadedFile(
     ID int AUTO_INCREMENT NOT NULL,
     DeviceID INT NOT NULL,
-    File VARCHAR(200) NOT NULL,
+    FilePath VARCHAR(200) NOT NULL,
     Timestamp DATETIME NOT NULL,
     CreationTime DATETIME NOT NULL,
-    CONSTRAINT PK_DownloadedFile PRIMARY KEY CLUSTERED (ID ASC) 
+    LastWriteTime DATETIME NOT NULL,
+    LastAccessTime DATETIME NOT NULL,
+    FileSize INT NOT NULL,
+    CONSTRAINT PK_DownloadedFile PRIMARY KEY CLUSTERED (ID ASC)
  );
+
+CREATE TABLE StatusLog(
+    ID INT AUTO_INCREMENT NOT NULL,
+    DeviceID INT NOT NULL,
+    LastDownloadedFileID INT NULL,
+    LastOutcome VARCHAR(50) NULL,
+    LastRun DATETIME NULL,
+    LastFailure DATETIME NULL,
+    LastErrorMessage TEXT NULL,
+    LastDownloadStartTime DATETIME NULL,
+    LastDownloadEndTime DATETIME NULL,
+    LastDownloadFileCount INT NULL,
+    CONSTRAINT PK_StatusLog PRIMARY KEY (ID ASC),
+    CONSTRAINT IX_StatusLog_DeviceID UNIQUE KEY (DeviceID ASC)
+);
 
 CREATE TABLE SentEmail(
     ID INT AUTO_INCREMENT NOT NULL,
@@ -1847,5 +1853,6 @@ CREATE TRIGGER ConnectionProfileTask_InsertDefault BEFORE INSERT ON ConnectionPr
 FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
+CREATE INDEX IX_DownloadedFile_FilePath ON DownloadedFile (FilePath);
 CREATE INDEX IX_SentEmail_DeviceID ON SentEmail (DeviceID);
 CREATE INDEX IX_SentEmail_Timestamp ON SentEmail (Timestamp);
