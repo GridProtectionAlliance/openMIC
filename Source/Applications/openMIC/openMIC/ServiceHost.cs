@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using GSF;
 using GSF.ComponentModel;
 using GSF.Configuration;
@@ -59,6 +60,8 @@ namespace openMIC
 
         // Fields
         private IDisposable m_webAppHost;
+        private Thread m_startEngineThread;
+        private bool m_serviceStopping;
         private bool m_disposed;
 
         #endregion
@@ -208,8 +211,40 @@ namespace openMIC
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
             ServiceHelper.LoggedException += LoggedExceptionHandler;
 
+            m_startEngineThread = new Thread(() =>
+            {
+                const int RetryDelay = 1000;
+                const int SleepTime = 200;
+                const int LoopCount = RetryDelay / SleepTime;
+
+                bool webUIStarted = false;
+
+                while (true)
+                {
+                    webUIStarted = webUIStarted || TryStartWebUI();
+
+                    if (webUIStarted)
+                        break;
+
+                    for (int i = 0; i < LoopCount; i++)
+                    {
+                        if (m_serviceStopping)
+                            return;
+
+                        Thread.Sleep(SleepTime);
+                    }
+                }
+            });
+
+            m_startEngineThread.Start();
+        }
+
+        private bool TryStartWebUI()
+        {
             try
             {
+                CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
+
                 // Attach to default web server events
                 WebServer webServer = WebServer.Default;
                 webServer.StatusMessage += WebServer_StatusMessage;
@@ -243,10 +278,13 @@ namespace openMIC
 
                 // Create new web application hosting environment
                 m_webAppHost = WebApp.Start<Startup>(systemSettings["WebHostURL"].Value);
+
+                return true;
             }
             catch (Exception ex)
             {
                 LogException(new InvalidOperationException($"Failed to initialize web hosting: {ex.Message}", ex));
+                return false;
             }
         }
 
@@ -257,10 +295,14 @@ namespace openMIC
 
         protected override void ServiceStoppingHandler(object sender, EventArgs e)
         {
+            m_serviceStopping = true;
+
             base.ServiceStoppingHandler(sender, e);
 
             ServiceHelper.UpdatedStatus -= UpdatedStatusHandler;
             ServiceHelper.LoggedException -= LoggedExceptionHandler;
+
+            m_startEngineThread.Join();
         }
 
         /// <summary>
