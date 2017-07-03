@@ -1438,7 +1438,7 @@ namespace openMIC
 
                         task.Fail(processArgs.Data);
                         lastUpdate = DateTime.UtcNow;
-                        OnProcessException(MessageLevel.Error, new Exception(processArgs.Data));
+                        OnStatusMessage(MessageLevel.Error, processArgs.Data);
                         OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = processArgs.Data });
                     };
 

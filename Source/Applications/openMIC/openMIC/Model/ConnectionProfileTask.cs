@@ -25,6 +25,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 using GSF.ComponentModel;
 using GSF.ComponentModel.DataAnnotations;
 using GSF.Configuration;
@@ -244,7 +245,7 @@ namespace openMIC.Model
 
         // Fields
         private bool m_success;
-        private string m_failMessage;
+        private StringBuilder m_failMessage;
 
         #endregion
 
@@ -342,7 +343,7 @@ namespace openMIC.Model
 
         [NonRecordField]
         [JsonIgnore]
-        public string FailMessage => m_failMessage;
+        public string FailMessage => m_failMessage.ToString();
 
         #endregion
 
@@ -356,7 +357,7 @@ namespace openMIC.Model
         public void Fail(string message = null)
         {
             m_success = false;
-            m_failMessage = message;
+            m_failMessage.AppendLine(message);
         }
 
         #endregion
