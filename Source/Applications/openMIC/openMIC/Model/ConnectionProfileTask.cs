@@ -353,6 +353,7 @@ namespace openMIC.Model
         public void Reset()
         {
             m_success = true;
+            m_failMessage.Clear();
         }
 
         public void Fail(string message = null)
