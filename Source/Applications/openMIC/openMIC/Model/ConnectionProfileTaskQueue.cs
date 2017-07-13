@@ -35,26 +35,13 @@ namespace openMIC.Model
     {
         #region [ Members ]
 
-        // Nested Types
-        private class LogicalThreadQueue
-        {
-            public LogicalThreadScheduler Scheduler { get; }
-            public LogicalThread QueuingThread { get; }
-
-            public LogicalThreadQueue()
-            {
-                Scheduler = new LogicalThreadScheduler();
-                QueuingThread = Scheduler.CreateThread(2);
-            }
-        }
-
         // Constants
         private const int NormalPriority = 1;
         private const int HighPriority = 2;
 
         // Fields
         private string m_name;
-        private LogicalThreadQueue m_threadQueue;
+        private LogicalThreadScheduler m_threadScheduler;
         private LogicalThread m_taskThread;
         private ICancellationToken m_cancellationToken;
 
@@ -80,7 +67,7 @@ namespace openMIC.Model
             set
             {
                 m_name = value;
-                m_threadQueue = null;
+                m_threadScheduler = null;
             }
         }
 
@@ -137,11 +124,11 @@ namespace openMIC.Model
             set;
         }
 
-        private LogicalThreadQueue ThreadQueue
+        private LogicalThreadScheduler ThreadScheduler
         {
             get
             {
-                return m_threadQueue ?? (m_threadQueue = GetThreadQueue());
+                return m_threadScheduler ?? (m_threadScheduler = GetThreadScheduler());
             }
         }
 
@@ -149,7 +136,7 @@ namespace openMIC.Model
         {
             get
             {
-                return m_taskThread ?? (m_taskThread = ThreadQueue.Scheduler.CreateThread());
+                return m_taskThread ?? (m_taskThread = ThreadScheduler.CreateThread());
             }
         }
 
@@ -164,16 +151,13 @@ namespace openMIC.Model
             if (Interlocked.CompareExchange(ref m_cancellationToken, cancellationToken, null) != null)
                 return false;
 
-            ThreadQueue.QueuingThread.Push(NormalPriority, () =>
+            TaskThread.Push(NormalPriority, () =>
             {
                 if (!cancellationToken.Cancel())
                     return;
 
-                TaskThread.Push(() =>
-                {
-                    action();
-                    Interlocked.CompareExchange(ref m_cancellationToken, null, cancellationToken);
-                });
+                action();
+                Interlocked.CompareExchange(ref m_cancellationToken, null, cancellationToken);
             });
 
             return true;
@@ -196,13 +180,10 @@ namespace openMIC.Model
                     return false;
             }
 
-            ThreadQueue.QueuingThread.Push(HighPriority, () =>
+            TaskThread.Push(HighPriority, () =>
             {
-                TaskThread.Push(() =>
-                {
-                    action();
-                    Interlocked.Exchange(ref m_cancellationToken, null);
-                });
+                action();
+                Interlocked.Exchange(ref m_cancellationToken, null);
             });
 
             return true;
@@ -213,12 +194,12 @@ namespace openMIC.Model
             TaskThread.UnhandledException += (sender, args) => exceptionHandler(args.Argument);
         }
 
-        private LogicalThreadQueue GetThreadQueue()
+        private LogicalThreadScheduler GetThreadScheduler()
         {
-            LogicalThreadQueue threadQueue = s_threadSchedulers.GetOrAdd(Name, name => new LogicalThreadQueue());
-            threadQueue.Scheduler.MaxThreadCount = (MaxThreadCount > 0) ? MaxThreadCount : Environment.ProcessorCount;
-            threadQueue.Scheduler.UseBackgroundThreads = UseBackgroundThreads;
-            return threadQueue;
+            LogicalThreadScheduler threadScheduler = s_threadSchedulers.GetOrAdd(Name, name => new LogicalThreadScheduler(2));
+            threadScheduler.MaxThreadCount = (MaxThreadCount > 0) ? MaxThreadCount : Environment.ProcessorCount;
+            threadScheduler.UseBackgroundThreads = UseBackgroundThreads;
+            return threadScheduler;
         }
 
         #endregion
@@ -226,7 +207,7 @@ namespace openMIC.Model
         #region [ Static ]
 
         // Static Fields
-        private static readonly ConcurrentDictionary<string, LogicalThreadQueue> s_threadSchedulers = new ConcurrentDictionary<string, LogicalThreadQueue>();
+        private static readonly ConcurrentDictionary<string, LogicalThreadScheduler> s_threadSchedulers = new ConcurrentDictionary<string, LogicalThreadScheduler>();
 
         #endregion
     }
