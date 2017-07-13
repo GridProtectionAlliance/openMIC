@@ -74,11 +74,11 @@ namespace IGridDownloader
                         Console.WriteLine("Downloading latest I-Grid data to zip file...");
 
                         // Download latest files as a single zip file
-                        DateTime today = DateTime.Today;
-                        DateTime yesterday = today.AddDays(-1);
+                        DateTime yesterday = DateTime.Today.AddDays(-1);
+                        DateTime dayBefore = yesterday.AddDays(-1);
 
                         using (WebClient client = new WebClient())
-                            client.DownloadFile(string.Format(ExportDataURL, s_baseUrl, s_serialNumber, yesterday, today), tempZipFile);
+                            client.DownloadFile(string.Format(ExportDataURL, s_baseUrl, s_serialNumber, dayBefore, yesterday), tempZipFile);
 
                         // Process the zip file
                         using (ZipFile zipFile = ZipFile.Read(tempZipFile))
