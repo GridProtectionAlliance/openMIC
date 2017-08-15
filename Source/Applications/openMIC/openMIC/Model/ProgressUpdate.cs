@@ -153,6 +153,7 @@ namespace openMIC.Model
             {
                 if (update.State == ProgressState.Queued)
                 {
+                    flatState.State = ProgressState.Queued;
                     flatState = new ProgressUpdate();
                     flattenedUpdates.Add(flatState);
                 }
