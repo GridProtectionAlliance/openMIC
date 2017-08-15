@@ -943,11 +943,6 @@ namespace openMIC
                     profileTaskSettings.FileExtensions = "*.*";
                     profileTaskSettings.RemotePath = "/";
                     profileTaskSettings.LocalPath = Program.Host.Model.Global.DefaultLocalPath;
-                    profileTaskSettings.DeleteOldLocalFiles = true;
-                    profileTaskSettings.SkipDownloadIfUnchanged = true;
-                    profileTaskSettings.OverwriteExistingLocalFiles = false;
-                    profileTaskSettings.ArchiveExistingFilesBeforeDownload = false;
-                    profileTaskSettings.SynchronizeTimestamps = true;
                     profileTaskSettings.ExternalOperation = "IGridDownloader.exe <DeviceID> <TaskID>";
                     profileTaskSettings.DirectoryNamingExpression = @"<YYYY><MM>\<DeviceFolderName>";
 

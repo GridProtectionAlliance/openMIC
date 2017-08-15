@@ -39,18 +39,14 @@ namespace IGridDownloader
 {
     public static class Program
     {
-        private const string ExportDataURL = "{0}&action=exportData&format=pqdif&zipFormat=on&serialNumber={1}&startDate={2:yyyy-MM-dd}&endDate={3:yyyy-MM-dd}";
+        private const string ExportEventListURL = "{0}&action=exportData&format=csv&zipFormat=off&serialNumber={1}&startDate={2:yyyy-MM-dd}&endDate={3:yyyy-MM-dd}";
+        private const string ExportDataURL = "{0}&action=exportData&format=pqdif&zipFormat=on&serialNumber={1}&eventId={2}";
 
         private static string s_baseUrl;
         private static string s_localPath;
         private static string s_serialNumber;
-        private static string[] s_fileSpecs;
-        private static bool s_skipDownloadIfUnchanged;
-        private static bool s_overwriteExistingLocalFiles;
-        private static bool s_archiveExistingFilesBeforeDownload;
-        private static bool s_synchronizeTimestamps;
 
-        private static int Main(string[] args)
+        public static void Main(string[] args)
         {
             try
             {
@@ -67,53 +63,72 @@ namespace IGridDownloader
 
                     Console.WriteLine($"Target download folder = {FilePath.TrimFileName(s_localPath, 40)}");
 
-                    string tempZipFile = FilePath.GetUniqueFilePath($"{s_localPath}NewFiles.zip");
+                    DateTime tomorrow = DateTime.Today.AddDays(1);
+                    DateTime dayBeforeYesterday = DateTime.Today.AddDays(-2);
 
-                    try
+                    using (WebClient client = new WebClient())
                     {
-                        Console.WriteLine("Downloading latest I-Grid data to zip file...");
+                        const string EventIDKey = "EventId";
 
-                        // Download latest files as a single zip file
-                        DateTime yesterday = DateTime.Today.AddDays(-1);
-                        DateTime dayBefore = yesterday.AddDays(-1);
+                        Func<string, string> getLocalFileName = eventID => $"Event{eventID}.pqd";
 
-                        using (WebClient client = new WebClient())
-                            client.DownloadFile(string.Format(ExportDataURL, s_baseUrl, s_serialNumber, dayBefore, yesterday), tempZipFile);
+                        Console.WriteLine("Downloading list of events from I-Grid web service...");
 
-                        // Process the zip file
-                        using (ZipFile zipFile = ZipFile.Read(tempZipFile))
+                        string eventInfo = client.DownloadString(string.Format(ExportEventListURL, s_baseUrl, s_serialNumber, dayBeforeYesterday, tomorrow));
+
+                        string[][] table = eventInfo.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None)
+                            .Select(line => line.Split('\t'))
+                            .ToArray();
+
+                        List<Dictionary<string, string>> eventList = table
+                            .Select(line => new Dictionary<string, string>())
+                            .ToList();
+
+                        for (int i = 1; i < table.Length; i++)
                         {
-                            Console.WriteLine($"Processing {zipFile.Count} files from downloaded zip file...");
+                            int length = Math.Min(table[0].Length, table[i].Length);
 
-                            foreach (ZipEntry zipEntry in zipFile)
-                            {
-                                // Verify that zip file should be processed
-                                if (ProcessEntry(zipEntry))
-                                {
-                                    zipEntry.Extract(s_localPath, ExtractExistingFileAction.OverwriteSilently);
-                                    Console.WriteLine($"openMIC :: Log Downloaded File :: {Path.Combine(s_localPath, zipEntry.FileName)}");
-                                }
-
-                                Console.WriteLine($"Processed \"{zipEntry.FileName}\", {++processedFiles} out of {zipFile.Count} files complete...");
-                            }
-
-                            Console.WriteLine($"Completed processing {processedFiles} files from downloaded zip file.");
+                            for (int j = 0; j < length; j++)
+                                eventList[i].Add(table[0][j], table[i][j]);
                         }
-                    }
-                    finally
-                    {
-                        if (File.Exists(tempZipFile))
-                            File.Delete(tempZipFile);
+
+                        eventList.RemoveAll(evt => evt.Count == 0 || File.Exists(Path.Combine(s_localPath, getLocalFileName(evt[EventIDKey]))));
+
+                        if (eventList.Count == 0)
+                        {
+                            Console.WriteLine("No new data available for download.");
+                            return;
+                        }
+
+                        Console.WriteLine($"Downloading {eventList.Count} files...");
+
+                        for (int i = 0; i < eventList.Count; i++)
+                        {
+                            string eventID = eventList[i][EventIDKey];
+                            string localFileName = getLocalFileName(eventID);
+                            string localFilePath = Path.Combine(s_localPath, localFileName);
+                            string address = string.Format(ExportDataURL, s_baseUrl, s_serialNumber, eventID);
+
+                            using (MemoryStream webStream = new MemoryStream(client.DownloadData(address)))
+                            using (ZipFile zipFile = ZipFile.Read(webStream))
+                            using (Stream zipEntry = zipFile.Entries.First().OpenReader())
+                            using (FileStream fileStream = File.Create(localFilePath))
+                            {
+                                zipEntry.CopyTo(fileStream);
+                                Console.WriteLine($"openMIC :: Log Downloaded File :: {Path.Combine(s_localPath, localFileName)}");
+                                Console.WriteLine($"Downloaded \"{localFileName}\", {++processedFiles} out of {eventList.Count} files complete...");
+                            }
+                        }
+
+                        Console.WriteLine($"Completed downloading {processedFiles} files.");
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Download Failure: {ex.Message}");
-                return 1;
+                Environment.Exit(1);
             }
-
-            return 0;
         }
 
         private static AdoDataConnection OpenDatabaseConnection()
@@ -154,79 +169,6 @@ namespace IGridDownloader
 
             if (!Directory.Exists(s_localPath))
                 Directory.CreateDirectory(s_localPath);
-
-            s_fileSpecs = profileTaskSettings.FileExtensions.Split(',').Select(pattern => pattern.Trim()).ToArray();
-            s_skipDownloadIfUnchanged = profileTaskSettings.SkipDownloadIfUnchanged;
-            s_overwriteExistingLocalFiles = profileTaskSettings.OverwriteExistingLocalFiles;
-            s_archiveExistingFilesBeforeDownload = profileTaskSettings.ArchiveExistingFilesBeforeDownload;
-            s_synchronizeTimestamps = profileTaskSettings.SynchronizeTimestamps;
-        }
-
-        private static bool ProcessEntry(ZipEntry zipEntry)
-        {
-            // Make sure zip file name matches configured file pattern specifications
-            if (!FilePath.IsFilePatternMatch(s_fileSpecs, zipEntry.FileName, true))
-            {
-                Console.WriteLine($"Skipping file unzip for remote file \"{zipEntry.FileName}\": file name does not match allowed patterns \"{string.Join(", ", s_fileSpecs)}\".");
-                return false;
-            }
-
-            string localFileName = $"{s_localPath}{zipEntry.FileName}";
-
-            // Check for setting that skips download if file has not changed
-            if (File.Exists(localFileName) && s_skipDownloadIfUnchanged)
-            {
-                try
-                {
-                    FileInfo info = new FileInfo(localFileName);
-
-                    // Compare file sizes and timestamps
-                    bool localEqualsRemote =
-                        info.Length == zipEntry.UncompressedSize &&
-                        (!s_synchronizeTimestamps || info.LastWriteTime == zipEntry.ModifiedTime);
-
-                    if (localEqualsRemote)
-                    {
-                        Console.WriteLine($"Skipping file unzip for remote file \"{zipEntry.FileName}\": Local file already exists and matches zipped file.");
-                        return false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unable to determine whether local file size and time matches zip file size and time due to exception: {ex.Message}");
-                }
-            }
-
-            // Check for setting that archives existing files before downloading (names could be same for different data)
-            if (File.Exists(localFileName) && s_archiveExistingFilesBeforeDownload)
-            {
-                try
-                {
-                    string directoryName = $"{FilePath.GetDirectoryName(localFileName)}Archive\\";
-                    string archiveFileName = $"{directoryName}{zipEntry.FileName}";
-
-                    Directory.CreateDirectory(directoryName);
-
-                    if (File.Exists(archiveFileName))
-                        archiveFileName = FilePath.GetUniqueFilePathWithBinarySearch(archiveFileName);
-
-                    Console.WriteLine($"Archiving existing file \"{localFileName}\" to \"{archiveFileName}\"...");
-                    File.Move(localFileName, archiveFileName);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to archive existing local file \"{localFileName}\" due to exception: {ex.Message}");
-                }
-            }
-
-            // Check for setting that skips overwriting of existing local files
-            if (File.Exists(localFileName) && !s_overwriteExistingLocalFiles)
-            {
-                Console.WriteLine($"Skipping file unzip for remote file \"{zipEntry.FileName}\": Local file already exists and settings do not allow overwrite.");
-                return false;
-            }
-
-            return true;
         }
 
         private static string GetSubFolder(Device device, string profileName, string directoryNamingExpression)
