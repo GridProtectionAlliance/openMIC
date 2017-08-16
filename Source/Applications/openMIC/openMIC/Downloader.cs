@@ -31,7 +31,6 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -1399,8 +1398,6 @@ namespace openMIC
 
             try
             {
-                int fileCount = FilePath.EnumerateFiles(localPathDirectory, "*", SearchOption.AllDirectories).Count();
-
                 using (SafeFileWatcher fileWatcher = new SafeFileWatcher(localPathDirectory))
                 using (Process externalOperation = new Process())
                 {
@@ -1467,17 +1464,8 @@ namespace openMIC
                         }
                     }
 
-                    int filesDownloaded = FilePath.EnumerateFiles(localPathDirectory, "*", SearchOption.AllDirectories).Count() - fileCount;
-                    FilesDownloaded += filesDownloaded;
-                    TotalFilesDownloaded += filesDownloaded;
-
                     OnStatusMessage(MessageLevel.Info, $"External operation \"{command}\" completed with status code {externalOperation.ExitCode}.");
-
-                    OnProgressUpdated(this, new ProgressUpdate()
-                    {
-                        Message = $"External action complete: exit code {externalOperation.ExitCode}.",
-                        Summary = $"{FilesDownloaded} Files Downloaded ({TotalFilesDownloaded} Total)"
-                    });
+                    OnProgressUpdated(this, new ProgressUpdate() { Message = $"External action complete: exit code {externalOperation.ExitCode}." });
                 }
             }
             catch (Exception ex)
@@ -1494,7 +1482,12 @@ namespace openMIC
             Match match = Regex.Match(message, LogDownloadedFilePattern);
 
             if (match.Success)
+            {
                 m_lastDownloadedFileID = LogDownloadedFile(match.Groups["FilePath"].Value);
+                FilesDownloaded++;
+                TotalFilesDownloaded++;
+                OnProgressUpdated(this, new ProgressUpdate() { Summary = $"{FilesDownloaded} Files Downloaded ({TotalFilesDownloaded} Total)" });
+            }
 
             return match.Success;
         }

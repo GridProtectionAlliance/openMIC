@@ -915,7 +915,7 @@ namespace openMIC
             {
                 ConnectionProfileTaskQueue profileTaskQueue = profileTaskQueueTable.NewRecord();
                 profileTaskQueue.Name = DefaultIGridConnectionProfileTaskQueueName;
-                profileTaskQueue.MaxThreadCount = 1;
+                profileTaskQueue.MaxThreadCount = 4;
                 profileTaskQueue.UseBackgroundThreads = false;
                 profileTaskQueue.Description = "Connection Profile Task for I-Grid Devices";
                 profileTaskQueueTable.AddNewRecord(profileTaskQueue);

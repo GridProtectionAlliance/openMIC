@@ -25,15 +25,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using GSF;
 using GSF.Configuration;
 using GSF.Data;
 using GSF.Data.Model;
 using GSF.IO;
 using GSF.Parsing;
-using openMIC.Model;
 using Ionic.Zip;
+using openMIC.Model;
 
 namespace IGridDownloader
 {
@@ -57,16 +57,22 @@ namespace IGridDownloader
                 int profileTaskID = int.Parse(args[1]);
                 long processedFiles = 0;
 
+                DateTime startTime = DateTime.Today.AddDays(-2.0D);
+                DateTime endTime = DateTime.Today.AddDays(1.0D);
+
+                if (args.Length >= 4)
+                {
+                    startTime = ParseTimeTag(args[2]);
+                    endTime = ParseTimeTag(args[3]);
+                }
+
                 using (AdoDataConnection connection = OpenDatabaseConnection())
                 {
                     ParseConfigurationSettings(connection, deviceID, profileTaskID);
 
                     Console.WriteLine($"Target download folder = {FilePath.TrimFileName(s_localPath, 40)}");
 
-                    DateTime tomorrow = DateTime.Today.AddDays(1);
-                    DateTime dayBeforeYesterday = DateTime.Today.AddDays(-2);
-
-                    using (WebClient client = new WebClient())
+                    using (HttpClient client = new HttpClient())
                     {
                         const string EventIDKey = "EventId";
 
@@ -74,7 +80,7 @@ namespace IGridDownloader
 
                         Console.WriteLine("Downloading list of events from I-Grid web service...");
 
-                        string eventInfo = client.DownloadString(string.Format(ExportEventListURL, s_baseUrl, s_serialNumber, dayBeforeYesterday, tomorrow));
+                        string eventInfo = client.GetStringAsync(string.Format(ExportEventListURL, s_baseUrl, s_serialNumber, startTime, endTime)).Result;
 
                         string[][] table = eventInfo.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None)
                             .Select(line => line.Split('\t'))
@@ -100,6 +106,8 @@ namespace IGridDownloader
                             return;
                         }
 
+                        string tempDirectoryPath = GetTempDirectoryPath();
+
                         Console.WriteLine($"Downloading {eventList.Count} files...");
 
                         for (int i = 0; i < eventList.Count; i++)
@@ -107,19 +115,23 @@ namespace IGridDownloader
                             string eventID = eventList[i][EventIDKey];
                             string localFileName = getLocalFileName(eventID);
                             string localFilePath = Path.Combine(s_localPath, localFileName);
+                            string tempFilePath = Path.Combine(tempDirectoryPath, localFileName);
                             string address = string.Format(ExportDataURL, s_baseUrl, s_serialNumber, eventID);
 
-                            using (MemoryStream webStream = new MemoryStream(client.DownloadData(address)))
+                            using (MemoryStream webStream = new MemoryStream(client.GetByteArrayAsync(address).Result))
                             using (ZipFile zipFile = ZipFile.Read(webStream))
                             using (Stream zipEntry = zipFile.Entries.First().OpenReader())
-                            using (FileStream fileStream = File.Create(localFilePath))
+                            using (FileStream fileStream = File.Create(tempFilePath))
                             {
                                 zipEntry.CopyTo(fileStream);
-                                Console.WriteLine($"openMIC :: Log Downloaded File :: {Path.Combine(s_localPath, localFileName)}");
-                                Console.WriteLine($"Downloaded \"{localFileName}\", {++processedFiles} out of {eventList.Count} files complete...");
                             }
+
+                            File.Move(tempFilePath, localFilePath);
+                            Console.WriteLine($"openMIC :: Log Downloaded File :: {Path.Combine(s_localPath, localFileName)}");
+                            Console.WriteLine($"Downloaded \"{localFileName}\", {++processedFiles} out of {eventList.Count} files complete...");
                         }
 
+                        Directory.Delete(tempDirectoryPath);
                         Console.WriteLine($"Completed downloading {processedFiles} files.");
                     }
                 }
@@ -189,6 +201,57 @@ namespace IGridDownloader
             directoryNameExpressionParser.TemplatedExpression = directoryNamingExpression.Replace("\\", "\\\\");
 
             return $"{directoryNameExpressionParser.Execute(substitutions)}{Path.DirectorySeparatorChar}";
+        }
+
+        private static string GetTempDirectoryPath()
+        {
+            string tempDirectoryPath = null;
+
+            while (true)
+            {
+                try
+                {
+                    tempDirectoryPath = Path.Combine(Path.GetTempPath(), "IGridDownloader_" + Path.GetRandomFileName());
+                    Directory.CreateDirectory(tempDirectoryPath);
+                    break;
+                }
+                catch (IOException)
+                {
+                }
+            }
+
+            return tempDirectoryPath;
+        }
+
+        private static DateTime ParseTimeTag(string timeTag)
+        {
+            DateTime dateTime;
+
+            if (DateTime.TryParse(timeTag, out dateTime))
+                return dateTime;
+
+            string strippedTimeTag = new string(timeTag.Where(c => !char.IsWhiteSpace(c)).ToArray());
+
+            if (!strippedTimeTag.StartsWith("*"))
+                throw new FormatException($"\"{timeTag}\" is not recognized as a valid time tag.");
+
+            if (strippedTimeTag.Length == 1)
+                return DateTime.Today;
+
+            char unit = strippedTimeTag.Last();
+            int offset;
+
+            if (!int.TryParse(strippedTimeTag.Substring(1, strippedTimeTag.Length - 2), out offset))
+                throw new FormatException($"\"{timeTag}\" is not recognized as a valid time tag.");
+
+            switch (unit)
+            {
+                case 'D': case 'd': return DateTime.Today.AddDays(offset);
+                case 'W': case 'w': return DateTime.Today.AddDays(offset * 7);
+                case 'M': case 'm': return DateTime.Today.AddMonths(offset);
+                case 'Y': case 'y': return DateTime.Today.AddYears(offset);
+                default: throw new FormatException($"\"{timeTag}\" is not recognized as a valid time tag.");
+            }
         }
     }
 }
