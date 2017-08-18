@@ -22,12 +22,12 @@
 //******************************************************************************************************
 
 using System;
-using System.Diagnostics;
 using System.ServiceProcess;
 using System.Threading;
 using System.Windows.Forms;
 using GSF.Console;
 using GSF.Threading;
+using GSF.TimeSeries;
 
 namespace openMIC
 {
@@ -100,19 +100,9 @@ namespace openMIC
             }
             else
             {
-                string hostedServiceSessionName = Host.ServiceName + "Shell.exe";
-                Process hostedServiceSession = Process.Start(hostedServiceSessionName);
-
-                if ((object)hostedServiceSession != null)
-                {
-                    hostedServiceSession.WaitForExit();
-                    Environment.Exit(hostedServiceSession.ExitCode);
-                }
-                else
-                {
-                    MessageBox.Show($"Failed to start \"{hostedServiceSessionName}\" with a hosted service.");
-                    Environment.Exit(1);
-                }
+                ConsoleHost consoleHost = new ConsoleHost(Host);
+                consoleHost.Run();
+                Environment.Exit(0);
             }
         }
     }
