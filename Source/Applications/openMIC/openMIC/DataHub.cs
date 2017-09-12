@@ -148,6 +148,52 @@ namespace openMIC
 
         // Client-side script functionality
 
+        #region [ Setting Table Operations ]
+
+        [AuthorizeHubRole("Administrator")]
+        [RecordOperation(typeof(Setting), RecordOperation.QueryRecordCount)]
+        public int QuerySettingCount(string filterString)
+        {
+            return DataContext.Table<Setting>().QueryRecordCount(filterString);
+        }
+
+        [AuthorizeHubRole("Administrator")]
+        [RecordOperation(typeof(Setting), RecordOperation.QueryRecords)]
+        public IEnumerable<Setting> QuerySettings(string sortField, bool ascending, int page, int pageSize, string filterString)
+        {
+            return DataContext.Table<Setting>().QueryRecords(sortField, ascending, page, pageSize, filterString);
+        }
+
+        [AuthorizeHubRole("Administrator")]
+        [RecordOperation(typeof(Setting), RecordOperation.DeleteRecord)]
+        public void DeleteSetting(int id)
+        {
+            DataContext.Table<Setting>().DeleteRecord(id);
+        }
+
+        [AuthorizeHubRole("Administrator")]
+        [RecordOperation(typeof(Setting), RecordOperation.CreateNewRecord)]
+        public Setting NewSetting()
+        {
+            return new Setting();
+        }
+
+        [AuthorizeHubRole("Administrator")]
+        [RecordOperation(typeof(Setting), RecordOperation.AddNewRecord)]
+        public void AddNewSetting(Setting record)
+        {
+            DataContext.Table<Setting>().AddNewRecord(record);
+        }
+
+        [AuthorizeHubRole("Administrator, Owner")]
+        [RecordOperation(typeof(Setting), RecordOperation.UpdateRecord)]
+        public void UpdateSetting(Setting record)
+        {
+            DataContext.Table<Setting>().UpdateRecord(record);
+        }
+
+        #endregion
+
         #region [ Device Table Operations ]
 
         private int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : (s_downloaderProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'"));

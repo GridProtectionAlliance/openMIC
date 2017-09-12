@@ -279,6 +279,7 @@
     <Compile Include="Model\Protocol.cs" />
     <Compile Include="Model\MeasurementValue.cs" />
     <Compile Include="Model\SchemaVersion.cs" />
+    <Compile Include="Model\Setting.cs" />
     <Compile Include="Model\SignalType.cs" />
     <Compile Include="Model\Statistic.cs" />
     <Compile Include="Model\ConnectionProfile.cs" />
@@ -498,6 +499,7 @@
     <Content Include="wwwroot\Companies.cshtml" />
     <Content Include="wwwroot\ConnectionProfiles.cshtml" />
     <Content Include="wwwroot\Vendors.cshtml" />
+    <Content Include="wwwroot\Settings.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />
