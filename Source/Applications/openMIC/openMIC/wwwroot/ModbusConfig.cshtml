@@ -1602,9 +1602,12 @@
     // functions will further validate user rights even if UI restriction was somehow bypassed
     public bool UserIsEditor()
     {
-        SecurityProviderCache.ValidateCurrentProvider();
-        IPrincipal principal = Thread.CurrentPrincipal;
-        return principal.IsInRole("Administrator") || principal.IsInRole("Editor");
+        SecurityPrincipal securityPrincipal = ViewBag.SecurityPrincipal as SecurityPrincipal;
+
+        if ((object)securityPrincipal == null)
+            return false;
+
+        return securityPrincipal.IsInRole("Administrator") || securityPrincipal.IsInRole("Editor");
     }
 }
 <h3>Modbus Configuration Map Builder <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" src="Images/ModbusConfigEditor.png"/></h3>

@@ -70,6 +70,12 @@ namespace openMIC
             // Enabled detailed client errors
             hubConfig.EnableDetailedErrors = true;
 
+            app.Use<AuthenticationMiddleware>(new AuthenticationOptions()
+            {
+                SessionToken = "session",
+                AuthFailureRedirectResourceExpression = "(?!)"
+            });
+
 #if DEBUG
             GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromMinutes(30);
 #endif

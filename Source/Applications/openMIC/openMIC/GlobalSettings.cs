@@ -183,5 +183,12 @@ namespace openMIC
             get;
             set;
         }
+
+        public string WebRootPath
+        {
+            get;
+            set;
+        }
+
     }
 }

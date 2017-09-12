@@ -172,7 +172,7 @@ namespace openMIC
             systemSettings.Add("FromAddress", "openmic@gridprotectionalliance.org", "The from address for e-mails.");
             systemSettings.Add("SmtpUserName", "", "Username to authenticate to the SMTP server, if any.");
             systemSettings.Add("SmtpPassword", "", "Password to authenticate to the SMTP server, if any.");
-
+            systemSettings.Add("WebRootPath", "wwwroot", "The root path for the hosted web server files. Location will be relative to install folder if full path is not specified.");
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
             Model = new AppModel();
@@ -204,6 +204,7 @@ namespace openMIC
             Model.Global.FromAddress = systemSettings["FromAddress"].Value;
             Model.Global.SmtpUserName = systemSettings["SmtpUserName"].Value;
             Model.Global.SmtpPassword = systemSettings["SmtpPassword"].Value;
+            Model.Global.WebRootPath = systemSettings["WebRootPath"].Value;
 
             // Register a symbolic reference to global settings for use by default value expressions
             ValueExpressionParser.DefaultTypeRegistry.RegisterSymbol("Global", Program.Host.Model.Global);

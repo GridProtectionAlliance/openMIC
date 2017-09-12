@@ -104,9 +104,12 @@
     // functions will further validate user rights even if UI restriction was somehow bypassed
     public bool UserIsEditor()
     {
-        SecurityProviderCache.ValidateCurrentProvider();
-        IPrincipal principal = Thread.CurrentPrincipal;
-        return principal.IsInRole("Administrator") || principal.IsInRole("Editor");
+        SecurityPrincipal securityPrincipal = ViewBag.SecurityPrincipal as SecurityPrincipal;
+
+        if ((object)securityPrincipal == null)
+            return false;
+
+        return securityPrincipal.IsInRole("Administrator") || securityPrincipal.IsInRole("Editor");
     }
 }
 <div style="display: none" search-header></div>

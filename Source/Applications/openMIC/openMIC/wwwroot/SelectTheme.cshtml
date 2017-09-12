@@ -46,7 +46,7 @@
     parameters.TryGetValue("selectedTheme", out selectedTheme);
 
     string currentTheme = FilePath.GetFileName(Model.Global.BootstrapTheme).Trim();
-    string[] fileList = FilePath.GetFileList(string.Format("{0}Content/bootstrap-theme-*.css", FilePath.AddPathSuffix(WebServer.Default.WebRootPath))).Select(fileName => FilePath.GetFileName(fileName).Trim()).ToArray();
+    string[] fileList = FilePath.GetFileList(string.Format("{0}Content/bootstrap-theme-*.css", FilePath.AddPathSuffix(Program.Host.Model.Global.WebRootPath))).Select(fileName => FilePath.GetFileName(fileName).Trim()).ToArray();
 
     if (selectedTheme == null) {
         selectedTheme = currentTheme;
