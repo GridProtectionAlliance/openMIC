@@ -835,6 +835,15 @@ namespace openMIC
 
         private void ExecuteTasks()
         {
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            {
+                bool enabled = connection.ExecuteScalar<bool>("SELECT Enabled FROM Device WHERE Acronym = {0}", Name);
+
+                if (!enabled)
+                    return;
+            }
+
+
             if (m_cancellationToken.IsCancelled)
                 return;
 
