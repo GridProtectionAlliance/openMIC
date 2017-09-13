@@ -2992,13 +2992,25 @@ GO
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[LocalSchemaVersion] AS
-SELECT 2 AS VersionNumber
+SELECT 3 AS VersionNumber
 GO
 
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+
+CREATE TABLE Setting
+(
+    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+    Name VARCHAR(200) NULL,
+    Value VARCHAR(MAX) NULL,
+    DefaultValue VARCHAR(MAX) NULL,
+	Description varchar(Max) null
+)
+GO
+
+
 CREATE TABLE [dbo].[ConnectionProfileTaskQueue](
     [ID] [int] IDENTITY(1,1) NOT NULL,
     [Name] [varchar](200) NOT NULL,
@@ -3162,8 +3174,8 @@ GO
 --	SELECT * INTO #inserted FROM inserted
 
 --	EXEC spQueryToHtmlTable @html = @html OUTPUT,  @query = N'SELECT * FROM #inserted';
---	DECLARE @recipients nvarchar(max) = N'bernest@gridprotectionalliance.org' -- SemiColon separated list of users to send to
---	DECLARE @profile_name nvarchar(max) ='Emails'   -- DB email service to use
+--	DECLARE @recipients nvarchar(max) = (SELECT Value FROM Setting WHERE Name = 'EmailRecipients')
+--	DECLARE @profile_name nvarchar(max) = (SELECT Value FROM Setting WHERE Name = 'SqlServerEmailProfile')
 
 --	DECLARE @deviceID int =  (Select TOP 1 DeviceID from inserted)
 --	DECLARE @enabled bit = (SELECT [Enabled] FROM Device WHERE ID = @deviceID)
