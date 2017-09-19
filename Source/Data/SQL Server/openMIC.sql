@@ -3172,13 +3172,17 @@ GO
 --	DECLARE @html nvarchar(MAX);
 
 --	SELECT * INTO #inserted FROM inserted
+--	--SELECT * FROM #inserted
+
+--	DECLARE @deviceID int =  (Select TOP 1 DeviceID from #inserted)
+--	DECLARE @enabled bit = (SELECT [Enabled] FROM Device WHERE ID = @deviceID)
 
 --	EXEC spQueryToHtmlTable @html = @html OUTPUT,  @query = N'SELECT * FROM #inserted';
 --	DECLARE @recipients nvarchar(max) = (SELECT Value FROM Setting WHERE Name = 'EmailRecipients')
 --	DECLARE @profile_name nvarchar(max) = (SELECT Value FROM Setting WHERE Name = 'SqlServerEmailProfile')
-
---	DECLARE @deviceID int =  (Select TOP 1 DeviceID from inserted)
---	DECLARE @enabled bit = (SELECT [Enabled] FROM Device WHERE ID = @deviceID)
+--	DECLARE @downloadThreshholdWindow int = (SELECT Value FROM Setting WHERE Name = 'MaxDownloadThresholdTimeWindow')
+--	DECLARE @downloadThreshhold int = (SELECT Value FROM Setting WHERE Name = 'MaxDownloadThreshold')
+--	DECLARE @downloadCount int = (SELECT COUNT(*) FROM DownloadedFile WHERE Timestamp BETWEEN DATEADD(HOUR, -@downloadThreshholdWindow, GETDATE()) AND GETDATE() AND DeviceID = @deviceID)
 
 --	DECLARE @message nvarchar(MAX) = (SELECT TOP 1 Message FROM inserted)
 --	DECLARE @name nvarchar(max) = (SELECT Name FROM Device WHERE ID = @deviceID)
@@ -3186,22 +3190,9 @@ GO
 --	DECLARE @downloadDate nvarchar(max) = (SELECT TOP 1 FileDownloadTimestamp FROM inserted)
 --	DECLARE @lastSuccess DateTime = (SELECT LastSuccess FROM StatusLog WHERE DeviceID = @deviceID)
 --	DECLARE @lastFailure DateTime = (SELECT LastFailure FROM StatusLog WHERE DeviceID = @deviceID)
---	DECLARE @fileSize int = (SELECT FileSize FROM DownloadedFile WHERE DeviceID = @deviceID)
---	DECLARE @fileDate DateTime
---	IF @lastFile IS NOT NULL
---	BEGIN
---		BEGIN TRY
---			SET @fileDate = '20' + (Select TOP 1 SUBSTRING(@lastFile, 1,2)) + '-' +
---									(Select TOP 1 SUBSTRING(@LastFile, 3,2)) + '-' +
--- 									(Select TOP 1 SUBSTRING(@LastFile, 5,2)) + ' ' +
---									(Select TOP 1 SUBSTRING(@LastFile, 8,2)) + ':' +
--- 									(Select TOP 1 SUBSTRING(@LastFile, 10,2)) + ':' +
--- 									(Select TOP 1 SUBSTRING(@LastFile, 12,2))
---		END TRY
---		BEGIN CATCH
---		 SET @fileDate = (SELECT GETDATE())
---		END CATCH
---	END
+--	DECLARE @fileSize int = (SELECT TOP 1 FileSize FROM DownloadedFile WHERE DeviceID = @deviceID ORDER BY ID DESC)
+--	DECLARE @fileDate DateTime = (SELECT TOP 1 FileDownloadTimeStamp FROM #inserted)
+
 
 --	DECLARE @downloadDateDiff int = (SELECT DATEDIFF(HOUR, @fileDate, @downloadDate))
 --	DECLARE @successDateDiff int = (SELECT DATEDIFF(HOUR, @lastSuccess, @lastFailure))
@@ -3209,11 +3200,11 @@ GO
 --	DECLARE @intro nvarchar(max) = N''
 --	DECLARE @emailCountToday int = (SELECT COUNT(*) FROM SentEmail WHERE DeviceID = @deviceID AND Timestamp > CAST(GETDATE() as DATE))
 
-
---	IF @message = 'Disabled due to excessive file production.'  AND @enabled = 0 AND @emailCountToday = 0
+--	IF @downloadThreshhold > 0 AND @downloadCount > @downloadThreshhold AND @enabled = 1
 --	BEGIN
 --		SET @intro = @intro + N'<div>'+ @Name+' has been disabled due to excessive downloads.</div><br>'
 --		SET @emailFlag = 1
+--		UPDATE Device set [Enabled] = 0 WHERE ID = @deviceID
 --	END
 
 --	IF @fileDate > GETDATE() AND @enabled = 1 AND @emailCountToday = 0
@@ -3244,10 +3235,10 @@ GO
 --	IF @emailFlag = 1
 --	BEGIN
 --		SET @html = @intro + @html;
---		DECLARE @subject nvarchar(max) = N'OpenMIC ' +@Name + N' problems ...'
+--		DECLARE @subject nvarchar(max) = N'OpenMIC '+ @Name +' problems ...'
 --		EXEC msdb.dbo.sp_send_dbmail
 --			@profile_name =	@profile_name,
---			@recipients=@recipients,
+--			@recipients= @recipients,
 --			@subject = @subject,
 --			@body = @html,
 --			@body_format = 'HTML';
