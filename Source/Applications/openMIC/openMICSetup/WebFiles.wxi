@@ -51,6 +51,9 @@
   <Component Id="SelectTheme_cshtml">
     <File Id="SelectTheme.cshtml" Name="SelectTheme.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SelectTheme.cshtml" />
   </Component>
+  <Component Id="Settings_cshtml">
+    <File Id="Settings.cshtml" Name="Settings.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Settings.cshtml" />
+  </Component>
   <Component Id="Status_cshtml">
     <File Id="Status.cshtml" Name="Status.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Status.cshtml" />
   </Component>
