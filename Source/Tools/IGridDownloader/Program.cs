@@ -43,7 +43,7 @@ namespace IGridDownloader
         private const string ExportDataURL = "{0}&action=exportData&format=pqdif&zipFormat=on&serialNumber={1}&eventId={2}";
 
         private static string s_baseUrl;
-        private static string s_localPath;
+        private static Func<DateTime, string> s_getLocalPath;
         private static string s_serialNumber;
 
         public static void Main(string[] args)
@@ -70,13 +70,22 @@ namespace IGridDownloader
                 {
                     ParseConfigurationSettings(connection, deviceID, profileTaskID);
 
-                    Console.WriteLine($"Target download folder = {FilePath.TrimFileName(s_localPath, 40)}");
-
                     using (HttpClient client = new HttpClient())
                     {
                         const string EventIDKey = "EventId";
+                        const string StartTimeKey = "StartTime";
 
                         Func<string, string> getLocalFileName = eventID => $"Event{eventID}.pqd";
+
+                        Func<string, DateTime> getEventStartTime = text =>
+                        {
+                            DateTime eventStartTime;
+
+                            if (DateTime.TryParse(text, out eventStartTime))
+                                return eventStartTime;
+
+                            return DateTime.Now;
+                        };
 
                         Console.WriteLine("Downloading list of events from I-Grid web service...");
 
@@ -98,7 +107,7 @@ namespace IGridDownloader
                                 eventList[i].Add(table[0][j], table[i][j]);
                         }
 
-                        eventList.RemoveAll(evt => evt.Count == 0 || File.Exists(Path.Combine(s_localPath, getLocalFileName(evt[EventIDKey]))));
+                        eventList.RemoveAll(evt => evt.Count == 0 || File.Exists(Path.Combine(s_getLocalPath(getEventStartTime(evt[StartTimeKey])), getLocalFileName(evt[EventIDKey]))));
 
                         if (eventList.Count == 0)
                         {
@@ -113,8 +122,11 @@ namespace IGridDownloader
                         for (int i = 0; i < eventList.Count; i++)
                         {
                             string eventID = eventList[i][EventIDKey];
+                            string startTimeText = eventList[i][StartTimeKey];
+                            DateTime eventStartTime = getEventStartTime(startTimeText);
+                            string localPath = s_getLocalPath(eventStartTime);
                             string localFileName = getLocalFileName(eventID);
-                            string localFilePath = Path.Combine(s_localPath, localFileName);
+                            string localFilePath = Path.Combine(localPath, localFileName);
                             string tempFilePath = Path.Combine(tempDirectoryPath, localFileName);
                             string address = string.Format(ExportDataURL, s_baseUrl, s_serialNumber, eventID);
 
@@ -126,8 +138,11 @@ namespace IGridDownloader
                                 zipEntry.CopyTo(fileStream);
                             }
 
+                            if (!Directory.Exists(localPath))
+                                Directory.CreateDirectory(localPath);
+
                             File.Move(tempFilePath, localFilePath);
-                            Console.WriteLine($"openMIC :: Log Downloaded File :: {Path.Combine(s_localPath, localFileName)}");
+                            Console.WriteLine($"openMIC :: Log Downloaded File :: {Path.Combine(localPath, localFileName)}");
                             Console.WriteLine($"Downloaded \"{localFileName}\", {++processedFiles} out of {eventList.Count} files complete...");
                         }
 
@@ -176,22 +191,22 @@ namespace IGridDownloader
             s_baseUrl = deviceConnectionString["baseURL"];
             s_serialNumber = deviceConnectionString["serialNumber"];
 
-            string subFolder = GetSubFolder(device, profile.Name, profileTaskSettings.DirectoryNamingExpression);
-            s_localPath = $"{profileTaskSettings.LocalPath}{Path.DirectorySeparatorChar}{subFolder}";
-
-            if (!Directory.Exists(s_localPath))
-                Directory.CreateDirectory(s_localPath);
+            s_getLocalPath = startTime =>
+            {
+                string subFolder = GetSubFolder(device, profile.Name, profileTaskSettings.DirectoryNamingExpression, startTime);
+                return $"{profileTaskSettings.LocalPath}{Path.DirectorySeparatorChar}{subFolder}";
+            };
         }
 
-        private static string GetSubFolder(Device device, string profileName, string directoryNamingExpression)
+        private static string GetSubFolder(Device device, string profileName, string directoryNamingExpression, DateTime eventStartTime)
         {
             TemplatedExpressionParser directoryNameExpressionParser = new TemplatedExpressionParser('<', '>', '[', ']');
             Dictionary<string, string> substitutions = new Dictionary<string, string>
             {
-                { "<YYYY>", $"{DateTime.Now.Year}" },
-                { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
-                { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
-                { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
+                { "<YYYY>", $"{eventStartTime.Year}" },
+                { "<YY>", $"{eventStartTime.Year.ToString().Substring(2)}" },
+                { "<MM>", $"{eventStartTime.Month.ToString().PadLeft(2, '0')}" },
+                { "<DD>", $"{eventStartTime.Day.ToString().PadLeft(2, '0')}" },
                 { "<DeviceName>", device.Name ?? "undefined"},
                 { "<DeviceAcronym>", device.Acronym },
                 { "<DeviceFolderName>", string.IsNullOrWhiteSpace(device.OriginalSource) ? device.Acronym : device.OriginalSource},
