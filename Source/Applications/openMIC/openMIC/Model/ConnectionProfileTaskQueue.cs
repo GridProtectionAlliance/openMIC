@@ -156,8 +156,8 @@ namespace openMIC.Model
                 if (!cancellationToken.Cancel())
                     return;
 
-                action();
-                Interlocked.CompareExchange(ref m_cancellationToken, null, cancellationToken);
+                try     { action(); }
+                finally { Interlocked.CompareExchange(ref m_cancellationToken, null, cancellationToken); }
             });
 
             return true;
@@ -182,8 +182,8 @@ namespace openMIC.Model
 
             TaskThread.Push(HighPriority, () =>
             {
-                action();
-                Interlocked.Exchange(ref m_cancellationToken, null);
+                try     { action(); }
+                finally { Interlocked.Exchange(ref m_cancellationToken, null); }
             });
 
             return true;

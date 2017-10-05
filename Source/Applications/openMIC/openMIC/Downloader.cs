@@ -843,7 +843,6 @@ namespace openMIC
                     return;
             }
 
-
             if (m_cancellationToken.IsCancelled)
                 return;
 
