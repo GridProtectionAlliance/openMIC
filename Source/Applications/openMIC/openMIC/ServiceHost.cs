@@ -301,10 +301,15 @@ namespace openMIC
         {
             m_serviceStopping = true;
 
+            ServiceHelper serviceHelper = ServiceHelper;
+
             base.ServiceStoppingHandler(sender, e);
 
-            ServiceHelper.UpdatedStatus -= UpdatedStatusHandler;
-            ServiceHelper.LoggedException -= LoggedExceptionHandler;
+            if ((object)serviceHelper != null)
+            {
+                serviceHelper.UpdatedStatus -= UpdatedStatusHandler;
+                serviceHelper.LoggedException -= LoggedExceptionHandler;
+            }
 
             m_startEngineThread.Join();
         }
