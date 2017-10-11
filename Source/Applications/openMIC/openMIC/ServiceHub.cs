@@ -84,7 +84,7 @@ namespace openMIC
         /// <param name="command">Command string.</param>
         public void SendCommand(string command)
         {
-            m_serviceConnection.SendCommand(Context.ConnectionId, command);
+            m_serviceConnection.SendCommand(Context.ConnectionId, Context.User, command);
         }
 
         #endregion
