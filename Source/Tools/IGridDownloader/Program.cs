@@ -84,6 +84,12 @@ namespace IGridDownloader
                             if (DateTime.TryParse(text, out eventStartTime))
                                 return eventStartTime;
 
+                            int index = text.LastIndexOf(' ');
+                            string modifiedText = (index >= 0) ? text.Remove(index) : text;
+
+                            if (DateTime.TryParse(modifiedText, out eventStartTime))
+                                return eventStartTime;
+
                             return DateTime.Now;
                         };
 
