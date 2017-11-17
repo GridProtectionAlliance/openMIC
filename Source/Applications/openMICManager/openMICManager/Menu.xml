@@ -13,6 +13,7 @@
   </MenuDataItem>
   <MenuDataItem Icon="" MenuText="_Adapters" Description="Manage Adapters" Roles="*" UserControlAssembly="" UserControlPath="">
     <SubMenuItems>
+      <MenuDataItem Icon="" MenuText="_Filters" Description="Configure Filter Adapters" Roles="*" UserControlAssembly="GSF.TimeSeries.UI.WPF.dll" UserControlPath="GSF.TimeSeries.UI.UserControls.CustomFilterAdapterUserControl" />
       <MenuDataItem Icon="" MenuText="_Inputs" Description="Configure Input Adapters" Roles="*" UserControlAssembly="GSF.TimeSeries.UI.WPF.dll" UserControlPath="GSF.TimeSeries.UI.UserControls.CustomInputAdapterUserControl" />
       <MenuDataItem Icon="" MenuText="_Actions" Description="Configure Action Adapters" Roles="*" UserControlAssembly="GSF.TimeSeries.UI.WPF.dll" UserControlPath="GSF.TimeSeries.UI.UserControls.CustomActionAdapterUserControl" />
       <MenuDataItem Icon="" MenuText="_Outputs" Description="Configure Output Adapters" Roles="*" UserControlAssembly="GSF.TimeSeries.UI.WPF.dll" UserControlPath="GSF.TimeSeries.UI.UserControls.CustomOutputAdapterUserControl" />
