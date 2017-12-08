@@ -73,5 +73,5 @@ INSERT INTO Measurement(HistorianID, DeviceID, PointTag, SignalTypeID, PhasorSou
 -- INSERT INTO OutputStreamDeviceDigital(NodeID, OutputStreamDeviceID, Label, LoadOrder) VALUES('8a8d1856-ebc8-4238-848a-8084b7dd9541', 1, 'Digital1', 0);
 
 INSERT INTO ApplicationRole (Name, Description, NodeID) VALUES ('Administrator', 'Administrator Role', '8a8d1856-ebc8-4238-848a-8084b7dd9541');
-INSERT INTO ApplicationRole (Name, Description, NodeID) VALUES ('Editor', 'Editor', '8a8d1856-ebc8-4238-848a-8084b7dd9541');
+INSERT INTO ApplicationRole (Name, Description, NodeID) VALUES ('Editor', 'Editor Role', '8a8d1856-ebc8-4238-848a-8084b7dd9541');
 INSERT INTO ApplicationRole (Name, Description, NodeID) VALUES ('Viewer', 'Viewer Role', '8a8d1856-ebc8-4238-848a-8084b7dd9541');
