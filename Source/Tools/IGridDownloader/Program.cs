@@ -39,7 +39,7 @@ namespace IGridDownloader
 {
     public static class Program
     {
-        private const string ExportEventListURL = "{0}&action=exportData&format=csv&zipFormat=off&serialNumber={1}&startDate={2:yyyy-MM-dd}&endDate={3:yyyy-MM-dd}";
+        private const string ExportEventListURL = "{0}&action=exportData&format=csv&zipFormat=off&serialNumber={1}&startDate={2:yyyy-MM-dd}&endDate={3:yyyy-MM-dd}&includeHeartBeats=no";
         private const string ExportDataURL = "{0}&action=exportData&format=pqdif&zipFormat=on&serialNumber={1}&eventId={2}";
 
         private static string s_baseUrl;
