@@ -24,6 +24,7 @@
 @using System.Threading
 @using GSF.Security
 @using GSF.Web.Model
+@using GSF.Web.Shared
 @using openMIC.Model
 @using RazorEngine.Templating
 @inherits ExtendedTemplateBase<AppModel>
@@ -74,7 +75,7 @@
     <meta name="description" content="@Model.Global.ApplicationDescription" />
     <meta name="keywords" content="@Model.Global.ApplicationKeywords" />
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <link href="Content/bootstrap@(min).css" rel="stylesheet">
+    <link href="@Resources.Root/Shared/Content/bootstrap.css" rel="stylesheet">
     <link href="@Model.Global.BootstrapTheme" rel="stylesheet">
     <link href="Content/bootstrap-datepicker3@(min).css" rel="stylesheet">
     <link href="Content/jquery-ui@(min).css" rel="stylesheet">
@@ -154,14 +155,14 @@
     <meta name="msapplication-square150x150logo" content="Images/Icons/mstile-150x150.png" />
     <meta name="msapplication-wide310x150logo" content="Images/Icons/mstile-310x150.png" />
     <meta name="msapplication-square310x310logo" content="Images/Icons/mstile-310x310.png"/>
-    <script src="Scripts/modernizr-2.8.3.js"></script>
     <script src="Scripts/json2.js"></script>
-    <script src="Scripts/jquery-2.2.1@(min).js"></script>
-    <script src="Scripts/jquery-ui@(min).js"></script>
+    <script src="@Resources.Root/Shared/Scripts/jquery.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/jquery-ui.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/bootstrap.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/jquery.signalR.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/js.cookie.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/gsf.web.client.js"></script>
     <script src="Scripts/jstorage.js"></script>
-
-    <!-- Angular Material requires Angular.js Libraries -->
-    <script src="Scripts/angular.js"></script>
 
     <script>
         const DateFormat = "@Model.Global.DateFormat";
@@ -264,13 +265,10 @@ else {
         @RenderBody()
 
     </div><!--/.container -->
-    <script src="Scripts/bootstrap@(min).js"></script>
     <script src="Scripts/ie10-viewport-bug-workaround.js"></script>
     <script src="Scripts/respond@(min).js"></script>
     <script src="Scripts/bootstrap-datepicker@(min).js"></script>
     <script src="Scripts/bootstrap-toolkit@(min).js"></script>
-    <script src="Scripts/jquery.signalR-2.2.0@(min).js"></script>
-    <script src="@("@GSF/Web/Model/Scripts/gsf.web.client.js")"></script>
     <script src="signalr/hubs"></script>
     <script src="Scripts/plugins-all.js"></script>
     <script src="Scripts/primeui@(min).js"></script>

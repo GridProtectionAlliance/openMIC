@@ -18,12 +18,6 @@
   <Component Id="GraphMeasurements_cshtml">
     <File Id="GraphMeasurements.cshtml" Name="GraphMeasurements.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurements.cshtml" />
   </Component>
-  <Component Id="GraphMeasurementsold_cshtml">
-    <File Id="GraphMeasurementsold.cshtml" Name="GraphMeasurementsold.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurementsold.cshtml" />
-  </Component>
-  <Component Id="GraphMeasurementsPopup_cshtml">
-    <File Id="GraphMeasurementsPopup.cshtml" Name="GraphMeasurementsPopup.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurementsPopup.cshtml" />
-  </Component>
   <Component Id="Groups_cshtml">
     <File Id="Groups.cshtml" Name="Groups.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Groups.cshtml" />
   </Component>

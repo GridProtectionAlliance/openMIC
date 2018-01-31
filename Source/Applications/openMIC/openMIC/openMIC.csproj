@@ -155,8 +155,8 @@
       <HintPath>..\..\..\Dependencies\NuGet\Microsoft.AspNet.Razor.4.0.0-beta7\lib\net45\Microsoft.AspNet.Razor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Dependencies\NuGet\Microsoft.AspNet.SignalR.Core.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Dependencies\NuGet\Microsoft.AspNet.SignalR.Core.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -483,8 +483,6 @@
     <Content Include="wwwroot\ConnectionProfileTasks.cshtml" />
     <Content Include="wwwroot\DirectoryBrowser.cshtml" />
     <Content Include="wwwroot\GraphMeasurements.cshtml" />
-    <Content Include="wwwroot\GraphMeasurementsold.cshtml" />
-    <Content Include="wwwroot\GraphMeasurementsPopup.cshtml" />
     <Content Include="wwwroot\IGridConfig.cshtml" />
     <Content Include="wwwroot\Help.cshtml" />
     <Content Include="wwwroot\ModbusConfig.cshtml" />
