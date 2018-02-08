@@ -137,14 +137,7 @@ namespace openMIC
 
                         m_statisticSubscription.ConnectionString = Program.Host.Model.Global.SubscriptionConnectionString;
                         m_statisticSubscription.AutoSynchronizeMetadata = false;
-
-                        m_statisticSubscription.OperationalModes |=
-                            OperationalModes.UseCommonSerializationFormat |
-                            OperationalModes.CompressMetadata |
-                            OperationalModes.CompressSignalIndexCache |
-                            OperationalModes.ReceiveInternalMetadata |
-                            OperationalModes.ReceiveExternalMetadata;
-
+                        m_statisticSubscription.OperationalModes |= OperationalModes.UseCommonSerializationFormat | OperationalModes.CompressMetadata | OperationalModes.CompressSignalIndexCache;
                         m_statisticSubscription.CompressionModes = CompressionModes.GZip;
 
                         m_statisticSubscription.Initialize();
@@ -258,7 +251,7 @@ namespace openMIC
 
         private void DataSubscriptionStatusMessage(object sender, EventArgs<string> e)
         {
-            LogStatusMessage(e.Argument);
+            LogStatusMessage(e.Argument, logToClient: false);
         }
 
         private void DataSubscriptionNewMeasurements(object sender, EventArgs<ICollection<IMeasurement>> e)
@@ -291,12 +284,12 @@ namespace openMIC
 
         private void StatisticSubscriptionStatusMessage(object sender, EventArgs<string> e)
         {
-            LogStatusMessage(e.Argument);
+            LogStatusMessage(e.Argument, logToClient: false);
         }
 
         private void StatisticSubscriptionMetaDataReceived(object sender, EventArgs<DataSet> e)
         {
-            LogStatusMessage("Loading received meta-data...");
+            LogStatusMessage("Loading received meta-data...", logToClient: false);
 
             DataSet dataSet = e.Argument;
 

@@ -51,6 +51,7 @@ using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
 using GSF.TimeSeries.Statistics;
 using GSF.Units;
+using ModbusAdapters.Model;
 using openMIC.Model;
 
 // ReSharper disable UnusedMember.Local

@@ -43,6 +43,7 @@ using GSF.Configuration;
 using GSF.Data;
 using GSF.IO;
 using GSF.Security;
+using GSF.Web;
 
 namespace ConfigurationSetupUtility.Screens
 {
@@ -141,6 +142,9 @@ namespace ConfigurationSetupUtility.Screens
 
                         // Validate needed end-point bindings for Grafana interfaces
                         ValidateGrafanaBindings();
+
+                        // Make sure needed assembly bindings exist in config file (needed for self-hosted web server)
+                        WebExtensions.ValidateAssemblyBindings(Path.Combine(Directory.GetCurrentDirectory(), App.ApplicationConfig));
 
                         if (migrate)
                         {

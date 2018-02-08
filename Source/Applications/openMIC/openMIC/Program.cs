@@ -31,7 +31,7 @@ using GSF.TimeSeries;
 
 namespace openMIC
 {
-    public static class Program
+    static class Program
     {
         /// <summary>
         /// The service host instance for the application.

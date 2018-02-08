@@ -1,35 +1,35 @@
 ﻿@*******************************************************************************************************
-//  IGridConfig.cshtml - Gbtc
-//
-//  Copyright © 2017, Grid Protection Alliance.  All Rights Reserved.
-//
-//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
-//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
-//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
-//  file except in compliance with the License. You may obtain a copy of the License at:
-//
-//      http://opensource.org/licenses/MIT
-//
-//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
-//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
-//  License for the specific language governing permissions and limitations.
-//
-//  Code Modification History:
-//  ----------------------------------------------------------------------------------------------------
-//  04/11/2017 - Ritchie Carroll
-//       Generated original version of source code.
-//
-//*****************************************************************************************************@
+    //  IGridConfig.cshtml - Gbtc
+    //
+    //  Copyright © 2017, Grid Protection Alliance.  All Rights Reserved.
+    //
+    //  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+    //  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+    //  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+    //  file except in compliance with the License. You may obtain a copy of the License at:
+    //
+    //      http://opensource.org/licenses/MIT
+    //
+    //  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+    //  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+    //  License for the specific language governing permissions and limitations.
+    //
+    //  Code Modification History:
+    //  ----------------------------------------------------------------------------------------------------
+    //  04/11/2017 - Ritchie Carroll
+    //       Generated original version of source code.
+    //
+    //*****************************************************************************************************@
 @using System.Net.Http
-@using System.Security.Principal
 @using System.Threading
 @using GSF.Identity
 @using GSF.Security
 @using GSF.Web
-@using openMIC.Model
 @using GSF.Web.Model
+@using GSF.Web.Shared
+@using openMIC.Model
 @inherits ExtendedTemplateBase<AppModel>
-@{ 
+@{
     Layout = "Layout.cshtml";
     ViewBag.HidePageTitle = true;
     ViewBag.Title = "Manage I-Grid Connections";
@@ -39,7 +39,8 @@
     string parameter;
     int deviceID;
 
-    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
+    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID))
+    {
         deviceID = 0;
     }
 
@@ -127,10 +128,11 @@
 </form>
 <hr class="quarter-break" />
 <div id="contentWell" class="well well-dynamic-content" content-fill-height>
-    <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">        
+    <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">
         <span id="deviceCounts">i-Grid Monitor Records: <span data-bind='html: deviceCounts'></span></span>
         <span class="pull-right" style="text-align: right">
-            @if (userIsEditor) {
+            @if (userIsEditor)
+            {
                 <span id="bulkSelectionButtons">
                     <button type="button" class="btn btn-sm btn-default" id="selectAll">Select All</button>
                     <button type="button" class="btn btn-sm btn-default" id="unselectAll">Unselect All</button>&nbsp;
@@ -138,37 +140,39 @@
                 <button type="button" class="btn btn-sm btn-primary pull-right" id="saveDevices" data-bind="disable: selectedDeviceCount() == 0 || validationErrors() > 0 || !dataHubIsConnected()">
                     <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New&nbsp;/&nbsp;Update&nbsp;<span data-bind="text: selectedDeviceCount"></span>&nbsp;Selected
                 </button>
-            } else {
+            }
+            else
+            {
                 <span class="label label-danger label-md">User "@GetCurrentUserID()" does not have rights to add devices.</span>
             }
             <em data-bind="visible: validationErrors() > 0">
-                <br/>
+                <br />
                 <span data-bind="text: validationErrors()"></span> validation error<span data-bind="visible: validationErrors() > 1">s</span>...
             </em>
         </span>
         <table class="table table-condensed table-striped table-hover">
             <thead>
-            <tr>
-                <th class="text-center">Selected</th>
-                <th class="text-left">openMIC&nbsp;Device&nbsp;Acronym</th>
-                <th class="text-center">Serial&nbsp;Number</th>
-                <th class="text-left">Name</th>
-                <th class="text-left">Description</th>
-            </tr>
+                <tr>
+                    <th class="text-center">Selected</th>
+                    <th class="text-left">openMIC&nbsp;Device&nbsp;Acronym</th>
+                    <th class="text-center">Serial&nbsp;Number</th>
+                    <th class="text-left">Name</th>
+                    <th class="text-left">Description</th>
+                </tr>
             </thead>
             <tbody data-bind="foreach: { data: devices }">
-            <tr id="deviceRow" style="visibility: hidden">
-                <td width="5%"class="text-center valign-middle"><input type="checkbox" data-bind="checked: Selected"/></td>
-                <td width="25%" class="text-left valign-middle">
-                    <div class="input-group" data-bind="css: { 'has-error': !fieldIsValid(Acronym, true), 'has-feedback': !fieldIsValid(Acronym, true) }">
-                        <input type="text" class="form-control" style="width: 250px" data-bind="acronym: Acronym, textInput: Acronym, enable: Selected" required>
-                        <span class="glyphicon glyphicon-remove form-control-feedback" style="z-index: 5" data-bind="visible: !fieldIsValid(Acronym, true)"></span>
-                    </div>
-                </td>
-                <td width="15%" class="text-center valign-middle" style="white-space: nowrap"><span data-bind="text: SerialNumber, css: DeviceStatus, attr: { title: DeviceID() === 0 ? 'Device does not exist in openMIC' : 'Device already exists within openMIC' }"></span></td>
-                <td width="25%" class="text-left valign-middle"><span data-bind="text: Name, css: { 'disabled': !Selected() }"></span></td>
-                <td width="30%" class="text-left valign-middle"><span data-bind="text: Description, css: { 'disabled': !Selected() }"></span></td>
-            </tr>
+                <tr id="deviceRow" style="visibility: hidden">
+                    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Selected" /></td>
+                    <td width="25%" class="text-left valign-middle">
+                        <div class="input-group" data-bind="css: { 'has-error': !fieldIsValid(Acronym, true), 'has-feedback': !fieldIsValid(Acronym, true) }">
+                            <input type="text" class="form-control" style="width: 250px" data-bind="acronym: Acronym, textInput: Acronym, enable: Selected" required>
+                            <span class="glyphicon glyphicon-remove form-control-feedback" style="z-index: 5" data-bind="visible: !fieldIsValid(Acronym, true)"></span>
+                        </div>
+                    </td>
+                    <td width="15%" class="text-center valign-middle" style="white-space: nowrap"><span data-bind="text: SerialNumber, css: DeviceStatus, attr: { title: DeviceID() === 0 ? 'Device does not exist in openMIC' : 'Device already exists within openMIC' }"></span></td>
+                    <td width="25%" class="text-left valign-middle"><span data-bind="text: Name, css: { 'disabled': !Selected() }"></span></td>
+                    <td width="30%" class="text-left valign-middle"><span data-bind="text: Description, css: { 'disabled': !Selected() }"></span></td>
+                </tr>
             </tbody>
         </table>
         <div id="loadingDataLabel" style="display: none">
@@ -177,11 +181,12 @@
     </div>
 </div>
 @section Scripts {
-    <script src="Scripts/knockout-3.4.0.js"></script>
-    <script src="Scripts/knockout.mapping-latest.js"></script>
-    <script src="Scripts/knockout.validation.js"></script>
-    <script src="@("@GSF/Web/Model/Scripts/ko-reactor.min.js")"></script>
-    <script src="@("@GSF/Web/Model/Scripts/gsf.web.knockout.js")"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.mapping.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.validation.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.reactor.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/gsf.web.knockout.js"></script>
+
     <script>
         "use strict";
 
@@ -297,7 +302,7 @@
                     $("[id=deviceRow]").css("visibility", "visible");
                     $("#loadingDataLabel").hide();
                     $("#bulkSelectionButtons").show();
-                        
+
                     self.deviceCounts(String.format("{0} &ndash; <span class='existing-record'>{1} Existing</span> &ndash; <span class='new-record'>{2} New</span>", self.devices().length, self.existingDeviceCount(), self.newDeviceCount()));
                     self.isDirty(false);
                 }).fail(function(error) {
@@ -359,7 +364,7 @@
                     $(loadPromises).whenAll().done(function() {
                         $(savePromises).whenAll().done(function() {
                             showInfoMessage("Save operation for i-Grid devices complete.");
-                            
+
                             var index = 0;
 
                             // Chain intializations for all selected devices that were updated
@@ -400,7 +405,7 @@
                     required: { onlyIf: observableDevice.Selected },
                     pattern: {
                         onlyIf: observableDevice.Selected,
-                        message: "Only upper case letters, numbers, '!', '-', '@@', '#', '_' , '.' and '$' are allowed.", 
+                        message: "Only upper case letters, numbers, '!', '-', '@@', '#', '_' , '.' and '$' are allowed.",
                         params: "^[A-Z0-9\\-!_\\.@@#\\$]+$"
                     },
                     uniqueOnPage: {
@@ -469,7 +474,7 @@
         // Page initialization function
         $(function() {
             $("#bodyContainer").addClass("fill-height");
-            
+
             // Define local rule that will check that Acronym is unique on the page
             ko.validation.rules["uniqueOnPage"] = {
                 validator: function (newVal, options) {
@@ -540,7 +545,7 @@
             // Apply URL validation to baseURL field
             viewModel.baseURL.extend({
                 pattern: {
-                    message: "Invalid URL.", 
+                    message: "Invalid URL.",
                     params: "^(?:(?:[a-zA-Z][a-zA-Z0-9.+-]*:\\/\\/)?[a-zA-Z0-9][a-zA-Z0-9.-]*(?::[0-9]+)?(?:\\/[^ \"]*)?)$"
                 }
             });

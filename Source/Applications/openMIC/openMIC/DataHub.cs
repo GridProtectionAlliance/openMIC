@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.AspNet.SignalR;
 using GSF;
 using GSF.ComponentModel.DataAnnotations;
 using GSF.Configuration;
@@ -37,13 +38,14 @@ using GSF.IO;
 using GSF.Web.Hubs;
 using GSF.Web.Model.HubOperations;
 using GSF.Web.Security;
-using Microsoft.AspNet.SignalR;
+using ModbusAdapters;
+using ModbusAdapters.Model;
 using openMIC.Model;
 
 namespace openMIC
 {
     [AuthorizeHubRole]
-    public class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOperations, IModbusOperations, IDirectoryBrowserOperations
+    public class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOperations, IDirectoryBrowserOperations, IModbusOperations
     {
         #region [ Members ]
 
@@ -55,7 +57,7 @@ namespace openMIC
 
         #region [ Constructors ]
 
-        public DataHub() : base(Program.Host.LogStatusMessage, Program.Host.LogException)
+        public DataHub() : base(Program.Host.LogWebHostStatusMessage, Program.Host.LogException)
         {
             Action<string, UpdateType> logStatusMessage = (message, updateType) => LogStatusMessage(message, updateType);
             Action<Exception> logException = ex => LogException(ex);
@@ -70,7 +72,7 @@ namespace openMIC
 
         public override Task OnConnected()
         {
-            Program.Host.LogStatusMessage($"DataHub connect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {ConnectionCount}");
+            LogStatusMessage($"DataHub connect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {ConnectionCount}", UpdateType.Information, false);
             return base.OnConnected();
         }
 
@@ -82,7 +84,7 @@ namespace openMIC
                 m_dataSubscriptionOperations?.EndSession();
                 m_modbusOperations?.EndSession();
 
-                Program.Host.LogStatusMessage($"DataHub disconnect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {ConnectionCount}");
+                LogStatusMessage($"DataHub disconnect by {Context.User?.Identity?.Name ?? "Undefined User"} [{Context.ConnectionId}] - count = {ConnectionCount}", UpdateType.Information, false);
             }
 
             return base.OnDisconnected(stopCalled);
@@ -103,7 +105,7 @@ namespace openMIC
         static DataHub()
         {
             Downloader.ProgressUpdated += ProgressUpdated;
-            ModbusPoller.ProgressUpdated += (sender, args) => ProgressUpdated(sender, new EventArgs<string, List<ProgressUpdate>>(null, new List<ProgressUpdate>() { args.Argument }));
+            ModbusPoller.ProgressUpdated += (sender, args) => ProgressUpdated(sender, new EventArgs<string, List<ProgressUpdate>>(null, new List<ProgressUpdate>(new[] { args.Argument })));
 
             s_digits = "0123456789".ToCharArray();
 
@@ -358,6 +360,21 @@ namespace openMIC
             return DataContext.Table<Measurement>().QueryRecordWhere("SignalReference = {0}", signalReference) ?? NewMeasurement();
         }
 
+        public Measurement QueryMeasurementByPointTag(string pointTag)
+        {
+            return DataContext.Table<Measurement>().QueryRecordWhere("PointTag = {0}", pointTag) ?? NewMeasurement();
+        }
+
+        public Measurement QueryMeasurementBySignalID(Guid signalID)
+        {
+            return DataContext.Table<Measurement>().QueryRecordWhere("SignalID = {0}", signalID) ?? NewMeasurement();
+        }
+
+        public IEnumerable<Measurement> QueryDeviceMeasurements(int deviceID)
+        {
+            return DataContext.Table<Measurement>().QueryRecordsWhere("DeviceID = {0}", deviceID);
+        }
+
         [AuthorizeHubRole("Administrator, Editor")]
         [RecordOperation(typeof(Measurement), RecordOperation.DeleteRecord)]
         public void DeleteMeasurement(int id)
@@ -478,135 +495,6 @@ namespace openMIC
         public void UpdateConnectionProfileTask(ConnectionProfileTask connectionProfileTask)
         {
             DataContext.Table<ConnectionProfileTask>().UpdateRecord(connectionProfileTask);
-        }
-
-        #endregion
-
-        #region [ Company Table Operations ]
-
-        [RecordOperation(typeof(Company), RecordOperation.QueryRecordCount)]
-        public int QueryCompanyCount(string filterText)
-        {
-            return DataContext.Table<Company>().QueryRecordCount(filterText);
-        }
-
-        [RecordOperation(typeof(Company), RecordOperation.QueryRecords)]
-        public IEnumerable<Company> QueryCompanies(string sortField, bool ascending, int page, int pageSize, string filterText)
-        {
-            return DataContext.Table<Company>().QueryRecords(sortField, ascending, page, pageSize, filterText);
-        }
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(Company), RecordOperation.DeleteRecord)]
-        public void DeleteCompany(int id)
-        {
-            DataContext.Table<Company>().DeleteRecord(id);
-        }
-
-        [RecordOperation(typeof(Company), RecordOperation.CreateNewRecord)]
-        public Company NewCompany()
-        {
-            return DataContext.Table<Company>().NewRecord();
-        }
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(Company), RecordOperation.AddNewRecord)]
-        public void AddNewCompany(Company company)
-        {
-            DataContext.Table<Company>().AddNewRecord(company);
-        }
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(Company), RecordOperation.UpdateRecord)]
-        public void UpdateCompany(Company company)
-        {
-            DataContext.Table<Company>().UpdateRecord(company);
-        }
-
-        #endregion
-
-        #region [ Vendor Table Operations ]
-
-        [RecordOperation(typeof(Vendor), RecordOperation.QueryRecordCount)]
-        public int QueryVendorCount(string filterText)
-        {
-            return DataContext.Table<Vendor>().QueryRecordCount(filterText);
-        }
-
-        [RecordOperation(typeof(Vendor), RecordOperation.QueryRecords)]
-        public IEnumerable<Vendor> QueryVendors(string sortField, bool ascending, int page, int pageSize, string filterText)
-        {
-            return DataContext.Table<Vendor>().QueryRecords(sortField, ascending, page, pageSize, filterText);
-        }
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(Vendor), RecordOperation.DeleteRecord)]
-        public void DeleteVendor(int id)
-        {
-            DataContext.Table<Vendor>().DeleteRecord(id);
-        }
-
-        [RecordOperation(typeof(Vendor), RecordOperation.CreateNewRecord)]
-        public Vendor NewVendor()
-        {
-            return DataContext.Table<Vendor>().NewRecord();
-        }
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(Vendor), RecordOperation.AddNewRecord)]
-        public void AddNewVendor(Vendor vendor)
-        {
-            DataContext.Table<Vendor>().AddNewRecord(vendor);
-        }
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(Vendor), RecordOperation.UpdateRecord)]
-        public void UpdateVendor(Vendor vendor)
-        {
-            DataContext.Table<Vendor>().UpdateRecord(vendor);
-        }
-
-        #endregion
-
-        #region [ VendorDevice Table Operations ]
-
-        [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecordCount)]
-        public int QueryVendorDeviceCount(string filterText)
-        {
-            return DataContext.Table<VendorDevice>().QueryRecordCount(filterText);
-        }
-
-        [RecordOperation(typeof(VendorDevice), RecordOperation.QueryRecords)]
-        public IEnumerable<VendorDevice> QueryVendorDevices(string sortField, bool ascending, int page, int pageSize, string filterText)
-        {
-            return DataContext.Table<VendorDevice>().QueryRecords(sortField, ascending, page, pageSize, filterText);
-        }
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(VendorDevice), RecordOperation.DeleteRecord)]
-        public void DeleteVendorDevice(int id)
-        {
-            DataContext.Table<VendorDevice>().DeleteRecord(id);
-        }
-
-        [RecordOperation(typeof(VendorDevice), RecordOperation.CreateNewRecord)]
-        public VendorDevice NewVendorDevice()
-        {
-            return DataContext.Table<VendorDevice>().NewRecord();
-        }
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(VendorDevice), RecordOperation.AddNewRecord)]
-        public void AddNewVendorDevice(VendorDevice vendorDevice)
-        {
-            DataContext.Table<VendorDevice>().AddNewRecord(vendorDevice);
-        }
-
-        [AuthorizeHubRole("Administrator, Editor")]
-        [RecordOperation(typeof(VendorDevice), RecordOperation.UpdateRecord)]
-        public void UpdateVendorDevice(VendorDevice vendorDevice)
-        {
-            DataContext.Table<VendorDevice>().UpdateRecord(vendorDevice);
         }
 
         #endregion
@@ -757,6 +645,35 @@ namespace openMIC
 
         #endregion
 
+        #region [ DirectoryBrowser Operations ]
+
+        public IEnumerable<string> LoadDirectories(string rootFolder, bool showHidden)
+        {
+            return DirectoryBrowserOperations.LoadDirectories(rootFolder, showHidden);
+        }
+
+        public bool IsLogicalDrive(string path)
+        {
+            return DirectoryBrowserOperations.IsLogicalDrive(path);
+        }
+
+        public string ResolvePath(string path)
+        {
+            return DirectoryBrowserOperations.ResolvePath(path);
+        }
+
+        public string CombinePath(string path1, string path2)
+        {
+            return DirectoryBrowserOperations.CombinePath(path1, path2);
+        }
+
+        public void CreatePath(string path)
+        {
+            DirectoryBrowserOperations.CreatePath(path);
+        }
+
+        #endregion
+		
         #region [ Modbus Operations ]
 
         public Task<bool> ModbusConnect(string connectionString)
@@ -1001,36 +918,27 @@ namespace openMIC
 
         #endregion
 
-        #region [ DirectoryBrowser Operations ]
-
-        public IEnumerable<string> LoadDirectories(string rootFolder, bool showHidden)
-        {
-            return DirectoryBrowserOperations.LoadDirectories(rootFolder, showHidden);
-        }
-
-        public bool IsLogicalDrive(string path)
-        {
-            return DirectoryBrowserOperations.IsLogicalDrive(path);
-        }
-
-        public string ResolvePath(string path)
-        {
-            return DirectoryBrowserOperations.ResolvePath(path);
-        }
-
-        public string CombinePath(string path1, string path2)
-        {
-            return DirectoryBrowserOperations.CombinePath(path1, path2);
-        }
-
-        public void CreatePath(string path)
-        {
-            DirectoryBrowserOperations.CreatePath(path);
-        }
-
-        #endregion
-
         #region [ Miscellaneous Functions ]
+
+        /// <summary>
+        /// Determines if directory exists from server's perspective.
+        /// </summary>
+        /// <param name="path">Directory path to test for existence.</param>
+        /// <returns><c>true</c> if directory exists; otherwise, <c>false</c>.</returns>
+        public bool DirectoryExists(string path)
+        {
+            return Directory.Exists(path);
+        }
+
+        /// <summary>
+        /// Determines if file exists from server's perspective.
+        /// </summary>
+        /// <param name="path">Path and file name to test for existence.</param>
+        /// <returns><c>true</c> if file exists; otherwise, <c>false</c>.</returns>
+        public bool FileExists(string path)
+        {
+            return File.Exists(path);
+        }
 
         /// <summary>
         /// Requests that the device send the current list of progress updates.
@@ -1048,6 +956,17 @@ namespace openMIC
         public string GetCurrentUserID()
         {
             return Thread.CurrentPrincipal.Identity?.Name ?? UserInfo.CurrentUserID;
+        }
+
+        /// <summary>
+        /// Gets elapsed time between two dates as a range.
+        /// </summary>
+        /// <param name="startTime">Start time of query.</param>
+        /// <param name="stopTime">Stop time of query.</param>
+        /// <returns>Elapsed time between two dates as a range.</returns>
+        public Task<string> GetElapsedTimeString(DateTime startTime, DateTime stopTime)
+        {
+            return Task.Factory.StartNew(() => new Ticks(stopTime - startTime).ToElapsedTimeString(2));
         }
 
         #endregion

@@ -1,8 +1,9 @@
-﻿/* Move down content because we have a fixed navbar that is around 30px tall */
+﻿/* Move down content because we have a fixed navbar */
 body {
     padding-top: 30px;
 }
 
+/* Remove bootstrap page-header bottom border */
 .page-header {
     border-bottom: none;
 }
@@ -141,11 +142,7 @@ span.disabled {
 }
 
 /* Bootstrap defaults table cells to valign top, following styles allow customization */
-.table thead>tr>th.valign-middle {
-    vertical-align: middle;
-    padding-top: 11px;
-}
-
+.table thead>tr>th.valign-middle,
 .table tbody>tr>td.valign-middle {
     vertical-align: middle;
 }
@@ -161,6 +158,11 @@ span.disabled {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.table thead>tr>th.valign-middle,
+.table tbody>tr>td.non-sortable {
+    padding-top: 11px;
 }
 
 /* Whole table centering */

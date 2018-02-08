@@ -1,29 +1,31 @@
 ﻿@*******************************************************************************************************
-//  Devices.cshtml - Gbtc
-//
-//  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
-//
-//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
-//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
-//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
-//  not use this file except in compliance with the License. You may obtain a copy of the License at:
-//
-//      http://opensource.org/licenses/MIT
-//
-//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
-//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
-//  License for the specific language governing permissions and limitations.
-//
-//  Code Modification History:
-//  ----------------------------------------------------------------------------------------------------
-//  01/15/2016 - J. Ritchie Carroll
-//       Generated original version of source code.
-//
-//*****************************************************************************************************@
+    //  Devices.cshtml - Gbtc
+    //
+    //  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
+    //
+    //  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+    //  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+    //  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
+    //  not use this file except in compliance with the License. You may obtain a copy of the License at:
+    //
+    //      http://opensource.org/licenses/MIT
+    //
+    //  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+    //  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to thesrc="@Resources.Root/Shared/Images/StatusLights
+    //  License for the specific language governing permissions and limitations.
+    //
+    //  Code Modification History:
+    //  ----------------------------------------------------------------------------------------------------
+    //  01/15/2016 - J. Ritchie Carroll
+    //       Generated original version of source code.
+    //
+    //*****************************************************************************************************@
 @using GSF.Data.Model
 @using GSF.Security.Model
 @using GSF.Web
 @using GSF.Web.Model
+@using GSF.Web.Shared
+@using GSF.Web.Shared.Model
 @using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
@@ -44,11 +46,11 @@
 
     ViewBag.HeaderColumns = new[]
     {   //    { "Field", "Label", "Classes" }
-        new[] { null, "Status", "text-center valign-middle" },
-        new[] { "Acronym", "Acronym", "text-left" },
-        new[] { null, "Schedule", "text-center valign-middle" },
-        new[] { "Enabled", "Enabled", "text-center" }
-    };
+new[] { null, "Status", "text-center valign-middle" },
+new[] { "Acronym", "Acronym", "text-left" },
+new[] { null, "Schedule", "text-center valign-middle" },
+new[] { "Enabled", "Enabled", "text-center" }
+};
 
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext).ToString();
@@ -56,54 +58,56 @@
     // Add cron pattern validation to schedule connection string field
     dataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", @"(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|1?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[1-2]?[0-9]|3[0-1]|\*\/[0-9]+)\s+(\*|[0-9]|1[0-2]|\*\/[0-9]+)\s+(\*\/[0-9]+|\*|[0-7])\s*(\*\/[0-9]+|\*|[0-9]+)?", "Invalid cron syntax.");
 }
-@helper BodyRows() {
-    <td width="5%" class="text-center valign-middle"><img src="Images/StatusLights/Small/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="Images/StatusLights/Small/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
-    <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: showEditScreen.bind($data, true)"></button></td>
-    <td width="20%" class="text-center" data-bind="text: notNull(ConnectionString).parseKeyValuePairs().get('schedule')"></td>
-    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled, click: enabledStateChanged.bind($data), enable: $parent.dataHubIsConnected" /></td>
-    <td width="5%" class="text-center valign-middle" nowrap>
-        <button type="button" class="btn btn-xs" data-bind="click: showEditScreen.bind($data, false), enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
-        <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
-    </td>
+@helper BodyRows()
+    {
+        <td width="5%" class="text-center valign-middle"><img src="@Resources.Root/Shared/Images/StatusLights/Small/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="@Resources.Root/Shared/Images/StatusLights/Small/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
+        <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: showEditScreen.bind($data, true)"></button></td>
+        <td width="20%" class="text-center" data-bind="text: notNull(ConnectionString).parseKeyValuePairs().get('schedule')"></td>
+        <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled, click: enabledStateChanged.bind($data), enable: $parent.dataHubIsConnected" /></td>
+        <td width="5%" class="text-center valign-middle" nowrap>
+            <button type="button" class="btn btn-xs" data-bind="click: showEditScreen.bind($data, false), enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
+            <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
+        </td>
 }
-@helper AddNewEditDialog(DataContext dataContext) {
-    <div class="col-md-6">
-        @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus: true, enableHotLinks: false))
-        @Raw(dataContext.AddInputField<Device>("Name", enableHotLinks: false))
-        @Raw(dataContext.AddInputField<Device>("OriginalSource", enableHotLinks: false))
-        @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP [ <em>:port</em> ]", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddInputField("get('connectionusername')", false, fieldLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddInputField("get('connectionpassword')", false, inputType: "password", fieldLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddInputField("get('connectionTimeout')", false, fieldLabel: "Connection Timeout", fieldID: "inputConnectionTimeout", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
-        @Raw(dataContext.AddInputField("get('schedule')", true, fieldLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name"))
-        @*@Raw(dataContext.AddSelectField<Device, openMIC.Model.Node>("NodeID", "ID", "Name"))*@
-    </div>
-    <div class="col-md-6">
-        <div class="panel panel-default" data-bind="css: {'panel-readonly': $root.recordMode()===RecordMode.View, 'panel-primary': $root.connectionString.get('usedialup')}">
-            <div class="panel-heading">
-                @Raw(dataContext.AddCheckBoxField("get('usedialup')", "Use Dial-up Connection", "checkUseDialUp", "with: $root.connectionString", customDataBinding: "click: setRequiredStates(['dialupentryname', 'dialupnumber'], get('usedialup'))"))
+@helper AddNewEditDialog(DataContext dataContext)
+    {
+        <div class="col-md-6">
+            @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus: true, enableHotLinks: false))
+            @Raw(dataContext.AddInputField<Device>("Name", enableHotLinks: false))
+            @Raw(dataContext.AddInputField<Device>("OriginalSource", enableHotLinks: false))
+            @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP [ <em>:port</em> ]", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+            @Raw(dataContext.AddInputField("get('connectionusername')", false, fieldLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+            @Raw(dataContext.AddInputField("get('connectionpassword')", false, inputType: "password", fieldLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+            @Raw(dataContext.AddInputField("get('connectionTimeout')", false, fieldLabel: "Connection Timeout", fieldID: "inputConnectionTimeout", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+            @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
+            @Raw(dataContext.AddInputField("get('schedule')", true, fieldLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+            @Raw(dataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name"))
+            @*@Raw(dataContext.AddSelectField<Device, openMIC.Model.Node>("NodeID", "ID", "Name"))*@
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default" data-bind="css: {'panel-readonly': $root.recordMode()===RecordMode.View, 'panel-primary': $root.connectionString.get('usedialup')}">
+                <div class="panel-heading">
+                    @Raw(dataContext.AddCheckBoxField("get('usedialup')", "Use Dial-up Connection", "checkUseDialUp", "with: $root.connectionString", customDataBinding: "click: setRequiredStates(['dialupentryname', 'dialupnumber'], get('usedialup'))"))
+                </div>
+                <div class="panel-body">
+                    @Raw(dataContext.AddInputField("get('dialupentryname')", true, fieldLabel: "Dial-up RAS Connection Entry Name", fieldID: "inputDialUpRASEntry", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", toolTip: "Devices using same connection entries with overlapping schedules will be queued serially", enableHotLinks: false))
+                    @Raw(dataContext.AddInputField("get('dialupnumber')", true, inputType: "tel", fieldLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
+                    @Raw(dataContext.AddInputField("get('dialupusername')", false, fieldLabel: "Dial-up User Name", fieldID: "inputDialUpUserName", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
+                    @Raw(dataContext.AddInputField("get('dialuppassword')", false, inputType: "password", fieldLabel: "Dial-up Password", fieldID: "inputDialUpPassword", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
+                    @Raw(dataContext.AddInputField("get('dialupretries')", false, inputType: "number", fieldLabel: "Maximum Dial-up Retries", fieldID: "inputDialUpRetries", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
+                    @Raw(dataContext.AddInputField("get('dialuptimeout')", false, inputType: "number", fieldLabel: "Dial-up Connection Timeout", fieldID: "inputDialUpTimeout", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
+                </div>
             </div>
-            <div class="panel-body">
-                @Raw(dataContext.AddInputField("get('dialupentryname')", true, fieldLabel: "Dial-up RAS Connection Entry Name", fieldID: "inputDialUpRASEntry", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", toolTip: "Devices using same connection entries with overlapping schedules will be queued serially", enableHotLinks: false))
-                @Raw(dataContext.AddInputField("get('dialupnumber')", true, inputType: "tel", fieldLabel: "Dial-up Phone Number", fieldID: "inputDialUpPhoneNumber", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
-                @Raw(dataContext.AddInputField("get('dialupusername')", false, fieldLabel: "Dial-up User Name", fieldID: "inputDialUpUserName", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
-                @Raw(dataContext.AddInputField("get('dialuppassword')", false, inputType: "password", fieldLabel: "Dial-up Password", fieldID: "inputDialUpPassword", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
-                @Raw(dataContext.AddInputField("get('dialupretries')", false, inputType: "number", fieldLabel: "Maximum Dial-up Retries", fieldID: "inputDialUpRetries", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
-                @Raw(dataContext.AddInputField("get('dialuptimeout')", false, inputType: "number", fieldLabel: "Dial-up Connection Timeout", fieldID: "inputDialUpTimeout", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "get('usedialup')", enableHotLinks: false))
+            @Raw(dataContext.AddSelectField<Device, Company>("CompanyID", "ID", "Name"))
+            @Raw(dataContext.AddCheckBoxField("get('logconnectionmessages')", "Log Detailed Connection Messages", "checkLogConnectionMessages", "with: $root.connectionString", toolTip: "When enabled, logs detailed connection level messages, e.g.,  FTP commands and responses"))
+            @Raw(dataContext.AddCheckBoxField<Device>("Enabled"))
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="textConnectionString">Connection String:</label>
+                <textarea class="form-control" rows="2" data-bind="text: ConnectionString" id="textConnectionString" readonly></textarea>
             </div>
         </div>
-        @Raw(dataContext.AddSelectField<Device, Company>("CompanyID", "ID", "Name"))
-        @Raw(dataContext.AddCheckBoxField("get('logconnectionmessages')", "Log Detailed Connection Messages", "checkLogConnectionMessages", "with: $root.connectionString", toolTip: "When enabled, logs detailed connection level messages, e.g.,  FTP commands and responses"))
-        @Raw(dataContext.AddCheckBoxField<Device>("Enabled"))
-    </div>
-    <div class="col-md-12">
-        <div class="form-group">
-            <label for="textConnectionString">Connection String:</label>
-            <textarea class="form-control" rows="2" data-bind="text: ConnectionString" id="textConnectionString" readonly></textarea>
-        </div>
-    </div>
 }
 @Html.RenderResource("GSF.Web.Model.Views.PagedViewModel.cshtml")
 <div id="cronHelpDialog" class="modal fade" role="dialog">
@@ -305,7 +309,7 @@
                 }
             }
         }
-        
+
         function refreshEnabledState(record) {
             if (!hubIsConnected)
                 return;

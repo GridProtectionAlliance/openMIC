@@ -131,6 +131,9 @@
     <Reference Include="GSF.TimeSeries">
       <HintPath>..\..\Dependencies\GSF\GSF.TimeSeries.dll</HintPath>
     </Reference>
+    <Reference Include="GSF.Web">
+      <HintPath>..\..\Dependencies\GSF\GSF.Web.dll</HintPath>
+    </Reference>
     <Reference Include="GSF.Windows">
       <HintPath>..\..\Dependencies\GSF\GSF.Windows.dll</HintPath>
     </Reference>

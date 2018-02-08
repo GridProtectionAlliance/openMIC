@@ -22,20 +22,32 @@
 //******************************************************************************************************
 
 using System;
-using System.Net;
 using System.Security;
 using System.Web.Http;
+using System.Web.Http.ExceptionHandling;
+using GSF.Web;
 using GSF.Web.Hosting;
 using GSF.Web.Security;
+using GSF.Web.Shared;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.Owin.Cors;
+using ModbusAdapters;
 using Newtonsoft.Json;
-using openMIC.Model;
 using Owin;
+using openMIC.Model;
 
 namespace openMIC
 {
+    public class HostedExceptionHandler : ExceptionHandler
+    {
+        public override void Handle(ExceptionHandlerContext context)
+        {
+            Program.Host.LogException(context.Exception);
+            base.Handle(context);
+        }
+    }
+
     public class Startup
     {
         public void Configuration(IAppBuilder app)
@@ -47,38 +59,62 @@ namespace openMIC
             JsonSerializer serializer = JsonSerializer.Create(settings);
             GlobalHost.DependencyResolver.Register(typeof(JsonSerializer), () => serializer);
 
-            // Load security hub in application domain before establishing SignalR hub configuration
+            // Load security hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
             try
             {
-                using (new SecurityHub()) { }
+                using (new SecurityHub(
+                    (message, updateType) => Program.Host.LogWebHostStatusMessage(message, updateType),
+                    ex => Program.Host.LogException(ex)
+                )) { }
             }
             catch (Exception ex)
             {
-                throw new SecurityException($"Failed to load Security Hub, validate database connection string in configuration file: {ex.Message}", ex);
+                Program.Host.LogException(new SecurityException($"Failed to load Security Hub, validate database connection string in configuration file: {ex.Message}", ex));
+            }
+
+            // Load shared hub into application domain, initializing default status and exception handlers
+            try
+            {
+                using (new SharedHub(
+                    (message, updateType) => Program.Host.LogWebHostStatusMessage(message, updateType),
+                    ex => Program.Host.LogException(ex)
+                )) { }
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new SecurityException($"Failed to load Shared Hub: {ex.Message}", ex));
+            }
+
+            // Load Modbus assembly
+            try
+            {
+                // Make embedded resources of Modbus poller available to web server
+                using (ModbusPoller poller = new ModbusPoller())
+                    WebExtensions.AddEmbeddedResourceAssembly(poller.GetType().Assembly);
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Failed to load Modbus assembly: {ex.Message}", ex));
             }
 
             // Configure Windows Authentication for self-hosted web service
-            HttpListener listener = (HttpListener)app.Properties["System.Net.HttpListener"];
-            listener.AuthenticationSchemes = AuthenticationSchemes.Ntlm;
-
             HubConfiguration hubConfig = new HubConfiguration();
             HttpConfiguration httpConfig = new HttpConfiguration();
 
             // Setup resolver for web page controller instances
             httpConfig.DependencyResolver = WebPageController.GetDependencyResolver(WebServer.Default, Program.Host.DefaultWebPage, new AppModel(), typeof(AppModel));
 
+            // Make sure any hosted exceptions get propagated to service error handling
+            httpConfig.Services.Replace(typeof(IExceptionHandler), new HostedExceptionHandler());
+
             // Enabled detailed client errors
             hubConfig.EnableDetailedErrors = true;
 
-            app.Use<AuthenticationMiddleware>(new AuthenticationOptions()
-            {
-                SessionToken = "session",
-                AuthFailureRedirectResourceExpression = "(?!)"
-            });
+            // Enable GSF session management
+            httpConfig.EnableSessions(AuthenticationOptions);
 
-#if DEBUG
-            GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromMinutes(30);
-#endif
+            // Enable GSF role-based security authentication
+            app.UseAuthentication(AuthenticationOptions);
 
             // Enable cross-domain scripting
             app.UseCors(CorsOptions.AllowAll);
@@ -86,6 +122,19 @@ namespace openMIC
             // Load ServiceHub SignalR class
             app.MapSignalR(hubConfig);
 
+            // Map custom API controllers
+            try
+            {
+                httpConfig.Routes.MapHttpRoute(
+                    name: "CustomAPIs",
+                    routeTemplate: "api/{controller}/{action}/{id}",
+                    defaults: new { action = "Index", id = RouteParameter.Optional }
+                );
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new InvalidOperationException($"Failed to initialize custom API controllers: {ex.Message}", ex));
+            }
             // Set configuration to use reflection to setup routes
             httpConfig.MapHttpAttributeRoutes();
 
@@ -95,5 +144,12 @@ namespace openMIC
             // Check for configuration issues before first request
             httpConfig.EnsureInitialized();
         }
+
+        // Static Properties
+
+        /// <summary>
+        /// Gets the authentication options used for the hosted web server.
+        /// </summary>
+        public static AuthenticationOptions AuthenticationOptions { get; } = new AuthenticationOptions();
     }
 }

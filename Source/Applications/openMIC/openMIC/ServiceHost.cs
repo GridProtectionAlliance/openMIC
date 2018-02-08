@@ -24,13 +24,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Security;
 using System.Security.Principal;
 using System.Threading;
 using GSF;
 using GSF.ComponentModel;
 using GSF.Configuration;
 using GSF.IO;
-using GSF.Reflection;
 using GSF.Security;
 using GSF.Security.Model;
 using GSF.ServiceProcess;
@@ -39,6 +41,8 @@ using GSF.Web.Hosting;
 using GSF.Web.Model;
 using GSF.Web.Model.Handlers;
 using GSF.Web.Security;
+using GSF.Web.Shared;
+using GSF.Web.Shared.Model;
 using Microsoft.Owin.Hosting;
 using openMIC.Model;
 
@@ -47,6 +51,9 @@ namespace openMIC
     public class ServiceHost : ServiceHostBase
     {
         #region [ Members ]
+
+        // Constants
+        private const int DefaultMaximumDiagnosticLogSize = 10;
 
         // Events
 
@@ -62,7 +69,6 @@ namespace openMIC
 
         // Fields
         private IDisposable m_webAppHost;
-        private Thread m_startEngineThread;
         private bool m_serviceStopping;
         private bool m_disposed;
 
@@ -71,7 +77,7 @@ namespace openMIC
         #region [ Constructors ]
 
         /// <summary>
-        /// Creates a new service host for openMIC application.
+        /// Creates a new <see cref="ServiceHost"/> instance.
         /// </summary>
         public ServiceHost()
         {
@@ -146,6 +152,11 @@ namespace openMIC
             }
         }
 
+        /// <summary>
+        /// Event handler for service starting operations.
+        /// </summary>
+        /// <param name="sender">Event source.</param>
+        /// <param name="e">Event arguments containing command line arguments passed into service at startup.</param>
         protected override void ServiceStartingHandler(object sender, EventArgs<string[]> e)
         {
             // Handle base class service starting procedures
@@ -155,13 +166,29 @@ namespace openMIC
             CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
             CategorizedSettingsElementCollection securityProvider = ConfigurationFile.Current.Settings["securityProvider"];
 
+            // Define set of default anonymous web resources for this site
+            const string DefaultAnonymousResourceExpression = "^/@|^/Scripts/|^/Content/|^/Images/|^/fonts/|^/favicon.ico$";
+
             systemSettings.Add("CompanyName", "Grid Protection Alliance", "The name of the company who owns this instance of the openMIC.");
             systemSettings.Add("CompanyAcronym", "GPA", "The acronym representing the company who owns this instance of the openMIC.");
-            systemSettings.Add("WebHostURL", "http://localhost:8080", "The web hosting URL for remote system management.");
-            systemSettings.Add("SubscriptionConnectionString", "server=localhost:6195; interface=0.0.0.0", "Connection string for data subscriptions to openMIC server.");
+            systemSettings.Add("DiagnosticLogPath", FilePath.GetAbsolutePath(""), "Path for diagnostic logs.");
+            systemSettings.Add("MaximumDiagnosticLogSize", DefaultMaximumDiagnosticLogSize, "The combined maximum size for the diagnostic logs in whole Megabytes; curtailment happens hourly. Set to zero for no limit.");
+            systemSettings.Add("WebHostURL", "http://+:8089", "The web hosting URL for remote system management.");
+            systemSettings.Add("WebRootPath", "wwwroot", "The root path for the hosted web server files. Location will be relative to install folder if full path is not specified.");
+            systemSettings.Add("DefaultWebPage", "Index.cshtml", "The default web page for the hosted web server.");
             systemSettings.Add("DateFormat", "MM/dd/yyyy", "The default date format to use when rendering timestamps.");
-            systemSettings.Add("TimeFormat", "HH:mm.ss.fff", "The default time format to use when rendering timestamps.");
+            systemSettings.Add("TimeFormat", "HH:mm:ss.fff", "The default time format to use when rendering timestamps.");
             systemSettings.Add("BootstrapTheme", "Content/bootstrap.min.css", "Path to Bootstrap CSS to use for rendering styles.");
+            systemSettings.Add("SubscriptionConnectionString", "server=localhost:6195; interface=0.0.0.0", "Connection string for data subscriptions to openMIC server.");
+            systemSettings.Add("AuthenticationSchemes", AuthenticationOptions.DefaultAuthenticationSchemes, "Comma separated list of authentication schemes to use for clients accessing the hosted web server, e.g., Basic or NTLM.");
+            systemSettings.Add("AuthFailureRedirectResourceExpression", AuthenticationOptions.DefaultAuthFailureRedirectResourceExpression, "Expression that will match paths for the resources on the web server that should redirect to the LoginPage when authentication fails.");
+            systemSettings.Add("AnonymousResourceExpression", DefaultAnonymousResourceExpression, "Expression that will match paths for the resources on the web server that can be provided without checking credentials.");
+            systemSettings.Add("AuthenticationToken", SessionHandler.DefaultAuthenticationToken, "Defines the token used for identifying the authentication token in cookie headers.");
+            systemSettings.Add("SessionToken", SessionHandler.DefaultSessionToken, "Defines the token used for identifying the session ID in cookie headers.");
+            systemSettings.Add("LoginPage", AuthenticationOptions.DefaultLoginPage, "Defines the login page used for redirects on authentication failure. Expects forward slash prefix.");
+            systemSettings.Add("AuthTestPage", AuthenticationOptions.DefaultAuthTestPage, "Defines the page name for the web server to test if a user is authenticated. Expects forward slash prefix.");
+            systemSettings.Add("Realm", "", "Case-sensitive identifier that defines the protection space for the web based authentication and is used to indicate a scope of protection.");
+
             systemSettings.Add("DefaultDialUpRetries", 3, "Default dial-up connection retries.");
             systemSettings.Add("DefaultDialUpTimeout", 90, "Default dial-up connection timeout.");
             systemSettings.Add("DefaultFTPUserName", "anonymous", "Default FTP user name to use for device connections.");
@@ -174,7 +201,7 @@ namespace openMIC
             systemSettings.Add("FromAddress", "openmic@gridprotectionalliance.org", "The from address for e-mails.");
             systemSettings.Add("SmtpUserName", "", "Username to authenticate to the SMTP server, if any.");
             systemSettings.Add("SmtpPassword", "", "Password to authenticate to the SMTP server, if any.");
-            systemSettings.Add("WebRootPath", "wwwroot", "The root path for the hosted web server files. Location will be relative to install folder if full path is not specified.");
+
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
             Model = new AppModel();
@@ -191,22 +218,36 @@ namespace openMIC
             Model.Global.PasswordRequirementsRegex = securityProvider["PasswordRequirementsRegex"].Value;
             Model.Global.PasswordRequirementsError = securityProvider["PasswordRequirementsError"].Value;
             Model.Global.BootstrapTheme = systemSettings["BootstrapTheme"].Value;
-            Model.Global.PasswordRequirementsRegex = securityProvider["PasswordRequirementsRegex"].Value;
-            Model.Global.PasswordRequirementsError = securityProvider["PasswordRequirementsError"].Value;
-            Model.Global.DefaultDialUpRetries = int.Parse(systemSettings["DefaultDialUpRetries"].Value);
-            Model.Global.DefaultDialUpTimeout = int.Parse(systemSettings["DefaultDialUpTimeout"].Value);
-            Model.Global.DefaultFTPUserName = systemSettings["DefaultFTPUserName"].Value;
-            Model.Global.DefaultFTPPassword = systemSettings["DefaultFTPPassword"].Value;
-            Model.Global.DefaultRemotePath = systemSettings["DefaultRemotePath"].Value;
-            Model.Global.DefaultLocalPath = FilePath.GetAbsolutePath(systemSettings["DefaultLocalPath"].Value);
-            Model.Global.MaxRemoteFileAge = int.Parse(systemSettings["MaxRemoteFileAge"].Value);
-            Model.Global.MaxLocalFileAge = int.Parse(systemSettings["MaxLocalFileAge"].Value);
-            Model.Global.DefaultAppPath = FilePath.GetAbsolutePath("");
-            Model.Global.SmtpServer = systemSettings["SmtpServer"].Value;
-            Model.Global.FromAddress = systemSettings["FromAddress"].Value;
-            Model.Global.SmtpUserName = systemSettings["SmtpUserName"].Value;
-            Model.Global.SmtpPassword = systemSettings["SmtpPassword"].Value;
-            Model.Global.WebRootPath = systemSettings["WebRootPath"].Value;
+            Model.Global.WebRootPath = FilePath.GetAbsolutePath(systemSettings["WebRootPath"].Value);
+
+            AuthenticationSchemes authenticationSchemes;
+
+            // Parse configured authentication schemes
+            if (!Enum.TryParse(systemSettings["AuthenticationSchemes"].ValueAs(AuthenticationOptions.DefaultAuthenticationSchemes.ToString()), true, out authenticationSchemes))
+                authenticationSchemes = AuthenticationOptions.DefaultAuthenticationSchemes;
+
+            // Initialize web startup configuration
+            Startup.AuthenticationOptions.AuthenticationSchemes = authenticationSchemes;
+            Startup.AuthenticationOptions.AuthFailureRedirectResourceExpression = systemSettings["AuthFailureRedirectResourceExpression"].ValueAs(AuthenticationOptions.DefaultAuthFailureRedirectResourceExpression);
+            Startup.AuthenticationOptions.AnonymousResourceExpression = systemSettings["AnonymousResourceExpression"].ValueAs(DefaultAnonymousResourceExpression);
+            Startup.AuthenticationOptions.AuthenticationToken = systemSettings["AuthenticationToken"].ValueAs(SessionHandler.DefaultAuthenticationToken);
+            Startup.AuthenticationOptions.SessionToken = systemSettings["SessionToken"].ValueAs(SessionHandler.DefaultSessionToken);
+            Startup.AuthenticationOptions.LoginPage = systemSettings["LoginPage"].ValueAs(AuthenticationOptions.DefaultLoginPage);
+            Startup.AuthenticationOptions.AuthTestPage = systemSettings["AuthTestPage"].ValueAs(AuthenticationOptions.DefaultAuthTestPage);
+            Startup.AuthenticationOptions.Realm = systemSettings["Realm"].ValueAs("");
+            Startup.AuthenticationOptions.LoginHeader = $"<h3><img src=\"/Images/{Model.Global.ApplicationName}.png\"/> {Model.Global.ApplicationName}</h3>";
+
+            // Validate that configured authentication test page does not evaluate as an anonymous resource nor a authentication failure redirection resource
+            string authTestPage = Startup.AuthenticationOptions.AuthTestPage;
+
+            if (Startup.AuthenticationOptions.IsAnonymousResource(authTestPage))
+                throw new SecurityException($"The configured authentication test page \"{authTestPage}\" evaluates as an anonymous resource. Modify \"AnonymousResourceExpression\" setting so that authorization test page is not a match.");
+
+            if (Startup.AuthenticationOptions.IsAuthFailureRedirectResource(authTestPage))
+                throw new SecurityException($"The configured authentication test page \"{authTestPage}\" evaluates as an authentication failure redirection resource. Modify \"AuthFailureRedirectResourceExpression\" setting so that authorization test page is not a match.");
+
+            if (Startup.AuthenticationOptions.AuthenticationToken == Startup.AuthenticationOptions.SessionToken)
+                throw new InvalidOperationException("Authentication token must be different from session token in order to differentiate the cookie values in the HTTP headers.");
 
             // Register a symbolic reference to global settings for use by default value expressions
             ValueExpressionParser.DefaultTypeRegistry.RegisterSymbol("Global", Program.Host.Model.Global);
@@ -214,76 +255,75 @@ namespace openMIC
             ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
             ServiceHelper.LoggedException += LoggedExceptionHandler;
 
-            m_startEngineThread = new Thread(() =>
+            // Attach to default web server events
+            WebServer webServer = WebServer.Default;
+            webServer.StatusMessage += WebServer_StatusMessage;
+            webServer.ExecutionException += LoggedExceptionHandler;
+
+            // Define types for Razor pages - self-hosted web service does not use view controllers so
+            // we must define configuration types for all paged view model based Razor views here:
+            webServer.PagedViewModelTypes.TryAdd("Devices.cshtml", new Tuple<Type, Type>(typeof(Device), typeof(DataHub)));
+            webServer.PagedViewModelTypes.TryAdd("Companies.cshtml", new Tuple<Type, Type>(typeof(Company), typeof(SharedHub)));
+            webServer.PagedViewModelTypes.TryAdd("Vendors.cshtml", new Tuple<Type, Type>(typeof(Vendor), typeof(SharedHub)));
+            webServer.PagedViewModelTypes.TryAdd("VendorDevices.cshtml", new Tuple<Type, Type>(typeof(VendorDevice), typeof(SharedHub)));
+            webServer.PagedViewModelTypes.TryAdd("Users.cshtml", new Tuple<Type, Type>(typeof(UserAccount), typeof(SecurityHub)));
+            webServer.PagedViewModelTypes.TryAdd("Groups.cshtml", new Tuple<Type, Type>(typeof(SecurityGroup), typeof(SecurityHub)));
+            webServer.PagedViewModelTypes.TryAdd("ConnectionProfiles.cshtml", new Tuple<Type, Type>(typeof(ConnectionProfile), typeof(DataHub)));
+            webServer.PagedViewModelTypes.TryAdd("ConnectionProfileTasks.cshtml", new Tuple<Type, Type>(typeof(ConnectionProfileTask), typeof(DataHub)));
+			webServer.PagedViewModelTypes.TryAdd("Settings.cshtml", new Tuple<Type, Type>(typeof(Setting), typeof(DataHub)));
+
+            // Define exception logger for CSV downloader
+            CsvDownloadHandler.LogExceptionHandler = LogException;
+
+            new Thread(() =>
             {
                 const int RetryDelay = 1000;
                 const int SleepTime = 200;
                 const int LoopCount = RetryDelay / SleepTime;
 
-                bool webUIStarted = false;
-
-                while (true)
+                while (!m_serviceStopping)
                 {
-                    webUIStarted = webUIStarted || TryStartWebUI();
-
-                    if (webUIStarted)
-                        break;
-
-                    for (int i = 0; i < LoopCount; i++)
+                    if (TryStartWebHosting(systemSettings["WebHostURL"].Value))
                     {
-                        if (m_serviceStopping)
-                            return;
+                        try
+                        {
+                            // Initiate pre-compile of base templates
+                            RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException);
+                            RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException, "GSF.Web.Security.Views.");
+                            RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException, "GSF.Web.Shared.Views.");
+                            RazorEngine<CSharp>.Default.PreCompile(LogException);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(new InvalidOperationException($"Failed to initiate pre-compile of razor templates: {ex.Message}", ex));
+                        }
 
-                        Thread.Sleep(SleepTime);
+                        break;
                     }
-                }
-            });
 
-            m_startEngineThread.Start();
+                    for (int i = 0; i < LoopCount && !m_serviceStopping; i++)
+                        Thread.Sleep(SleepTime);
+                }
+            })
+            {
+                IsBackground = true
+            }
+            .Start();
         }
 
-        private bool TryStartWebUI()
+
+        private bool TryStartWebHosting(string webHostURL)
         {
             try
             {
-                CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
-
-                // Attach to default web server events
-                WebServer webServer = WebServer.Default;
-                webServer.StatusMessage += WebServer_StatusMessage;
-                webServer.ExecutionException += LoggedExceptionHandler;
-
-                // Define types for Razor pages - self-hosted web service does not use view controllers so
-                // we must define configuration types for all paged view model based Razor views here:
-                webServer.PagedViewModelTypes.TryAdd("Devices.cshtml", new Tuple<Type, Type>(typeof(Device), typeof(DataHub)));
-                webServer.PagedViewModelTypes.TryAdd("Companies.cshtml", new Tuple<Type, Type>(typeof(Company), typeof(DataHub)));
-                webServer.PagedViewModelTypes.TryAdd("ConnectionProfiles.cshtml", new Tuple<Type, Type>(typeof(ConnectionProfile), typeof(DataHub)));
-                webServer.PagedViewModelTypes.TryAdd("ConnectionProfileTasks.cshtml", new Tuple<Type, Type>(typeof(ConnectionProfileTask), typeof(DataHub)));
-                webServer.PagedViewModelTypes.TryAdd("Vendors.cshtml", new Tuple<Type, Type>(typeof(Vendor), typeof(DataHub)));
-                webServer.PagedViewModelTypes.TryAdd("VendorDevices.cshtml", new Tuple<Type, Type>(typeof(VendorDevice), typeof(DataHub)));
-                webServer.PagedViewModelTypes.TryAdd("Users.cshtml", new Tuple<Type, Type>(typeof(UserAccount), typeof(SecurityHub)));
-                webServer.PagedViewModelTypes.TryAdd("Groups.cshtml", new Tuple<Type, Type>(typeof(SecurityGroup), typeof(SecurityHub)));
-                webServer.PagedViewModelTypes.TryAdd("Settings.cshtml", new Tuple<Type, Type>(typeof(Setting), typeof(DataHub)));
-
-                // Initiate pre-compile of base templates
-                if (AssemblyInfo.EntryAssembly.Debuggable)
-                {
-                    RazorEngine<CSharpDebug>.Default.PreCompile(LogException);
-                    RazorEngine<VisualBasicDebug>.Default.PreCompile(LogException);
-                }
-                else
-                {
-                    RazorEngine<CSharp>.Default.PreCompile(LogException);
-                    RazorEngine<VisualBasic>.Default.PreCompile(LogException);
-                }
-
-                // Define exception logger for CSV downloader
-                CsvDownloadHandler.LogExceptionHandler = LogException;
-
                 // Create new web application hosting environment
-                m_webAppHost = WebApp.Start<Startup>(systemSettings["WebHostURL"].Value);
-
+                m_webAppHost = WebApp.Start<Startup>(webHostURL);
                 return true;
+            }
+            catch (TargetInvocationException ex)
+            {
+                LogException(new InvalidOperationException($"Failed to initialize web hosting: {ex.InnerException?.Message ?? ex.Message}", ex.InnerException ?? ex));
+                return false;
             }
             catch (Exception ex)
             {
@@ -292,26 +332,36 @@ namespace openMIC
             }
         }
 
-        private void WebServer_StatusMessage(object sender, EventArgs<string> e)
-        {
-            DisplayStatusMessage(e.Argument, UpdateType.Information);
-        }
-
         protected override void ServiceStoppingHandler(object sender, EventArgs e)
         {
             m_serviceStopping = true;
 
-            ServiceHelper serviceHelper = ServiceHelper;
+            ServiceHelper helper = ServiceHelper;
 
-            base.ServiceStoppingHandler(sender, e);
-
-            if ((object)serviceHelper != null)
+            try
             {
-                serviceHelper.UpdatedStatus -= UpdatedStatusHandler;
-                serviceHelper.LoggedException -= LoggedExceptionHandler;
+                base.ServiceStoppingHandler(sender, e);
+            }
+            catch (Exception ex)
+            {
+                LogException(new InvalidOperationException($"Service stopping handler exception: {ex.Message}", ex));
             }
 
-            m_startEngineThread.Join();
+            if ((object)helper != null)
+            {
+                helper.UpdatedStatus -= UpdatedStatusHandler;
+                helper.LoggedException -= LoggedExceptionHandler;
+            }
+        }
+
+        private void WebServer_StatusMessage(object sender, EventArgs<string> e)
+        {
+            LogWebHostStatusMessage(e.Argument);
+        }
+
+        public void LogWebHostStatusMessage(string message, UpdateType type = UpdateType.Information)
+        {
+            LogStatusMessage($"[WEBHOST] {message}", type);
         }
 
         /// <summary>
