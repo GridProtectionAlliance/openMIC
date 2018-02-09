@@ -33,19 +33,23 @@ var hubIsConnecting = false;
 var hubIsConnected = false;
 
 function hideErrorMessage() {
-    if (jsPanel.activePanels.list.indexOf('errorPanel') >= 0)
-        jsPanel.activePanels.getPanel('errorPanel').close();
+    $(jsPanel.activePanels.list).each(function () {
+        if (this.startsWith("errorPanel"))
+            jsPanel.activePanels.getPanel(this).close();
+    });
 }
 
 function hideInfoMessage() {
-    if (jsPanel.activePanels.list.indexOf('infoPanel') >= 0)
-        jsPanel.activePanels.getPanel('infoPanel').close();
+    $(jsPanel.activePanels.list).each(function () {
+        if (this.startsWith("infoPanel"))
+            jsPanel.activePanels.getPanel(this).close();
+    });
 }
 
 function showErrorMessage(message, timeout) {
     hideErrorMessage();
     $.jsPanel({
-        id: 'errorPanel',
+        id: 'errorPanel-1',
         autoclose: timeout,
         template: jsPanel.tplContentOnly,
         paneltype: 'hint',
@@ -88,20 +92,12 @@ function showErrorMessage(message, timeout) {
             }).click(function () { panel.close(); });
         }
     });
-
-    $(window).on('resize', function () {
-        if (jsPanel.activePanels.list.indexOf('errorPanel') >= 0)
-            jsPanel.activePanels.getPanel('errorPanel').reposition("right-top -4 4");
-        else
-            $(this).off('resize');
-    });
-
 }
 
 function showInfoMessage(message, timeout) {
     hideInfoMessage();
     $.jsPanel({
-        id: 'infoPanel',
+        id: 'infoPanel-1',
         autoclose: timeout,
         template: jsPanel.tplContentOnly,
         paneltype: 'hint',
@@ -144,16 +140,13 @@ function showInfoMessage(message, timeout) {
             }).click(function () { panel.close(); });
         }
     });
-
-    $(window).on('resize', function () {
-        if (jsPanel.activePanels.list.indexOf('infoPanel') >= 0)
-            jsPanel.activePanels.getPanel('infoPanel').reposition("right-top -4 4");
-        else
-            $(this).off('resize');
-
-    });
-
 }
+
+$(window).on('resize', function () {
+    $(jsPanel.activePanels.list).each(function () {
+        jsPanel.activePanels.getPanel(this).reposition("right-top -4 4");
+    });
+});
 
 function calculateRemainingBodyHeight() {
     // Calculation based on content in Layout.cshtml

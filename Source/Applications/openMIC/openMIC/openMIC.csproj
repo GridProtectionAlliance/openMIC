@@ -19,7 +19,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <FileUpgradeFlags>40</FileUpgradeFlags>
     <OldToolsVersion>12.0</OldToolsVersion>
-    <UpgradeBackupLocation>D:\Projects\openMIC\Source\Backup1\</UpgradeBackupLocation>
+    <UpgradeBackupLocation>D:\Projects\openMIC\Source\Backup2\</UpgradeBackupLocation>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -282,10 +282,8 @@
     </None>
     <None Include="PostBuildSetup.bat" />
     <Content Include="wwwroot\Content\jquery.jspanel.css" />
-    <Content Include="wwwroot\Content\jquery.jspanel.min.css" />
     <Content Include="wwwroot\Images\iGridConfigEditor.png" />
     <Content Include="wwwroot\Scripts\jquery.jspanel.js" />
-    <Content Include="wwwroot\Scripts\jquery.jspanel.min.js" />
     <Content Include="wwwroot\ConnectionProfileTasks.cshtml" />
     <Content Include="wwwroot\DirectoryBrowser.cshtml" />
     <Content Include="wwwroot\GraphMeasurements.cshtml" />

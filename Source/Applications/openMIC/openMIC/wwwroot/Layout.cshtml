@@ -96,24 +96,29 @@
     <meta name="application-name" content="@Model.Global.ApplicationName" />
     <meta name="description" content="@Model.Global.ApplicationDescription" />
     <meta name="keywords" content="@Model.Global.ApplicationKeywords" />
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <link href="@Resources.Root/Shared/Content/bootstrap.css" rel="stylesheet">
     <link href="@Model.Global.BootstrapTheme" rel="stylesheet">
+    <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
+    <link href="Content/jquery.jspanel.css" rel="stylesheet">
     <link href="Content/Site.css" rel="stylesheet">
-    <link href="Content/jquery.jspanel.min.css" rel="stylesheet">
     @Raw(Resources.HeaderIcons)
     @RenderSection("StyleSheets", false)
     <style>
+
         @@media (max-width: 995px) {
             .navbar-header {
                 float: none;
             }
-            .navbar-left,.navbar-right {
+
+            .navbar-left, .navbar-right {
                 float: none !important;
             }
+
             .navbar-toggle {
                 display: block;
             }
+
             .navbar-collapse {
                 border-top: 1px solid transparent;
                 box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
@@ -123,22 +128,27 @@
                 top: 0;
                 border-width: 0 0 1px;
             }
+
             .navbar-collapse.collapse {
-                display: none!important;
+                display: none !important;
             }
+
             .navbar-nav {
-                float: none!important;
+                float: none !important;
                 margin-top: 7.5px;
             }
-            .navbar-nav>li {
-                float: none;
-            }
-            .navbar-nav>li>a {
-                padding-top: 10px;
-                padding-bottom: 10px;
-            }
-            .collapse.in{
-                display:block !important;
+
+                .navbar-nav > li {
+                    float: none;
+                }
+
+                    .navbar-nav > li > a {
+                        padding-top: 10px;
+                        padding-bottom: 10px;
+                    }
+
+            .collapse.in {
+                display: block !important;
             }
         }
     </style>
@@ -150,75 +160,78 @@
     </script>
 </head>
 <body role="document">
-@if (ViewBag.ShowMenu ?? true) {
-    <div class="navbar navbar-inverse navbar-fixed-top" id="menuBar">
-        <div class="container">
-            <div class="navbar-header">
-                <img class="pull-left" style="padding: 10px" alt="@Model.Global.ApplicationName" src="Images/@(Model.Global.ApplicationName).png">
-                <a href="Index.cshtml" class="navbar-brand" style="font-size: larger; color: white" data-toggle="tooltip" data-placement="bottom" title="@Model.Global.ApplicationDescription">@Model.Global.ApplicationName</a>
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-            </div>
-            <div id="navbar" class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li @Raw(pageTitle == "Home" ? "class=\"active\"" : "")><a href="Index.cshtml">Home</a></li>
-                    <li @Raw(pageTitle == "Devices" ? "class=\"active\"" : "")><a href="Devices.cshtml">Devices</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Monitoring <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="GraphMeasurements.cshtml">Real-time Measurements</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="Status.cshtml">Current Device Status</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="RemoteConsole.cshtml">Remote Service Console</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configuration <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="ConnectionProfiles.cshtml">Connection Profiles</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="ModbusConfig.cshtml">Modbus Configuration Builder</a></li>
-                            <li><a href="IGridConfig.cshtml">Manage I-Grid Connections</a></li>
-                        </ul>
-                    </li>
-                    @if (UserIsAdmin()) {
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="Users.cshtml">Users</a></li>
-                            <li><a href="Groups.cshtml">Groups</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="Companies.cshtml">Companies</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="Vendors.cshtml">Vendors</a></li>
-                            <li><a href="VendorDevices.cshtml">Vendor Devices</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="Settings.cshtml">App Settings</a></li>
-                            <li><a href="SelectTheme.cshtml">Select Theme</a></li>
-                        </ul>
-                    </li>
-                    }
-                    <li @Raw(pageTitle == "Help" ? "class=\"active\"" : "")><a href="Help.cshtml">Help</a></li>
-                </ul>
-                <div class="nav navbar-text navbar-right" style="margin-top: 10px; margin-bottom: 5px">
-                    <button id="logoutButton" type="button" class="btn btn-sm btn-info" style="display: none" title="Log out @GetCurrentUserID()" hub-dependent>Log Out</button>
-                    <a href="https://www.gridprotectionalliance.org/" target="_blank" style="padding-left: 10px">
-                        <img alt="Grid Protection Alliance" src="@Resources.Root/Shared/Images/gpa-smalllock.png">
-                    </a>
+    @if (ViewBag.ShowMenu ?? true)
+    {
+        <div class="navbar navbar-inverse navbar-fixed-top" id="menuBar">
+            <div class="container">
+                <div class="navbar-header">
+                    <img class="pull-left" style="padding: 10px" alt="@Model.Global.ApplicationName" src="Images/@(Model.Global.ApplicationName).png">
+                    <a href="Index.cshtml" class="navbar-brand" style="font-size: larger; color: white" data-toggle="tooltip" data-placement="bottom" title="@Model.Global.ApplicationDescription">@Model.Global.ApplicationName</a>
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li @Raw(pageTitle == "Home" ? "class=\"active\"" : "")><a href="Index.cshtml">Home</a></li>
+                        <li @Raw(pageTitle == "Devices" ? "class=\"active\"" : "")><a href="Devices.cshtml">Devices</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Monitoring <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="GraphMeasurements.cshtml">Real-time Measurements</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="Status.cshtml">Current Device Status</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="RemoteConsole.cshtml">Remote Service Console</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configuration <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="ConnectionProfiles.cshtml">Connection Profiles</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="ModbusConfig.cshtml">Modbus Configuration Builder</a></li>
+                                <li><a href="IGridConfig.cshtml">Manage I-Grid Connections</a></li>
+                            </ul>
+                        </li>
+                        @if (UserIsAdmin())
+                        {
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="Users.cshtml">Users</a></li>
+                                    <li><a href="Groups.cshtml">Groups</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="Companies.cshtml">Companies</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="Vendors.cshtml">Vendors</a></li>
+                                    <li><a href="VendorDevices.cshtml">Vendor Devices</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="Settings.cshtml">App Settings</a></li>
+                                    <li><a href="SelectTheme.cshtml">Select Theme</a></li>
+                                </ul>
+                            </li>
+                        }
+                        <li @Raw(pageTitle == "Help" ? "class=\"active\"" : "")><a href="Help.cshtml">Help</a></li>
+                    </ul>
+                    <div class="nav navbar-text navbar-right" style="margin-top: 10px; margin-bottom: 5px">
+                        <button id="logoutButton" type="button" class="btn btn-sm btn-info" style="display: none" title="Log out @GetCurrentUserID()" hub-dependent>Log Out</button>
+                        <a href="https://www.gridprotectionalliance.org/" target="_blank" style="padding-left: 10px">
+                            <img alt="Grid Protection Alliance" src="@Resources.Root/Shared/Images/gpa-smalllock.png">
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div><!--/.navbar -->
-}
-else {
-    <div id="menuBar"></div>
-}
-    <div class="container theme-showcase" @Raw(setFullWidth ? " style=\"width: 100%\"" : "")  role="main" id="bodyContainer">
+        </div><!--/.navbar -->
+    }
+    else
+    {
+        <div id="menuBar"></div>
+    }
+    <div class="container theme-showcase" @Raw(setFullWidth ? " style=\"width: 100%\"" : "") role="main" id="bodyContainer">
         <div class="page-header" id="pageHeader">
             <span class="glyphicon glyphicon-refresh pre-cache"></span>
             <span class="glyphicon glyphicon-info-sign pre-cache"></span>
@@ -235,24 +248,24 @@ else {
                 <span class="sr-only">Error</span>
                 <span id="error-msg-text"></span>
             </div>
-            @if (!hidePageTitle) {
-            <h3>
-                @pageTitle <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
-            </h3>
+            @if (!hidePageTitle)
+            {
+                <h3>
+                    @pageTitle <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
+                </h3>
             }
         </div>
         <!-- Page Body for @request.RequestUri.AbsolutePath -->
         @RenderBody()
-
     </div><!--/.container -->
     <script src="@Resources.Root/Shared/Scripts/bootstrap.js"></script>
     <script src="@Resources.Root/Shared/Scripts/jquery.signalR.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/jquery-ui.js"></script>
     <script src="@Resources.Root/Shared/Scripts/js.cookie.js"></script>
     <script src="@Resources.Root/Shared/Scripts/gsf.web.client.js"></script>
-    <script src="Scripts/jquery.jspanel.min.js"></script>
+    <script src="Scripts/jquery.jspanel.js"></script>
     <script src="signalr/hubs"></script>
     <script src="Scripts/Site.js"></script>
-
     @Raw(ViewBag.PageControlScripts.ToString())
     @RenderSection("Scripts", false)
     <script>
