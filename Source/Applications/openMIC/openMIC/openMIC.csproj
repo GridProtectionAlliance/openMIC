@@ -19,7 +19,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <FileUpgradeFlags>40</FileUpgradeFlags>
     <OldToolsVersion>12.0</OldToolsVersion>
-    <UpgradeBackupLocation>D:\Projects\openMIC\Source\Backup\</UpgradeBackupLocation>
+    <UpgradeBackupLocation>D:\Projects\openMIC\Source\Backup1\</UpgradeBackupLocation>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -37,7 +37,8 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <AppConfig>AppDebug.config</AppConfig>
+    <AppConfig Condition="'$(Configuration)' == 'Debug'">AppDebug.config</AppConfig>
+    <AppConfig Condition="'$(Configuration)' != 'Debug'">App.config</AppConfig>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
     <IISExpressSSLPort />
