@@ -189,6 +189,28 @@ namespace openMIC
             get;
             set;
         }
+        public string DefaultCorsOrigins
+        {
+            get;
+            set;
+        }
 
+        public string DefaultCorsHeaders
+        {
+            get;
+            set;
+        }
+
+        public string DefaultCorsMethods
+        {
+            get;
+            set;
+        }
+
+        public bool DefaultCorsSupportsCredentials
+        {
+            get;
+            set;
+        }
     }
 }
