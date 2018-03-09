@@ -304,6 +304,7 @@
     <Content Include="wwwroot\Vendors.cshtml" />
     <Content Include="wwwroot\Settings.cshtml" />
     <Content Include="wwwroot\Logout.cshtml" />
+    <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />
@@ -372,6 +373,7 @@ CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(SolutionDir)Application
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(ProjectDir)Sample1344.PmuCapture"
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)wwwroot" "$(SolutionDir)Applications\openMIC\openMIC\wwwroot\*.*"
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(ProjectDir)bin" "$(TargetDir)*.dll"
+CALL "$(ProjectDir)PostBuildSetup.bat" "$(ProjectDir)bin" "%25SystemRoot%25\Microsoft.NET\assembly\GAC_MSIL\System.Core\v4.0_4.0.0.0__b77a5c561934e089\System.Core.dll"
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\BenDownloader\BenDownloader.exe"
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\BenDownloader\BenDownloader.exe.config"
 CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)" "$(TargetDir)..\..\Tools\IGridDownloader\Ionic.Zip.dll"
