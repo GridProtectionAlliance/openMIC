@@ -1135,7 +1135,7 @@ namespace openMIC
                         if (directoryName.StartsWith(".", StringComparison.Ordinal))
                             continue;
 
-                        string remoteSubPath = $"{remotePath}/{directoryName}";
+                        string remoteSubPath = FTPPathCombine(remotePath, directoryName);
                         string localSubPath = Path.Combine(localDirectoryPath, directoryName);
 
                         OnStatusMessage(MessageLevel.Info, $"Recursively adding files in \"{remotePath}\" to file list...");
@@ -1931,6 +1931,24 @@ namespace openMIC
             {
                 Program.Host.LogException(new InvalidOperationException($"Failed while attempting to terminate process tree with ancestor ID {ancestorID}: {ex.Message}", ex));
             }
+        }
+
+        private string FTPPathCombine(params string[] args)
+        {
+            const string Separator = "/";
+            string path = "";
+
+            foreach (string arg in args)
+            {
+                if (arg.StartsWith(Separator))
+                    path = arg;
+                else if (path.EndsWith(Separator))
+                    path += arg;
+                else
+                    path += Separator + arg;
+            }
+
+            return path;
         }
 
         #region [ Statistic Functions ]
