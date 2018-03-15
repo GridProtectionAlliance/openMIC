@@ -1697,7 +1697,7 @@ namespace openMIC
                     downloadedFile.FileSize = (int)fileInfo.Length;
                     downloadedFileTable.AddNewRecord(downloadedFile);
 
-                    return downloadedFileTable.QueryRecordWhere("FilePath = {0}", filePath).ID;
+                    return connection.ExecuteScalar<int>("SELECT ID FROM DownloadedFile WHERE FilePath = {0}", filePath);
                 }
             }
             catch (Exception ex)
