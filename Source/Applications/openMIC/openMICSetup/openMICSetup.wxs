@@ -481,6 +481,9 @@
       <Component Id="NAudio"> <!-- Dependency for AudioAdapters -->
         <File Id="NAudio.dll" Name="NAudio.dll" Source="$(var.SolutionDir)\Dependencies\GSF\NAudio.dll" />
       </Component>
+      <Component Id="ModbusAdapters">
+        <File Id="ModbusAdapters.dll" Name="ModbusAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\ModbusAdapters.dll" />
+      </Component>
       <Component Id="MongoAdapters">
         <File Id="MongoAdapters.dll" Name="MongoAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\MongoAdapters.dll" />
       </Component>
