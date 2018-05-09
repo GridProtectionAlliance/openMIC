@@ -124,12 +124,19 @@ TYPE "%targetschema%\SQLite\_InitialDataSet.sql" >> "%targetschema%\SQLite\Initi
 "%replace%" /r /v "%targetschema%\*SampleDataSet.sql" 6165 6195
 "%replace%" /r /v "%targetschema%\*SampleDataSet.sql" "e7a5235d-cb6f-4864-a96e-a8686f36e599" "8a8d1856-ebc8-4238-848a-8084b7dd9541"
 "%replace%" /r /v "%targetschema%\*db-update.bat" GSFSchema openMIC
+"%replace%" /r /v "%targetschema%\*db-refresh.bat" GSFSchema openMIC
 CD %targetschema%\SQLite
 CALL db-update.bat
 CD %targetschema%\SQL Server
 CALL db-refresh.bat
-IF NOT "%SQLCONNECTIONSTRING%" == "" "%targettools%\DataMigrationUtility.exe" "%SQLCONNECTIONSTRING%; Initial Catalog=openMIC"
-IF EXIST "%targettools%\SerializedSchema.bin" MOVE /Y "%targettools%\SerializedSchema.bin" "%target%"
+IF NOT "%SQLCONNECTIONSTRING%" == "" (
+    MKDIR "%TEMP%\DataMigrationUtility"
+    COPY /Y "%targettools%\DataMigrationUtility.exe" "%TEMP%\DataMigrationUtility"
+    XCOPY "%dependencies%" "%TEMP%\DataMigrationUtility\" /Y /E
+    "%TEMP%\DataMigrationUtility\DataMigrationUtility.exe" "%SQLCONNECTIONSTRING%; Initial Catalog=openMIC"
+    IF EXIST "%TEMP%\DataMigrationUtility\SerializedSchema.bin" MOVE /Y "%TEMP%\DataMigrationUtility\SerializedSchema.bin" "%targetschema%"
+    RMDIR /S /Q "%TEMP%\DataMigrationUtility"
+)
 CD %target%
 
 :CommitChanges
