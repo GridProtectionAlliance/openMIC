@@ -92,6 +92,8 @@ namespace openMIC
                 // Make embedded resources of Modbus poller available to web server
                 using (ModbusPoller poller = new ModbusPoller())
                     WebExtensions.AddEmbeddedResourceAssembly(poller.GetType().Assembly);
+
+                ModbusPoller.RestoreConfigurations(FilePath.GetAbsolutePath("ModbusConfigs"));
             }
             catch (Exception ex)
             {
