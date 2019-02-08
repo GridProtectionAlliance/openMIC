@@ -168,7 +168,7 @@ new[] { "Enabled", "Enabled", "text-center" }
     <script>
         "use strict";
 
-        @Raw(dataContext.RenderViewModelConfiguration<Device, DataHub>(ViewBag, "Acronym"))
+        @Raw(dataContext.RenderViewModelConfiguration<Device, DataHub>(ViewBag, "Acronym", null, Model.Global.NodeID))
 
         var downloaderProtocolID = 0;
         var modbusProtocolID = 0;
