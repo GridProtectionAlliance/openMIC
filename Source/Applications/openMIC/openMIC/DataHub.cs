@@ -259,7 +259,11 @@ namespace openMIC
         [RecordOperation(typeof(Device), RecordOperation.DeleteRecord)]
         public void DeleteDevice(int id)
         {
-            DataContext.Table<Device>().DeleteRecord(id);
+            TableOperations<Device> deviceTable = DataContext.Table<Device>();            
+            
+            deviceTable.DeleteRecordWhere("ParentID = {0}", id);
+            deviceTable.DeleteRecord(id);
+
             DataContext.Table<StatusLog>().DeleteRecordWhere("DeviceID = {0}", id);
             DataContext.Table<DownloadedFile>().DeleteRecordWhere("DeviceID = {0}", id);
         }
@@ -630,7 +634,7 @@ namespace openMIC
         }
 
         #endregion
-		
+        
         #region [ Modbus Operations ]
 
         public Task<bool> ModbusConnect(string connectionString)
