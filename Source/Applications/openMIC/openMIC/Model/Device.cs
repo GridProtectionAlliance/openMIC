@@ -57,7 +57,7 @@ namespace openMIC.Model
         }
 
         [Label("Folder Name")]
-        [StringLength(20)]
+        [StringLength(200)]
         public string OriginalSource
         {
             get;
