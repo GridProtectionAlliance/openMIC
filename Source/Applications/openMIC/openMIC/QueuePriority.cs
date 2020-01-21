@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  OperationsController.cs - Gbtc
+//  QueuePriority.cs - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -16,50 +16,29 @@
 //
 //  Code Modification History:
 //  ----------------------------------------------------------------------------------------------------
-//  01/20/2020 - J. Ritchie Carroll
+//  01/21/2020 - Ritchie Carroll
 //       Generated original version of source code.
 //
 //******************************************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
-
 namespace openMIC
 {
     /// <summary>
-    /// Represents a REST based API for openMIC operations.
+    /// Represents an enumeration of possible queuing priorities.
     /// </summary>
-    public class OperationsController : ApiController
+    public enum QueuePriority
     {
         /// <summary>
-        /// Validates that openMIC operations are responding as expected.
+        /// Queue task with normal priority.
         /// </summary>
-        [HttpGet]
-        public HttpResponseMessage Index()
-        {
-            return new HttpResponseMessage(HttpStatusCode.OK);
-        }
-
+        Normal,
         /// <summary>
-        /// Queues task for operation at specified <paramref name="priority"/>.
+        /// Queue task with expedited, i.e., higher than normal, priority.
         /// </summary>
-        /// <param name="priority">Priority of task to use when queuing.</param>
-        /// <param name="target">List of task target names.</param>
-        /// <remarks>
-        /// Use restful call, e.g.:
-        /// <code>
-        /// http://localhost:8089/api/Operations/QueueTasksWithPriority?priority=Expedited&target=Meter1,target=Meter2,target=Meter3
-        /// </code>
-        /// </remarks>
-        public HttpResponseMessage QueueTasksWithPriority([FromUri] QueuePriority priority, [FromUri] List<string> target)
-        {
-            foreach (string acronym in target)
-                Program.Host.SendRequest(Guid.Empty, User, $"Invoke {acronym} QueueTasksWithPriority {priority}");
-
-            return new HttpResponseMessage(HttpStatusCode.OK);
-        }
+        Expedited,
+        /// <summary>
+        /// Queue task with urgent, i.e., highest, priority.
+        /// </summary>
+        Urgent
     }
 }

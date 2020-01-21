@@ -249,6 +249,7 @@
     <Compile Include="Model\StatusLog.cs" />
     <Compile Include="Model\ConnectionProfileTask.cs" />
     <Compile Include="OperationsController.cs" />
+    <Compile Include="QueuePriority.cs" />
     <Compile Include="ServiceConnectionHubClient.cs" />
     <Compile Include="ServiceConnectionOperations.cs" />
     <Compile Include="ServiceHub.cs" />

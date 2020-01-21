@@ -163,7 +163,7 @@ namespace openMIC.Model
             return true;
         }
 
-        public bool PrioritizeAction(Action action)
+        public bool PrioritizeAction(Action action, int priority = HighPriority)
         {
             ICancellationToken priorityToken = new GSF.Threading.CancellationToken();
             ICancellationToken normalToken = null;
@@ -180,7 +180,7 @@ namespace openMIC.Model
                     return false;
             }
 
-            TaskThread.Push(HighPriority, () =>
+            TaskThread.Push(priority, () =>
             {
                 try     { action(); }
                 finally { Interlocked.Exchange(ref m_cancellationToken, null); }

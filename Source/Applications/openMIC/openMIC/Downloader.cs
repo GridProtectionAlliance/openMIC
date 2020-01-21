@@ -36,7 +36,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using DotRas;
 using GSF;
-using GSF.Collections;
 using GSF.Configuration;
 using GSF.Console;
 using GSF.Data;
@@ -774,6 +773,27 @@ namespace openMIC
                 {
                     State = ProgressState.Queued,
                     Message = "Connection profile tasks queued at high priority.",
+                    Progress = 0,
+                    ProgressTotal = 1,
+                    OverallProgress = 0,
+                    OverallProgressTotal = 1
+                });
+            }
+        }
+
+        /// <summary>
+        /// Queues specified tasks for execution at specified <paramref name="priority"/>.
+        /// </summary>
+        /// <param name="priority">Priority of task to use when queuing.</param>
+        [AdapterCommand("Queues scheduled tasks for immediate execution.", "Administrator", "Editor")]
+        public void QueueTasksWithPriority(QueuePriority priority)
+        {
+            if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks, (int)priority))
+            {
+                OnProgressUpdated(this, new ProgressUpdate()
+                {
+                    State = ProgressState.Queued,
+                    Message = $"Connection profile tasks queued at ${priority} priority.",
                     Progress = 0,
                     ProgressTotal = 1,
                     OverallProgress = 0,
