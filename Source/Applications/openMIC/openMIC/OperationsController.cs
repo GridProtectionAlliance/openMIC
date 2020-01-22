@@ -26,6 +26,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using GSF.Data;
+using GSF.Data.Model;
+using openMIC.Model;
 
 namespace openMIC
 {
@@ -47,17 +50,36 @@ namespace openMIC
         /// Queues task for operation at specified <paramref name="priority"/>.
         /// </summary>
         /// <param name="priority">Priority of task to use when queuing.</param>
-        /// <param name="target">List of task target names.</param>
+        /// <param name="targets">List of task target names.</param>
         /// <remarks>
-        /// Use restful call, e.g.:
+        /// Call format:
         /// <code>
         /// http://localhost:8089/api/Operations/QueueTasksWithPriority?priority=Expedited&target=Meter1,target=Meter2,target=Meter3
         /// </code>
         /// </remarks>
-        public HttpResponseMessage QueueTasksWithPriority([FromUri] QueuePriority priority, [FromUri] List<string> target)
+        public HttpResponseMessage QueueTasksWithPriority([FromUri] QueuePriority priority, [FromUri(Name = "target")] List<string> targets)
         {
-            foreach (string acronym in target)
-                Program.Host.SendRequest(Guid.Empty, User, $"Invoke {acronym} QueueTasksWithPriority {priority}");
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            {
+                TableOperations<Device> deviceTable = new TableOperations<Device>(connection);
+
+                foreach (string target in targets)
+                {
+                    string acronym = target;
+
+                    // Check if target is using device "Name" instead of "Acronym"
+                    if (deviceTable.QueryRecordCountWhere("Acronym = {0}", acronym) == 0)
+                    {
+                        Device device = deviceTable.QueryRecordWhere("Name = {0}", acronym);
+
+                        if (device != null)
+                            acronym = device.Acronym;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(acronym))
+                        Program.Host.SendRequest(Guid.Empty, User, $"Invoke {acronym} QueueTasksWithPriority {priority}");
+                }
+            }
 
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
