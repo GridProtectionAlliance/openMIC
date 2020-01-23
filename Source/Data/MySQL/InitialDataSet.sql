@@ -243,7 +243,14 @@ INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(13, 'FNET', 'U
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(11, 'SEL-3373', 'SEL-3373 Synchrophasor Data Concentrator', 'http://www.selinc.com/SEL-3373/');
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(14, 'SIMEAS R-PMU', '7KE6100 Digital Fault Recorder & PMU', 'http://www.energy.siemens.com/mx/en/automation/power-transmission-distribution/power-quality/simeas-r-pmu.htm');
 INSERT INTO VendorDevice(VendorID, Name, Description, URL) VALUES(15, 'ePDC', 'ePDC & eSPDC', 'http://www.electricpowergroup.com/solutions/epdc/index.html');
- 
+
+INSERT INTO AlarmState (State, Color) VALUES ('Good', 'green');
+INSERT INTO AlarmState (State, Color) VALUES ('Alarm', 'red');
+INSERT INTO AlarmState (State, Color) VALUES ('Not Available', 'orange');
+INSERT INTO AlarmState (State, Color) VALUES ('Bad Data', 'blue');
+INSERT INTO AlarmState (State, Color) VALUES ('Bad Time', 'purple');
+INSERT INTO AlarmState (State, Color) VALUES ('Out of Service', 'grey');
+INSERT INTO AlarmState (State, Color) VALUES ('Acknowledged', 'rosybrown'); 
 INSERT INTO Protocol(Acronym, Name, Type, Category, AssemblyName, TypeName, LoadOrder) VALUES('Downloader', 'Remote Downloader', 'File', 'File', 'openMIC.exe', 'openMIC.Downloader', 15);
 
 INSERT INTO Statistic(Source, SignalIndex, NAME, Description, AssemblyName, TypeName, MethodName, Arguments, Enabled, DataType, DisplayFormat, IsConnectedState, LoadOrder) VALUES('Downloader', 1, 'Downloader Enabled', 'Boolean value representing if the downloader was continually enabled with access to local download path during last reporting interval.', 'openMIC.exe', 'openMIC.Downloader', 'GetDownloaderStatistic_Enabled', '', 1, 'System.Boolean', '{0}', 1, 1);
