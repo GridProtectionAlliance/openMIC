@@ -37,6 +37,7 @@ using GSF.Security;
 using GSF.Security.Model;
 using GSF.ServiceProcess;
 using GSF.TimeSeries;
+using GSF.TimeSeries.Adapters;
 using GSF.Web.Hosting;
 using GSF.Web.Model;
 using GSF.Web.Model.Handlers;
@@ -244,10 +245,8 @@ namespace openMIC
             Model.Global.DefaultCorsMethods = systemSettings["DefaultCorsMethods"].Value;
             Model.Global.DefaultCorsSupportsCredentials = systemSettings["DefaultCorsSupportsCredentials"].ValueAsBoolean(true);
 
-            AuthenticationSchemes authenticationSchemes;
-
             // Parse configured authentication schemes
-            if (!Enum.TryParse(systemSettings["AuthenticationSchemes"].ValueAs(AuthenticationOptions.DefaultAuthenticationSchemes.ToString()), true, out authenticationSchemes))
+            if (!Enum.TryParse(systemSettings["AuthenticationSchemes"].ValueAs(AuthenticationOptions.DefaultAuthenticationSchemes.ToString()), true, out AuthenticationSchemes authenticationSchemes))
                 authenticationSchemes = AuthenticationOptions.DefaultAuthenticationSchemes;
 
             // Initialize web startup configuration
@@ -336,7 +335,6 @@ namespace openMIC
             .Start();
         }
 
-
         private bool TryStartWebHosting(string webHostURL)
         {
             try
@@ -357,6 +355,12 @@ namespace openMIC
             }
         }
 
+        /// <summary>Event handler for service stopping operation.</summary>
+        /// <param name="sender">Event source.</param>
+        /// <param name="e">Event arguments.</param>
+        /// <remarks>
+        /// Time-series framework uses this handler to un-wire events and dispose of system objects.
+        /// </remarks>
         protected override void ServiceStoppingHandler(object sender, EventArgs e)
         {
             m_serviceStopping = true;
@@ -407,6 +411,19 @@ namespace openMIC
         {
             base.LogException(ex);
             DisplayStatusMessage($"{ex.Message}", UpdateType.Alarm);
+        }
+
+        /// <summary>
+        /// Queues task for operation at specified <paramref name="priority"/>.
+        /// </summary>
+        /// <param name="acronym">Target device.</param>
+        /// <param name="priority">Priority of task to use when queuing.</param>
+        public void QueueTasksWithPriority(string acronym, QueuePriority priority)
+        {
+            IAdapter adapter = GetRequestedAdapter(new ClientRequestInfo(null, ClientRequest.Parse($"Invoke {acronym}")));
+
+            if (adapter is Downloader downloader)
+                downloader.QueueTasksWithPriority(priority);
         }
 
         /// <summary>

@@ -78,7 +78,7 @@ namespace openMIC
                     }
 
                     if (!string.IsNullOrWhiteSpace(acronym))
-                        Program.Host.SendRequest($"Invoke {acronym} QueueTasksWithPriority {priority}");
+                        Program.Host.QueueTasksWithPriority(acronym, priority);
                 }
             }
 
