@@ -767,18 +767,8 @@ namespace openMIC
         [AdapterCommand("Queues scheduled tasks for immediate execution.", "Administrator", "Editor")]
         public void QueueTasks()
         {
-            if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks))
-            {
-                OnProgressUpdated(this, new ProgressUpdate()
-                {
-                    State = ProgressState.Queued,
-                    Message = "Connection profile tasks queued at high priority.",
-                    Progress = 0,
-                    ProgressTotal = 1,
-                    OverallProgress = 0,
-                    OverallProgressTotal = 1
-                });
-            }
+            // This is for user requested items - these take precedence over all others
+            QueueTasksWithPriority(QueuePriority.Urgent);
         }
 
         /// <summary>
