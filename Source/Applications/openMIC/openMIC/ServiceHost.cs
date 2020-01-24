@@ -295,7 +295,7 @@ namespace openMIC
             webServer.PagedViewModelTypes.TryAdd("Groups.cshtml", new Tuple<Type, Type>(typeof(SecurityGroup), typeof(SecurityHub)));
             webServer.PagedViewModelTypes.TryAdd("ConnectionProfiles.cshtml", new Tuple<Type, Type>(typeof(ConnectionProfile), typeof(DataHub)));
             webServer.PagedViewModelTypes.TryAdd("ConnectionProfileTasks.cshtml", new Tuple<Type, Type>(typeof(ConnectionProfileTask), typeof(DataHub)));
-			webServer.PagedViewModelTypes.TryAdd("Settings.cshtml", new Tuple<Type, Type>(typeof(Setting), typeof(DataHub)));
+            webServer.PagedViewModelTypes.TryAdd("Settings.cshtml", new Tuple<Type, Type>(typeof(Setting), typeof(DataHub)));
 
             // Define exception logger for CSV downloader
             CsvDownloadHandler.LogExceptionHandler = LogException;
@@ -412,17 +412,17 @@ namespace openMIC
         /// <summary>
         /// Sends a command request to the service.
         /// </summary>
+        /// <param name="userInput">Request string.</param>
         /// <param name="clientID">Client ID of sender.</param>
         /// <param name="principal">The principal used for role-based security.</param>
-        /// <param name="userInput">Request string.</param>
-        public void SendRequest(Guid clientID, IPrincipal principal, string userInput)
+        public void SendRequest(string userInput, Guid clientID = default, IPrincipal principal = null)
         {
             ClientRequest request = ClientRequest.Parse(userInput);
 
-            if ((object)request == null)
+            if (request == null)
                 return;
 
-            if (SecurityProviderUtility.IsResourceSecurable(request.Command) && !SecurityProviderUtility.IsResourceAccessible(request.Command, principal))
+            if (principal != null && SecurityProviderUtility.IsResourceSecurable(request.Command) && !SecurityProviderUtility.IsResourceAccessible(request.Command, principal))
             {
                 ServiceHelper.UpdateStatus(clientID, UpdateType.Alarm, $"Access to \"{request.Command}\" is denied.\r\n\r\n");
                 return;
@@ -430,7 +430,7 @@ namespace openMIC
 
             ClientRequestHandler requestHandler = ServiceHelper.FindClientRequestHandler(request.Command);
 
-            if ((object)requestHandler == null)
+            if (requestHandler == null)
             {
                 ServiceHelper.UpdateStatus(clientID, UpdateType.Alarm, $"Command \"{request.Command}\" is not supported.\r\n\r\n");
                 return;
@@ -438,7 +438,7 @@ namespace openMIC
 
             ClientInfo clientInfo = new ClientInfo();
             clientInfo.ClientID = clientID;
-            clientInfo.SetClientUser(principal);
+            clientInfo.SetClientUser(principal ?? Thread.CurrentPrincipal);
 
             ClientRequestInfo requestInfo = new ClientRequestInfo(clientInfo, request);
             requestHandler.HandlerMethod(requestInfo);

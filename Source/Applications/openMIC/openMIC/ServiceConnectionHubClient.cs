@@ -67,9 +67,7 @@ namespace openMIC
                     {
                         Program.Host.UpdatedStatus -= m_serviceHost_UpdatedStatus;
 
-                        Guid clientID;
-
-                        if (Guid.TryParse(ConnectionID, out clientID))
+                        if (Guid.TryParse(ConnectionID, out Guid clientID))
                             Program.Host.DisconnectClient(clientID);
                     }
                 }
@@ -88,17 +86,13 @@ namespace openMIC
         public void SendCommand(string command)
         {
             // Note that rights of current thread principle will be used to determine service command rights...
-            Guid clientID;
-
-            if (Guid.TryParse(ConnectionID, out clientID))
-                Program.Host.SendRequest(clientID, HubInstance.Context.User, command);
+            if (Guid.TryParse(ConnectionID, out Guid clientID))
+                Program.Host.SendRequest(command, clientID, HubInstance.Context.User);
         }
 
         private void m_serviceHost_UpdatedStatus(object sender, EventArgs<Guid, string, UpdateType> e)
         {
-            Guid clientID;
-
-            if (!Guid.TryParse(ConnectionID, out clientID))
+            if (!Guid.TryParse(ConnectionID, out Guid clientID))
                 return;
 
             // Only show broadcast messages or those destined to this client
