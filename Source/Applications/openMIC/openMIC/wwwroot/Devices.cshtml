@@ -49,6 +49,7 @@
         new[] { null, "Status", "text-center valign-middle" },
         new[] { "Acronym", "Acronym", "text-left" },
         new[] { null, "Schedule", "text-center valign-middle" },
+        new[] { null, "Tasks", "text-center valign-middle" },
         new[] { "Enabled", "Enabled", "text-center" }
     };
 
@@ -64,6 +65,7 @@
         <td width="5%" class="text-center valign-middle"><img src="@Resources.Root/Shared/Images/StatusLights/Small/greenlight.png" alt="Enabled" data-bind="visible: Enabled"><img src="@Resources.Root/Shared/Images/StatusLights/Small/disabledlight.png" alt="Disabled" data-bind="visible: !Enabled"></td>
         <td width="65%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Acronym, click: showEditScreen.bind($data, true)"></button></td>
         <td width="20%" class="text-center" data-bind="text: notNull(ConnectionString).parseKeyValuePairs().get('schedule')"></td>
+        <td width="5%" class="text-center"> <button type="button" class="btn btn-sm btn-default" data-bind="click: queueNow.bind($data), enable: $parent.dataHubIsConnected">Queue Now</button></td>
         <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Enabled, click: enabledStateChanged.bind($data), enable: $parent.dataHubIsConnected" /></td>
         <td width="5%" class="text-center valign-middle" nowrap>
             <button type="button" class="btn btn-xs" data-bind="click: showEditScreen.bind($data, false), enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
@@ -330,6 +332,15 @@
                     refreshEnabledState(record);
                 });
             }
+        }
+
+        function queueNow(record) {
+            if (!hubIsConnected)
+                return;
+
+            serviceHub.sendCommand("Invoke " + record.Acronym + " QueueTasks").done(function() {
+                window.location.href = "/Status.cshtml";
+            });
         }
     </script>
 }

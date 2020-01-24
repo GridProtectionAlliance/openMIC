@@ -21,7 +21,6 @@
 //
 //******************************************************************************************************
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -54,7 +53,7 @@ namespace openMIC
         /// <remarks>
         /// Call format:
         /// <code>
-        /// http://localhost:8089/api/Operations/QueueTasksWithPriority?priority=Expedited&target=Meter1,target=Meter2,target=Meter3
+        /// http://localhost:8089/api/Operations/QueueTasksWithPriority?priority=Expedited&target=Meter1&target=Meter2&target=Meter3
         /// </code>
         /// </remarks>
         [HttpGet]
