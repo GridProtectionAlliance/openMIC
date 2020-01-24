@@ -57,6 +57,7 @@ namespace openMIC
         /// http://localhost:8089/api/Operations/QueueTasksWithPriority?priority=Expedited&target=Meter1,target=Meter2,target=Meter3
         /// </code>
         /// </remarks>
+        [HttpGet]
         public HttpResponseMessage QueueTasksWithPriority([FromUri] QueuePriority priority, [FromUri(Name = "target")] List<string> targets)
         {
             using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
@@ -77,7 +78,7 @@ namespace openMIC
                     }
 
                     if (!string.IsNullOrWhiteSpace(acronym))
-                        Program.Host.SendRequest(Guid.Empty, User, $"Invoke {acronym} QueueTasksWithPriority {priority}");
+                        Program.Host.SendRequest($"Invoke {acronym} QueueTasksWithPriority {priority}");
                 }
             }
 
