@@ -25,13 +25,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Security;
 using System.Security.Principal;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using GSF;
 using GSF.ComponentModel;
 using GSF.Configuration;
+using GSF.Diagnostics;
 using GSF.IO;
 using GSF.Security;
 using GSF.Security.Model;
@@ -45,6 +50,7 @@ using GSF.Web.Security;
 using GSF.Web.Shared;
 using GSF.Web.Shared.Model;
 using Microsoft.Owin.Hosting;
+using Microsoft.SqlServer.Server;
 using openMIC.Model;
 
 namespace openMIC
@@ -70,6 +76,7 @@ namespace openMIC
 
         // Fields
         private IDisposable m_webAppHost;
+        private long m_currentPoolTarget;
         private bool m_serviceStopping;
         private bool m_disposed;
 
@@ -207,6 +214,7 @@ namespace openMIC
             systemSettings.Add("FromAddress", "openmic@gridprotectionalliance.org", "The from address for e-mails.");
             systemSettings.Add("SmtpUserName", "", "Username to authenticate to the SMTP server, if any.");
             systemSettings.Add("SmtpPassword", "", "Password to authenticate to the SMTP server, if any.");
+            systemSettings.Add("PoolMachines", "", "Comma separated list of openMIC pooled load-balancing machines");
 
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
@@ -244,6 +252,25 @@ namespace openMIC
             Model.Global.DefaultCorsHeaders = systemSettings["DefaultCorsHeaders"].Value;
             Model.Global.DefaultCorsMethods = systemSettings["DefaultCorsMethods"].Value;
             Model.Global.DefaultCorsSupportsCredentials = systemSettings["DefaultCorsSupportsCredentials"].ValueAsBoolean(true);
+
+            // Setup pooled machine configuration
+            string poolMachines = systemSettings["PoolMachines"].Value;
+
+            if (!string.IsNullOrWhiteSpace(poolMachines))
+            {
+                // Add configured pool machines making sure to also add local machine
+                HashSet<string> poolMachineList = new HashSet<string>(poolMachines.Split(',')) { "localhost" };
+                Model.Global.PoolMachines = poolMachineList.ToArray();
+            }
+
+            // Determine web port
+            string webHostURL = systemSettings["WebHostURL"].Value;
+            string[] parts = webHostURL.Split(':');
+
+            if (parts.Length > 1 && ushort.TryParse(parts[parts.Length - 1], out ushort port))
+                Model.Global.WebPort = port;
+            else
+                Model.Global.WebPort = 8089;
 
             // Parse configured authentication schemes
             if (!Enum.TryParse(systemSettings["AuthenticationSchemes"].ValueAs(AuthenticationOptions.DefaultAuthenticationSchemes.ToString()), true, out AuthenticationSchemes authenticationSchemes))
@@ -307,7 +334,7 @@ namespace openMIC
 
                 while (!m_serviceStopping)
                 {
-                    if (TryStartWebHosting(systemSettings["WebHostURL"].Value))
+                    if (TryStartWebHosting(webHostURL))
                     {
                         try
                         {
@@ -420,6 +447,51 @@ namespace openMIC
         /// <param name="priority">Priority of task to use when queuing.</param>
         public void QueueTasksWithPriority(string acronym, QueuePriority priority)
         {
+            string[] pooledMachines = Model.Global.PoolMachines;
+
+            if (pooledMachines == null || pooledMachines.Length == 0)
+            {
+                QueueTasksLocally(acronym, priority);
+                return;
+            }
+
+            string targetMachine = pooledMachines[m_currentPoolTarget++ % pooledMachines.Length];
+
+            if (targetMachine.Equals("localhost"))
+            {
+                QueueTasksLocally(acronym, priority);
+                return;
+            }
+
+            string actionURI = $"http://{targetMachine}:{Model.Global.WebPort}/api/Operations/QueueTasksWithPriority?priority={priority}&target={acronym}";
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, actionURI);
+
+            try
+            {
+                Task<HttpResponseMessage> task = s_http.SendAsync(request);
+                task.Wait();
+
+                HttpResponseMessage response = task.Result;
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                    LogStatusMessage($"REMOTE QUEUE: Successfully executed remote queue action \"{actionURI}\" for \"{acronym}\" task load at {priority} priority");
+                else
+                    throw new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\", HTTP response = {response.StatusCode}: {response.ReasonPhrase}");
+            }
+            catch (Exception ex)
+            {
+                if (ex is AggregateException aggEx)
+                    LogException(new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\": {string.Join(", ", aggEx.InnerExceptions.Select(innerEx => innerEx.Message))}"));
+                else
+                    LogException(ex);
+
+                // Move on to next pool machine when queue fails
+                QueueTasksWithPriority(acronym, priority);
+            }
+        }
+
+        private void QueueTasksLocally(string acronym, QueuePriority priority)
+        {
             IAdapter adapter = GetRequestedAdapter(new ClientRequestInfo(null, ClientRequest.Parse($"Invoke {acronym}")));
 
             if (adapter is Downloader downloader)
@@ -477,6 +549,13 @@ namespace openMIC
             if ((object)LoggedException != null)
                 LoggedException(sender, new EventArgs<Exception>(e.Argument));
         }
+
+        #endregion
+
+        #region [ Static ]
+
+        // Static Fields
+        private static readonly HttpClient s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
 
         #endregion
     }

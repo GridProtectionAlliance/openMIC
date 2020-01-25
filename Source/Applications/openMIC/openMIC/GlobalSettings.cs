@@ -212,5 +212,17 @@ namespace openMIC
             get;
             set;
         }
+
+        public string[] PoolMachines
+        {
+            get;
+            set;
+        }
+
+        public ushort WebPort
+        {
+            get;
+            set;
+        }
     }
 }

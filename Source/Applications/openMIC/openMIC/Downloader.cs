@@ -768,14 +768,14 @@ namespace openMIC
         public void QueueTasks()
         {
             // This is for user requested items - these take precedence over all others
-            QueueTasksWithPriority(QueuePriority.Urgent);
+            // Call is made via ServiceHost to handle pooled distribution
+            Program.Host.QueueTasksWithPriority(Name, QueuePriority.Urgent);
         }
 
         /// <summary>
         /// Queues specified tasks for execution at specified <paramref name="priority"/>.
         /// </summary>
         /// <param name="priority">Priority of task to use when queuing.</param>
-        [AdapterCommand("Queues scheduled tasks for immediate execution.", "Administrator", "Editor")]
         public void QueueTasksWithPriority(QueuePriority priority)
         {
             if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks, (int)priority))
