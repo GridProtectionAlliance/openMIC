@@ -667,7 +667,7 @@ namespace openMIC
                         m_cancellationToken.Cancel();
                         DeregisterSchedule(this);
 
-                        if ((object)m_rasDialer != null)
+                        if (m_rasDialer != null)
                         {
                             m_rasDialer.Error -= m_rasDialer_Error;
                             m_rasDialer.Dispose();
@@ -767,8 +767,8 @@ namespace openMIC
         [AdapterCommand("Queues scheduled tasks for immediate execution.", "Administrator", "Editor")]
         public void QueueTasks()
         {
-            // This is for user requested items - these take precedence over all others
-            // Call is made via ServiceHost to handle pooled distribution
+            // This is for user requested items - these take precedence over all others,
+            // call is made via ServiceHost to handle pooled distribution
             Program.Host.QueueTasksWithPriority(Name, QueuePriority.Urgent);
         }
 
@@ -794,8 +794,6 @@ namespace openMIC
 
         private void LoadTasks()
         {
-            ConnectionStringParser<ConnectionStringParameterAttribute> parser = new ConnectionStringParser<ConnectionStringParameterAttribute>();
-
             using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 TableOperations<Device> deviceTable = new TableOperations<Device>(connection);
@@ -805,10 +803,9 @@ namespace openMIC
 
                 lock (m_connectionProfileLock)
                 {
-                    string connectionProfileTaskQueueName;
                     ConnectionProfileTaskQueue taskQueue = null;
 
-                    if ((object)taskQueue == null && UseDialUp && !string.IsNullOrWhiteSpace(DialUpEntryName))
+                    if (UseDialUp && !string.IsNullOrWhiteSpace(DialUpEntryName))
                     {
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", DialUpEntryName)
                             ?? new ConnectionProfileTaskQueue() { Name = DialUpEntryName };
@@ -816,7 +813,8 @@ namespace openMIC
                         taskQueue.MaxThreadCount = 1;
                     }
 
-                    if (Settings.TryGetValue(nameof(connectionProfileTaskQueueName), out connectionProfileTaskQueueName) && !string.IsNullOrWhiteSpace(connectionProfileTaskQueueName))
+                    // Check for manual override specification of connection profile task queue name in downloader connection string
+                    if (Settings.TryGetValue("connectionProfileTaskQueueName", out string connectionProfileTaskQueueName) && !string.IsNullOrWhiteSpace(connectionProfileTaskQueueName))
                     {
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", connectionProfileTaskQueueName)
                             ?? new ConnectionProfileTaskQueue() { Name = connectionProfileTaskQueueName };
@@ -828,10 +826,10 @@ namespace openMIC
                     connectionProfileTaskTable.RootQueryRestriction[0] = ConnectionProfileID;
                     IEnumerable<ConnectionProfileTask> tasks = connectionProfileTaskTable.QueryRecords("LoadOrder");
 
-                    if ((object)taskQueue == null && (object)m_connectionProfile.DefaultTaskQueueID != null)
+                    if (taskQueue == null && m_connectionProfile.DefaultTaskQueueID != null)
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("ID = {0}", m_connectionProfile.DefaultTaskQueueID.GetValueOrDefault());
 
-                    if ((object)taskQueue == null)
+                    if (taskQueue == null)
                     {
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", m_connectionProfile.Name)
                             ?? new ConnectionProfileTaskQueue() { Name = m_connectionProfile.Name };
@@ -1008,7 +1006,7 @@ namespace openMIC
             }
             finally
             {
-                if ((object)client != null)
+                if (client != null)
                 {
                     client.CommandSent -= FtpClient_CommandSent;
                     client.ResponseReceived -= FtpClient_ResponseReceived;
@@ -1028,7 +1026,7 @@ namespace openMIC
 
         private void ProcessFTPTask(ConnectionProfileTask task, FtpClient client)
         {
-            if ((object)client == null)
+            if (client == null)
             {
                 task.Fail();
                 return;
@@ -1787,10 +1785,6 @@ namespace openMIC
         private static readonly ScheduleManager s_scheduleManager;
         private static readonly ConcurrentDictionary<string, Downloader> s_instances;
         private static readonly List<ProgressUpdateWrapper> s_queuedProgressUpdates;
-        private static readonly int s_maxDownloadThreshold;
-        private static readonly int s_maxDownloadThresholdTimeWindow;
-        private static readonly string[] s_statusLogInclusions;
-        private static readonly string[] s_statusLogExclusions;
         private static ICancellationToken s_progressUpdateCancellationToken;
 
         // Static Events
@@ -1803,17 +1797,6 @@ namespace openMIC
         // Static Constructor
         static Downloader()
         {
-            const int DefaultMaxDownloadThreshold = 0;
-            const int DefaultMaxDownloadThresholdTimeWindow = 24;
-            const string DefaultStatusLogInclusions = ".rcd,.d00,.dat,.ctl,.cfg,.pcd";
-            const string DefaultStatusLogExclusions = "rms.,trend.";
-
-            CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
-            systemSettings.Add("MaxDownloadThreshold", DefaultMaxDownloadThreshold, "Maximum downloads a meter can have in a specified time range before disabling the meter, subject to specified StatusLog inclusions and exclusions. Set to 0 to disable.");
-            systemSettings.Add("MaxDownloadThresholdTimeWindow", DefaultMaxDownloadThresholdTimeWindow, "Time window for the MaxDownloadThreshold in hours.");
-            systemSettings.Add("StatusLogInclusions", DefaultStatusLogInclusions, "Default inclusions to apply when writing updates to StatusLog table and checking MaxDownloadThreshold.");
-            systemSettings.Add("StatusLogExclusions", DefaultStatusLogExclusions, "Default exclusions to apply when writing updates to StatusLog table and checking MaxDownloadThreshold.");
-
             s_instances = new ConcurrentDictionary<string, Downloader>();
 
             s_queuedProgressUpdates = new List<ProgressUpdateWrapper>();
@@ -1821,19 +1804,13 @@ namespace openMIC
             s_scheduleManager = new ScheduleManager();
             s_scheduleManager.ScheduleDue += ScheduleManager_ScheduleDue;
             s_scheduleManager.Start();
-
-            s_maxDownloadThreshold = systemSettings["MaxDownloadThreshold"].ValueAsInt32(DefaultMaxDownloadThreshold);
-            s_maxDownloadThresholdTimeWindow = systemSettings["MaxDownloadThresholdTimeWindow"].ValueAsInt32(DefaultMaxDownloadThresholdTimeWindow);
-            s_statusLogInclusions = systemSettings["StatusLogInclusions"].ValueAs(DefaultStatusLogInclusions).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            s_statusLogExclusions = systemSettings["StatusLogExclusions"].ValueAs(DefaultStatusLogExclusions).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         private static void ScheduleManager_ScheduleDue(object sender, EventArgs<Schedule> e)
         {
             Schedule schedule = e.Argument;
-            Downloader instance;
 
-            if (s_instances.TryGetValue(schedule.Name, out instance))
+            if (s_instances.TryGetValue(schedule.Name, out Downloader instance))
             {
                 if (instance.m_connectionProfileTaskQueue.QueueAction(instance.ExecuteTasks))
                 {
@@ -1868,7 +1845,7 @@ namespace openMIC
         {
             Action sendProgressUpdates = null;
 
-            sendProgressUpdates = new Action(() =>
+            sendProgressUpdates = () =>
             {
                 List<ProgressUpdateWrapper> queuedProgressUpdates;
 
@@ -1901,7 +1878,7 @@ namespace openMIC
                     else
                         s_progressUpdateCancellationToken = null;
                 }
-            });
+            };
 
             lock (s_queuedProgressUpdates)
             {
@@ -1921,9 +1898,7 @@ namespace openMIC
 
                 foreach (ManagementBaseObject managementObject in descendantIDs)
                 {
-                    ManagementObject descendantID = managementObject as ManagementObject;
-
-                    if ((object)descendantID != null)
+                    if (managementObject is ManagementObject descendantID)
                         TerminateProcessTree(Convert.ToInt32(descendantID["ProcessID"]));
                 }
 
@@ -1966,9 +1941,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_Enabled(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = downloader.IsConnected ? 1.0D : 0.0D;
 
             return statistic;
@@ -1977,9 +1951,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_AttemptedConnections(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = downloader.AttemptedConnections;
 
             return statistic;
@@ -1988,9 +1961,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_SuccessfulConnections(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = downloader.SuccessfulConnections;
 
             return statistic;
@@ -1999,9 +1971,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_FailedConnections(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = downloader.FailedConnections;
 
             return statistic;
@@ -2010,9 +1981,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_AttemptedDialUps(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = downloader.AttemptedDialUps;
 
             return statistic;
@@ -2021,9 +1991,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_SuccessfulDialUps(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = downloader.SuccessfulDialUps;
 
             return statistic;
@@ -2032,9 +2001,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_FailedDialUps(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = downloader.FailedDialUps;
 
             return statistic;
@@ -2043,9 +2011,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_FilesDownloaded(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = downloader.FilesDownloaded;
 
             return statistic;
@@ -2054,9 +2021,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_MegaBytesDownloaded(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = downloader.BytesDownloaded / (double)SI2.Mega;
 
             return statistic;
@@ -2065,9 +2031,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_TotalConnectedTime(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = ((Ticks)downloader.TotalConnectedTime).ToSeconds();
 
             return statistic;
@@ -2076,9 +2041,8 @@ namespace openMIC
         private static double GetDownloaderStatistic_TotalDialUpTime(object source, string arguments)
         {
             double statistic = 0.0D;
-            Downloader downloader = source as Downloader;
 
-            if ((object)downloader != null)
+            if (source is Downloader downloader)
                 statistic = ((Ticks)downloader.TotalDialUpTime).ToSeconds();
 
             return statistic;

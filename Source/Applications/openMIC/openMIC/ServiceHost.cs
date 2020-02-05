@@ -26,17 +26,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Security;
 using System.Security.Principal;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GSF;
 using GSF.ComponentModel;
 using GSF.Configuration;
-using GSF.Diagnostics;
 using GSF.IO;
 using GSF.Security;
 using GSF.Security.Model;
@@ -50,7 +47,6 @@ using GSF.Web.Security;
 using GSF.Web.Shared;
 using GSF.Web.Shared.Model;
 using Microsoft.Owin.Hosting;
-using Microsoft.SqlServer.Server;
 using openMIC.Model;
 
 namespace openMIC
