@@ -210,7 +210,8 @@ namespace openMIC
             systemSettings.Add("FromAddress", "openmic@gridprotectionalliance.org", "The from address for e-mails.");
             systemSettings.Add("SmtpUserName", "", "Username to authenticate to the SMTP server, if any.");
             systemSettings.Add("SmtpPassword", "", "Password to authenticate to the SMTP server, if any.");
-            systemSettings.Add("PoolMachines", "", "Comma separated list of openMIC pooled load-balancing machines");
+            systemSettings.Add("PoolMachines", "", "Comma separated list of openMIC pooled load-balancing machines. Should be blank when UseRemoteScheduler is true.");
+            systemSettings.Add("UseRemoteScheduler", false, "Flag that determines if scheduling is handled locally or managed by remote master system");
 
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
@@ -257,6 +258,14 @@ namespace openMIC
                 // Add configured pool machines making sure to also add local machine
                 HashSet<string> poolMachineList = new HashSet<string>(poolMachines.Split(',')) { "localhost" };
                 Model.Global.PoolMachines = poolMachineList.ToArray();
+                
+                // System with defined pool machines is considered master scheduler
+                Model.Global.UseRemoteScheduler = false;
+            }
+            else
+            {
+                // When UseRemoteScheduler is true, local task scheduling will be ignored
+                Model.Global.UseRemoteScheduler = systemSettings["UseRemoteScheduler"].ValueAs(false);
             }
 
             // Determine web port

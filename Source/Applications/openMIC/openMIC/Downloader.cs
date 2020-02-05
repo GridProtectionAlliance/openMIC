@@ -173,10 +173,6 @@ namespace openMIC
             }
         }
 
-        // Constants
-        private const int NormalPriorty = 1;
-        private const int HighPriority = 2;
-
         // Fields
         private readonly RasDialer m_rasDialer;
         private readonly DeviceProxy m_deviceProxy;
@@ -691,8 +687,8 @@ namespace openMIC
         public override void Initialize()
         {
             base.Initialize();
-            ConnectionStringParser<ConnectionStringParameterAttribute> parser = new ConnectionStringParser<ConnectionStringParameterAttribute>();
 
+            ConnectionStringParser<ConnectionStringParameterAttribute> parser = new ConnectionStringParser<ConnectionStringParameterAttribute>();
             parser.ParseConnectionString(ConnectionString, this);
 
             LoadTasks();
@@ -1276,7 +1272,7 @@ namespace openMIC
                         if (settings.SynchronizeTimestamps)
                         {
                             FileInfo info = new FileInfo(wrapper.LocalPath);
-                            
+
                             while (info.LastAccessTime != wrapper.RemoteFile.Timestamp || info.LastWriteTime != wrapper.RemoteFile.Timestamp)
                             {
                                 info.LastAccessTime = info.LastWriteTime = wrapper.RemoteFile.Timestamp;
@@ -1339,7 +1335,7 @@ namespace openMIC
 
             if (!string.IsNullOrEmpty(settings.LocalPath))
                 subPath = subPath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            
+
             string directoryName = Path.Combine(settings.LocalPath, subPath);
 
             if (!Directory.Exists(directoryName))
@@ -1374,7 +1370,7 @@ namespace openMIC
                 { "<ProfileName>", m_connectionProfile.Name ?? "undefined" }
             };
 
-            if(settings.RemotePath.Contains("<Day DD-1>"))
+            if (settings.RemotePath.Contains("<Day DD-1>"))
             {
                 substitutions["<YYYY>"] = $"{DateTime.Now.AddDays(-1).Year}";
                 substitutions["<YY>"] = $"{DateTime.Now.AddDays(-1).Year.ToString().Substring(2)}";
@@ -1831,14 +1827,22 @@ namespace openMIC
 
         private static void RegisterSchedule(Downloader instance)
         {
+            // Do not register any local task schedules if dependent upon remote scheduler
+            if (Program.Host.Model.Global.UseRemoteScheduler)
+                return;
+
             s_instances.TryAdd(instance.Name, instance);
             s_scheduleManager.AddSchedule(instance.Name, instance.Schedule, $"Download schedule for \"{instance.Name}\"", true);
         }
 
         private static void DeregisterSchedule(Downloader instance)
         {
+            // Nothing to unregister when task schedules are dependent upon remote scheduler
+            if (Program.Host.Model.Global.UseRemoteScheduler)
+                return;
+
             s_scheduleManager.RemoveSchedule(instance.Name);
-            s_instances.TryRemove(instance.Name, out instance);
+            s_instances.TryRemove(instance.Name, out _);
         }
 
         private static void OnProgressUpdated(Downloader instance, ProgressUpdate update)

@@ -219,6 +219,12 @@ namespace openMIC
             set;
         }
 
+        public bool UseRemoteScheduler
+        {
+            get;
+            set;
+        }
+
         public ushort WebPort
         {
             get;
