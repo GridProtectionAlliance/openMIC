@@ -937,6 +937,9 @@ namespace openMIC
                     }
                 }
 
+                // Capture local time before task operations to provide consistent timestamp for all tasks
+                DateTime localTime = DateTime.Now;
+
                 foreach (ConnectionProfileTask task in tasks)
                 {
                     ConnectionProfileTaskSettings settings = task.Settings;
@@ -950,9 +953,9 @@ namespace openMIC
                     task.Reset();
 
                     if (string.IsNullOrWhiteSpace(task.Settings.ExternalOperation))
-                        ProcessFTPTask(task, client);
+                        ProcessFTPTask(task, client, localTime);
                     else
-                        ProcessExternalOperationTask(task);
+                        ProcessExternalOperationTask(task, localTime);
 
                     // Handle local file age limit processing, if enabled
                     if (settings.DeleteOldLocalFiles)
@@ -1020,7 +1023,7 @@ namespace openMIC
             }
         }
 
-        private void ProcessFTPTask(ConnectionProfileTask task, FtpClient client)
+        private void ProcessFTPTask(ConnectionProfileTask task, FtpClient client, DateTime localTime)
         {
             if (client == null)
             {
@@ -1030,8 +1033,8 @@ namespace openMIC
 
             try
             {
-                string remotePath = GetRemotePathDirectory(task.Settings);
-                string localDirectoryPath = GetLocalPathDirectory(task.Settings);
+                string remotePath = GetRemotePathDirectory(task.Settings, localTime);
+                string localDirectoryPath = GetLocalPathDirectory(task.Settings, localTime);
                 List<FtpFileWrapper> files = new List<FtpFileWrapper>();
 
                 OnStatusMessage(MessageLevel.Info, $"Ensuring local path \"{localDirectoryPath}\" exists.");
@@ -1317,14 +1320,14 @@ namespace openMIC
             }
         }
 
-        private string GetLocalPathDirectory(ConnectionProfileTaskSettings settings)
+        private string GetLocalPathDirectory(ConnectionProfileTaskSettings settings, DateTime localTime)
         {
             Dictionary<string, string> substitutions = new Dictionary<string, string>
             {
-                { "<YYYY>", $"{DateTime.Now.Year}" },
-                { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
-                { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
-                { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
+                { "<YYYY>", $"{localTime.Year}" },
+                { "<YY>", $"{localTime.Year.ToString().Substring(2)}" },
+                { "<MM>", $"{localTime.Month.ToString().PadLeft(2, '0')}" },
+                { "<DD>", $"{localTime.Day.ToString().PadLeft(2, '0')}" },
                 { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
                 { "<DeviceAcronym>", m_deviceRecord.Acronym },
                 { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
@@ -1353,17 +1356,17 @@ namespace openMIC
             return directoryName;
         }
 
-        private string GetRemotePathDirectory(ConnectionProfileTaskSettings settings)
+        private string GetRemotePathDirectory(ConnectionProfileTaskSettings settings, DateTime localTime)
         {
             Dictionary<string, string> substitutions = new Dictionary<string, string>
             {
-                { "<YYYY>", $"{DateTime.Now.Year}" },
-                { "<YY>", $"{DateTime.Now.Year.ToString().Substring(2)}" },
-                { "<MM>", $"{DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
-                { "<DD>", $"{DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
-                { "<Month MM>", $"Month {DateTime.Now.Month.ToString().PadLeft(2, '0')}" },
-                { "<Day DD>", $"Day {DateTime.Now.Day.ToString().PadLeft(2, '0')}" },
-                { "<Day DD-1>", $"Day {DateTime.Now.AddDays(-1).Day.ToString().PadLeft(2, '0')}" },
+                { "<YYYY>", $"{localTime.Year}" },
+                { "<YY>", $"{localTime.Year.ToString().Substring(2)}" },
+                { "<MM>", $"{localTime.Month.ToString().PadLeft(2, '0')}" },
+                { "<DD>", $"{localTime.Day.ToString().PadLeft(2, '0')}" },
+                { "<Month MM>", $"Month {localTime.Month.ToString().PadLeft(2, '0')}" },
+                { "<Day DD>", $"Day {localTime.Day.ToString().PadLeft(2, '0')}" },
+                { "<Day DD-1>", $"Day {localTime.AddDays(-1).Day.ToString().PadLeft(2, '0')}" },
                 { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
                 { "<DeviceAcronym>", m_deviceRecord.Acronym },
                 { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
@@ -1372,19 +1375,19 @@ namespace openMIC
 
             if (settings.RemotePath.Contains("<Day DD-1>"))
             {
-                substitutions["<YYYY>"] = $"{DateTime.Now.AddDays(-1).Year}";
-                substitutions["<YY>"] = $"{DateTime.Now.AddDays(-1).Year.ToString().Substring(2)}";
-                substitutions["<MM>"] = $"{DateTime.Now.AddDays(-1).Month.ToString().PadLeft(2, '0')}";
-                substitutions["<Month MM>"] = $"Month {DateTime.Now.AddDays(-1).Month.ToString().PadLeft(2, '0')}";
+                substitutions["<YYYY>"] = $"{localTime.AddDays(-1).Year}";
+                substitutions["<YY>"] = $"{localTime.AddDays(-1).Year.ToString().Substring(2)}";
+                substitutions["<MM>"] = $"{localTime.AddDays(-1).Month.ToString().PadLeft(2, '0')}";
+                substitutions["<Month MM>"] = $"Month {localTime.AddDays(-1).Month.ToString().PadLeft(2, '0')}";
             }
 
             return substitutions.Aggregate(settings.RemotePath, (path, sub) => path.Replace(sub.Key, sub.Value));
         }
 
-        private void ProcessExternalOperationTask(ConnectionProfileTask task)
+        private void ProcessExternalOperationTask(ConnectionProfileTask task, DateTime localTime)
         {
             ConnectionProfileTaskSettings settings = task.Settings;
-            string localPathDirectory = GetLocalPathDirectory(settings);
+            string localPathDirectory = GetLocalPathDirectory(settings, localTime);
 
             Dictionary<string, string> substitutions = new Dictionary<string, string>
             {
@@ -1392,7 +1395,7 @@ namespace openMIC
                 { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
                 { "<DeviceAcronym>", m_deviceRecord.Acronym },
                 { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
-                { "<DeviceFolderPath>", GetLocalPathDirectory(settings) },
+                { "<DeviceFolderPath>", GetLocalPathDirectory(settings, localTime) },
                 { "<ConnectionHostName>", ConnectionHostName },
                 { "<ConnectionUserName>", ConnectionUserName },
                 { "<ConnectionPassword>", ConnectionPassword },
