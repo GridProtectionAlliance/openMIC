@@ -1033,16 +1033,16 @@ namespace openMIC
 
             try
             {
-                string remotePath = GetRemotePathDirectory(task.Settings, localTime);
-                string localDirectoryPath = GetLocalPathDirectory(task.Settings, localTime);
+                string remotePathDirectory = GetRemotePathDirectory(task.Settings, localTime);
+                string localPathDirectory = GetLocalPathDirectory(task.Settings, localTime);
                 List<FtpFileWrapper> files = new List<FtpFileWrapper>();
 
-                OnStatusMessage(MessageLevel.Info, $"Ensuring local path \"{localDirectoryPath}\" exists.");
-                Directory.CreateDirectory(localDirectoryPath);
+                OnStatusMessage(MessageLevel.Info, $"Ensuring local path \"{localPathDirectory}\" exists.");
+                Directory.CreateDirectory(localPathDirectory);
 
-                OnStatusMessage(MessageLevel.Info, $"Building list of files to be downloaded from \"{remotePath}\".");
-                BuildFileList(files, task, client, remotePath, localDirectoryPath);
-                DownloadAllFiles(files, client, task);
+                OnStatusMessage(MessageLevel.Info, $"Building list of files to be downloaded from \"{remotePathDirectory}\".");
+                BuildFileList(files, task, client, remotePathDirectory, localPathDirectory);
+                DownloadAllFiles(files, task);
             }
             catch (Exception ex)
             {
@@ -1051,17 +1051,17 @@ namespace openMIC
             }
         }
 
-        private void BuildFileList(List<FtpFileWrapper> fileList, ConnectionProfileTask task, FtpClient client, string remotePath, string localDirectoryPath)
+        private void BuildFileList(List<FtpFileWrapper> fileList, ConnectionProfileTask task, FtpClient client, string remotePathDirectory, string localPathDirectory)
         {
             ConnectionProfileTaskSettings settings = task.Settings;
 
             if (m_cancellationToken.IsCancelled)
                 return;
 
-            OnStatusMessage(MessageLevel.Info, $"Attempting to set remote FTP directory path \"{remotePath}\"...");
-            client.SetCurrentDirectory(remotePath);
+            OnStatusMessage(MessageLevel.Info, $"Attempting to set remote FTP directory path \"{remotePathDirectory}\"...");
+            client.SetCurrentDirectory(remotePathDirectory);
 
-            OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePath}\"...");
+            OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePathDirectory}\"...");
 
             foreach (FtpFile file in client.CurrentDirectory.Files)
             {
@@ -1085,7 +1085,7 @@ namespace openMIC
                     continue;
                 }
 
-                string localPath = Path.Combine(localDirectoryPath, file.Name);
+                string localPath = Path.Combine(localPathDirectory, file.Name);
 
                 if (File.Exists(localPath) && settings.SkipDownloadIfUnchanged)
                 {
@@ -1120,14 +1120,14 @@ namespace openMIC
 
                 try
                 {
-                    OnStatusMessage(MessageLevel.Info, $"Enumerating remote directories in \"{remotePath}\"...");
+                    OnStatusMessage(MessageLevel.Info, $"Enumerating remote directories in \"{remotePathDirectory}\"...");
                     directories = client.CurrentDirectory.SubDirectories.ToArray();
                 }
                 catch (Exception ex)
                 {
                     task.Fail(ex.Message);
-                    OnProcessException(MessageLevel.Error, new Exception($"Failed to enumerate remote directories in \"{remotePath}\" due to exception: {ex.Message}", ex));
-                    OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"Failed to enumerate remote directories in \"{remotePath}\": {ex.Message}" });
+                    OnProcessException(MessageLevel.Error, new Exception($"Failed to enumerate remote directories in \"{remotePathDirectory}\" due to exception: {ex.Message}", ex));
+                    OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"Failed to enumerate remote directories in \"{remotePathDirectory}\": {ex.Message}" });
                 }
 
                 foreach (FtpDirectory directory in directories)
@@ -1142,10 +1142,10 @@ namespace openMIC
                         if (directoryName.StartsWith(".", StringComparison.Ordinal))
                             continue;
 
-                        string remoteSubPath = FTPPathCombine(remotePath, directoryName);
-                        string localSubPath = Path.Combine(localDirectoryPath, directoryName);
+                        string remoteSubPath = FTPPathCombine(remotePathDirectory, directoryName);
+                        string localSubPath = Path.Combine(localPathDirectory, directoryName);
 
-                        OnStatusMessage(MessageLevel.Info, $"Recursively adding files in \"{remotePath}\" to file list...");
+                        OnStatusMessage(MessageLevel.Info, $"Recursively adding files in \"{remotePathDirectory}\" to file list...");
                         BuildFileList(fileList, task, client, remoteSubPath, localSubPath);
                     }
                     catch (Exception ex)
@@ -1158,7 +1158,7 @@ namespace openMIC
             }
         }
 
-        private void DownloadAllFiles(List<FtpFileWrapper> files, FtpClient client, ConnectionProfileTask task)
+        private void DownloadAllFiles(List<FtpFileWrapper> files, ConnectionProfileTask task)
         {
             ConnectionProfileTaskSettings settings = task.Settings;
 
@@ -1395,7 +1395,7 @@ namespace openMIC
                 { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
                 { "<DeviceAcronym>", m_deviceRecord.Acronym },
                 { "<DeviceFolderName>", m_deviceRecord.OriginalSource ?? m_deviceRecord.Acronym },
-                { "<DeviceFolderPath>", GetLocalPathDirectory(settings, localTime) },
+                { "<DeviceFolderPath>", localPathDirectory },
                 { "<ConnectionHostName>", ConnectionHostName },
                 { "<ConnectionUserName>", ConnectionUserName },
                 { "<ConnectionPassword>", ConnectionPassword },
