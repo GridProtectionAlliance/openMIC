@@ -79,6 +79,11 @@
         databaseType = "Not Available";
         databaseName = "Not Available";
     }
+
+    bool useRemoteScheduler = Model.Global.UseRemoteScheduler;
+    bool scheduleMaster = Model.Global.PoolMachines != null && Model.Global.PoolMachines.Length > 0;
+    string functionalIdentity = useRemoteScheduler ? "Subordinate" : scheduleMaster ? "Schedule Master" : "Independent";
+    string[] poolMachines = Model.Global.PoolMachines;
 }
 @section StyleSheets {
     <style>
@@ -282,6 +287,22 @@
             </div>
         </div>
         <div class="text-info text-center small"style="margin-top: -15px;">
+            Functional Identity: @functionalIdentity<br />
+            @if (scheduleMaster) {
+                Uri requestUri = ViewBag.Request.RequestUri;
+                string urlFormat = string.Format("{0}://{{0}}:{1}/", requestUri.Scheme, requestUri.Port);
+                List<string> poolMachineAnchors = new List<string>();
+
+                foreach (string poolMachine in poolMachines) {
+                    if (string.Compare(poolMachine, "localhost", StringComparison.OrdinalIgnoreCase) != 0) {
+                        poolMachineAnchors.Add(string.Format("<a href=\"{0}\" target=\"_blank\">{1}</a>", string.Format(urlFormat, poolMachine), poolMachine));
+                    }
+                }
+
+                <text>
+                    Pool Machines: @Raw(string.Join(" &bull; ", poolMachineAnchors))<br/>
+                </text>
+            }
             Using @(Cipher.SystemAllowsManagedEncryption ? "managed" : "FIPS compliant") security algorithms<br />
             Compiled in @(AssemblyInfo.EntryAssembly.Debuggable ? "debug" : "release") mode<br />
             @ViewBag.Request.RequestUri.ToString()

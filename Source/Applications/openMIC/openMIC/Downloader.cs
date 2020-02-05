@@ -583,6 +583,9 @@ namespace openMIC
             {
                 StringBuilder status = new StringBuilder();
 
+                bool useRemoteScheduler = Program.Host.Model.Global.UseRemoteScheduler;
+                bool scheduleMaster = Program.Host.Model.Global.PoolMachines?.Length > 0;
+
                 status.Append(base.Status);
                 status.AppendFormat("      Connection host name: {0}", ConnectionHostName.ToNonNullNorWhiteSpace("undefined"));
                 status.AppendLine();
@@ -590,8 +593,17 @@ namespace openMIC
                 status.AppendLine();
                 status.AppendFormat("     Connection profile ID: {0} - {1}", ConnectionProfileID, m_connectionProfile?.Name ?? "undefined");
                 status.AppendLine();
-                status.AppendFormat("         Download schedule: {0}", Schedule);
+                status.AppendFormat("         Download schedule: {0} - managed {1}", Schedule, useRemoteScheduler ? "remotely" : "locally");
                 status.AppendLine();
+                status.AppendFormat("       Functional identity: {0}", useRemoteScheduler ? "Subordinate" : scheduleMaster ? "Schedule Master" : "Independent");
+                status.AppendLine();
+
+                if (scheduleMaster)
+                {
+                    status.AppendFormat("    Download pool machines: {0}", string.Join(", ", Program.Host.Model.Global.PoolMachines));
+                    status.AppendLine();
+                }
+
                 status.AppendFormat("   Log connection messages: {0}", LogConnectionMessages);
                 status.AppendLine();
                 status.AppendFormat("     Attempted connections: {0}", AttemptedConnections);
@@ -776,10 +788,10 @@ namespace openMIC
         {
             if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks, (int)priority))
             {
-                OnProgressUpdated(this, new ProgressUpdate()
+                OnProgressUpdated(this, new ProgressUpdate
                 {
                     State = ProgressState.Queued,
-                    Message = $"Connection profile tasks queued at ${priority} priority.",
+                    Message = $"Connection profile tasks queued at \"{priority}\" priority.",
                     Progress = 0,
                     ProgressTotal = 1,
                     OverallProgress = 0,
@@ -804,7 +816,7 @@ namespace openMIC
                     if (UseDialUp && !string.IsNullOrWhiteSpace(DialUpEntryName))
                     {
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", DialUpEntryName)
-                            ?? new ConnectionProfileTaskQueue() { Name = DialUpEntryName };
+                            ?? new ConnectionProfileTaskQueue { Name = DialUpEntryName };
 
                         taskQueue.MaxThreadCount = 1;
                     }
@@ -813,7 +825,7 @@ namespace openMIC
                     if (Settings.TryGetValue("connectionProfileTaskQueueName", out string connectionProfileTaskQueueName) && !string.IsNullOrWhiteSpace(connectionProfileTaskQueueName))
                     {
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", connectionProfileTaskQueueName)
-                            ?? new ConnectionProfileTaskQueue() { Name = connectionProfileTaskQueueName };
+                            ?? new ConnectionProfileTaskQueue { Name = connectionProfileTaskQueueName };
                     }
 
                     m_deviceRecord = deviceTable.QueryRecordWhere("Acronym = {0}", Name);
@@ -828,7 +840,7 @@ namespace openMIC
                     if (taskQueue == null)
                     {
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", m_connectionProfile.Name)
-                            ?? new ConnectionProfileTaskQueue() { Name = m_connectionProfile.Name };
+                            ?? new ConnectionProfileTaskQueue { Name = m_connectionProfile.Name };
                     }
 
                     taskQueue.RegisterExceptionHandler(ex => OnProcessException(MessageLevel.Error, ex, "Task Execution"));
@@ -865,7 +877,7 @@ namespace openMIC
 
                 if (tasks.Length == 0)
                 {
-                    OnProgressUpdated(this, new ProgressUpdate()
+                    OnProgressUpdated(this, new ProgressUpdate
                     {
                         State = ProgressState.Fail,
                         ErrorMessage = $"No connection profile tasks defined for \"{connectionProfileName}\"."
@@ -878,7 +890,7 @@ namespace openMIC
                 m_overallTasksCompleted = 0;
                 m_overallTasksCount = tasks.Length;
 
-                OnProgressUpdated(this, new ProgressUpdate()
+                OnProgressUpdated(this, new ProgressUpdate
                 {
                     State = ProgressState.Processing,
                     Message = $"Beginning execution of {m_overallTasksCount} tasks for connection profile \"{connectionProfileName}\"...",
@@ -932,7 +944,7 @@ namespace openMIC
                         {
                             FailedConnections++;
                             OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
-                            OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
+                            OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
                         }
                     }
                 }
@@ -948,7 +960,7 @@ namespace openMIC
                         return;
 
                     OnStatusMessage(MessageLevel.Info, $"Starting \"{connectionProfileName}\" connection profile \"{task.Name}\" task processing:");
-                    OnProgressUpdated(this, new ProgressUpdate() { Message = $"Executing task \"{task.Name}\"..." });
+                    OnProgressUpdated(this, new ProgressUpdate { Message = $"Executing task \"{task.Name}\"..." });
 
                     task.Reset();
 
@@ -961,7 +973,7 @@ namespace openMIC
                     if (settings.DeleteOldLocalFiles)
                         HandleLocalFileAgeLimitProcessing(task);
 
-                    OnProgressUpdated(this, new ProgressUpdate()
+                    OnProgressUpdated(this, new ProgressUpdate
                     {
                         OverallProgress = ++m_overallTasksCompleted,
                         OverallProgressTotal = m_overallTasksCount
@@ -971,7 +983,7 @@ namespace openMIC
                         LogFailure(task.FailMessage);
                 }
 
-                ProgressUpdate finalUpdate = new ProgressUpdate()
+                ProgressUpdate finalUpdate = new ProgressUpdate
                 {
                     OverallProgress = 1,
                     OverallProgressTotal = 1
@@ -993,7 +1005,7 @@ namespace openMIC
             }
             catch (Exception ex)
             {
-                OnProgressUpdated(this, new ProgressUpdate()
+                OnProgressUpdated(this, new ProgressUpdate
                 {
                     State = ProgressState.Fail,
                     ErrorMessage = $"Unexpected error caused task execution to end prematurely: {ex.Message}",
@@ -1074,14 +1086,14 @@ namespace openMIC
                 if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
                 {
                     OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, timestamp \"{file.Timestamp:yyyy-MM-dd HH:mm.ss.fff}\" is older than {Program.Host.Model.Global.MaxRemoteFileAge} days.");
-                    OnProgressUpdated(this, new ProgressUpdate() { Message = $"File \"{file.Name}\" skipped: File is too old." });
+                    OnProgressUpdated(this, new ProgressUpdate { Message = $"File \"{file.Name}\" skipped: File is too old." });
                     continue;
                 }
 
                 if (file.Size > settings.MaximumFileSize * SI2.Mega)
                 {
                     OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, size of {file.Size / SI2.Mega:N3} MB is larger than {settings.MaximumFileSize:N3} MB configured limit.");
-                    OnProgressUpdated(this, new ProgressUpdate() { Message = $"File \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB)." });
+                    OnProgressUpdated(this, new ProgressUpdate { Message = $"File \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB)." });
                     continue;
                 }
 
@@ -1101,7 +1113,7 @@ namespace openMIC
                         if (localEqualsRemote)
                         {
                             OnStatusMessage(MessageLevel.Info, $"Skipping file download for remote file \"{file.Name}\": Local file already exists and matches remote file.");
-                            OnProgressUpdated(this, new ProgressUpdate() { Message = $"File \"{file.Name}\" skipped: Local file already exists and matches remote file" });
+                            OnProgressUpdated(this, new ProgressUpdate { Message = $"File \"{file.Name}\" skipped: Local file already exists and matches remote file" });
                             continue;
                         }
                     }
@@ -1127,7 +1139,7 @@ namespace openMIC
                 {
                     task.Fail(ex.Message);
                     OnProcessException(MessageLevel.Error, new Exception($"Failed to enumerate remote directories in \"{remotePathDirectory}\" due to exception: {ex.Message}", ex));
-                    OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"Failed to enumerate remote directories in \"{remotePathDirectory}\": {ex.Message}" });
+                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to enumerate remote directories in \"{remotePathDirectory}\": {ex.Message}" });
                 }
 
                 foreach (FtpDirectory directory in directories)
@@ -1152,7 +1164,7 @@ namespace openMIC
                     {
                         task.Fail(ex.Message);
                         OnProcessException(MessageLevel.Error, new Exception($"Failed to add remote files from remote directory \"{directory.Name}\" to file list due to exception: {ex.Message}", ex));
-                        OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"Failed to build file list for remote directory \"{directory.Name}\": {ex.Message}" });
+                        OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to build file list for remote directory \"{directory.Name}\": {ex.Message}" });
                     }
                 }
             }
@@ -1168,7 +1180,7 @@ namespace openMIC
             if (m_cancellationToken.IsCancelled)
                 return;
 
-            OnProgressUpdated(this, new ProgressUpdate() { OverallProgress = m_overallTasksCompleted * totalBytes, OverallProgressTotal = totalBytes * m_overallTasksCount });
+            OnProgressUpdated(this, new ProgressUpdate { OverallProgress = m_overallTasksCompleted * totalBytes, OverallProgressTotal = totalBytes * m_overallTasksCount });
 
             // Group files by destination directory so we can skip whole groups
             // of files if the directory does not exist and cannot be created
@@ -1188,7 +1200,7 @@ namespace openMIC
                     string message = $"Failed to create local directory for {grouping.Count()} remote files due to exception: {ex.Message}";
                     OnProcessException(MessageLevel.Error, new Exception(message, ex));
                     progress += grouping.Sum(wrapper => wrapper.RemoteFile.Size);
-                    OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
+                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
                     continue;
                 }
 
@@ -1230,7 +1242,7 @@ namespace openMIC
                     {
                         task.Fail("Local file already exists and settings do not allow overwrite.");
                         OnStatusMessage(MessageLevel.Info, $"Skipping file download for remote file \"{wrapper.RemoteFile.Name}\": Local file already exists and settings do not allow overwrite.");
-                        OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"File \"{wrapper.RemoteFile.Name}\" skipped: Local file already exists", OverallProgress = m_overallTasksCompleted * totalBytes + progress });
+                        OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"File \"{wrapper.RemoteFile.Name}\" skipped: Local file already exists", OverallProgress = m_overallTasksCompleted * totalBytes + progress });
                         continue;
                     }
 
@@ -1254,7 +1266,7 @@ namespace openMIC
 
                                 string message = $"Failed to remove file \"{wrapper.RemoteFile.FullPath}\" from remote server due to exception: {ex.Message}";
                                 OnProcessException(MessageLevel.Warning, new InvalidOperationException(message, ex));
-                                OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = message });
+                                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = message });
                             }
                         }
 
@@ -1264,7 +1276,7 @@ namespace openMIC
                         TotalFilesDownloaded++;
                         BytesDownloaded += wrapper.RemoteFile.Size;
 
-                        OnProgressUpdated(this, new ProgressUpdate()
+                        OnProgressUpdated(this, new ProgressUpdate
                         {
                             Message = $"Successfully downloaded remote file \"{wrapper.RemoteFile.FullPath}\".",
                             Summary = $"{FilesDownloaded} Files Downloaded ({TotalFilesDownloaded} Total)",
@@ -1291,7 +1303,7 @@ namespace openMIC
 
                         string message = $"Failed to download remote file \"{wrapper.RemoteFile.FullPath}\" due to exception: {ex.Message}";
                         OnProcessException(MessageLevel.Warning, new InvalidOperationException(message, ex));
-                        OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
+                        OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
                     }
 
                     // Send e-mail on file update, if requested
@@ -1410,7 +1422,7 @@ namespace openMIC
             TimeSpan timeout = TimeSpan.FromSeconds(settings.ExternalOperationTimeout ?? ConnectionTimeout / 1000.0D);
 
             OnStatusMessage(MessageLevel.Info, $"Executing external operation \"{command}\"...");
-            OnProgressUpdated(this, new ProgressUpdate() { Message = $"Executing external operation command \"{command}\"..." });
+            OnProgressUpdated(this, new ProgressUpdate { Message = $"Executing external operation command \"{command}\"..." });
 
             try
             {
@@ -1441,7 +1453,7 @@ namespace openMIC
 
                         lastUpdate = DateTime.UtcNow;
                         OnStatusMessage(MessageLevel.Info, processArgs.Data);
-                        OnProgressUpdated(this, new ProgressUpdate() { Message = processArgs.Data });
+                        OnProgressUpdated(this, new ProgressUpdate { Message = processArgs.Data });
                     };
 
                     externalOperation.ErrorDataReceived += (sender, processArgs) =>
@@ -1452,7 +1464,7 @@ namespace openMIC
                         task.Fail(processArgs.Data);
                         lastUpdate = DateTime.UtcNow;
                         OnStatusMessage(MessageLevel.Error, processArgs.Data);
-                        OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = processArgs.Data });
+                        OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = processArgs.Data });
                     };
 
                     externalOperation.Start();
@@ -1466,7 +1478,7 @@ namespace openMIC
                             task.Fail();
                             TerminateProcessTree(externalOperation.Id);
                             OnProcessException(MessageLevel.Warning, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: downloader was disabled."));
-                            OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = "External operation forcefully terminated: downloader was disabled." });
+                            OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = "External operation forcefully terminated: downloader was disabled." });
                             return;
                         }
 
@@ -1475,20 +1487,20 @@ namespace openMIC
                             task.Fail();
                             TerminateProcessTree(externalOperation.Id);
                             OnProcessException(MessageLevel.Error, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)."));
-                            OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"External operation forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)." });
+                            OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"External operation forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)." });
                             return;
                         }
                     }
 
                     OnStatusMessage(MessageLevel.Info, $"External operation \"{command}\" completed with status code {externalOperation.ExitCode}.");
-                    OnProgressUpdated(this, new ProgressUpdate() { Message = $"External action complete: exit code {externalOperation.ExitCode}." });
+                    OnProgressUpdated(this, new ProgressUpdate { Message = $"External action complete: exit code {externalOperation.ExitCode}." });
                 }
             }
             catch (Exception ex)
             {
                 task.Fail(ex.Message);
                 OnProcessException(MessageLevel.Error, new InvalidOperationException($"Failed to execute external operation \"{command}\": {ex.Message}", ex));
-                OnProgressUpdated(this, new ProgressUpdate() { ErrorMessage = $"Failed to execute external action: {ex.Message}" });
+                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to execute external action: {ex.Message}" });
             }
         }
 
@@ -1502,7 +1514,7 @@ namespace openMIC
                 m_lastDownloadedFileID = LogDownloadedFile(match.Groups["FilePath"].Value);
                 FilesDownloaded++;
                 TotalFilesDownloaded++;
-                OnProgressUpdated(this, new ProgressUpdate() { Summary = $"{FilesDownloaded} Files Downloaded ({TotalFilesDownloaded} Total)" });
+                OnProgressUpdated(this, new ProgressUpdate { Summary = $"{FilesDownloaded} Files Downloaded ({TotalFilesDownloaded} Total)" });
             }
 
             return match.Success;
@@ -1597,7 +1609,7 @@ namespace openMIC
         {
             ProcessProgress<long> progress = e.Argument1;
 
-            OnProgressUpdated(this, new ProgressUpdate()
+            OnProgressUpdated(this, new ProgressUpdate
             {
                 Message = progress.ProgressMessage,
                 Progress = progress.Complete,
@@ -1813,7 +1825,7 @@ namespace openMIC
             {
                 if (instance.m_connectionProfileTaskQueue.QueueAction(instance.ExecuteTasks))
                 {
-                    OnProgressUpdated(instance, new ProgressUpdate()
+                    OnProgressUpdated(instance, new ProgressUpdate
                     {
                         State = ProgressState.Queued,
                         Message = "Queued tasks at normal priority.",
