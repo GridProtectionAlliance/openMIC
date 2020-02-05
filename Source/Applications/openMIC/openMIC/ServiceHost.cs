@@ -509,7 +509,7 @@ namespace openMIC
         /// <param name="userInput">Request string.</param>
         /// <param name="clientID">Client ID of sender.</param>
         /// <param name="principal">The principal used for role-based security.</param>
-        public void SendRequest(string userInput, Guid clientID = default, IPrincipal principal = null)
+        public void SendRequest(string userInput, Guid clientID = default(Guid), IPrincipal principal = null)
         {
             ClientRequest request = ClientRequest.Parse(userInput);
 
