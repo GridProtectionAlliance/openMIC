@@ -80,10 +80,11 @@
         databaseName = "Not Available";
     }
 
-    bool useRemoteScheduler = Model.Global.UseRemoteScheduler;
-    bool scheduleMaster = Model.Global.PoolMachines != null && Model.Global.PoolMachines.Length > 0;
-    string functionalIdentity = useRemoteScheduler ? "Subordinate" : scheduleMaster ? "Schedule Master" : "Independent";
     string[] poolMachines = Model.Global.PoolMachines;
+    bool useRemoteScheduler = Model.Global.UseRemoteScheduler;
+    bool scheduleMaster = poolMachines != null && poolMachines.Length > 0;
+    string functionalIdentity = useRemoteScheduler ? "Subordinate" : scheduleMaster ? "Schedule Master" : "Independent";
+    Uri requestUri = ViewBag.Request.RequestUri;
 }
 @section StyleSheets {
     <style>
@@ -218,22 +219,13 @@
     </script>
 }
 @functions {
-    public string GetCurrentUserID()
-    {
-        if (Thread.CurrentPrincipal.Identity == null)
-            return UserInfo.CurrentUserID;
-
-        return Thread.CurrentPrincipal.Identity.Name;
+    public string GetCurrentUserID() {
+        return Thread.CurrentPrincipal.Identity == null ? UserInfo.CurrentUserID : Thread.CurrentPrincipal.Identity.Name;
     }
 
-    public bool UserIsAdmin()
-    {
+    public bool UserIsAdmin() {
         SecurityPrincipal securityPrincipal = ViewBag.SecurityPrincipal as SecurityPrincipal;
-
-        if ((object)securityPrincipal == null)
-            return false;
-
-        return securityPrincipal.IsInRole("Administrator");
+        return securityPrincipal != null && securityPrincipal.IsInRole("Administrator");
     }
 }
 <div class="row">
@@ -289,7 +281,6 @@
         <div class="text-info text-center small"style="margin-top: -15px;">
             Functional Identity: @functionalIdentity<br />
             @if (scheduleMaster) {
-                Uri requestUri = ViewBag.Request.RequestUri;
                 string urlFormat = string.Format("{0}://{{0}}:{1}/", requestUri.Scheme, requestUri.Port);
                 List<string> poolMachineAnchors = new List<string>();
 
@@ -305,7 +296,7 @@
             }
             Using @(Cipher.SystemAllowsManagedEncryption ? "managed" : "FIPS compliant") security algorithms<br />
             Compiled in @(AssemblyInfo.EntryAssembly.Debuggable ? "debug" : "release") mode<br />
-            @ViewBag.Request.RequestUri.ToString()
+            @requestUri.ToString()
         </div>
         <!-- label class="small" id="fontSizeLabel"></label -->
     </div>
