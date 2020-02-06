@@ -21,19 +21,6 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Management;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using DotRas;
 using GSF;
 using GSF.Configuration;
@@ -52,6 +39,19 @@ using GSF.TimeSeries.Statistics;
 using GSF.Units;
 using ModbusAdapters.Model;
 using openMIC.Model;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Management;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedParameter.Local
@@ -81,33 +81,18 @@ namespace openMIC
             }
 
             // Gets or sets total data quality errors of this <see cref="IDevice"/>.
-            public long DataQualityErrors
-            {
-                get;
-                set;
-            }
+            public long DataQualityErrors { get; set; }
 
             // Gets or sets total time quality errors of this <see cref="IDevice"/>.
-            public long TimeQualityErrors
-            {
-                get;
-                set;
-            }
+            public long TimeQualityErrors { get; set; }
 
             // Gets or sets total device errors of this <see cref="IDevice"/>.
-            public long DeviceErrors
-            {
-                get;
-                set;
-            }
+            public long DeviceErrors { get; set; }
 
             // Gets or sets total measurements received for this <see cref="IDevice"/> - in local context "successful connections" per day.
             public long MeasurementsReceived
             {
-                get
-                {
-                    return m_parent.SuccessfulConnections;
-                }
+                get => m_parent.SuccessfulConnections;
                 set
                 {
                     // Ignoring updates
@@ -117,29 +102,15 @@ namespace openMIC
             // Gets or sets total measurements expected to have been received for this <see cref="IDevice"/> - in local context "attempted connections" per day.
             public long MeasurementsExpected
             {
-                get
-                {
-                    return m_parent.AttemptedConnections;
-                }
-                set
-                {
-                    // Ignoring updates
-                }
+                get => m_parent.AttemptedConnections;
+                set { } // Ignoring updates
             }
 
             // Gets or sets the number of measurements received while this <see cref="IDevice"/> was reporting errors.
-            public long MeasurementsWithError
-            {
-                get;
-                set;
-            }
+            public long MeasurementsWithError { get; set; }
 
             // Gets or sets the number of measurements (per frame) defined for this <see cref="IDevice"/>.
-            public long MeasurementsDefined
-            {
-                get;
-                set;
-            }
+            public long MeasurementsDefined { get; set; }
         }
 
         // Define a wrapper to store information about a
@@ -210,335 +181,212 @@ namespace openMIC
         /// <summary>
         /// Gets or sets connection host name or IP for transport.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines connection host name or IP for transport.")]
-        public string ConnectionHostName
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines connection host name or IP for transport.")]
+        public string ConnectionHostName { get; set; }
 
         /// <summary>
         /// Gets or sets connection host user name for transport.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines connection host user name for transport."),
-        DefaultValue("anonymous")]
-        public string ConnectionUserName
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines connection host user name for transport.")]
+        [DefaultValue("anonymous")]
+        public string ConnectionUserName { get; set; }
 
         /// <summary>
         /// Gets or sets connection password for transport.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines connection password for transport."),
-        DefaultValue("anonymous")]
-        public string ConnectionPassword
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines connection password for transport.")]
+        [DefaultValue("anonymous")]
+        public string ConnectionPassword { get; set; }
 
         /// <summary>
         /// Gets or sets connection timeout for transport.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines connection timeout for transport."),
-        DefaultValue(30000)]
-        public int ConnectionTimeout
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines connection timeout for transport.")]
+        [DefaultValue(30000)]
+        public int ConnectionTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets mode of FTP connection.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines mode of FTP connection."),
-        DefaultValue(true)]
-        public bool PassiveFtp
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines mode of FTP connection.")]
+        [DefaultValue(true)]
+        public bool PassiveFtp { get; set; }
 
         /// <summary>
         /// Gets or sets mode of FTP connection.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines IP address to send in FTP PORT command."),
-        DefaultValue("")]
-        public string ActiveFtpAddress
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines IP address to send in FTP PORT command.")]
+        [DefaultValue("")]
+        public string ActiveFtpAddress { get; set; }
 
         /// <summary>
         /// Gets or sets mode of FTP connection.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines minimum port in active FTP port range."),
-        DefaultValue(0)]
-        public int MinActiveFtpPort
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines minimum port in active FTP port range.")]
+        [DefaultValue(0)]
+        public int MinActiveFtpPort { get; set; }
 
         /// <summary>
         /// Gets or sets mode of FTP connection.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines maximum port in active FTP port range."),
-        DefaultValue(0)]
-        public int MaxActiveFtpPort
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines maximum port in active FTP port range.")]
+        [DefaultValue(0)]
+        public int MaxActiveFtpPort { get; set; }
 
         /// <summary>
         /// Gets or sets flag that determines if connection messages should be logged.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines flag that determines if connection messages should be logged."),
-        DefaultValue(false)]
-        public bool LogConnectionMessages
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines flag that determines if connection messages should be logged.")]
+        [DefaultValue(false)]
+        public bool LogConnectionMessages { get; set; }
 
         /// <summary>
         /// Gets or sets connection profile record ID.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines connection profile record ID."),
-        DefaultValue(0)]
-        public int ConnectionProfileID
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines connection profile record ID.")]
+        [DefaultValue(0)]
+        public int ConnectionProfileID { get; set; }
 
         /// <summary>
         /// Gets or sets download schedule.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines download schedule."),
-        DefaultValue("* * * * *")]
-        public string Schedule
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines download schedule.")]
+        [DefaultValue("* * * * *")]
+        public string Schedule { get; set; }
 
         /// <summary>
         /// Gets or sets flag that determines if this connection will use dial-up.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Determines if this connection will use dial-up."),
-        DefaultValue(false)]
-        public bool UseDialUp
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Determines if this connection will use dial-up.")]
+        [DefaultValue(false)]
+        public bool UseDialUp { get; set; }
 
         /// <summary>
         /// Gets or sets dial-up entry name.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines dial-up entry name."),
-        DefaultValue("")]
-        public string DialUpEntryName
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines dial-up entry name.")]
+        [DefaultValue("")]
+        public string DialUpEntryName { get; set; }
 
         /// <summary>
         /// Gets or sets dial-up phone number.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines dial-up phone number."),
-        DefaultValue("")]
-        public string DialUpNumber
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines dial-up phone number.")]
+        [DefaultValue("")]
+        public string DialUpNumber { get; set; }
 
         /// <summary>
         /// Gets or sets dial-up user name.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines dial-up user name."),
-        DefaultValue("")]
-        public string DialUpUserName
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines dial-up user name.")]
+        [DefaultValue("")]
+        public string DialUpUserName { get; set; }
 
         /// <summary>
         /// Gets or sets dial-up password.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines dial-up password."),
-        DefaultValue("")]
-        public string DialUpPassword
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines dial-up password.")]
+        [DefaultValue("")]
+        public string DialUpPassword { get; set; }
 
         /// <summary>
         /// Gets or sets maximum retries for a dial-up connection.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines maximum retries for a dial-up connection."),
-        DefaultValue(3)]
-        public int DialUpRetries
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines maximum retries for a dial-up connection.")]
+        [DefaultValue(3)]
+        public int DialUpRetries { get; set; }
 
         /// <summary>
         /// Gets or sets timeout for a dial-up connection.
         /// </summary>
-        [ConnectionStringParameter,
-        Description("Defines timeout for a dial-up connection."),
-        DefaultValue(90)]
-        public int DialUpTimeout
-        {
-            get;
-            set;
-        }
+        [ConnectionStringParameter]
+        [Description("Defines timeout for a dial-up connection.")]
+        [DefaultValue(90)]
+        public int DialUpTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets total number of attempted connections.
         /// </summary>
-        public long AttemptedConnections
-        {
-            get;
-            set;
-        }
+        public long AttemptedConnections { get; set; }
 
         /// <summary>
         /// Gets or sets total number of successful connections.
         /// </summary>
-        public long SuccessfulConnections
-        {
-            get;
-            set;
-        }
+        public long SuccessfulConnections { get; set; }
 
         /// <summary>
         /// Gets or sets total number of failed connections.
         /// </summary>
-        public long FailedConnections
-        {
-            get;
-            set;
-        }
+        public long FailedConnections { get; set; }
 
         /// <summary>
         /// Gets or sets total number of processed files.
         /// </summary>
-        public long TotalProcessedFiles
-        {
-            get;
-            set;
-        }
+        public long TotalProcessedFiles { get; set; }
 
         /// <summary>
         /// Gets or sets total number of attempted dial-ups.
         /// </summary>
-        public long AttemptedDialUps
-        {
-            get;
-            set;
-        }
+        public long AttemptedDialUps { get; set; }
 
         /// <summary>
         /// Gets or sets total number of successful dial-ups.
         /// </summary>
-        public long SuccessfulDialUps
-        {
-            get;
-            set;
-        }
+        public long SuccessfulDialUps { get; set; }
 
         /// <summary>
         /// Gets or sets total number of failed dial-ups.
         /// </summary>
-        public long FailedDialUps
-        {
-            get;
-            set;
-        }
+        public long FailedDialUps { get; set; }
 
         /// <summary>
         /// Gets or sets number of files downloaded during last execution.
         /// </summary>
-        public long FilesDownloaded
-        {
-            get;
-            set;
-        }
+        public long FilesDownloaded { get; set; }
 
         /// <summary>
         /// Gets or sets total number of files downloaded.
         /// </summary>
-        public long TotalFilesDownloaded
-        {
-            get;
-            set;
-        }
+        public long TotalFilesDownloaded { get; set; }
 
         /// <summary>
         /// Gets or sets total number of bytes downloaded.
         /// </summary>
-        public long BytesDownloaded
-        {
-            get;
-            set;
-        }
+        public long BytesDownloaded { get; set; }
 
         /// <summary>
         /// Gets or sets total connected time, in ticks.
         /// </summary>
-        public long TotalConnectedTime
-        {
-            get;
-            set;
-        }
+        public long TotalConnectedTime { get; set; }
 
         /// <summary>
         /// Gets or sets total dial-up time, in ticks.
         /// </summary>
-        public long TotalDialUpTime
-        {
-            get;
-            set;
-        }
+        public long TotalDialUpTime { get; set; }
 
         /// <summary>
         /// Gets or sets <see cref="DataSet" /> based data source available to this <see cref="AdapterBase" />.
         /// </summary>
         public override DataSet DataSource
         {
-            get
-            {
-                return base.DataSource;
-            }
+            get => base.DataSource;
             set
             {
                 base.DataSource = value;
@@ -583,8 +431,9 @@ namespace openMIC
             {
                 StringBuilder status = new StringBuilder();
 
+                string[] poolMachines = Program.Host.Model.Global.PoolMachines;
                 bool useRemoteScheduler = Program.Host.Model.Global.UseRemoteScheduler;
-                bool scheduleMaster = Program.Host.Model.Global.PoolMachines?.Length > 0;
+                bool scheduleMaster = poolMachines?.Length > 0;
 
                 status.Append(base.Status);
                 status.AppendFormat("      Connection host name: {0}", ConnectionHostName.ToNonNullNorWhiteSpace("undefined"));
@@ -600,7 +449,7 @@ namespace openMIC
 
                 if (scheduleMaster)
                 {
-                    status.AppendFormat("    Download pool machines: {0}", string.Join(", ", Program.Host.Model.Global.PoolMachines));
+                    status.AppendFormat("    Download pool machines: {0}", string.Join(", ", poolMachines));
                     status.AppendLine();
                 }
 
@@ -652,7 +501,6 @@ namespace openMIC
             }
         }
 
-
         // Gets RAS connection state
         private RasConnectionState RasState => RasConnection.GetActiveConnections().FirstOrDefault(ras => ras.EntryName == DialUpEntryName)?.GetConnectionStatus()?.ConnectionState ?? RasConnectionState.Disconnected;
 
@@ -666,30 +514,30 @@ namespace openMIC
         /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (!m_disposed)
+            if (m_disposed)
+                return;
+
+            try
             {
-                try
-                {
-                    if (disposing)
-                    {
-                        m_cancellationToken.Cancel();
-                        DeregisterSchedule(this);
+                if (!disposing)
+                    return;
 
-                        if (m_rasDialer != null)
-                        {
-                            m_rasDialer.Error -= m_rasDialer_Error;
-                            m_rasDialer.Dispose();
-                        }
+                m_cancellationToken.Cancel();
+                DeregisterSchedule(this);
 
-                        StatisticsEngine.Unregister(m_deviceProxy);
-                        StatisticsEngine.Unregister(this);
-                    }
-                }
-                finally
+                if (m_rasDialer != null)
                 {
-                    m_disposed = true;          // Prevent duplicate dispose.
-                    base.Dispose(disposing);    // Call base class Dispose().
+                    m_rasDialer.Error -= m_rasDialer_Error;
+                    m_rasDialer.Dispose();
                 }
+
+                StatisticsEngine.Unregister(m_deviceProxy);
+                StatisticsEngine.Unregister(this);
+            }
+            finally
+            {
+                m_disposed = true;          // Prevent duplicate dispose.
+                base.Dispose(disposing);    // Call base class Dispose().
             }
         }
 
@@ -726,21 +574,21 @@ namespace openMIC
                 ConnectionProfileTaskSettings settings = task.Settings;
                 string localPath = settings.LocalPath.ToNonNullString().Trim();
 
-                if (localPath.StartsWith(@"\\") && !string.IsNullOrWhiteSpace(settings.DirectoryAuthUserName) && !string.IsNullOrWhiteSpace(settings.DirectoryAuthPassword))
-                {
-                    string[] userParts = settings.DirectoryAuthUserName.Split('\\');
+                if (!localPath.StartsWith(@"\\") || string.IsNullOrWhiteSpace(settings.DirectoryAuthUserName) || string.IsNullOrWhiteSpace(settings.DirectoryAuthPassword))
+                    continue;
 
-                    try
-                    {
-                        if (userParts.Length == 2)
-                            FilePath.ConnectToNetworkShare(localPath.Trim(), userParts[1].Trim(), settings.DirectoryAuthPassword.Trim(), userParts[0].Trim());
-                        else
-                            throw new InvalidOperationException($"UNC based local path \"{settings.LocalPath}\" or authentication user name \"{settings.DirectoryAuthUserName}\" is not in the correct format.");
-                    }
-                    catch (Exception ex)
-                    {
-                        OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Exception while authenticating UNC path \"{settings.LocalPath}\": {ex.Message}", ex));
-                    }
+                string[] userParts = settings.DirectoryAuthUserName.Split('\\');
+
+                try
+                {
+                    if (userParts.Length == 2)
+                        FilePath.ConnectToNetworkShare(localPath.Trim(), userParts[1].Trim(), settings.DirectoryAuthPassword.Trim(), userParts[0].Trim());
+                    else
+                        throw new InvalidOperationException($"UNC based local path \"{settings.LocalPath}\" or authentication user name \"{settings.DirectoryAuthUserName}\" is not in the correct format.");
+                }
+                catch (Exception ex)
+                {
+                    OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Exception while authenticating UNC path \"{settings.LocalPath}\": {ex.Message}", ex));
                 }
             }
         }
@@ -816,7 +664,7 @@ namespace openMIC
                     if (UseDialUp && !string.IsNullOrWhiteSpace(DialUpEntryName))
                     {
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", DialUpEntryName)
-                            ?? new ConnectionProfileTaskQueue { Name = DialUpEntryName };
+                                    ?? new ConnectionProfileTaskQueue { Name = DialUpEntryName };
 
                         taskQueue.MaxThreadCount = 1;
                     }
@@ -825,7 +673,7 @@ namespace openMIC
                     if (Settings.TryGetValue("connectionProfileTaskQueueName", out string connectionProfileTaskQueueName) && !string.IsNullOrWhiteSpace(connectionProfileTaskQueueName))
                     {
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", connectionProfileTaskQueueName)
-                            ?? new ConnectionProfileTaskQueue { Name = connectionProfileTaskQueueName };
+                                    ?? new ConnectionProfileTaskQueue { Name = connectionProfileTaskQueueName };
                     }
 
                     m_deviceRecord = deviceTable.QueryRecordWhere("Acronym = {0}", Name);
@@ -840,7 +688,7 @@ namespace openMIC
                     if (taskQueue == null)
                     {
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", m_connectionProfile.Name)
-                            ?? new ConnectionProfileTaskQueue { Name = m_connectionProfile.Name };
+                                    ?? new ConnectionProfileTaskQueue { Name = m_connectionProfile.Name };
                     }
 
                     taskQueue.RegisterExceptionHandler(ex => OnProcessException(MessageLevel.Error, ex, "Task Execution"));
@@ -1126,46 +974,46 @@ namespace openMIC
                 fileList.Add(new FtpFileWrapper(localPath, file));
             }
 
-            if (settings.RecursiveDownload)
-            {
-                FtpDirectory[] directories = new FtpDirectory[0];
+            if (!settings.RecursiveDownload)
+                return;
 
+            FtpDirectory[] directories = new FtpDirectory[0];
+
+            try
+            {
+                OnStatusMessage(MessageLevel.Info, $"Enumerating remote directories in \"{remotePathDirectory}\"...");
+                directories = client.CurrentDirectory.SubDirectories.ToArray();
+            }
+            catch (Exception ex)
+            {
+                task.Fail(ex.Message);
+                OnProcessException(MessageLevel.Error, new Exception($"Failed to enumerate remote directories in \"{remotePathDirectory}\" due to exception: {ex.Message}", ex));
+                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to enumerate remote directories in \"{remotePathDirectory}\": {ex.Message}" });
+            }
+
+            foreach (FtpDirectory directory in directories)
+            {
                 try
                 {
-                    OnStatusMessage(MessageLevel.Info, $"Enumerating remote directories in \"{remotePathDirectory}\"...");
-                    directories = client.CurrentDirectory.SubDirectories.ToArray();
+                    if (m_cancellationToken.IsCancelled)
+                        return;
+
+                    string directoryName = directory.Name;
+
+                    if (directoryName.StartsWith(".", StringComparison.Ordinal))
+                        continue;
+
+                    string remoteSubPath = FTPPathCombine(remotePathDirectory, directoryName);
+                    string localSubPath = Path.Combine(localPathDirectory, directoryName);
+
+                    OnStatusMessage(MessageLevel.Info, $"Recursively adding files in \"{remotePathDirectory}\" to file list...");
+                    BuildFileList(fileList, task, client, remoteSubPath, localSubPath);
                 }
                 catch (Exception ex)
                 {
                     task.Fail(ex.Message);
-                    OnProcessException(MessageLevel.Error, new Exception($"Failed to enumerate remote directories in \"{remotePathDirectory}\" due to exception: {ex.Message}", ex));
-                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to enumerate remote directories in \"{remotePathDirectory}\": {ex.Message}" });
-                }
-
-                foreach (FtpDirectory directory in directories)
-                {
-                    try
-                    {
-                        if (m_cancellationToken.IsCancelled)
-                            return;
-
-                        string directoryName = directory.Name;
-
-                        if (directoryName.StartsWith(".", StringComparison.Ordinal))
-                            continue;
-
-                        string remoteSubPath = FTPPathCombine(remotePathDirectory, directoryName);
-                        string localSubPath = Path.Combine(localPathDirectory, directoryName);
-
-                        OnStatusMessage(MessageLevel.Info, $"Recursively adding files in \"{remotePathDirectory}\" to file list...");
-                        BuildFileList(fileList, task, client, remoteSubPath, localSubPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        task.Fail(ex.Message);
-                        OnProcessException(MessageLevel.Error, new Exception($"Failed to add remote files from remote directory \"{directory.Name}\" to file list due to exception: {ex.Message}", ex));
-                        OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to build file list for remote directory \"{directory.Name}\": {ex.Message}" });
-                    }
+                    OnProcessException(MessageLevel.Error, new Exception($"Failed to add remote files from remote directory \"{directory.Name}\" to file list due to exception: {ex.Message}", ex));
+                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to build file list for remote directory \"{directory.Name}\": {ex.Message}" });
                 }
             }
         }
@@ -1173,7 +1021,6 @@ namespace openMIC
         private void DownloadAllFiles(List<FtpFileWrapper> files, ConnectionProfileTask task)
         {
             ConnectionProfileTaskSettings settings = task.Settings;
-
             long progress = 0L;
             long totalBytes = files.Sum(wrapper => wrapper.RemoteFile.Size);
 
@@ -1674,19 +1521,16 @@ namespace openMIC
                 OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Exception while attempting to hang-up \"{DialUpEntryName}\": {ex.Message}", ex));
             }
 
-            if (m_startDialUpTime > 0)
-            {
-                Ticks dialUpConnectedTime = DateTime.UtcNow.Ticks - m_startDialUpTime;
-                OnStatusMessage(MessageLevel.Info, $"Dial-up connected for {dialUpConnectedTime.ToElapsedTimeString(2)}");
-                m_startDialUpTime = 0;
-                TotalDialUpTime += dialUpConnectedTime;
-            }
+            if (m_startDialUpTime <= 0)
+                return;
+
+            Ticks dialUpConnectedTime = DateTime.UtcNow.Ticks - m_startDialUpTime;
+            OnStatusMessage(MessageLevel.Info, $"Dial-up connected for {dialUpConnectedTime.ToElapsedTimeString(2)}");
+            m_startDialUpTime = 0;
+            TotalDialUpTime += dialUpConnectedTime;
         }
 
-        private void m_rasDialer_Error(object sender, ErrorEventArgs e)
-        {
-            OnProcessException(MessageLevel.Warning, e.GetException());
-        }
+        private void m_rasDialer_Error(object sender, ErrorEventArgs e) => OnProcessException(MessageLevel.Warning, e.GetException());
 
         public void SendCurrentProgressState(string clientID)
         {
@@ -1809,7 +1653,6 @@ namespace openMIC
         static Downloader()
         {
             s_instances = new ConcurrentDictionary<string, Downloader>();
-
             s_queuedProgressUpdates = new List<ProgressUpdateWrapper>();
 
             s_scheduleManager = new ScheduleManager();
@@ -1819,23 +1662,11 @@ namespace openMIC
 
         private static void ScheduleManager_ScheduleDue(object sender, EventArgs<Schedule> e)
         {
-            Schedule schedule = e.Argument;
+            if (!s_instances.TryGetValue(e.Argument.Name, out Downloader instance))
+                return;
 
-            if (s_instances.TryGetValue(schedule.Name, out Downloader instance))
-            {
-                if (instance.m_connectionProfileTaskQueue.QueueAction(instance.ExecuteTasks))
-                {
-                    OnProgressUpdated(instance, new ProgressUpdate
-                    {
-                        State = ProgressState.Queued,
-                        Message = "Queued tasks at normal priority.",
-                        Progress = 0,
-                        ProgressTotal = 1,
-                        OverallProgress = 0,
-                        OverallProgressTotal = 1
-                    });
-                }
-            }
+            if (instance.m_connectionProfileTaskQueue.QueueAction(instance.ExecuteTasks))
+                OnProgressUpdated(instance, new ProgressUpdate { State = ProgressState.Queued, Message = "Queued tasks at normal priority.", Progress = 0, ProgressTotal = 1, OverallProgress = 0, OverallProgressTotal = 1 });
         }
 
         // Static Methods
