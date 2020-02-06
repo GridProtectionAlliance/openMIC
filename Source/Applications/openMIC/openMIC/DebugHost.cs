@@ -21,6 +21,7 @@
 //
 //******************************************************************************************************
 
+using System.ComponentModel;
 using GSF.TimeSeries;
 
 namespace openMIC
@@ -29,7 +30,7 @@ namespace openMIC
     {
         public DebugHost(ServiceHost host)
         {
-            this.ServiceHost = host;
+            ServiceHost = host;
             InitializeComponent();
         }
 
@@ -37,16 +38,19 @@ namespace openMIC
 
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DebugHost));
-            this.SuspendLayout();
+            ComponentResourceManager resources = new ComponentResourceManager(typeof(DebugHost));
+            
+            SuspendLayout();
+
             // 
             // DebugHost
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
-            this.ClientSize = new System.Drawing.Size(344, 73);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "DebugHost";
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
+            ClientSize = new System.Drawing.Size(344, 73);
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            Name = "DebugHost";
+            
+            ResumeLayout(false);
         }
     }
 }

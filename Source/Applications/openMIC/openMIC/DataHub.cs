@@ -195,9 +195,9 @@ namespace openMIC
 
         #region [ Device Table Operations ]
 
-        private int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : (s_downloaderProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'"));
+        private int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : s_downloaderProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'");
 
-        private int ModbusProtocolID => s_modbusProtocolID != 0 ? s_modbusProtocolID : (s_modbusProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Modbus'"));
+        private int ModbusProtocolID => s_modbusProtocolID != 0 ? s_modbusProtocolID : s_modbusProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Modbus'");
 
         /// <summary>
         /// Gets protocol ID for "Downloader" adapter.

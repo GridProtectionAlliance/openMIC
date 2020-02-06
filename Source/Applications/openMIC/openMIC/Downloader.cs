@@ -21,7 +21,19 @@
 //
 //******************************************************************************************************
 
-using DotRas;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Management;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using GSF;
 using GSF.Configuration;
 using GSF.Console;
@@ -37,21 +49,9 @@ using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
 using GSF.TimeSeries.Statistics;
 using GSF.Units;
+using DotRas;
 using ModbusAdapters.Model;
 using openMIC.Model;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Management;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedParameter.Local
@@ -634,7 +634,7 @@ namespace openMIC
         /// <param name="priority">Priority of task to use when queuing.</param>
         public void QueueTasksWithPriority(QueuePriority priority)
         {
-            if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks, (int)priority))
+            if (m_connectionProfileTaskQueue.PrioritizeAction(ExecuteTasks, priority))
             {
                 OnProgressUpdated(this, new ProgressUpdate
                 {
@@ -663,18 +663,13 @@ namespace openMIC
 
                     if (UseDialUp && !string.IsNullOrWhiteSpace(DialUpEntryName))
                     {
-                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", DialUpEntryName)
-                                    ?? new ConnectionProfileTaskQueue { Name = DialUpEntryName };
-
+                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", DialUpEntryName) ?? new ConnectionProfileTaskQueue { Name = DialUpEntryName };
                         taskQueue.MaxThreadCount = 1;
                     }
 
                     // Check for manual override specification of connection profile task queue name in downloader connection string
                     if (Settings.TryGetValue("connectionProfileTaskQueueName", out string connectionProfileTaskQueueName) && !string.IsNullOrWhiteSpace(connectionProfileTaskQueueName))
-                    {
-                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", connectionProfileTaskQueueName)
-                                    ?? new ConnectionProfileTaskQueue { Name = connectionProfileTaskQueueName };
-                    }
+                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", connectionProfileTaskQueueName) ?? new ConnectionProfileTaskQueue { Name = connectionProfileTaskQueueName };
 
                     m_deviceRecord = deviceTable.QueryRecordWhere("Acronym = {0}", Name);
                     m_connectionProfile = connectionProfileTable.LoadRecord(ConnectionProfileID);
@@ -686,10 +681,7 @@ namespace openMIC
                         taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("ID = {0}", m_connectionProfile.DefaultTaskQueueID.GetValueOrDefault());
 
                     if (taskQueue == null)
-                    {
-                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", m_connectionProfile.Name)
-                                    ?? new ConnectionProfileTaskQueue { Name = m_connectionProfile.Name };
-                    }
+                        taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", m_connectionProfile.Name) ?? new ConnectionProfileTaskQueue { Name = m_connectionProfile.Name };
 
                     taskQueue.RegisterExceptionHandler(ex => OnProcessException(MessageLevel.Error, ex, "Task Execution"));
                     m_connectionProfileTaskQueue = taskQueue;

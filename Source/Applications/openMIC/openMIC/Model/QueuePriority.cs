@@ -21,7 +21,7 @@
 //
 //******************************************************************************************************
 
-namespace openMIC
+namespace openMIC.Model
 {
     /// <summary>
     /// Represents an enumeration of possible queuing priorities.
