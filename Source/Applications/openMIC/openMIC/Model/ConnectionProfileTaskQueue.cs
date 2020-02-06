@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using GSF.ComponentModel;
 using GSF.Data.Model;
@@ -169,7 +170,7 @@ namespace openMIC.Model
 
         // Static Fields
         private static readonly ConcurrentDictionary<string, LogicalThreadScheduler> s_threadSchedulers = new ConcurrentDictionary<string, LogicalThreadScheduler>();
-        private static readonly int s_priorityLevels = Enum.GetValues(typeof(QueuePriority)).Length;
+        private static readonly int s_priorityLevels = Enum.GetValues(typeof(QueuePriority)).Cast<int>().Max();
 
         #endregion
     }

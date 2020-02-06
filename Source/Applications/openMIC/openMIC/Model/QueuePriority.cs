@@ -31,14 +31,14 @@ namespace openMIC.Model
         /// <summary>
         /// Queue task with normal priority.
         /// </summary>
-        Normal,
+        Normal = 1,
         /// <summary>
         /// Queue task with expedited, i.e., higher than normal, priority.
         /// </summary>
-        Expedited,
+        Expedited = 2,
         /// <summary>
         /// Queue task with urgent, i.e., highest, priority.
         /// </summary>
-        Urgent
+        Urgent = 3
     }
 }
