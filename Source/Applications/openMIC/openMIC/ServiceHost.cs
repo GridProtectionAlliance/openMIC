@@ -21,16 +21,6 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Security;
-using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using GSF;
 using GSF.ComponentModel;
 using GSF.Configuration;
@@ -48,6 +38,16 @@ using GSF.Web.Shared;
 using GSF.Web.Shared.Model;
 using Microsoft.Owin.Hosting;
 using openMIC.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
+using System.Security;
+using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace openMIC
 {
@@ -268,14 +268,9 @@ namespace openMIC
                 Model.Global.UseRemoteScheduler = systemSettings["UseRemoteScheduler"].ValueAs(false);
             }
 
-            // Determine web port
+            // Get web host URL and parse URI components
             string webHostURL = systemSettings["WebHostURL"].Value;
-            string[] parts = webHostURL.Split(':');
-
-            if (parts.Length > 1 && ushort.TryParse(parts[parts.Length - 1], out ushort port))
-                Model.Global.WebPort = port;
-            else
-                Model.Global.WebPort = 8089;
+            Model.Global.WebHostUri = new Uri(webHostURL.Replace("+", "localhost"));
 
             // Parse configured authentication schemes
             if (!Enum.TryParse(systemSettings["AuthenticationSchemes"].ValueAs(AuthenticationOptions.DefaultAuthenticationSchemes.ToString()), true, out AuthenticationSchemes authenticationSchemes))
@@ -468,7 +463,8 @@ namespace openMIC
                 return;
             }
 
-            string actionURI = $"http://{targetMachine}:{Model.Global.WebPort}/api/Operations/QueueTasksWithPriority?priority={priority}&target={acronym}";
+            Uri webHostUri = Model.Global.WebHostUri;
+            string actionURI = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}/api/Operations/QueueTasksWithPriority?priority={priority}&target={acronym}";
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, actionURI);
 
             try

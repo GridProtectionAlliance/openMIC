@@ -225,7 +225,7 @@ namespace openMIC
             set;
         }
 
-        public ushort WebPort
+        public Uri WebHostUri
         {
             get;
             set;
