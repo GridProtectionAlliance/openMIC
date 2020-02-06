@@ -741,8 +741,8 @@ namespace openMIC
                 OnProgressUpdated(this, new ProgressUpdate
                 {
                     State = ProgressState.Processing,
-                    Message = $"Beginning execution of {m_overallTasksCount} tasks for connection profile \"{connectionProfileName}\"...",
-                    Summary = $"0 Files Downloaded ({TotalFilesDownloaded} Total)"
+                    Message = $"Beginning execution of {m_overallTasksCount:N0} tasks for connection profile \"{connectionProfileName}\"...",
+                    Summary = $"0 Files Downloaded ({TotalFilesDownloaded:N0} Total)"
                 });
 
                 if (tasks.Any(task => string.IsNullOrWhiteSpace(task.Settings.ExternalOperation)))
@@ -1044,7 +1044,7 @@ namespace openMIC
                 {
                     task.Fail(ex.Message);
 
-                    string message = $"Failed to create local directory for {grouping.Count()} remote files due to exception: {ex.Message}";
+                    string message = $"Failed to create local directory for {grouping.Count():N0} remote files due to exception: {ex.Message}";
                     OnProcessException(MessageLevel.Error, new Exception(message, ex));
                     progress += grouping.Sum(wrapper => wrapper.RemoteFile.Size);
                     OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
@@ -1361,7 +1361,7 @@ namespace openMIC
                 m_lastDownloadedFileID = LogDownloadedFile(match.Groups["FilePath"].Value);
                 FilesDownloaded++;
                 TotalFilesDownloaded++;
-                OnProgressUpdated(this, new ProgressUpdate { Summary = $"{FilesDownloaded} Files Downloaded ({TotalFilesDownloaded} Total)" });
+                OnProgressUpdated(this, new ProgressUpdate { Summary = $"{FilesDownloaded:N0} Files Downloaded ({TotalFilesDownloaded:N0} Total)" });
             }
 
             return match.Success;
@@ -1666,7 +1666,17 @@ namespace openMIC
                 return;
 
             if (instance.m_connectionProfileTaskQueue.QueueAction(instance.ExecuteTasks))
-                OnProgressUpdated(instance, new ProgressUpdate { State = ProgressState.Queued, Message = "Queued tasks at normal priority.", Progress = 0, ProgressTotal = 1, OverallProgress = 0, OverallProgressTotal = 1 });
+            {
+                OnProgressUpdated(instance, new ProgressUpdate
+                {
+                    State = ProgressState.Queued,
+                    Message = "Queued tasks at normal priority.",
+                    Progress = 0,
+                    ProgressTotal = 1,
+                    OverallProgress = 0,
+                    OverallProgressTotal = 1
+                });
+            }
         }
 
         // Static Methods
