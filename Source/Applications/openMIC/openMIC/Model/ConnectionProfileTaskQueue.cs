@@ -118,8 +118,11 @@ namespace openMIC.Model
             return true;
         }
 
-        public bool PrioritizeAction(Action action, QueuePriority priority = QueuePriority.Expedited)
+        public bool QueueActionWithPriority(Action action, QueuePriority priority = QueuePriority.Expedited)
         {
+            if (priority == QueuePriority.Normal)
+                return QueueAction(action);
+
             ICancellationToken priorityToken = new GSF.Threading.CancellationToken();
             ICancellationToken normalToken = null;
 
