@@ -25,7 +25,6 @@ using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading;
 using GSF.ComponentModel;
 using GSF.Data.Model;
 using GSF.Threading;
@@ -40,7 +39,6 @@ namespace openMIC.Model
         private string m_name;
         private LogicalThreadScheduler m_threadScheduler;
         private LogicalThread m_taskThread;
-        private ICancellationToken m_cancellationToken;
 
         #endregion
 
@@ -94,72 +92,14 @@ namespace openMIC.Model
 
         #region [ Methods ]
 
-        public bool QueueAction(Action action)
-        {
-            ICancellationToken cancellationToken = new GSF.Threading.CancellationToken();
+        public void QueueAction(Action action, QueuePriority priority) => TaskThread.Push((int)priority, action);
 
-            if (Interlocked.CompareExchange(ref m_cancellationToken, cancellationToken, null) != null)
-                return false;
-
-            TaskThread.Push((int)QueuePriority.Normal, () =>
-            {
-                if (!cancellationToken.Cancel())
-                    return;
-
-                try
-                {
-                    action();
-                }
-                finally
-                {
-                    Interlocked.CompareExchange(ref m_cancellationToken, null, cancellationToken);
-                }
-            });
-
-            return true;
-        }
-
-        public bool QueueActionWithPriority(Action action, QueuePriority priority = QueuePriority.Expedited)
-        {
-            if (priority == QueuePriority.Normal)
-                return QueueAction(action);
-
-            ICancellationToken priorityToken = new GSF.Threading.CancellationToken();
-            ICancellationToken normalToken = null;
-
-            priorityToken.Cancel();
-
-            while (Interlocked.CompareExchange(ref m_cancellationToken, priorityToken, normalToken) != normalToken)
-            {
-                normalToken = Interlocked.CompareExchange(ref m_cancellationToken, null, null);
-                bool cancelled = normalToken?.Cancel() ?? true;
-
-                if (!cancelled)
-                    return false;
-            }
-
-            TaskThread.Push((int)priority, () =>
-            {
-                try
-                {
-                    action();
-                }
-                finally
-                {
-                    Interlocked.Exchange(ref m_cancellationToken, null);
-                }
-            });
-
-            return true;
-        }
-
-        public void RegisterExceptionHandler(Action<Exception> exceptionHandler) => 
-            TaskThread.UnhandledException += (sender, args) => exceptionHandler(args.Argument);
+        public void RegisterExceptionHandler(Action<Exception> exceptionHandler) => TaskThread.UnhandledException += (sender, args) => exceptionHandler(args.Argument);
 
         private LogicalThreadScheduler GetThreadScheduler()
         {
-            LogicalThreadScheduler threadScheduler = s_threadSchedulers.GetOrAdd(Name, name => new LogicalThreadScheduler(s_priorityLevels));
-            threadScheduler.MaxThreadCount = MaxThreadCount > 0 ? MaxThreadCount : Environment.ProcessorCount;
+            LogicalThreadScheduler threadScheduler = s_threadSchedulers.GetOrAdd(Name, _ => new LogicalThreadScheduler(s_priorityLevels));
+            threadScheduler.MaxThreadCount = MaxThreadCount <= 0 ? Environment.ProcessorCount : MaxThreadCount;
             threadScheduler.UseBackgroundThreads = UseBackgroundThreads;
             return threadScheduler;
         }

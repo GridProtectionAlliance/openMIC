@@ -40,24 +40,38 @@ namespace openMIC
         /// Validates that openMIC operations are responding as expected.
         /// </summary>
         [HttpGet]
-        public HttpResponseMessage Index()
-        {
-            return new HttpResponseMessage(HttpStatusCode.OK);
-        }
+        public HttpResponseMessage Index() => new HttpResponseMessage(HttpStatusCode.OK);
 
         /// <summary>
-        /// Queues task for operation at specified <paramref name="priority"/>.
+        /// Queues group of tasks or individual task, identified by <paramref name="taskID"/>, for execution at specified <paramref name="priority"/>.
         /// </summary>
-        /// <param name="priority">Priority of task to use when queuing.</param>
-        /// <param name="targets">List of task target names.</param>
+        /// <param name="taskID">Task identifier, i.e., the group task identifier or specific task name. Value is not case sensitive.</param>
+        /// <param name="priority">Priority of tasks to use when queuing.</param>
+        /// <param name="targets">List of task target names, i.e., <see cref="Downloader"/> device instance acronym or name, as defined in database configuration.</param>
         /// <remarks>
+        /// <para>
+        /// When not providing a specific task name to execute in the <paramref name="taskID"/> parameter,
+        /// there are three group-based task identifiers available:
+        /// <list type="bullet">
+        /// <item><description><c><see cref="Downloader.AllTasksGroupID">_AllTasksGroup_</see></c></description></item>
+        /// <item><description><c><see cref="Downloader.ScheduledTasksGroupID">_ScheduledTasksGroup_</see></c></description></item>
+        /// <item><description><c><see cref="Downloader.OffScheduleTasksGroupID">_OffScheduleTasksGroup_</see></c></description></item>
+        /// </list>
+        /// The <c>_AllTasksGroup_</c> task identifier will queue all available tasks for execution, whereas, the
+        /// <c>_ScheduledTasksGroup_</c> task identifier will only queue the tasks that share a common primary schedule.
+        /// The <c>_OffScheduleTasksGroup_</c> task identifier will queue all tasks that have an overridden schedule
+        /// defined. Note that when the <paramref name="taskID"/> is one of the specified group task identifiers, the
+        /// queued tasks will execute immediately, regardless of any specified schedule, overridden or otherwise.
+        /// </para>
+        /// <para>
         /// Call format:
         /// <code>
-        /// http://localhost:8089/api/Operations/QueueTasksWithPriority?priority=Expedited&target=Meter1&target=Meter2&target=Meter3
+        /// http://localhost:8089/api/Operations/QueueTasks?taskID=_AllTasksGroup_&amp;priority=Expedited&amp;target=Meter1&amp;target=Meter2&amp;target=Meter3
         /// </code>
+        /// </para>
         /// </remarks>
         [HttpGet]
-        public HttpResponseMessage QueueTasksWithPriority([FromUri] QueuePriority priority, [FromUri(Name = "target")] List<string> targets)
+        public HttpResponseMessage QueueTasks([FromUri] string taskID, [FromUri] QueuePriority priority, [FromUri(Name = "target")] List<string> targets)
         {
             using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
@@ -76,8 +90,9 @@ namespace openMIC
                             acronym = device.Acronym;
                     }
 
+                    // Each downloader target is queued individually to allow for pooled multi-system distribution
                     if (!string.IsNullOrWhiteSpace(acronym))
-                        Program.Host.QueueTasksWithPriority(acronym, priority);
+                        Program.Host.QueueTasks(acronym, taskID, priority);
                 }
             }
 

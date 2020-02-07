@@ -56,7 +56,7 @@ namespace openMIC.Model
             set;
         }
 
-        [Label("Folder Name")]
+        [Label("Target Folder Name (leave blank to use Acronym)")]
         [StringLength(200)]
         public string OriginalSource
         {

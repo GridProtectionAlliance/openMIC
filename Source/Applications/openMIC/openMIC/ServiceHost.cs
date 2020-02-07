@@ -48,6 +48,7 @@ using System.Security;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.WebUtility;
 
 namespace openMIC
 {
@@ -259,12 +260,14 @@ namespace openMIC
                 HashSet<string> poolMachineList = new HashSet<string>(poolMachines.Split(',')) { "localhost" };
                 Model.Global.PoolMachines = poolMachineList.ToArray();
                 
-                // System with defined pool machines is considered master scheduler
+                // An openMIC instance with defined pool machines is considered the schedule master
                 Model.Global.UseRemoteScheduler = false;
             }
             else
             {
-                // When UseRemoteScheduler is true, local task scheduling will be ignored
+                // When UseRemoteScheduler is true, local task scheduling will be ignored and the openMIC
+                // instance will be considered a subordinate in a pool of machines. When the setting is
+                // false, the openMIC instance will be considered independent
                 Model.Global.UseRemoteScheduler = systemSettings["UseRemoteScheduler"].ValueAs(false);
             }
 
@@ -441,30 +444,66 @@ namespace openMIC
         }
 
         /// <summary>
-        /// Queues task for operation at specified <paramref name="priority"/>.
+        /// Queues group of tasks or individual task, identified by <paramref name="taskID"/> for execution at specified <paramref name="priority"/>.
+        /// When a configured set of pool machines are defined, this method will distribute queue requests across responding machines.
         /// </summary>
-        /// <param name="acronym">Target device.</param>
+        /// <param name="acronym">Target <see cref="Downloader"/> device instance acronym, as defined in database configuration.</param>
+        /// <param name="taskID">Task identifier, i.e., the group task identifier or specific task name. Value is not case sensitive.</param>
         /// <param name="priority">Priority of task to use when queuing.</param>
-        public void QueueTasksWithPriority(string acronym, QueuePriority priority)
+        /// <remarks>
+        /// When not providing a specific task name to execute in the <paramref name="taskID"/> parameter,
+        /// there are three group-based task identifiers available:
+        /// <list type="bullet">
+        /// <item><description><c><see cref="Downloader.AllTasksGroupID">_AllTasksGroup_</see></c></description></item>
+        /// <item><description><c><see cref="Downloader.ScheduledTasksGroupID">_ScheduledTasksGroup_</see></c></description></item>
+        /// <item><description><c><see cref="Downloader.OffScheduleTasksGroupID">_OffScheduleTasksGroup_</see></c></description></item>
+        /// </list>
+        /// The <c>_AllTasksGroup_</c> task identifier will queue all available tasks for execution, whereas, the
+        /// <c>_ScheduledTasksGroup_</c> task identifier will only queue the tasks that share a common primary schedule.
+        /// The <c>_OffScheduleTasksGroup_</c> task identifier will queue all tasks that have an overridden schedule
+        /// defined. Note that when the <paramref name="taskID"/> is one of the specified group task identifiers, the
+        /// queued tasks will execute immediately, regardless of any specified schedule, overridden or otherwise.
+        /// </remarks>
+        public void QueueTasks(string acronym, string taskID, QueuePriority priority)
         {
             string[] pooledMachines = Model.Global.PoolMachines;
 
+            // When no pooled machines are defined, openMIC instance is either a subordinate in a pool or an
+            // independent instance, either way, these cases should handle request to queue tasks "locally":
             if (pooledMachines == null || pooledMachines.Length == 0)
             {
-                QueueTasksLocally(acronym, priority);
+                QueueTasksLocally(acronym, taskID, priority);
                 return;
             }
 
+            // Just using a simple round-robin distribution strategy - each individual system will
+            // handle its own priority task execution queue
             string targetMachine = pooledMachines[m_currentPoolTarget++ % pooledMachines.Length];
 
+            // Schedule master instance is included in work load for download tasks,
+            // so it should handle its own request to queue tasks "locally":
             if (targetMachine.Equals("localhost"))
             {
-                QueueTasksLocally(acronym, priority);
+                QueueTasksLocally(acronym, taskID, priority);
                 return;
             }
 
-            Uri webHostUri = Model.Global.WebHostUri;
-            string actionURI = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}/api/Operations/QueueTasksWithPriority?priority={priority}&target={acronym}";
+            string targetUri;
+
+            if (targetMachine.Contains("://"))
+            {
+                // Pooled target machine specification includes scheme and possible port number
+                targetUri = targetMachine;
+            }
+            else
+            {
+                // Pooled target machine specification is only target machine name, assume same
+                // scheme and port number as local instance
+                Uri webHostUri = Model.Global.WebHostUri;
+                targetUri = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
+            }
+
+            string actionURI = $"{targetUri}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}&target={UrlEncode(acronym)}";
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, actionURI);
 
             try
@@ -475,7 +514,7 @@ namespace openMIC
                 HttpResponseMessage response = task.Result;
 
                 if (response.StatusCode == HttpStatusCode.OK)
-                    LogStatusMessage($"REMOTE QUEUE: Successfully executed remote queue action \"{actionURI}\" for \"{acronym}\" task load at {priority} priority");
+                    LogStatusMessage($"REMOTE QUEUE: Successfully executed remote queue action \"{actionURI}\" for \"{acronym}\" task load at \"{priority}\" priority");
                 else
                     throw new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\", HTTP response = {response.StatusCode}: {response.ReasonPhrase}");
             }
@@ -486,17 +525,17 @@ namespace openMIC
                 else
                     LogException(ex);
 
-                // Move on to next pool machine when queue fails
-                QueueTasksWithPriority(acronym, priority);
+                // Move on to next pool machine when remote queue fails
+                QueueTasks(acronym, taskID, priority);
             }
         }
 
-        private void QueueTasksLocally(string acronym, QueuePriority priority)
+        private void QueueTasksLocally(string acronym, string taskID, QueuePriority priority)
         {
-            IAdapter adapter = GetRequestedAdapter(new ClientRequestInfo(null, ClientRequest.Parse($"Invoke {acronym}")));
+            IAdapter adapter = GetRequestedAdapter(new ClientRequestInfo(null, ClientRequest.Parse($"invoke {acronym}")));
 
             if (adapter is Downloader downloader)
-                downloader.QueueTasksWithPriority(priority);
+                downloader.QueueTasks(taskID, priority);
         }
 
         /// <summary>

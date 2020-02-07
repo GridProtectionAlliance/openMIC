@@ -26,6 +26,10 @@ namespace openMIC.Model
     /// <summary>
     /// Represents an enumeration of possible queuing priorities.
     /// </summary>
+    /// <remarks>
+    /// Priority values are using in conjunction with the <see cref="GSF.Threading.LogicalThreadScheduler"/>
+    /// which expects priority values to start at 1.
+    /// </remarks>
     public enum QueuePriority
     {
         /// <summary>

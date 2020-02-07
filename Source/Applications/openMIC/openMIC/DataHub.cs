@@ -16,7 +16,7 @@
 //
 //  Code Modification History:
 //  ----------------------------------------------------------------------------------------------------
-//  01/14/2016 - Ritchie Carroll
+//  01/14/2016 - J. Ritchie Carroll
 //       Generated original version of source code.
 //
 //******************************************************************************************************
@@ -774,7 +774,6 @@ namespace openMIC
 
             foreach (XElement monitor in document.Descendants("monitor"))
             {
-                decimal longitude, latitude;
                 XElement location = monitor.Element("location");
                 XElement identification = monitor.Element("identification");
                 XElement model = monitor.Element("model");
@@ -811,8 +810,8 @@ namespace openMIC
                     deviceRecord.Acronym = $"{acronym}${serialNumber}";
                 }
 
-                decimal.TryParse(location?.Element("longitude")?.Value, out longitude);
-                decimal.TryParse(location?.Element("latitude")?.Value, out latitude);
+                decimal.TryParse(location?.Element("longitude")?.Value, out decimal longitude);
+                decimal.TryParse(location?.Element("latitude")?.Value, out decimal latitude);
 
                 yield return new IGridDevice
                 {

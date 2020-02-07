@@ -135,6 +135,23 @@ namespace openMIC
             }
         }
 
+        // Constants
+
+        /// <summary>
+        /// Defines the task identifier that represents all tasks group.
+        /// </summary>
+        public const string AllTasksGroupID = "_ALLTASKSGROUP_";
+
+        /// <summary>
+        /// Defines the task identifier that represents the scheduled tasks group.
+        /// </summary>
+        public const string ScheduledTasksGroupID = "_SCHEDULEDTASKSGROUP_";
+
+        /// <summary>
+        /// Defines the task identifier that represents the off schedule tasks group.
+        /// </summary>
+        public const string OffScheduleTasksGroupID = "_OFFSCHEDULETASKSGROUP_";
+
         // Fields
         private readonly RasDialer m_rasDialer;
         private readonly DeviceProxy m_deviceProxy;
@@ -497,6 +514,8 @@ namespace openMIC
         // Gets RAS connection state
         private RasConnectionState RasState => RasConnection.GetActiveConnections().FirstOrDefault(ras => ras.EntryName == DialUpEntryName)?.GetConnectionStatus()?.ConnectionState ?? RasConnectionState.Disconnected;
 
+        // Gets or sets m_allTasks connection profile task array field.
+        // All access to m_allTasks field should only occur through this property.
         private ConnectionProfileTask[] AllTasks
         {
             get
@@ -515,6 +534,8 @@ namespace openMIC
             }
         }
 
+        // Gets or sets m_scheduledTasks connection profile task array field.
+        // All access to m_scheduledTasks field should only occur through this property.
         private ConnectionProfileTask[] ScheduledTasks
         {
             get
@@ -533,6 +554,8 @@ namespace openMIC
             }
         }
 
+        // Gets or sets m_offScheduleTasks connection profile task array field.
+        // All access to m_offScheduleTasks field should only occur through this property.
         private ConnectionProfileTask[] OffScheduleTasks
         {
             get
@@ -553,7 +576,7 @@ namespace openMIC
                         foreach (ConnectionProfileTask task in m_offScheduleTasks)
                         {
                             if (task != null)
-                                DeregisterSchedule(this, task);
+                                UnregisterSchedule(this, task);
                         }
                     }
 
@@ -591,10 +614,10 @@ namespace openMIC
 
                 AllTasks = null;
                 ScheduledTasks = null;
-                OffScheduleTasks = null;
+                OffScheduleTasks = null; // This will unregister overridden task schedules
 
                 m_cancellationToken.Cancel();
-                DeregisterSchedule(this);
+                UnregisterSchedule(this);
 
                 if (m_rasDialer != null)
                 {
@@ -700,34 +723,127 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Gets all defined connection profile tasks.
+        /// </summary>
+        public IReadOnlyCollection<ConnectionProfileTask> GetAllTasks => Array.AsReadOnly(AllTasks);
+        
+        /// <summary>
+        /// Gets connection profile tasks defined with a common primary schedule.
+        /// </summary>
+        public IReadOnlyCollection<ConnectionProfileTask> GetScheduledTasks => Array.AsReadOnly(ScheduledTasks);
+        
+        /// <summary>
+        /// Gets connection profile tasks defined with an overridden schedule.
+        /// </summary>
+        public IReadOnlyCollection<ConnectionProfileTask> GetOffScheduleTasks => Array.AsReadOnly(OffScheduleTasks);
+
+        /// <summary>
+        /// Attempts to get <see cref="ConnectionProfileTask"/> by <paramref name="taskName"/>.
+        /// </summary>
+        /// <param name="taskName">Name of task.</param>
+        /// <param name="task">Value will be set to found task, if any; otherwise, value will be set to <c>null</c>.</param>
+        /// <returns><c>true</c> if <paramref name="taskName"/> was found; otherwise, <c>false</c>.</returns>
+        public bool TryGetConnectionProfileTask(string taskName, out ConnectionProfileTask task)
+        {
+           return AllTasks.ToDictionary(t => t.Name, StringComparer.OrdinalIgnoreCase).TryGetValue(taskName, out task);
+        }
+
+        /// <summary>
         /// Queues all tasks for immediate, highest priority, execution.
         /// </summary>
         [AdapterCommand("Queues all tasks for immediate, highest priority, execution.", "Administrator", "Editor")]
         public void QueueTasks()
         {
-            // This is for user requested items - these take precedence over all others.
-            // Call is made via ServiceHost to handle pooled distribution:
-            Program.Host.QueueTasksWithPriority(Name, QueuePriority.Urgent);
+            // This is for user requested items - these take precedence over all others,
+            // call is made via ServiceHost to handle pooled distribution:
+            Program.Host.QueueTasks(Name, AllTasksGroupID, QueuePriority.Urgent);
         }
 
         /// <summary>
-        /// Queues all tasks for execution at specified <paramref name="priority"/>.
+        /// Queues group of tasks or individual task, identified by <paramref name="taskID"/>, with specified <paramref name="priority"/>.
         /// </summary>
+        /// <param name="taskID">Task identifier, i.e., the group task identifier or specific task name. Value is not case sensitive.</param>
         /// <param name="priority">Priority of task to use when queuing.</param>
-        public void QueueTasksWithPriority(QueuePriority priority)
+        /// <remarks>
+        /// When not providing a specific task name to execute in the <paramref name="taskID"/> parameter,
+        /// there are three group-based task identifiers available:
+        /// <list type="bullet">
+        /// <item><description><c><see cref="AllTasksGroupID">_AllTasksGroup_</see></c></description></item>
+        /// <item><description><c><see cref="ScheduledTasksGroupID">_ScheduledTasksGroup_</see></c></description></item>
+        /// <item><description><c><see cref="OffScheduleTasksGroupID">_OffScheduleTasksGroup_</see></c></description></item>
+        /// </list>
+        /// The <c>_AllTasksGroup_</c> task identifier will queue all available tasks for execution, whereas, the
+        /// <c>_ScheduledTasksGroup_</c> task identifier will only queue the tasks that share a common primary schedule.
+        /// The <c>_OffScheduleTasksGroup_</c> task identifier will queue all tasks that have an overridden schedule
+        /// defined. Note that when the <paramref name="taskID"/> is one of the specified group task identifiers, the
+        /// queued tasks will execute immediately, regardless of any specified schedule, overridden or otherwise.
+        /// </remarks>
+        public void QueueTasks(string taskID, QueuePriority priority)
         {
-            if (m_taskQueue.QueueActionWithPriority(() => ExecuteGroupedTasks(AllTasks), priority))
+            switch (taskID.ToUpperInvariant())
             {
-                OnProgressUpdated(this, new ProgressUpdate
-                {
-                    State = ProgressState.Queued,
-                    Message = $"Connection profile tasks queued at \"{priority}\" priority.",
-                    Progress = 0,
-                    ProgressTotal = 1,
-                    OverallProgress = 0,
-                    OverallProgressTotal = 1
-                });
+                case AllTasksGroupID:
+                    QueueTasks(AllTasks, priority);
+                    break;
+                case ScheduledTasksGroupID:
+                    QueueTasks(ScheduledTasks, priority);
+                    break;
+                case OffScheduleTasksGroupID:
+                    QueueTasks(OffScheduleTasks, priority);
+                    break;
+                default:
+                    if (TryGetConnectionProfileTask(taskID, out ConnectionProfileTask task))
+                    {
+                        QueueTask(task, priority);
+                    }
+                    else
+                    {
+                        string message = $"Failed to find connection profile task \"{taskID}\" associated with downloader instance \"{Name}\", queue operation halted.";
+
+                        OnStatusMessage(MessageLevel.Warning, message);
+
+                        OnProgressUpdated(this, new ProgressUpdate
+                        {
+                            State = ProgressState.Fail,
+                            ErrorMessage = message,
+                            OverallProgress = 1,
+                            OverallProgressTotal = 1
+                        });
+                    }
+                    break;
             }
+        }
+
+        // Queues specified task, with overridden schedule, for execution at specified priority
+        private void QueueTask(ConnectionProfileTask task, QueuePriority priority)
+        {
+            m_taskQueue.QueueAction(() => ExecuteSingleTask(task), priority);
+            
+            OnProgressUpdated(this, new ProgressUpdate
+            {
+                State = ProgressState.Queued,
+                Message = $"Connection profile task \"{task.Name}\" with overridden schedule queued at \"{priority}\" priority.",
+                Progress = 0,
+                ProgressTotal = 1,
+                OverallProgress = 0,
+                OverallProgressTotal = 1
+            });
+        }
+
+        // Queues specified task array for execution at specified priority
+        private void QueueTasks(ConnectionProfileTask[] tasks, QueuePriority priority)
+        {
+            m_taskQueue.QueueAction(() => ExecuteGroupedTasks(tasks), priority);
+
+            OnProgressUpdated(this, new ProgressUpdate
+            {
+                State = ProgressState.Queued,
+                Message = $"Connection profile tasks queued at \"{priority}\" priority.",
+                Progress = 0,
+                ProgressTotal = 1,
+                OverallProgress = 0,
+                OverallProgressTotal = 1
+            });
         }
 
         private void LoadTasks()
@@ -747,7 +863,9 @@ namespace openMIC
                     taskQueue.MaxThreadCount = 1;
                 }
 
-                // Check for manual override specification of connection profile task queue name in downloader connection string
+                // Check for manual override specification of connection profile task queue name in downloader connection string.
+                // This allows for custom task profile queues, e.g., specifying "MaxThreadCount = 1" when a certain resource should
+                // not be multi-threaded, "BenDownloader" external action found in "Tools" folder is an example.
                 if (Settings.TryGetValue("connectionProfileTaskQueueName", out string connectionProfileTaskQueueName) && !string.IsNullOrWhiteSpace(connectionProfileTaskQueueName))
                     taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", connectionProfileTaskQueueName) ?? new ConnectionProfileTaskQueue { Name = connectionProfileTaskQueueName };
 
@@ -774,7 +892,11 @@ namespace openMIC
 
         #region [ Task Execution Operations ]
 
-        // Execute a single task with an overridden schedule
+        // Execute a single task with an overridden schedule. This method exists in addition
+        // to ExecuteGroupedTasks to provide custom feedback for a single task with a defined
+        // schedule override. Functional pattern should match that of ExecuteGroupedTasks.
+        // This method should "setup" environment needed for execution of tasks, e.g.,
+        // making any needed RAS or FTP connections, as well as "cleanup" when complete.
         private void ExecuteSingleTask(ConnectionProfileTask task)
         {
             if (!AdapterIsEnabled())
@@ -797,7 +919,7 @@ namespace openMIC
                 OnProgressUpdated(this, new ProgressUpdate
                 {
                     State = ProgressState.Processing,
-                    Message = $"Beginning execution of single task \"{task.Name}\" with overridden schedule for connection profile \"{connectionProfileName}\"...",
+                    Message = $"Beginning execution of task \"{task.Name}\" with overridden schedule for connection profile \"{connectionProfileName}\"...",
                     Summary = $"0 Files Downloaded ({TotalFilesDownloaded:N0} Total)"
                 });
 
@@ -876,7 +998,10 @@ namespace openMIC
             }
         }
 
-        // Execute a group of tasks with a common schedule
+        // Execute a group of tasks with a common schedule. Relevant updates to the execution
+        // steps of this method should be reviewed for inclusion in ExecuteSingleTask.
+        // This method should "setup" environment needed for execution of tasks, e.g.,
+        // making any needed RAS or FTP connections, as well as "cleanup" when complete.
         private void ExecuteGroupedTasks(ConnectionProfileTask[] tasks)
         {
             if (!AdapterIsEnabled())
@@ -1890,26 +2015,15 @@ namespace openMIC
 
         private static void ScheduleManager_ScheduleDue(object sender, EventArgs<Schedule> e)
         {
-            string scheduleName = e.Argument.Name;
-
-            if (!s_taskSchedules.TryGetValue(scheduleName, out Tuple<Downloader, ConnectionProfileTask> taskSchedule))
+            if (!s_taskSchedules.TryGetValue(e.Argument.Name, out Tuple<Downloader, ConnectionProfileTask> taskSchedule))
                 return;
 
             Downloader downloader = taskSchedule.Item1;
             ConnectionProfileTask task = taskSchedule.Item2;
 
-            if (task == null)
-            {
-                // Execute all tasks in connection profile defined with device-level schedule
-                if (downloader.m_taskQueue.QueueAction(() => downloader.ExecuteGroupedTasks(downloader.ScheduledTasks)))
-                    OnProgressUpdated(downloader, new ProgressUpdate { State = ProgressState.Queued, Message = "Queued tasks at normal priority.", Progress = 0, ProgressTotal = 1, OverallProgress = 0, OverallProgressTotal = 1 });
-            }
-            else
-            {
-                // Execute single task from connection profile defined with overridden schedule
-                if (downloader.m_taskQueue.QueueAction(() => downloader.ExecuteSingleTask(task)))
-                    OnProgressUpdated(downloader, new ProgressUpdate { State = ProgressState.Queued, Message = "Queued task with overridden schedule at normal priority.", Progress = 0, ProgressTotal = 1, OverallProgress = 0, OverallProgressTotal = 1 });
-            }
+            // Queue specific task or group of tasks with device-level schedule for execution,
+            // call is made via ServiceHost to handle pooled distribution:
+            Program.Host.QueueTasks(downloader.Name, task?.Name ?? ScheduledTasksGroupID, QueuePriority.Normal);
         }
 
         // Static Methods
@@ -1919,6 +2033,19 @@ namespace openMIC
             if (Program.Host.Model.Global.UseRemoteScheduler)
                 return;
 
+            // Validate individual task fields
+            if (task != null)
+            {
+                if (string.IsNullOrWhiteSpace(task.Name))
+                    return;
+
+                if (task.Settings == null)
+                    return;
+
+                if (string.IsNullOrWhiteSpace(task.Settings.Schedule))
+                    task.Settings.Schedule = downloader.Schedule;
+            }
+
             string schedule = task == null ? downloader.Schedule : task.Settings.Schedule;
             string scheduleName = task == null ? downloader.Name : $"{downloader.Name}:{task.Name}";
 
@@ -1926,7 +2053,7 @@ namespace openMIC
             s_scheduleManager.AddSchedule(scheduleName, schedule, $"Download schedule for \"{scheduleName}\"", true);
         }
 
-        private static void DeregisterSchedule(Downloader downloader, ConnectionProfileTask task = null)
+        private static void UnregisterSchedule(Downloader downloader, ConnectionProfileTask task = null)
         {
             // Nothing to unregister when task schedules are dependent upon remote scheduler
             if (Program.Host.Model.Global.UseRemoteScheduler)
