@@ -535,7 +535,7 @@ namespace openMIC
             IAdapter adapter = GetRequestedAdapter(new ClientRequestInfo(null, ClientRequest.Parse($"invoke {acronym}")));
 
             if (adapter is Downloader downloader)
-                downloader.QueueTasks(taskID, priority);
+                downloader.QueueTasksByID(taskID, priority);
         }
 
         /// <summary>

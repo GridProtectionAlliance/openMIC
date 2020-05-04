@@ -778,7 +778,7 @@ namespace openMIC
         /// defined. Note that when the <paramref name="taskID"/> is one of the specified group task identifiers, the
         /// queued tasks will execute immediately, regardless of any specified schedule, overridden or otherwise.
         /// </remarks>
-        public void QueueTasks(string taskID, QueuePriority priority)
+        public void QueueTasksByID(string taskID, QueuePriority priority)
         {
             switch (taskID.ToUpperInvariant())
             {
