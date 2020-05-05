@@ -375,7 +375,7 @@
       <Component Id="BenDownloader">
         <File Id="BenDownloader.exe" Name="BenDownloader.exe" Source="$(var.BenDownloader.TargetPath)" />
       </Component>
-      <Component Id="BenDownloaderConfig">
+      <Component Id="BenDownloaderConfig" Permanent="yes">
         <File Id="BenDownloader.exe.config" Name="BenDownloader.exe.config" Source="$(var.BenDownloader.TargetPath).config" />
       </Component>
     </ComponentGroup>
