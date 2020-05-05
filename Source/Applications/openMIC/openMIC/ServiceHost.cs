@@ -506,27 +506,36 @@ namespace openMIC
             string actionURI = $"{targetUri}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}&target={UrlEncode(acronym)}";
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, actionURI);
 
-            try
+            void Succeed(HttpResponseMessage response)
             {
-                Task<HttpResponseMessage> task = s_http.SendAsync(request);
-                task.Wait();
-
-                HttpResponseMessage response = task.Result;
-
                 if (response.StatusCode == HttpStatusCode.OK)
                     LogStatusMessage($"REMOTE QUEUE: Successfully executed remote queue action \"{actionURI}\" for \"{acronym}\" task load at \"{priority}\" priority");
                 else
                     throw new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\", HTTP response = {response.StatusCode}: {response.ReasonPhrase}");
             }
-            catch (Exception ex)
+
+            void Fail(Exception ex)
             {
                 if (ex is AggregateException aggEx)
-                    LogException(new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\": {string.Join(", ", aggEx.InnerExceptions.Select(innerEx => innerEx.Message))}"));
+                    LogException(new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\": {string.Join(", ", aggEx.InnerExceptions.Select(innerEx => innerEx.Message))}", ex));
                 else
                     LogException(ex);
 
                 // Move on to next pool machine when remote queue fails
                 QueueTasks(acronym, taskID, priority);
+            }
+
+            try
+            {
+                s_http.SendAsync(request).ContinueWith(task =>
+                {
+                    try { Succeed(task.Result); }
+                    catch (Exception ex) { Fail(ex); }
+                });
+            }
+            catch (Exception ex)
+            {
+                Fail(ex);
             }
         }
 
