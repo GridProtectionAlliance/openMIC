@@ -21,6 +21,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <SuppressIces>ICE57;ICE03;ICE43;ICE60</SuppressIces>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>..\..\..\..\Build\Output\Release\Setup\</OutputPath>
@@ -28,7 +29,7 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <SuppressSpecificWarnings>
     </SuppressSpecificWarnings>
-    <SuppressIces>ICE60</SuppressIces>
+    <SuppressIces>ICE57;ICE03;ICE43;ICE60</SuppressIces>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CustomExitDialog.wxs" />
@@ -104,6 +105,8 @@
     <Content Include="ConfigCrypter.exe.config" />
     <Content Include="ConfigurationEditor.exe" />
     <Content Include="ConfigurationEditor.exe.Config" />
+    <Content Include="CSVDataManager.exe" />
+    <Content Include="CSVDataManager.exe.config" />
     <Content Include="DataMigrationUtility.exe" />
     <Content Include="DataMigrationUtility.exe.config" />
     <Content Include="DNP3ConfigGenerator.exe" />
@@ -116,6 +119,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="LogFileViewer.exe" />
+    <Content Include="LogFileViewer.exe.config" />
     <Content Include="makecert.exe" />
     <Content Include="NoInetFixUtil.exe" />
     <Content Include="openMICSetupBanner.bmp" />
