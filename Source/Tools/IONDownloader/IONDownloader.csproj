@@ -8,8 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Gemstone.Configuration" Version="1.0.56" />
+    <PackageReference Include="Gemstone.Communication" Version="1.0.56" />
     <PackageReference Include="Gemstone.Data" Version="1.0.56" />
-    <PackageReference Include="Gemstone.IONProtocol" Version="1.0.19" />
     <PackageReference Include="Gemstone.PQDIF" Version="1.0.56" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.6" />
@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="IONProtocol">
-      <HintPath>..\..\..\..\IONProtocol\build\$(Configuration)\netstandard2.1\IONProtocol.dll</HintPath>
+    <Reference Include="Gemstone.IONProtocol">
+      <HintPath>..\..\..\..\gemstone\IONProtocol\build\$(Configuration)\netstandard2.1\Gemstone.IONProtocol.dll</HintPath>
     </Reference>
   </ItemGroup>
 
