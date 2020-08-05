@@ -1865,7 +1865,16 @@ FROM AlarmDevice
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 2 AS VersionNumber;
+SELECT 4 AS VersionNumber;
+
+CREATE TABLE Setting(
+    ID INT AUTO_INCREMENT NOT NULL,
+    Name VARCHAR(200) NULL,
+    Value TEXT NULL,
+    DefaultValue TEXT NULL,
+	Description TEXT NULL,
+    CONSTRAINT PK_Setting PRIMARY KEY (ID ASC)
+);
 
 CREATE TABLE ConnectionProfileTaskQueue(
     ID INT AUTO_INCREMENT NOT NULL,
@@ -1940,6 +1949,22 @@ CREATE TABLE SentEmail(
     FileSize INT NOT NULL,
     CONSTRAINT PK_SentEMail PRIMARY KEY CLUSTERED (ID ASC) 
  );
+
+CREATE TABLE IONWaveformCheckpoint(
+    ID INT AUTO_INCREMENT NOT NULL,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME NOT NULL,
+    CONSTRAINT PK_IONWaveformCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
+    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE KEY (Device ASC)
+);
+
+CREATE TABLE IONTrendingCheckpoint(
+    ID INT AUTO_INCREMENT NOT NULL,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME NOT NULL,
+    CONSTRAINT PK_IONTrendingCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
+    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE KEY (Device ASC)
+);
 
 ALTER TABLE ConnectionProfile ADD CONSTRAINT FK_ConnectionProfile_ConnectionProfileTaskQueue FOREIGN KEY(DefaultTaskQueueID) REFERENCES ConnectionProfileTaskQueue (ID);
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);

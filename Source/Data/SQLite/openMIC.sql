@@ -1756,7 +1756,15 @@ FROM AlarmDevice
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 1 AS VersionNumber;
+SELECT 4 AS VersionNumber;
+
+CREATE TABLE Setting(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    Name VARCHAR(200) NULL,
+    Value TEXT NULL,
+    DefaultValue TEXT NULL,
+	Description TEXT NULL
+);
 
 CREATE TABLE ConnectionProfileTaskQueue(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -1825,6 +1833,20 @@ CREATE TABLE StatusLog(
     DeviceID INTEGER NOT NULL,
     Message TEXT NOT NULL,
     Timestamp DATETIME NOT NULL
+);
+
+CREATE TABLE IONWaveformCheckpoint(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME NOT NULL,
+    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE (Device ASC)
+);
+
+CREATE TABLE IONTrendingCheckpoint(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME NOT NULL,
+    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC)
 );
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
