@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "IONDownloader": {
+      "commandName": "Project",
+      "commandLineArgs": "--DeviceAcronym Test --DestinationFolder Downloads\\Test --IONConnectionString \"server=172.21.7.121:7700\" --StartFromCheckpoint false --TrendMappingPath \"C:\\Users\\swills\\source\\repos\\IONDownloader\\MappingAssistTool\\bin\\Debug\\netcoreapp3.1\\mappings.json\" --DownloadEventData false --DownloadAfter 2020-07-01"
+    }
+  }
+}

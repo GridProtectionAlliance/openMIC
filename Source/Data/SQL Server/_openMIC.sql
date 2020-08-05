@@ -2,12 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[LocalSchemaVersion] AS
-SELECT 3 AS VersionNumber
-GO
-
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
+SELECT 4 AS VersionNumber
 GO
 
 CREATE TABLE Setting
@@ -16,7 +11,7 @@ CREATE TABLE Setting
     Name VARCHAR(200) NULL,
     Value VARCHAR(MAX) NULL,
     DefaultValue VARCHAR(MAX) NULL,
-	Description varchar(Max) null
+	Description VARCHAR(MAX) NULL
 )
 GO
 
@@ -161,6 +156,22 @@ CREATE NONCLUSTERED INDEX [IX_SentEmail_Timestamp] ON [dbo].[SentEmail]
 (
     [Timestamp] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE TABLE IONWaveformCheckpoint
+(
+    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+    Device VARCHAR(200) NOT NULL UNIQUE,
+    TimeRecorded DATETIME2 NOT NULL
+)
+GO
+
+CREATE TABLE IONTrendingCheckpoint
+(
+    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+    Device VARCHAR(200) NOT NULL UNIQUE,
+    TimeRecorded DATETIME NOT NULL
+)
 GO
 
 

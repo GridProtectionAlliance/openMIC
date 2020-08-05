@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30320.27
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Applications", "Applications", "{BD933E0E-B3FD-470B-B53B-56DA8BC27467}"
 EndProject
@@ -302,6 +302,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenDownloader", "Tools\BenD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IGridDownloader", "Tools\IGridDownloader\IGridDownloader.csproj", "{1112CD98-32E6-445D-84F4-D7B8E60A67B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IONDownloader", "Tools\IONDownloader\IONDownloader.csproj", "{41D76C22-204D-4C39-BB81-75323CDEAC68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -427,6 +429,14 @@ Global
 		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Release|x86.ActiveCfg = Release|Any CPU
 		{1112CD98-32E6-445D-84F4-D7B8E60A67B0}.Release|x86.Build.0 = Release|Any CPU
+		{41D76C22-204D-4C39-BB81-75323CDEAC68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41D76C22-204D-4C39-BB81-75323CDEAC68}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{41D76C22-204D-4C39-BB81-75323CDEAC68}.Deploy|Any CPU.ActiveCfg = Debug|Any CPU
+		{41D76C22-204D-4C39-BB81-75323CDEAC68}.Deploy|x86.ActiveCfg = Debug|Any CPU
+		{41D76C22-204D-4C39-BB81-75323CDEAC68}.Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{41D76C22-204D-4C39-BB81-75323CDEAC68}.Mono|x86.ActiveCfg = Release|Any CPU
+		{41D76C22-204D-4C39-BB81-75323CDEAC68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41D76C22-204D-4C39-BB81-75323CDEAC68}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -457,6 +467,7 @@ Global
 		{674F09A7-4477-4CED-90F6-B7512886BC74} = {CE260396-797B-45DF-AC53-E4FC553B57C0}
 		{2A52F2C6-C11B-44FD-AC70-A4821F7C4881} = {9EEDE95F-8333-4957-B270-02D3CD4629B5}
 		{1112CD98-32E6-445D-84F4-D7B8E60A67B0} = {9EEDE95F-8333-4957-B270-02D3CD4629B5}
+		{41D76C22-204D-4C39-BB81-75323CDEAC68} = {9EEDE95F-8333-4957-B270-02D3CD4629B5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D1ECFA58-CF8B-4D5D-99B8-765BEC4FA15A}

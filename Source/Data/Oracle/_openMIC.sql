@@ -2,8 +2,27 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 2 AS VersionNumber
+SELECT 4 AS VersionNumber
 FROM dual;
+
+CREATE TABLE Setting(
+    ID NUMBER NOT NULL,
+    Name VARCHAR2(200) NULL,
+    Value VARCHAR2(MAX) NULL,
+    DefaultValue VARCHAR2(MAX) NULL,
+	Description VARCHAR2(MAX) NULL
+);
+
+CREATE UNIQUE INDEX IX_Setting_ID ON Setting (ID ASC) TABLESPACE openMIC_INDEX;
+
+ALTER TABLE Setting ADD CONSTRAINT PK_Setting PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_Setting START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_Setting BEFORE INSERT ON Setting
+    FOR EACH ROW BEGIN SELECT SEQ_Setting.nextval INTO :NEW.ID FROM dual;
+END;
+/
 
 CREATE TABLE ConnectionProfileTaskQueue(
     ID NUMBER NOT NULL,
@@ -19,7 +38,7 @@ CREATE TABLE ConnectionProfileTaskQueue(
 
 CREATE UNIQUE INDEX IX_ConnectionProfTaskQueue_ID ON ConnectionProfileTaskQueue (ID ASC) TABLESPACE openMIC_INDEX;
 
-ALTER TABLE ErrorLog ADD CONSTRAINT PK_ConnectionProfileTaskQueue PRIMARY KEY (ID);
+ALTER TABLE ConnectionProfileTaskQueue ADD CONSTRAINT PK_ConnectionProfileTaskQueue PRIMARY KEY (ID);
 
 CREATE SEQUENCE SEQ_ConnectionProfileTaskQueue START WITH 1 INCREMENT BY 1;
 
@@ -140,6 +159,44 @@ CREATE SEQUENCE SEQ_SentEmail START WITH 1 INCREMENT BY 1;
 
 CREATE TRIGGER AI_SentEmail BEFORE INSERT ON SentEmail
     FOR EACH ROW BEGIN SELECT SEQ_SentEmail.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
+CREATE TABLE IONWaveformCheckpoint(
+    ID NUMBER NOT NULL,
+    Device VARCHAR2(200) NOT NULL,
+    TimeRecorded DATE NOT NULL,
+    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE (Device ASC)
+);
+
+CREATE UNIQUE INDEX IX_IONWaveformCheckpoint_ID ON IONWaveformCheckpoint (ID ASC) TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_IONWaveformCheckpoint_Dev ON IONWaveformCheckpoint (Device ASC)  TABLESPACE openMIC_INDEX;
+
+ALTER TABLE IONWaveformCheckpoint ADD CONSTRAINT PK_IONWaveformCheckpoint PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_IONWaveformCheckpoint START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_IONWaveformCheckpoint BEFORE INSERT ON IONWaveformCheckpoint
+    FOR EACH ROW BEGIN SELECT SEQ_IONWaveformCheckpoint.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
+CREATE TABLE IONTrendingCheckpoint(
+    ID NUMBER NOT NULL,
+    Device VARCHAR2(200) NOT NULL,
+    TimeRecorded DATE NOT NULL,
+    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC)
+);
+
+CREATE UNIQUE INDEX IX_IONTrendingCheckpoint_ID ON IONTrendingCheckpoint (ID ASC) TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_IONTrendingCheckpoint_Dev ON IONTrendingCheckpoint (Device ASC)  TABLESPACE openMIC_INDEX;
+
+ALTER TABLE IONTrendingCheckpoint ADD CONSTRAINT PK_IONTrendingCheckpoint PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_IONTrendingCheckpoint START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_IONTrendingCheckpoint BEFORE INSERT ON IONTrendingCheckpoint
+    FOR EACH ROW BEGIN SELECT SEQ_IONTrendingCheckpoint.nextval INTO :NEW.ID FROM dual;
 END;
 /
 
