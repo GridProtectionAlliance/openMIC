@@ -308,7 +308,7 @@
         <File Id="SerializedSchema.bin" Name="SerializedSchema.bin" Source="$(var.SolutionDir)\Data\SerializedSchema.bin" />
       </Component>
       <Component Id="WebManagerShortcutComponent" Guid="{8D0E96DB-B492-45FF-BEE2-978B1FB9A33A}">
-        <Shortcut Id="WebManagerStartMenuShortcut" Directory="ApplicationProgramsFolder" Name="openMIC Web Manager" Icon="openMIC.ico.exe" Description="URL to the openMIC Web Manager." Target="[WEBMANAGERURL]" />
+        <Shortcut Id="WebManagerStartMenuShortcut" Directory="ApplicationProgramsFolder" Name="openMIC Web Manager" Icon="openMICWebManager.ico.exe" Description="URL to the openMIC Web Manager." Target="[WEBMANAGERURL]" />
         <RegistryValue Root="HKLM" Key="SOFTWARE\Grid Protection Alliance\openMIC" Name="WebManagerShortcut" Type="string" Value="" KeyPath="yes" />
       </Component>
     </ComponentGroup>
