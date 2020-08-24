@@ -33,7 +33,6 @@ using Gemstone.IONProtocol.IONClasses;
 using Gemstone.PQDIF.Logical;
 using Gemstone.PQDIF.Physical;
 using Gemstone.StringExtensions;
-using Gemstone.Units;
 
 namespace IONDownloader
 {
@@ -93,7 +92,11 @@ namespace IONDownloader
             {
                 DataSourceBuilder dataSourceBuilder = new DataSourceBuilder(DeviceAcronym);
 
-                foreach (TrendChannelMapping mapping in ChannelMap.Values)
+                IEnumerable<TrendChannelMapping> trendChannelMappings = ChannelMap.Values
+                    .OrderBy(mapping => mapping.QuantityDefinition.ChannelName)
+                    .ThenBy(mapping => mapping.QuantityDefinition.ValueTypeID);
+
+                foreach (TrendChannelMapping mapping in trendChannelMappings)
                     dataSourceBuilder.InsertTrendChannel(mapping.QuantityDefinition);
 
                 return dataSourceBuilder.DataSource;
@@ -142,11 +145,14 @@ namespace IONDownloader
                         .OrderBy(timestamp => timestamp)
                         .ToList();
 
+                    var orderedGrouping = channelGrouping
+                        .OrderBy(obj => obj.mapping.QuantityDefinition.ValueTypeID);
+
                     DateTime date = trendReaders.CurrentDate;
                     string channelName = channelGrouping.Key;
                     observationBuilder.InsertTrendingTimestamps(date, channelName, timestamps);
 
-                    foreach (var obj in channelGrouping)
+                    foreach (var obj in orderedGrouping)
                     {
                         PQDIFTrendQuantity trendQuantity = obj.mapping.QuantityDefinition;
                         List<IONTrendPoint> points = obj.points;
