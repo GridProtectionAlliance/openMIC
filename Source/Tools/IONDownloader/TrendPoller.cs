@@ -191,6 +191,7 @@ namespace IONDownloader
 
                     string destination = Path.Combine(destinationFolder, fileName);
                     File.Move(tempPath, destination, true);
+                    Console.WriteLine(fileName);
                 }
                 finally
                 {
