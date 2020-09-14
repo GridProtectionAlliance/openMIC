@@ -76,7 +76,7 @@ namespace IONDownloader
             long max = IONTime.MaxValue.ToDateTime().Ticks;
             long clampedTicks = Math.Clamp(timestamp.Ticks, min, max);
             DateTime clampedTimestamp = new DateTime(clampedTicks);
-            IEnumerable<Task> seekTasks = Readers.Select(reader => reader.SeekAsync(timestamp));
+            IEnumerable<Task> seekTasks = Readers.Select(reader => reader.SeekAsync(clampedTimestamp));
             Task seekAll = Task.WhenAll(seekTasks);
             TimeSpan updateInterval = TimeSpan.FromSeconds(2.5D);
 
