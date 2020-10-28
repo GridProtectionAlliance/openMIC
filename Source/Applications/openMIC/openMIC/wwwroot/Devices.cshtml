@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@using System.Net.Http
 @using GSF.Data.Model
 @using GSF.Security.Model
 @using GSF.Web
@@ -31,14 +32,25 @@
 @using RazorEngine.Templating
 @inherits ExtendedTemplateBase<AppModel>
 @section StyleSheets {
+    <link href="Content/bootstrap-datetimepicker.css" rel="stylesheet">
     <style>
         html, body {
             height: 100%;
+        }
+
+        .dateLabel {
+            width: 75px;
+            text-align: right
+        }
+
+        .underField {
+            margin-left: 80px
         }
     </style>
 }
 @{
     DataContext dataContext = ViewBag.DataContext;
+    HttpRequestMessage request = ViewBag.Request;
 
     Layout = "Layout.cshtml";
     ViewBag.Title = "Devices";
@@ -56,9 +68,6 @@
     ViewBag.BodyRows = BodyRows().ToString();
     ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext).ToString();
     ViewBag.ParentKeys = Model.Global.NodeID.ToString();
-
-    // Add cron pattern validation to schedule connection string field
-    dataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", @"(\*|[0-5]?[0-9]|\*\/[0-9]+)\s+(\*|1?[0-9]|2[0-3]|\*\/[0-9]+)\s+(\*|[1-2]?[0-9]|3[0-1]|\*\/[0-9]+)\s+(\*|[0-9]|1[0-2]|\*\/[0-9]+)\s+(\*\/[0-9]+|\*|[0-7])\s*(\*\/[0-9]+|\*|[0-9]+)?", "Invalid cron syntax.");
 }
 @helper BodyRows()
 {
@@ -111,70 +120,76 @@
         </div>
     </div>
 }
+@Include("CronHelpDialog.cshtml", dataContext, typeof(DataContext))
 @Html.RenderResource("GSF.Web.Model.Views.PagedViewModel.cshtml")
-<div id="cronHelpDialog" class="modal fade" role="dialog">
+<div id="queueParamsDialog" class="modal fade" role="dialog">
     <div class="modal-vertical-align-container">
         <div class="modal-dialog modal-md modal-vertical-align-center">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Cron Syntax</h4>
+                    <h4 class="modal-title">Queue Download Processing</h4>
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="center-block" style="width: 380px">
-                            <pre>
- # ┌───────────── min (0 - 59)
- # │ ┌────────────── hour (0 - 23)
- # │ │ ┌─────────────── day of month (1 - 31)
- # │ │ │ ┌──────────────── month (1 - 12)
- # │ │ │ │ ┌───────────────── day of week (0 - 6):
- # │ │ │ │ │        0 to 6 are Sunday to Saturday,
- # │ │ │ │ │        or 7 is Sunday, the same as 0
- # * * * * *
-</pre>
+                        <div style="margin-left: 25px">
+                            Leave start / end time blank to immediately queue normal download at highest priority.<br/>
+                            When start / end time is set, download will be constrained to specified time range.
                         </div>
-                        <table class="small table-condensed table-center">
-                            <tr>
-                                <td style="text-align: right" nowrap>Every five minutes:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('*/5 * * * *')"><code>*/5 * * * *</code></button></td>
-                                <td style="text-align: right" nowrap>Every hour:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 * * * *')"><code>&nbsp;0 * * * *&nbsp;</code></button></td>
-                            </tr>
-                            <tr>
-                                <td style="text-align: right" nowrap>Every half-hour:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0,30 * * * *')"><code>0,30 * * * *</code></button></td>
-                                <td style="text-align: right" nowrap>Every four hours:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 */4 * * *')"><code>0 */4 * * *</code></button></td>
-                            <tr>
-                                <td style="text-align: right" nowrap>Every day:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 * * *')"><code>&nbsp;0 0 * * *&nbsp;</code></button></td>
-                                <td style="text-align: right" nowrap>Every month:</td>
-                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 1 * *')"><code>&nbsp;0 0 1 * *&nbsp;</code></button></td>
-                            </tr>
-                        </table>
-                        <br />
-                        <div class="text-center">
-                            <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">https://en.wikipedia.org/wiki/Cron</a>
-                        </div>
+                        <br/>
+                        <form class="form-inline" role="form" style="margin-left: 50px">
+                            <div class="form-group form-group-sm">
+                                <label for="StartTime" class="dateLabel">Start&nbsp;Time:</label>
+                                <div class="input-group date" id="StartTime">
+                                    <input type="datetime" class="form-control" placeholder="Select start time...">
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                                <div id="StartTimeValidationMessage" class="underField" style="display: none">
+                                    <em class="validationMessage small">Start time must be less than end time.</em>
+                                </div>
+                            </div>
+                            <br/><br/>
+                            <div class="form-group form-group-sm">
+                                <label for="EndTime" class="dateLabel">End&nbsp;Time:</label>
+                                <div class="input-group date" id="EndTime">
+                                    <input type="datetime" class="form-control" placeholder="Select end time...">
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                                <div id="EndTimeValidationMessage" class="underField" style="display: none">
+                                    <em class="validationMessage small">End time must be greater than start time.</em>
+                                </div>
+                            </div>
+                            <br/><br/>
+                            <div class="checkbox underField">
+                                <label for="QueueLocal"><input type="checkbox" id="QueueLocal" > Queue to Current Machine (@request.RequestUri.Host)</label>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="queueDownloadButton">Queue</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 @section Scripts {
+    <script src="@Resources.Root/Shared/Scripts/moment.js"></script>
+    <script src="Scripts/bootstrap-datetimepicker.js"></script>
+    <script src="Scripts/dateFormat.js"></script>
+
     <script>
         "use strict";
+
+        const MomentDateTimeFormat = dateFormat.convert(DateTimeFormat, dateFormat.dotnet, dateFormat.moment);
 
         @Raw(dataContext.RenderViewModelConfiguration<Device, DataHub>(ViewBag, "Acronym", null, Model.Global.NodeID))
 
         var downloaderProtocolID = 0;
         var modbusProtocolID = 0;
         var defaultIGridProfileID = 0;
+        var activeRecord = null;
 
         // Define default connection string keys needed for binding
         const defaultConnectionString = new Dictionary();
@@ -283,7 +298,7 @@
         }
 
         function setRequiredStates(valueFieldNames, state) {
-            for (var i = 0; i < valueFieldNames.length; i++) {
+            for (let i = 0; i < valueFieldNames.length; i++) {
                 viewModel.connectionString.get(valueFieldNames[i]).extend({ required: state });
             }
         }
@@ -333,13 +348,104 @@
             }
         }
 
+        function getDateTimePicker(textBox) {
+            return textBox.data("DateTimePicker");
+        }
+
+        function getMoment(textBox) {
+            const picker = getDateTimePicker(textBox);
+            return picker == null || picker.date() == null ? null : picker.date();
+        }
+
+        function getDate(textBox) {
+            const moment = getMoment(textBox);
+            return moment == null ? null : moment.toDate();
+        }
+
+        function setDate(textBox, value) {
+            const picker = getDateTimePicker(textBox);
+
+            if (picker != null && picker.date() != null)
+                picker.date(value); // Can be string, Date, moment, or null
+        }
+
+        const options = {
+            showClose: true,
+            useCurrent: false,
+            format: MomentDateTimeFormat
+        };
+
+        $("#StartTime").datetimepicker(options);
+        $("#EndTime").datetimepicker(options);
+
+        $("#StartTime").on("dp.change", validateDateTimes);
+        $("#EndTime").on("dp.change", validateDateTimes);
+
+        $("#queueParamsDialog").on("show.bs.modal", function () {
+            setDate($("#StartTime"), null);
+            setDate($("#EndTime"), null);
+        });
+
         function queueNow(record) {
             if (!hubIsConnected)
                 return;
 
-            serviceHub.sendCommand("Invoke " + record.Acronym + " QueueTasks").done(function() {
-                window.location.href = "/Status.cshtml";
-            });
+            activeRecord = record;
+            $("#queueParamsDialog").modal({ backdrop: "static" });
         }
+
+        function validateDateTimes() {
+            const startTime = getDate($("#StartTime"));
+            const endTime = getDate($("#EndTime"));
+            var isValid = true;
+
+            if (isEmpty(startTime) || isEmpty(endTime)) {
+                $("#QueueLocal")[0].checked = false;
+                $("#QueueLocal").enable();
+            } else {
+                isValid = startTime < endTime;
+                $("#QueueLocal")[0].checked = true;
+                $("#QueueLocal").disable();
+            }
+
+            if (isValid) {
+                $("#StartTimeValidationMessage").hide();
+                $("#EndTimeValidationMessage").hide();
+                $("#queueDownloadButton").enable();
+            } else {
+                $("#StartTimeValidationMessage").show();
+                $("#EndTimeValidationMessage").show();
+                $("#queueDownloadButton").disable();
+            }
+        }
+
+        $("#queueDownloadButton").click(function () {
+            const startTime = getDate($("#StartTime"));
+            const endTime = getDate($("#EndTime"));
+            const queueLocal = $("#QueueLocal").is(":checked");
+
+            $("#queueParamsDialog").modal("hide");
+
+            if (isEmpty(startTime) || isEmpty(endTime)) {
+                if (queueLocal) {
+                    serviceHub.sendCommand(String.format("INVOKE {0} QueueTasksLocally", activeRecord.Acronym)).done(function () {
+                        window.location.href = "/Status.cshtml";
+                    });
+                }
+                else {
+                    serviceHub.sendCommand(String.format("INVOKE {0} QueueTasks", activeRecord.Acronym)).done(function () {
+                        window.location.href = "/Status.cshtml";
+                    });
+                }
+            }
+            else {
+                const startTimestamp = startTime.formatDate(DateTimeFormat);
+                const endTimestamp = endTime.formatDate(DateTimeFormat);
+
+                serviceHub.sendCommand(String.format("INVOKE {0} QueueTasksByDateRange {1} {2}", activeRecord.Acronym, startTimestamp, endTimestamp)).done(function () {
+                    window.location.href = "/Status.cshtml";
+                });
+            }
+        });
     </script>
 }
