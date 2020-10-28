@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
@@ -749,14 +750,39 @@ namespace openMIC
         }
 
         /// <summary>
-        /// Queues all tasks for immediate, highest priority, execution.
+        /// Queues all tasks for immediate, highest priority, execution to next machine in the distribution pool.
         /// </summary>
-        [AdapterCommand("Queues all tasks for immediate, highest priority, execution.", "Administrator", "Editor")]
+        [AdapterCommand("Queues all tasks for immediate, highest priority, execution to next machine in the distribution pool.", "Administrator", "Editor")]
         public void QueueTasks()
         {
             // This is for user requested items - these take precedence over all others,
             // call is made via ServiceHost to handle pooled distribution:
             Program.Host.QueueTasks(Name, AllTasksGroupID, QueuePriority.Urgent);
+        }
+
+        /// <summary>
+        /// Queues all tasks for immediate, highest priority, execution to local machine.
+        /// </summary>
+        [AdapterCommand("Queues all tasks for immediate, highest priority, execution to local machine.", "Administrator", "Editor")]
+        public void QueueTasksLocally()
+        {
+            QueueTasksByID(AllTasksGroupID, QueuePriority.Urgent);
+        }
+
+        /// <summary>
+        /// Queues all tasks for provided date range for execution.
+        /// </summary>
+        /// <param name="startDate">Start date for download.</param>
+        /// <param name="startTime">Start time for download.</param>
+        /// <param name="endDate">End date for download.</param>
+        /// <param name="endTime">End time for download.</param>
+        [AdapterCommand("Queues all tasks for provided date range for execution.", "Administrator", "Editor")]
+        public void QueueTasksByDateRange(string startDate, string startTime, string endDate, string endTime)
+        {
+            string dateTimeFormat = Program.Host.Model.Global.DateTimeFormat;
+            DateTime startTimestamp = DateTime.ParseExact($"{startDate} {startTime}", dateTimeFormat, CultureInfo.InvariantCulture);
+            DateTime endTimestamp = DateTime.ParseExact($"{endDate} {endTime}", dateTimeFormat, CultureInfo.InvariantCulture);
+            QueueTasks(AllTasks, QueuePriority.Urgent);
         }
 
         /// <summary>
@@ -2047,6 +2073,11 @@ namespace openMIC
             }
 
             string schedule = task == null ? downloader.Schedule : task.Settings.Schedule;
+
+            // Check for a single dash which represents a disabled schedule
+            if (schedule?.Trim().Equals("-") ?? true)
+                return;
+
             string scheduleName = task == null ? downloader.Name : $"{downloader.Name}:{task.Name}";
 
             s_taskSchedules.TryAdd(scheduleName, new Tuple<Downloader, ConnectionProfileTask>(downloader, task));
