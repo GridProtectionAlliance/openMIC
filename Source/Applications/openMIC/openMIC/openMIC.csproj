@@ -286,8 +286,12 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="PostBuildSetup.bat" />
+    <Content Include="wwwroot\Content\bootstrap-datetimepicker.css" />
+    <Content Include="wwwroot\Content\fonts\jsglyph.svg" />
     <Content Include="wwwroot\Content\jquery.jspanel.css" />
     <Content Include="wwwroot\Images\iGridConfigEditor.png" />
+    <Content Include="wwwroot\Scripts\bootstrap-datetimepicker.js" />
+    <Content Include="wwwroot\Scripts\dateFormat.js" />
     <Content Include="wwwroot\Scripts\jquery.jspanel.js" />
     <Content Include="wwwroot\ConnectionProfileTasks.cshtml" />
     <Content Include="wwwroot\DirectoryBrowser.cshtml" />
@@ -309,6 +313,10 @@
     <Content Include="wwwroot\Settings.cshtml" />
     <Content Include="wwwroot\Logout.cshtml" />
     <Content Include="Web.config" />
+    <Content Include="wwwroot\Content\fonts\jsglyph.eot" />
+    <Content Include="wwwroot\Content\fonts\jsglyph.ttf" />
+    <Content Include="wwwroot\Content\fonts\jsglyph.woff" />
+    <Content Include="wwwroot\CronHelpDialog.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />
