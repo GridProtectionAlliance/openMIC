@@ -354,7 +354,7 @@
 
         function getMoment(textBox) {
             const picker = getDateTimePicker(textBox);
-            return picker == null || picker.date() == null ? null : picker.date();
+            return picker == null ? null : picker.date();
         }
 
         function getDate(textBox) {
@@ -365,14 +365,17 @@
         function setDate(textBox, value) {
             const picker = getDateTimePicker(textBox);
 
-            if (picker != null && picker.date() != null)
+            if (picker != null)
                 picker.date(value); // Can be string, Date, moment, or null
         }
 
         const options = {
-            showClose: true,
+            format: MomentDateTimeFormat,
             useCurrent: false,
-            format: MomentDateTimeFormat
+            showTodayButton: true,
+            showClear: true,
+            showClose: true,
+            keepOpen: false
         };
 
         $("#StartTime").datetimepicker(options);
@@ -380,6 +383,16 @@
 
         $("#StartTime").on("dp.change", validateDateTimes);
         $("#EndTime").on("dp.change", validateDateTimes);
+
+        $("#StartTime").on("dp.show", function () {
+            if (isEmpty(getDate($("#StartTime"))))
+                setDate($("#StartTime"), moment().subtract(20, 'days').startOf('day'));
+        });
+
+        $("#EndTime").on("dp.show", function () {
+            if (isEmpty(getDate($("#EndTime"))))
+                setDate($("#EndTime"), moment().subtract(10, 'days').startOf('day'));
+        });
 
         $("#queueParamsDialog").on("show.bs.modal", function () {
             setDate($("#StartTime"), null);
