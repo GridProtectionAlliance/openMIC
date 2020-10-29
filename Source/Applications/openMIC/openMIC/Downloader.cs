@@ -92,14 +92,14 @@ namespace openMIC
             public long MeasurementsReceived
             {
                 get => m_parent.SuccessfulConnections;
-                set {} // Ignoring updates
+                set { } // Ignoring updates
             }
 
             // Gets or sets total measurements expected to have been received for this <see cref="IDevice"/> - in local context "attempted connections" per day.
             public long MeasurementsExpected
             {
                 get => m_parent.AttemptedConnections;
-                set {} // Ignoring updates
+                set { } // Ignoring updates
             }
 
             // Gets or sets the number of measurements received while this <see cref="IDevice"/> was reporting errors.
@@ -727,12 +727,12 @@ namespace openMIC
         /// Gets all defined connection profile tasks.
         /// </summary>
         public IReadOnlyCollection<ConnectionProfileTask> GetAllTasks => Array.AsReadOnly(AllTasks);
-        
+
         /// <summary>
         /// Gets connection profile tasks defined with a common primary schedule.
         /// </summary>
         public IReadOnlyCollection<ConnectionProfileTask> GetScheduledTasks => Array.AsReadOnly(ScheduledTasks);
-        
+
         /// <summary>
         /// Gets connection profile tasks defined with an overridden schedule.
         /// </summary>
@@ -746,7 +746,7 @@ namespace openMIC
         /// <returns><c>true</c> if <paramref name="taskName"/> was found; otherwise, <c>false</c>.</returns>
         public bool TryGetConnectionProfileTask(string taskName, out ConnectionProfileTask task)
         {
-           return AllTasks.ToDictionary(t => t.Name, StringComparer.OrdinalIgnoreCase).TryGetValue(taskName, out task);
+            return AllTasks.ToDictionary(t => t.Name, StringComparer.OrdinalIgnoreCase).TryGetValue(taskName, out task);
         }
 
         /// <summary>
@@ -780,9 +780,9 @@ namespace openMIC
         public void QueueTasksByDateRange(string startDate, string startTime, string endDate, string endTime)
         {
             string dateTimeFormat = Program.Host.Model.Global.DateTimeFormat;
-            DateTime startTimestamp = DateTime.ParseExact($"{startDate} {startTime}", dateTimeFormat, CultureInfo.InvariantCulture);
-            DateTime endTimestamp = DateTime.ParseExact($"{endDate} {endTime}", dateTimeFormat, CultureInfo.InvariantCulture);
-            QueueTasks(AllTasks, QueuePriority.Urgent);
+            DateTime startTimeConstraint = DateTime.ParseExact($"{startDate} {startTime}", dateTimeFormat, CultureInfo.InvariantCulture);
+            DateTime endTimeConstraint = DateTime.ParseExact($"{endDate} {endTime}", dateTimeFormat, CultureInfo.InvariantCulture);
+            QueueTasks(AllTasks, QueuePriority.Urgent, startTimeConstraint, endTimeConstraint);
         }
 
         /// <summary>
@@ -844,7 +844,7 @@ namespace openMIC
         private void QueueTask(ConnectionProfileTask task, QueuePriority priority)
         {
             m_taskQueue.QueueAction(() => ExecuteSingleTask(task), priority);
-            
+
             OnProgressUpdated(this, new ProgressUpdate
             {
                 State = ProgressState.Queued,
@@ -857,9 +857,9 @@ namespace openMIC
         }
 
         // Queues specified task array for execution at specified priority
-        private void QueueTasks(ConnectionProfileTask[] tasks, QueuePriority priority)
+        private void QueueTasks(ConnectionProfileTask[] tasks, QueuePriority priority, DateTime? startTimeConstraint = null, DateTime? endTimeConstraint = null)
         {
-            m_taskQueue.QueueAction(() => ExecuteGroupedTasks(tasks), priority);
+            m_taskQueue.QueueAction(() => ExecuteGroupedTasks(tasks, startTimeConstraint, endTimeConstraint), priority);
 
             OnProgressUpdated(this, new ProgressUpdate
             {
@@ -909,7 +909,7 @@ namespace openMIC
 
                 taskQueue.RegisterExceptionHandler(ex => OnProcessException(MessageLevel.Error, ex, "Task Execution"));
                 m_taskQueue = taskQueue;
-                    
+
                 AllTasks = tasks;
                 ScheduledTasks = tasks.Where(task => string.IsNullOrWhiteSpace(task.Settings.Schedule)).ToArray();
                 OffScheduleTasks = tasks.Where(task => !string.IsNullOrWhiteSpace(task.Settings.Schedule)).ToArray();
@@ -1028,7 +1028,7 @@ namespace openMIC
         // steps of this method should be reviewed for inclusion in ExecuteSingleTask.
         // This method should "setup" environment needed for execution of tasks, e.g.,
         // making any needed RAS or FTP connections, as well as "cleanup" when complete.
-        private void ExecuteGroupedTasks(ConnectionProfileTask[] tasks)
+        private void ExecuteGroupedTasks(ConnectionProfileTask[] tasks, DateTime? startTimeConstraint, DateTime? endTimeConstraint)
         {
             if (!AdapterIsEnabled())
                 return;
@@ -1102,7 +1102,16 @@ namespace openMIC
                         return;
 
                     OnStatusMessage(MessageLevel.Info, $"Starting \"{connectionProfileName}\" connection profile \"{task.Name}\" task processing:");
+
+                    // Apply any provided start/end time constraints to task settings
+                    task.Settings.StartTimeConstraint = startTimeConstraint;
+                    task.Settings.EndTimeConstraint = endTimeConstraint;
+
                     ExecuteTask(task, ftpClient, localTime);
+
+                    // Clear any start/end time constraints applied to task settings
+                    task.Settings.StartTimeConstraint = null;
+                    task.Settings.EndTimeConstraint = null;
                 }
 
                 ProgressUpdate finalUpdate = new ProgressUpdate
@@ -1155,18 +1164,41 @@ namespace openMIC
         private void ExecuteTask(ConnectionProfileTask task, FtpClient ftpClient, DateTime localTime)
         {
             ConnectionProfileTaskSettings settings = task.Settings;
+            bool timeConstraintApplied = settings.StartTimeConstraint.HasValue && settings.EndTimeConstraint.HasValue;
 
             OnProgressUpdated(this, new ProgressUpdate { Message = $"Executing task \"{task.Name}\"..." });
 
             task.Reset();
 
             if (string.IsNullOrWhiteSpace(settings.ExternalOperation))
-                ExecuteFTPTask(task, ftpClient, localTime);
+            {
+                if (timeConstraintApplied)
+                {
+                    // Execute time constraints on FTP tasks day-by-day to match existing FTP download logic
+                    DateTime startTimeConstraint = settings.StartTimeConstraint.Value;
+                    DateTime endTimeConstraint = settings.EndTimeConstraint.Value;
+                    DateTime topOfDayStartTime = startTimeConstraint.BaselinedTimestamp(BaselineTimeInterval.Day);
+                    int dayRange = (int)Math.Ceiling((endTimeConstraint - startTimeConstraint).TotalDays);
+
+                    for (int i = 0; i < dayRange; i++)
+                    {
+                        settings.StartTimeConstraint = i == 0 ? startTimeConstraint : topOfDayStartTime.AddDays(i);
+                        settings.EndTimeConstraint = i == dayRange - 1 ? endTimeConstraint : topOfDayStartTime.AddDays(i + 1).AddTicks(-1);
+                        ExecuteFTPTask(task, ftpClient, settings.StartTimeConstraint.Value);
+                    }
+                }
+                else
+                {
+                    ExecuteFTPTask(task, ftpClient, localTime);
+                }
+            }
             else
+            {
                 ExecuteExternalOperationTask(task, localTime);
+            }
 
             // Handle local file age limit processing, if enabled
-            if (settings.DeleteOldLocalFiles)
+            if (settings.DeleteOldLocalFiles && !timeConstraintApplied)
                 HandleLocalFileAgeLimitProcessing(task);
 
             OnProgressUpdated(this, new ProgressUpdate { OverallProgress = ++m_overallTasksCompleted, OverallProgressTotal = m_overallTasksCount });
@@ -1472,6 +1504,7 @@ namespace openMIC
         private void BuildFileList(List<FtpFileWrapper> fileList, ConnectionProfileTask task, FtpClient client, string remotePathDirectory, string localPathDirectory)
         {
             ConnectionProfileTaskSettings settings = task.Settings;
+            bool timeConstraintApplied = settings.StartTimeConstraint.HasValue && settings.EndTimeConstraint.HasValue;
 
             if (m_cancellationToken.IsCancelled)
                 return;
@@ -1479,7 +1512,10 @@ namespace openMIC
             OnStatusMessage(MessageLevel.Info, $"Attempting to set remote FTP directory path \"{remotePathDirectory}\"...");
             client.SetCurrentDirectory(remotePathDirectory);
 
-            OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePathDirectory}\"...");
+            if (timeConstraintApplied)
+                OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePathDirectory}\" with time constraint from {settings.StartTimeConstraint.Value:yyyy-MM-dd HH:mm.ss.fff} to {settings.EndTimeConstraint.Value:yyyy-MM-dd HH:mm.ss.fff}...");
+            else
+                OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePathDirectory}\"...");
 
             foreach (FtpFile file in client.CurrentDirectory.Files)
             {
@@ -1489,7 +1525,12 @@ namespace openMIC
                 if (!FilePath.IsFilePatternMatch(settings.FileSpecs, file.Name, true))
                     continue;
 
-                if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
+                if (timeConstraintApplied)
+                {
+                    if (file.Timestamp < settings.StartTimeConstraint.Value || file.Timestamp > settings.EndTimeConstraint.Value)
+                        continue;
+                }
+                else if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
                 {
                     OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, timestamp \"{file.Timestamp:yyyy-MM-dd HH:mm.ss.fff}\" is older than {Program.Host.Model.Global.MaxRemoteFileAge} days.");
                     OnProgressUpdated(this, new ProgressUpdate { Message = $"File \"{file.Name}\" skipped: File is too old." });
@@ -1745,6 +1786,7 @@ namespace openMIC
         {
             ConnectionProfileTaskSettings settings = task.Settings;
             string localPathDirectory = GetLocalPathDirectory(settings, localTime);
+            string dateTimeFormat = Program.Host.Model.Global.DateTimeFormat;
 
             Dictionary<string, string> substitutions = new Dictionary<string, string>
             {
@@ -1758,7 +1800,9 @@ namespace openMIC
                 { "<ConnectionPassword>", ConnectionPassword },
                 { "<ConnectionTimeout>", ConnectionTimeout.ToString() },
                 { "<ProfileName>", m_connectionProfile.Name ?? "undefined" },
-                { "<TaskID>", task.ID.ToString() }
+                { "<TaskID>", task.ID.ToString() },
+                { "<StartTime>", (settings.StartTimeConstraint ?? DateTime.MinValue).ToString(dateTimeFormat) },
+                { "<EndTime>", (settings.EndTimeConstraint ?? DateTime.MaxValue).ToString(dateTimeFormat) }
             };
 
             string command = substitutions.Aggregate(settings.ExternalOperation.Trim(), (str, kvp) => str.Replace(kvp.Key, kvp.Value));
