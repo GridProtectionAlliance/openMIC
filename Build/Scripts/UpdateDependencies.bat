@@ -59,7 +59,7 @@ GOTO UpdateRepository
 
 :CloneRepository
 ECHO.
-ECHO Cloning remote repository...
+ECHO Getting latest version...
 "%git%" clone "%remote%" .
 GOTO UpdateDependencies
 
@@ -88,6 +88,7 @@ COPY /Y "%sourcetools%\StatHistorianReportGenerator\StatHistorianReportGenerator
 COPY /Y "%sourcetools%\NoInetFixUtil\NoInetFixUtil.exe" "%targettools%\NoInetFixUtil.exe"
 COPY /Y "%sourcetools%\DNP3ConfigGenerator\DNP3ConfigGenerator.exe" "%targettools%\DNP3ConfigGenerator.exe"
 COPY /Y "%sourcetools%\LogFileViewer\LogFileViewer.exe" "%targettools%\LogFileViewer.exe"
+COPY /Y "%sourcetools%\AdapterExplorer\AdapterExplorer.exe" "%targettools%\AdapterExplorer.exe"
 
 :UpdateDbScripts
 ECHO.
