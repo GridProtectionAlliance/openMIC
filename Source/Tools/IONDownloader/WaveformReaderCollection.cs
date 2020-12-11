@@ -38,7 +38,7 @@ namespace IONDownloader
 
         private IEnumerable<IONWaveformReader> AlignedReaders => ActiveReaders
             .Where(reader => !(reader.CurrentWaveform is null))
-            .GroupBy(reader => reader.CurrentWaveform!.TimeOfFirstPoint)
+            .GroupBy(reader => (DateTime)reader.CurrentWaveform!.TimeOfFirstPoint)
             .OrderBy(grouping => grouping.Key)
             .FirstOrDefault() ?? Enumerable.Empty<IONWaveformReader>();
 
