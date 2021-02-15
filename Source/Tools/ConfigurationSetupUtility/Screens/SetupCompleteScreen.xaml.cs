@@ -81,49 +81,25 @@ namespace ConfigurationSetupUtility.Screens
         /// <summary>
         /// Gets the screen to be displayed when the user clicks the "Next" button.
         /// </summary>
-        public IScreen NextScreen
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public IScreen NextScreen => null;
 
         /// <summary>
         /// Gets a boolean indicating whether the user can advance to
         /// the next screen from the current screen.
         /// </summary>
-        public bool CanGoForward
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool CanGoForward => true;
 
         /// <summary>
         /// Gets a boolean indicating whether the user can return to
         /// the previous screen from the current screen.
         /// </summary>
-        public bool CanGoBack
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool CanGoBack => false;
 
         /// <summary>
         /// Gets a boolean indicating whether the user can cancel the
         /// setup process from the current screen.
         /// </summary>
-        public bool CanCancel
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool CanCancel => false;
 
         /// <summary>
         /// Gets a boolean indicating whether the user input is valid on the current page.
@@ -144,8 +120,8 @@ namespace ConfigurationSetupUtility.Screens
                         ValidateGrafanaBindings();
 
                         // Make sure needed assembly bindings exist in config file (required for self-hosted web server)
-                        RunHiddenConsoleApp(FilePath.GetAbsolutePath("ValidateAssemblyBindings.exe"), FilePath.GetAbsolutePath(App.ApplicationConfig));
-                        RunHiddenConsoleApp(FilePath.GetAbsolutePath("ValidateAssemblyBindings.exe"), FilePath.GetAbsolutePath(App.ManagerConfig));
+                        RunHiddenConsoleApp("ValidateAssemblyBindings.exe", App.ApplicationConfig);
+                        RunHiddenConsoleApp("ValidateAssemblyBindings.exe", App.ManagerConfig);
 
                         if (migrate)
                         {
@@ -1035,7 +1011,8 @@ namespace ConfigurationSetupUtility.Screens
                     WindowStyle = ProcessWindowStyle.Hidden,
                     CreateNoWindow = true,
                     FileName = application,
-                    Arguments = arguments
+                    Arguments = arguments,
+                    WorkingDirectory = FilePath.GetAbsolutePath("")
                 };
 
                 // Pre-start console process for quick update responses

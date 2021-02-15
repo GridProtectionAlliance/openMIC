@@ -3,7 +3,9 @@
   <Directory Id="CONTENTFOLDER" Name="Content">
     <Directory Id="CONTENTFONTSFOLDER" Name="fonts" />
   </Directory>
-  <Directory Id="IMAGESFOLDER" Name="Images" />
+  <Directory Id="IMAGESFOLDER" Name="Images">
+    <Directory Id="IMAGESICONSFOLDER" Name="Icons" />
+  </Directory>
   <Directory Id="SCRIPTSFOLDER" Name="Scripts" />
 </Directory>
 </Include>

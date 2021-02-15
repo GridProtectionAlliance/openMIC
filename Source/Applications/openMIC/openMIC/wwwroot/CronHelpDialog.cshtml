@@ -1,0 +1,119 @@
+﻿@using GSF.Web.Model
+@inherits ExtendedTemplateBase<DataContext>
+@{
+    //**************************************************************************************************************************************************
+    //  Cron Validation RegEx Breakdown
+    //
+    //  General Format is as follows:
+    //      "asterick" or "comma separated values" or "start-value dash end-value with optional slash interval" or "asterick with slash interval", e.g.:
+    //      "*" or "value1[,valueN]*" or "value1-value2[/interval]" or "*/interval"
+    //
+    //  > Minute (0-59 or 60 = 0):
+    //      (\*|(([0-5]?[0-9]|60)(,([0-5]?[0-9]|60))*)|([0-5]?[0-9]|60)\-([0-5]?[0-9]|60)(\/[0-9]+)?|\*\/[0-9]+)
+    //
+    //  > Hour (0-23 or 24 = 0):
+    //      (\*|(([0-9]|1[0-9]|2[0-4])(,([0-9]|1[0-9]|2[0-4]))*)|([0-9]|1[0-9]|2[0-4])\-([0-9]|1[0-9]|2[0-4])(\/[0-9]+)?|\*\/[0-9]+)
+    //
+    //  > Day (1 to 31):
+    //      (\*|(([1-9]|[1-2][0-9]|30|31)(,([1-9]|[1-2][0-9]|30|31))*)|([1-9]|[1-2][0-9]|30|31)\-([1-9]|[1-2][0-9]|30|31)(\/[0-9]+)?|\*\/[0-9]+)
+    //
+    //  > Month (1 to 12):
+    //      (\*|(([1-9]|1[0-2])(,([1-9]|1[0-2]))*)|([1-9]|1[0-2])\-([1-9]|1[0-2])(\/[0-9]+)?|\*\/[0-9]+)
+    //
+    //  > Day of Week (0 to 6 or 7 = 0):
+    //      (\*|([0-7](,[0-7])*)|[0-7]\-[0-7](\/[0-9]+)?|\*\/[0-9]+)
+    //
+    //  Tests:
+    //      0,25,59,60 0,12,23,24 1,5,29,30,31 1,5,9,12 0,3,6,7
+    //      0-59 0-23 1-31 1-12 0-6
+    //      0-59/10 0-23/2 1-31/3 1-12/4 0-6/2
+    //      */10 */2 */3 */4 */2
+    //
+    //  Note:
+    //      In this implementation a single dash "-" represents a disabled cron schedule.
+    //
+    //**************************************************************************************************************************************************
+
+    //                                   Dash: Minute:                                                                                                Hour:                                                                                                                      Day:                                                                                                                                   Month:                                                                                         Day of Week:
+    const string CronValidationRegex = @"^\-$|^(\*|(([0-5]?[0-9]|60)(,([0-5]?[0-9]|60))*)|([0-5]?[0-9]|60)\-([0-5]?[0-9]|60)(\/[0-9]+)?|\*\/[0-9]+)\s+(\*|(([0-9]|1[0-9]|2[0-4])(,([0-9]|1[0-9]|2[0-4]))*)|([0-9]|1[0-9]|2[0-4])\-([0-9]|1[0-9]|2[0-4])(\/[0-9]+)?|\*\/[0-9]+)\s+(\*|(([1-9]|[1-2][0-9]|30|31)(,([1-9]|[1-2][0-9]|30|31))*)|([1-9]|[1-2][0-9]|30|31)\-([1-9]|[1-2][0-9]|30|31)(\/[0-9]+)?|\*\/[0-9]+)\s+(\*|(([1-9]|1[0-2])(,([1-9]|1[0-2]))*)|([1-9]|1[0-2])\-([1-9]|1[0-2])(\/[0-9]+)?|\*\/[0-9]+)\s+(\*|([0-7](,[0-7])*)|[0-7]\-[0-7](\/[0-9]+)?|\*\/[0-9]+)$";
+
+    // In order to properly initialize cron validation pattern, this dialog must be
+    // included before rendering the PageViewModel resource
+    DataContext dataContext = Model;
+
+    // Add cron pattern validation to schedule connection string field
+    if (dataContext != null) {
+        dataContext.AddFieldValidation("viewModel.connectionString.get('schedule')", CronValidationRegex, "Invalid cron syntax.");
+    }
+}
+<div id="cronHelpDialog" class="modal fade" role="dialog" style="z-index: 99999">
+    <div class="modal-vertical-align-container">
+        <div class="modal-dialog modal-md modal-vertical-align-center">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Cron Syntax</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="center-block" style="width: 380px">
+                            <pre>
+ # ┌───────────── min (0 - 59)
+ # │ ┌────────────── hour (0 - 23)
+ # │ │ ┌─────────────── day of month (1 - 31)
+ # │ │ │ ┌──────────────── month (1 - 12)
+ # │ │ │ │ ┌───────────────── day of week (0 - 6):
+ # │ │ │ │ │        0 to 6 are Sunday to Saturday,
+ # │ │ │ │ │        or 7 is Sunday, the same as 0
+ # * * * * *
+ # - ˂――――――――――――― single dash disables schedule
+</pre>
+                        </div>
+                        <div style="margin: -8px auto 2px auto; width: 90px; overflow: visible; white-space: nowrap" data-bind="visible: $root.recordMode()!==RecordMode.View">
+                            <svg enable-background="new 0 0 24 24" version="1.0" viewBox="0 0 24 24" style="height: 18px; width: 12px; transform: translate(4px, 8px)"><polygon points="12,15 7,22 2,15 "/><path d="M22,4h-9c-3.3,0-6,2.7-6,6v8" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-width="2"/></svg>
+                            <small>Click to select schedule</small>
+                        </div>
+                        <table class="small table-condensed table-center">
+                            <tr>
+                                <td style="text-align: right" nowrap>Every five minutes:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('*/5 * * * *')"><code>*/5 * * * *</code></button></td>
+                                <td style="text-align: right" nowrap>Every hour:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 * * * *')"><code>&nbsp;0 * * * *&nbsp;</code></button></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right" nowrap>Every half-hour:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0,30 * * * *')"><code>0,30 * * * *</code></button></td>
+                                <td style="text-align: right" nowrap>Every four hours:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 */4 * * *')"><code>0 */4 * * *</code></button></td>
+                            <tr>
+                                <td style="text-align: right" nowrap>Every day:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 * * *')"><code>&nbsp;0 0 * * *&nbsp;</code></button></td>
+                                <td style="text-align: right" nowrap>Every month:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 1 * *')"><code>&nbsp;0 0 1 * *&nbsp;</code></button></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right" nowrap>Every hour, 4 to 8:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 4-8 * * *')"><code>0 4-8 * * *</code></button></td>
+                                <td style="text-align: right" nowrap>Every other day:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('0 0 * * */2')"><code>0 0 * * */2</code></button></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right" nowrap>Every minute:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('* * * * *')"><code>&nbsp;* * * * *&nbsp;</code></button></td>
+                                <td style="text-align: right" nowrap>Disabled:</td>
+                                <td style="text-align: left" nowrap><button class="btn btn-default btn-block btn-xs" style="padding: 0" data-dismiss="modal" data-bind="enable: recordMode()!==RecordMode.View" onclick="updateSchedule('-')"><code style="padding-left: 25px; padding-right: 25px">&nbsp;-&nbsp;</code></button></td>
+                            </tr>
+                        </table>
+                        <br />
+                        <div class="text-center">
+                            <a href="https://en.wikipedia.org/wiki/Cron" target="_blank">https://en.wikipedia.org/wiki/Cron</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

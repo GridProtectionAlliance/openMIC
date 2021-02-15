@@ -9,6 +9,9 @@
   <Component Id="ConnectionProfileTasks_cshtml">
     <File Id="ConnectionProfileTasks.cshtml" Name="ConnectionProfileTasks.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ConnectionProfileTasks.cshtml" />
   </Component>
+  <Component Id="CronHelpDialog_cshtml">
+    <File Id="CronHelpDialog.cshtml" Name="CronHelpDialog.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\CronHelpDialog.cshtml" />
+  </Component>
   <Component Id="Devices_cshtml">
     <File Id="Devices.cshtml" Name="Devices.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Devices.cshtml" />
   </Component>
@@ -27,8 +30,8 @@
   <Component Id="IGridConfig_cshtml">
     <File Id="IGridConfig.cshtml" Name="IGridConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\IGridConfig.cshtml" />
   </Component>
-  <Component Id="Index_cshtml">
-    <File Id="Index.cshtml" Name="Index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Index.cshtml" />
+  <Component Id="index_cshtml">
+    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
   </Component>
   <Component Id="Layout_cshtml">
     <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
@@ -68,6 +71,9 @@
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Content_Components" Directory="CONTENTFOLDER">
+  <Component Id="Content_bootstrap_datetimepicker_css">
+    <File Id="Content_bootstrap_datetimepicker.css" Name="bootstrap-datetimepicker.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-datetimepicker.css" />
+  </Component>
   <Component Id="Content_bootstrap_sidebar_css">
     <File Id="Content_bootstrap_sidebar.css" Name="bootstrap-sidebar.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\bootstrap-sidebar.css" />
   </Component>
@@ -136,7 +142,18 @@
     <File Id="Images_openMICBanner.png" Name="openMICBanner.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\openMICBanner.png" />
   </Component>
 </ComponentGroup>
+<ComponentGroup Id="wwwroot_Images_Icons_Components" Directory="IMAGESICONSFOLDER">
+  <Component Id="Images_Icons_openMIC_ico">
+    <File Id="Images_Icons_openMIC.ico" Name="openMIC.ico" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Icons\openMIC.ico" />
+  </Component>
+</ComponentGroup>
 <ComponentGroup Id="wwwroot_Scripts_Components" Directory="SCRIPTSFOLDER">
+  <Component Id="Scripts_bootstrap_datetimepicker_js">
+    <File Id="Scripts_bootstrap_datetimepicker.js" Name="bootstrap-datetimepicker.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\bootstrap-datetimepicker.js" />
+  </Component>
+  <Component Id="Scripts_dateFormat_js">
+    <File Id="Scripts_dateFormat.js" Name="dateFormat.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\dateFormat.js" />
+  </Component>
   <Component Id="Scripts_jquery_jspanel_js">
     <File Id="Scripts_jquery.jspanel.js" Name="jquery.jspanel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.jspanel.js" />
   </Component>

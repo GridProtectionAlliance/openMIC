@@ -155,6 +155,10 @@ namespace openMIC.Model
         [Description("Defines the schedule cron override. Blank values assumes use of cron schedule associated with the device.")]
         [DefaultValue("")]
         public string Schedule { get; set; }
+
+        internal DateTime? StartTimeConstraint { get; set; } = null;
+
+        internal DateTime? EndTimeConstraint { get; set; } = null;
     }
 
     [PrimaryLabel("Name")]
@@ -206,7 +210,7 @@ namespace openMIC.Model
 
         [NonRecordField]
         [JsonIgnore]
-        public ConnectionProfileTaskSettings Settings { get; }
+        public ConnectionProfileTaskSettings Settings { get; internal set; }
 
         [DefaultValueExpression("DateTime.UtcNow")]
         public DateTime CreatedOn { get; set; }

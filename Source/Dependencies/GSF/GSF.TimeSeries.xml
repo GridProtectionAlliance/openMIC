@@ -878,10 +878,14 @@
         <member name="P:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.AutoReparseConnectionString">
             <summary>
             Gets or sets flag that determines if the <see cref="T:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1"/> adapter
-            <see cref="P:GSF.TimeSeries.Adapters.AdapterCollectionBase`1.ConnectionString"/> should be automatically parsed every time
-            the <see cref="P:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.DataSource"/> is updated without requiring adapter to be reinitialized. Defaults
-            to <c>true</c> to allow child adapters to come and go based on updates to system configuration.
+            <see cref="P:GSF.TimeSeries.Adapters.AdapterCollectionBase`1.ConnectionString"/> should be automatically parsed every time the
+            <see cref="P:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.DataSource"/> is updated without requiring adapter to be reinitialized. Defaults to <c>true</c>
+            to allow child adapters to come and go based on updates to system configuration.
             </summary>
+            <remarks>
+            When this value is <c>true</c> (the default), implementors must call the <see cref="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.InitializeChildAdapterManagement(GSF.TimeSeries.MeasurementKey[])"/>
+            method an overridden <see cref="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.ParseConnectionString"/> method.
+            </remarks>
         </member>
         <member name="P:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.InputMeasurementKeyTypes">
             <summary>
@@ -930,10 +934,17 @@
             Initializes the <see cref="T:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1" />.
             </summary>
         </member>
-        <member name="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.InitializeChildAdapterManagement">
+        <member name="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.InitializeChildAdapterManagement(GSF.TimeSeries.MeasurementKey[])">
             <summary>
-            Initializes management operations for child adapters based on inputs.
+            Initializes management operations for child adapters based on inputs. Derived classes should override
+            <see cref="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.ParseConnectionString"/> and call this method when <see cref="P:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.AutoReparseConnectionString"/> is
+            <c>true</c> (the default).
             </summary>
+            <param name="inputMeasurementKeys">Input measurement keys to use for initialization.</param>
+            <remarks>
+            When <see cref="P:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.AutoReparseConnectionString"/> is <c>true</c> (the default), implementors must override
+            the <see cref="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.ParseConnectionString"/> method and at least call this method.
+            </remarks>
         </member>
         <member name="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.ValidateEvenInputCount">
             <summary>
@@ -942,8 +953,14 @@
         </member>
         <member name="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.ParseConnectionString">
             <summary>
-            Parses connection string. Derived classes should override for custom connection string parsing.
+            Parses connection string. Derived classes should override for custom connection string parsing and call the
+            <see cref="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.InitializeChildAdapterManagement(GSF.TimeSeries.MeasurementKey[])"/> method when <see cref="P:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.AutoReparseConnectionString"/> is
+            <c>true</c> (the default).
             </summary>
+            <remarks>
+            When <see cref="P:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.AutoReparseConnectionString"/> is <c>true</c> (the default), implementors must override
+            this method and at least call the <see cref="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.InitializeChildAdapterManagement(GSF.TimeSeries.MeasurementKey[])"/> method.
+            </remarks>
         </member>
         <member name="M:GSF.TimeSeries.Adapters.IndependentActionAdapterManagerBase`1.ConfigurationReloaded">
             <summary>
@@ -8666,6 +8683,11 @@
             The arguments to be passed into the statistic calculation function.
             </summary>
         </member>
+        <member name="P:GSF.TimeSeries.Statistics.Statistic.DataType">
+            <summary>
+            Target data type of the statistic.
+            </summary>
+        </member>
         <member name="T:GSF.TimeSeries.Statistics.StatisticsEngine">
             <summary>
             Represents the engine that computes statistics within applications of the TimeSeriesFramework.
@@ -9846,6 +9868,11 @@
             Default value for <see cref="P:GSF.TimeSeries.Transport.DataPublisher.MetadataTables"/>.
             </summary>
         </member>
+        <member name="F:GSF.TimeSeries.Transport.DataPublisher.DefaultMutualSubscription">
+            <summary>
+            Default value for <see cref="P:GSF.TimeSeries.Transport.DataPublisher.MutualSubscription"/>.
+            </summary>
+        </member>
         <member name="F:GSF.TimeSeries.Transport.DataPublisher.MaxPacketSize">
             <summary>
             Maximum packet size before software fragmentation of payload.
@@ -9978,6 +10005,26 @@
             <summary>
             Gets or sets semi-colon separated list of SQL select statements used to create data for meta-data exchange.
             </summary>
+        </member>
+        <member name="P:GSF.TimeSeries.Transport.DataPublisher.MutualSubscription">
+            <summary>
+            Gets or sets flag that determines if a subscription is mutual, i.e., bi-directional pub/sub. In this mode one node will
+            be the owner and set <c>Internal = True</c> and the other node will be the renter and set <c>Internal = False</c>.
+            </summary>
+            <remarks>
+            <para>
+            This flag is intended to be used in scenarios where a remote subscriber can add new measurements associated with a
+            source device, e.g., creating new calculated result measurements on a remote machine for load distribution that should
+            get associated with a device on the local machine, thus becoming part of the local measurement set.
+            </para>
+            <para>
+            For best results, both the owner and renter subscriptions should be reduced to needed measurements, i.e., renter should
+            only receive measurements needed for remote calculations and owner should only receive new calculated results. Note that
+            when used with a TLS-style subscription this can be accomplished by using the subscription UI screens that control the
+            measurement <c>subscribed</c> flag. For internal subscriptions, reduction of metadata and subscribed measurements will
+            need to be controlled via connection string with <c>metadataFilters</c> and <c>outputMeasurements</c>, respectively.
+            </para>
+            </remarks>
         </member>
         <member name="P:GSF.TimeSeries.Transport.DataPublisher.AutoInitialize">
             <summary>
@@ -10832,6 +10879,30 @@
             <example>
             FILTER MeasurementDetail WHERE SignalType &lt;&gt; 'STAT'; FILTER PhasorDetail WHERE Phase = '+'
             </example>
+        </member>
+        <member name="P:GSF.TimeSeries.Transport.DataSubscriber.MutualSubscription">
+            <summary>
+            Gets or sets flag that determines if a subscription is mutual, i.e., bi-directional pub/sub. In this mode one node will
+            be the owner and set <c>Internal = True</c> and the other node will be the renter and set <c>Internal = False</c>.
+            </summary>
+            <remarks>
+            <para>
+            This flag is intended to be used in scenarios where a remote subscriber can add new measurements associated with a
+            source device, e.g., creating new calculated result measurements on a remote machine for load distribution that should
+            get associated with a device on the local machine, thus becoming part of the local measurement set.
+            </para>
+            <para>
+            For best results, both the owner and renter subscriptions should be reduced to needed measurements, i.e., renter should
+            only receive measurements needed for remote calculations and owner should only receive new calculated results. Note that
+            when used with a TLS-style subscription this can be accomplished by using the subscription UI screens that control the
+            measurement <c>subscribed</c> flag. For internal subscriptions, reduction of metadata and subscribed measurements will
+            need to be controlled via connection string with <c>metadataFilters</c> and <c>outputMeasurements</c>, respectively.
+            </para>
+            <para>
+            Setting <see cref="P:GSF.TimeSeries.Transport.DataSubscriber.MutualSubscription"/> to <c>true</c> will force <see cref="P:GSF.TimeSeries.Transport.DataSubscriber.ReceiveInternalMetadata"/> to <c>true</c>
+            and <see cref="P:GSF.TimeSeries.Transport.DataSubscriber.ReceiveExternalMetadata"/> to <c>false</c>.
+            </para>
+            </remarks>
         </member>
         <member name="P:GSF.TimeSeries.Transport.DataSubscriber.UseMillisecondResolution">
             <summary>
@@ -13197,6 +13268,18 @@
         <member name="M:GSF.TimeSeries.ServiceHostBase.LogEventRequestHandler(GSF.ServiceProcess.ClientRequestInfo)">
             <summary>
             Sends remote entry for logging.
+            </summary>
+            <param name="requestInfo"></param>
+        </member>
+        <member name="M:GSF.TimeSeries.ServiceHostBase.GetInputMeasurementsRequestHandler(GSF.ServiceProcess.ClientRequestInfo)">
+            <summary>
+            Gets adapter input measurements.
+            </summary>
+            <param name="requestInfo"></param>
+        </member>
+        <member name="M:GSF.TimeSeries.ServiceHostBase.GetOutputMeasurementsRequestHandler(GSF.ServiceProcess.ClientRequestInfo)">
+            <summary>
+            Gets adapter output measurements.
             </summary>
             <param name="requestInfo"></param>
         </member>

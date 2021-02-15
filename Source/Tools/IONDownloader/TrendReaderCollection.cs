@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Gemstone.IONProtocol;
 
@@ -60,6 +61,11 @@ namespace IONDownloader
             if (date <= CurrentDate)
                 yield break;
 
+            int pointCount = 0;
+            long lastUpdate = DateTime.UtcNow.Ticks;
+            TimeSpan updateInterval = TimeSpan.FromSeconds(2.5D);
+            Console.WriteLine($"[Trend {date.ToDateTime():yyyy-MM-dd}] Querying data points...");
+
             async IAsyncEnumerable<IONTrendPoint> QueryAsync(IONTrendReader reader)
             {
                 while (reader.CurrentDate <= date)
@@ -67,7 +73,16 @@ namespace IONDownloader
                     if (reader.CurrentDate == date)
                     {
                         foreach (IONTrendPoint point in reader.CurrentPoints)
+                        {
+                            int count = Interlocked.Increment(ref pointCount);
+                            long ticks = Interlocked.Read(ref lastUpdate);
+                            DateTime now = DateTime.UtcNow;
+
+                            if (now - new DateTime(ticks) > updateInterval && Interlocked.CompareExchange(ref lastUpdate, now.Ticks, ticks) == ticks)
+                                Console.WriteLine($"[Trend {date.ToDateTime():yyyy-MM-dd}] {count} points received so far...");
+
                             yield return point;
+                        }
                     }
 
                     if (!await reader.TryAdvanceAsync())
@@ -79,19 +94,36 @@ namespace IONDownloader
                 .Select(QueryAsync)
                 .Select(points => points.ToListAsync().AsTask());
 
-            foreach (List<IONTrendPoint> points in await Task.WhenAll(queryTasks))
+            List<IONTrendPoint>[] allPoints = await Task.WhenAll(queryTasks);
+
+            foreach (List<IONTrendPoint> points in allPoints)
             {
                 foreach (IONTrendPoint point in points)
                     yield return point;
             }
 
             CurrentDate = date;
+
+            Console.WriteLine($"[Trend {date.ToDateTime():yyyy-MM-dd}] {pointCount} total points received.");
         }
 
         public async Task SeekAsync(DateTime timestamp)
         {
-            foreach (IONTrendReader reader in Readers)
-                await reader.SeekAsync(timestamp);
+            long min = IONTime.MinValue.ToDateTime().Ticks;
+            long max = IONTime.MaxValue.ToDateTime().Ticks;
+            long clampedTicks = Math.Clamp(timestamp.Ticks, min, max);
+            DateTime clampedTimestamp = new DateTime(clampedTicks);
+            IEnumerable<Task> seekTasks = Readers.Select(reader => reader.SeekAsync(clampedTimestamp));
+            Task seekAll = Task.WhenAll(seekTasks);
+            TimeSpan updateInterval = TimeSpan.FromSeconds(2.5D);
+
+            while (!seekAll.IsCompleted)
+            {
+                Console.WriteLine($"[Trend] Seeking to {timestamp:yyyy-MM-dd}...");
+                await Task.WhenAny(seekAll, Task.Delay(updateInterval));
+            }
+
+            Initialized = true;
         }
     }
 }

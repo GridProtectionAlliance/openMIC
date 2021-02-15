@@ -20,6 +20,7 @@
         <ComponentGroupRef Id="GSFDependencyComponents" />
         <ComponentGroupRef Id="MySQLScriptComponents" />
         <ComponentGroupRef Id="OracleScriptComponents" />
+        <ComponentGroupRef Id="PostgresScriptComponents" />
         <ComponentGroupRef Id="SQLServerScriptComponents" />
         <ComponentGroupRef Id="SQLiteScriptComponents" />
         <ComponentRef Id="makecert"/>
@@ -119,6 +120,7 @@
     <Property Id="HTTPSERVICEPORTS" Value="8089,6063,6064,6163,6164,6364,6464,5024" />
     <Property Id="COMPANYNAME" Value="Grid Protection Alliance" />
     <Property Id="COMPANYACRONYM" Value="GPA" />
+    <Property Id="SYSTEMNAME" Value=" " />
     <SetProperty Id="SERVICEACCOUNT" Value="NT SERVICE\[SERVICENAME]" After="LaunchConditions" Sequence="first" />
     <SetProperty Id="PROCESSSTARTINFO" Value="FileName={[#ConfigurationSetupUtility.exe]};Arguments=-install;UseShellExecute=True;Verb=runas" After="ExecuteAction" Sequence="ui" />
     <SetProperty Id="WEBMANAGERURL" Value="http://localhost:8089/" Before="CreateShortcuts" Sequence="execute" />
@@ -138,7 +140,7 @@
     <CustomAction Id="AuthenticateServiceAccountAction" BinaryKey="InstallerActions" DllEntry="AuthenticateServiceAccountAction" Execute="immediate" />
     <CustomAction Id="LoadExistingCompanyInfoAction" BinaryKey="InstallerActions" DllEntry="LoadExistingCompanyInfoAction" Execute="immediate" />
     <CustomAction Id="StartCSUProcessAction" BinaryKey="InstallerActions" DllEntry="StartProcessAction" Execute="immediate" />
-    <CustomAction Id="CompanyInfoAction.SetProperty" Property="CompanyInfoAction" Value="SERVICENAME=[SERVICENAME];INSTALLDIR=[INSTALLFOLDER];COMPANYNAME=[COMPANYNAME];COMPANYACRONYM=[COMPANYACRONYM]" />
+    <CustomAction Id="CompanyInfoAction.SetProperty" Property="CompanyInfoAction" Value="SERVICENAME=[SERVICENAME];INSTALLDIR=[INSTALLFOLDER];COMPANYNAME=[COMPANYNAME];COMPANYACRONYM=[COMPANYACRONYM];SYSTEMNAME=[SYSTEMNAME]" />
     <CustomAction Id="CompanyInfoAction" BinaryKey="InstallerActions" DllEntry="CompanyInfoAction" Execute="deferred" Impersonate="no" />
     <CustomAction Id="ConfigureServiceAction.SetProperty" Property="ConfigureServiceAction" Value="SERVICENAME=[SERVICENAME]" />
     <CustomAction Id="ConfigureServiceAction" BinaryKey="InstallerActions" DllEntry="ConfigureServiceAction" Execute="deferred" Impersonate="no" />
@@ -178,6 +180,7 @@
           <Directory Id="DATABASESCRIPTSFOLDER" Name="Database Scripts">
             <Directory Id="MYSQLSCRIPTSFOLDER" Name="MySQL" />
             <Directory Id="ORACLESCRIPTSFOLDER" Name="Oracle" />
+            <Directory Id="POSTGRESSCRIPTSFOLDER" Name="PostgreSQL" />
             <Directory Id="SQLSERVERSCRIPTSFOLDER" Name="SQL Server" />
             <Directory Id="SQLITESCRIPTSFOLDER" Name="SQLite" />
           </Directory>
@@ -198,6 +201,7 @@
           <Directory Id="DATABASESCRIPTSFOLDER" Name="Database Scripts">
             <Directory Id="MYSQLSCRIPTSFOLDER" Name="MySQL" />
             <Directory Id="ORACLESCRIPTSFOLDER" Name="Oracle" />
+            <Directory Id="POSTGRESSCRIPTSFOLDER" Name="PostgreSQL" />
             <Directory Id="SQLSERVERSCRIPTSFOLDER" Name="SQL Server" />
             <Directory Id="SQLITESCRIPTSFOLDER" Name="SQLite" />
           </Directory>
@@ -233,6 +237,7 @@
       <!-- Database Scripts -->
       <ComponentGroupRef Id="MySQLScriptComponents" />
       <ComponentGroupRef Id="OracleScriptComponents" />
+      <ComponentGroupRef Id="PostgresScriptComponents" />
       <ComponentGroupRef Id="SQLServerScriptComponents" />
       <ComponentGroupRef Id="SQLiteScriptComponents" />
       
@@ -262,6 +267,7 @@
         <CreateFolder />
         <RemoveFolder Id="RemoveMySQLScriptsFolder" Directory="MYSQLSCRIPTSFOLDER" On="uninstall" />
         <RemoveFolder Id="RemoveOracleScriptsFolder" Directory="ORACLESCRIPTSFOLDER" On="uninstall" />
+        <RemoveFolder Id="RemovePostgresScriptsFolder" Directory="POSTGRESSCRIPTSFOLDER" On="uninstall" />
         <RemoveFolder Id="RemoveSQLServerScriptsFolder" Directory="SQLSERVERSCRIPTSFOLDER" On="uninstall" />
         <RemoveFolder Id="RemoveSQLiteScriptsFolder" Directory="SQLITESCRIPTSFOLDER" On="uninstall" />
         <RemoveFolder Id="RemoveDatabaseScriptsFolder" Directory="DATABASESCRIPTSFOLDER" On="uninstall" />
@@ -298,6 +304,14 @@
       </Component>
       <Component Id="StatHistorianReportGeneratorConfig">
         <File Id="StatHistorianReportGenerator.exe.config" Name="StatHistorianReportGenerator.exe.config" Source="$(var.ProjectDir)\StatHistorianReportGenerator.exe.config" />
+      </Component>
+      <Component Id="AdapterExplorer">
+        <File Id="AdapterExplorer.exe" Name="AdapterExplorer.exe" Source="$(var.ProjectDir)\AdapterExplorer.exe">
+          <netfx:NativeImage Id="ngen_AdapterExplorer.exe" Platform="64bit" Priority="1" AppBaseDirectory="INSTALLFOLDER"/>
+        </File>
+      </Component>
+      <Component Id="AdapterExplorerConfig">
+        <File Id="AdapterExplorer.exe.config" Name="AdapterExplorer.exe.config" Source="$(var.ProjectDir)\AdapterExplorer.exe.config" />
       </Component>
       <Component Id="Reports">
         <File Id="Reports.dll" Name="Reports.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Reports.dll" >
@@ -443,8 +457,8 @@
 
     <ComponentGroup Id="HistorianPlaybackUtilityComponents" Directory="INSTALLFOLDER">
       <Component Id="HistorianPlaybackUtility">
-        <File Id="HistorianPlaybackUtility.exe" Name="HistorianPlaybackUtility.exe" Source="$(var.ProjectDir)\HistorianPlaybackUtility.exe" >
-          <netfx:NativeImage Id="ngen_HistorianPlaybackUtility.exe" Platform="64bit" Priority="0" AppBaseDirectory="INSTALLFOLDER"/>
+        <File Id="HistorianPlaybackUtility.exe" Name="HistorianPlaybackUtility.exe" Source="$(var.ProjectDir)\HistorianPlaybackUtility.exe">
+          <netfx:NativeImage Id="ngen_HistorianPlaybackUtility.exe" Platform="64bit" Priority="1" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
         <Shortcut Id="HistorianPlaybackUtilityStartMenuShortcut" Name="Historian Playback Utility" Icon="HistorianPlaybackUtility.ico.exe" Description="Utility that can be used to replay historic data as a real-time feed." WorkingDirectory="INSTALLFOLDER" Directory="ApplicationProgramsFolder" Advertise="yes" />
       </Component>
@@ -1033,6 +1047,19 @@
       </Component>
     </ComponentGroup>
 
+    <!-- Postgres Scripts -->
+    <ComponentGroup Id="PostgresScriptComponents" Directory="POSTGRESSCRIPTSFOLDER">
+      <Component Id="PostgresInitialDataSet">
+        <File Id="PostgresInitialDataSet.sql" Name="InitialDataSet.sql" Source="$(var.SolutionDir)\Data\PostgreSQL\InitialDataSet.sql" />
+      </Component>
+      <Component Id="PostgresopenMIC">
+        <File Id="PostgresopenMIC.sql" Name="openMIC.sql" Source="$(var.SolutionDir)\Data\PostgreSQL\openMIC.sql" />
+      </Component>
+      <Component Id="PostgresSampleDataSet">
+        <File Id="PostgresSampleDataSet.sql" Name="SampleDataSet.sql" Source="$(var.SolutionDir)\Data\PostgreSQL\SampleDataSet.sql" />
+      </Component>
+    </ComponentGroup>
+
     <!-- SQL Server Scripts -->
     <ComponentGroup Id="SQLServerScriptComponents" Directory="SQLSERVERSCRIPTSFOLDER">
       <Component Id="SQLServerAuditLog">
@@ -1149,6 +1176,8 @@
         <Control Id="CompanyNameEdit" Type="Edit" X="45" Y="85" Width="220" Height="18" Property="COMPANYNAME" Text="{80}" />
         <Control Id="CompanyAcronymLabel" Type="Text" X="45" Y="113" Width="100" Height="15" TabSkip="no" Text="Company &amp;Acronym:" />
         <Control Id="CompanyAcronymEdit" Type="Edit" X="45" Y="125" Width="220" Height="18" Property="COMPANYACRONYM" Text="{80}" />
+        <Control Id="SystemNameLabel" Type="Text" X="45" Y="153" Width="250" Height="15" TabSkip="no" Text="&amp;System Name: (e.g., a location name, dev or prod)" />
+        <Control Id="SystemNameEdit" Type="Edit" X="45" Y="165" Width="220" Height="18" Property="SYSTEMNAME" Text="{80}" />
         <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
         <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&amp;Back">
           <Publish Event="NewDialog" Value="ServiceAccountDialog">1</Publish>

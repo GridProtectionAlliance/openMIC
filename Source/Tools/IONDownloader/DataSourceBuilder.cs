@@ -57,15 +57,9 @@ namespace IONDownloader
 
             SeriesDefinition valuesDefinition = channelDefinition.AddNewSeriesDefinition();
             valuesDefinition.QuantityCharacteristicID = trendQuantity.QuantityCharacteristicID;
+            valuesDefinition.QuantityUnits = trendQuantity.QuantityUnits;
             valuesDefinition.ValueTypeID = trendQuantity.ValueTypeID;
             valuesDefinition.StorageMethodID = StorageMethods.Scaled | StorageMethods.Values;
-
-            valuesDefinition.QuantityUnits = channelDefinition.QuantityMeasured switch
-            {
-                QuantityMeasured.Voltage => QuantityUnits.Volts,
-                QuantityMeasured.Current => QuantityUnits.Amps,
-                _ => QuantityUnits.None
-            };
         }
 
         public void InsertWaveformChannel(string inputHandleName, string inputHandleLabel)

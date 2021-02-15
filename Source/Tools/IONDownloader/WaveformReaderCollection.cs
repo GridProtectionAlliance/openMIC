@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Gemstone.IONProtocol;
 
 namespace IONDownloader
@@ -69,10 +70,21 @@ namespace IONDownloader
                 yield return reader;
         }
 
-        public async IAsyncEnumerable<IONWaveformReader> SeekAsync(IONTime timestamp)
+        public async IAsyncEnumerable<IONWaveformReader> SeekAsync(DateTime timestamp)
         {
-            foreach (IONWaveformReader reader in Readers)
-                await reader.SeekAsync(timestamp);
+            long min = IONTime.MinValue.ToDateTime().Ticks;
+            long max = IONTime.MaxValue.ToDateTime().Ticks;
+            long clampedTicks = Math.Clamp(timestamp.Ticks, min, max);
+            DateTime clampedTimestamp = new DateTime(clampedTicks);
+            IEnumerable<Task> seekTasks = Readers.Select(reader => reader.SeekAsync(clampedTimestamp));
+            Task seekAll = Task.WhenAll(seekTasks);
+            TimeSpan updateInterval = TimeSpan.FromSeconds(2.5D);
+
+            while (!seekAll.IsCompleted)
+            {
+                Console.WriteLine($"[Event] Seeking to {timestamp:yyyy-MM-dd}...");
+                await Task.WhenAny(seekAll, Task.Delay(updateInterval));
+            }
 
             ActiveReaders = Readers;
 

@@ -82,8 +82,8 @@
 
     string[] poolMachines = Model.Global.PoolMachines;
     bool useRemoteScheduler = Model.Global.UseRemoteScheduler;
-    bool scheduleMaster = poolMachines != null && poolMachines.Length > 0;
-    string functionalIdentity = useRemoteScheduler ? "Subordinate" : scheduleMaster ? "Schedule Master" : "Independent";
+    bool primaryScheduler = poolMachines != null && poolMachines.Length > 0;
+    string functionalIdentity = useRemoteScheduler ? "Subordinate" : primaryScheduler ? "Primary Scheduler" : "Independent";
     Uri requestUri = ViewBag.Request.RequestUri;
 }
 @section StyleSheets {
@@ -280,7 +280,7 @@
         </div>
         <div class="text-info text-center small"style="margin-top: -15px;">
             Functional Identity: @functionalIdentity<br />
-            @if (scheduleMaster) {
+            @if (primaryScheduler) {
                 string urlFormat = string.Format("{0}://{{0}}:{1}/", requestUri.Scheme, requestUri.Port);
                 List<string> poolMachineAnchors = new List<string>();
 
