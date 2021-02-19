@@ -42,6 +42,8 @@ namespace DranetzDowloader
         private Dictionary<Tuple<Phase, DataClass, Guid>, EventSeries> m_series;
 
         public List<EventSeries> Series => m_series.Values.ToList();
+
+        public DateTime Checkpoint;
         
         public EventSeriesBuilder()
         { 
@@ -51,9 +53,12 @@ namespace DranetzDowloader
         public void Build(List<EventDataRecord> records)
         {
             // Group into seperate Inputs
+            Checkpoint = DateTime.MinValue;
             foreach (EventDataRecord record in records)
             {
-                
+                if (record.Time > Checkpoint)
+                    Checkpoint = record.Time;
+
                 switch (record.Input)
                 {
                     

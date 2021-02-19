@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[LocalSchemaVersion] AS
-SELECT 4 AS VersionNumber
+SELECT 5 AS VersionNumber
 GO
 
 CREATE TABLE Setting
@@ -167,6 +167,23 @@ CREATE TABLE IONWaveformCheckpoint
 GO
 
 CREATE TABLE IONTrendingCheckpoint
+(
+    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+    Device VARCHAR(200) NOT NULL UNIQUE,
+    TimeRecorded DATETIME NOT NULL
+)
+GO
+
+
+CREATE TABLE DranetzWaveformCheckpoint
+(
+    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+    Device VARCHAR(200) NOT NULL UNIQUE,
+    TimeRecorded DATETIME2 NOT NULL
+)
+GO
+
+CREATE TABLE DranetzTrendingCheckpoint
 (
     ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
     Device VARCHAR(200) NOT NULL UNIQUE,

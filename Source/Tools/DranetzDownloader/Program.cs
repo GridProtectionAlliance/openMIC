@@ -35,6 +35,7 @@ using Gemstone.Configuration.AppSettings;
 using Gemstone.PQDIF.Logical;
 using Gemstone.PQDIF.Physical;
 using Gemstone.StringExtensions;
+using GSF.Data;
 using Microsoft.Extensions.Configuration;
 
 namespace DranetzDowloader
@@ -57,6 +58,8 @@ namespace DranetzDowloader
             m_pollingOptions.DownloadAfter = new DateTime(2021,2,08,15,00,00);
             m_pollingOptions.DownloadBefore = new DateTime(2021, 2, 08, 21, 00, 00);
 
+             if (m_pollingOptions.DeviceAcronym is null)
+                throw new ArgumentNullException(nameof(PollingOptions.DeviceAcronym));
 
 
             using (DranetzMeter meter = new DranetzMeter(m_pollingOptions.User, m_pollingOptions.Password, m_pollingOptions.MeterIP, m_pollingOptions.Delay, m_pollingOptions.MaxRequest))
@@ -65,7 +68,33 @@ namespace DranetzDowloader
 
                 await meter.LoadAnalyzers();
                 await meter.LoadSessions();
-                
+
+                static DateTime Max(DateTime time1, DateTime time2) =>
+                new DateTime(Math.Max(time1.Ticks, time2.Ticks));
+
+                static DateTime Min(DateTime time1, DateTime time2) =>
+                new DateTime(Math.Min(time1.Ticks, time2.Ticks));
+
+                DateTime startingPoint = m_pollingOptions.DownloadAfter;
+
+                DateTime checkPoint;
+
+                if (m_pollingOptions.DownloadTrendingData && m_pollingOptions.DownloadEventData)
+                    checkPoint = Min(GetTrendingCheckpoint(), GetEventCheckpoint());
+                else if (m_pollingOptions.DownloadTrendingData)
+                    checkPoint = GetTrendingCheckpoint();
+                else
+                    checkPoint = GetEventCheckpoint();
+
+
+                if (m_pollingOptions.DownloadAfter > DateTime.MinValue && m_pollingOptions.StartFromCheckpoint)
+                    startingPoint = Max(m_pollingOptions.DownloadAfter, checkPoint);
+                else if (m_pollingOptions.DownloadAfter > DateTime.MinValue)
+                    startingPoint = m_pollingOptions.DownloadAfter;
+                else if (m_pollingOptions.StartFromCheckpoint)
+                    startingPoint = checkPoint;
+
+
                 if (meter.Analyzers.Find(item => item.Id == m_pollingOptions.AnalyzerID) == null)
                 {
                     Console.WriteLine($"Analyzer with ID {m_pollingOptions.AnalyzerID} not found...");
@@ -84,7 +113,7 @@ namespace DranetzDowloader
                         end = sessions[i + 1].Time;
 
                     // If Data is outside start range
-                    if (end != null && end < m_pollingOptions.DownloadAfter)
+                    if (end != null && end < startingPoint)
                         continue;
 
                     // If Data is outside end range
@@ -92,7 +121,7 @@ namespace DranetzDowloader
                         continue;
 
                     // If data is inside range
-                    if (end != null && start > m_pollingOptions.DownloadAfter && end < m_pollingOptions.DownloadBefore)
+                    if (end != null && start > startingPoint && end < m_pollingOptions.DownloadBefore)
                     {
                         Console.WriteLine($"Polling entire Session {sessions[i].Id}...");
                         records.AddRange(await sessions[i].LimitRecords(null, null, m_pollingOptions.DownloadEventData));
@@ -100,7 +129,7 @@ namespace DranetzDowloader
                     }
 
                     // If data is across end of range only
-                    if (start > m_pollingOptions.DownloadAfter)
+                    if (start > startingPoint)
                     {
                         Console.WriteLine($"Polling partial Session {sessions[i].Id}...");
                         records.AddRange(await sessions[i].LimitRecords(null, m_pollingOptions.DownloadBefore, m_pollingOptions.DownloadEventData));
@@ -110,13 +139,13 @@ namespace DranetzDowloader
                     if (end != null && end < m_pollingOptions.DownloadBefore)
                     {
                         Console.WriteLine($"Polling partial Session {sessions[i].Id}...");
-                        records.AddRange(await sessions[i].LimitRecords(m_pollingOptions.DownloadAfter, null, m_pollingOptions.DownloadEventData));
+                        records.AddRange(await sessions[i].LimitRecords(startingPoint, null, m_pollingOptions.DownloadEventData));
                         continue;
                     }
 
                     // if data is across both end and start Range
                     Console.WriteLine($"Polling partial Session {sessions[i].Id}...");
-                    records.AddRange(await sessions[i].LimitRecords(m_pollingOptions.DownloadAfter, m_pollingOptions.DownloadBefore, m_pollingOptions.DownloadEventData));
+                    records.AddRange(await sessions[i].LimitRecords(startingPoint, m_pollingOptions.DownloadBefore, m_pollingOptions.DownloadEventData));
                 }
 
 
@@ -165,17 +194,25 @@ namespace DranetzDowloader
 
                         string destination = Path.Combine(m_pollingOptions.DestinationFolder ?? "./", fileName);
                         File.Move(tempPath, destination, true);
+
+                        if (m_pollingOptions.UpdateCheckpoint && trendBuilder.Checkpoint > DateTime.MinValue)
+                            UpdateTrendingCheckpoint(trendBuilder.Checkpoint);
                     }
                     finally
                     {
                         File.Delete(tempPath);
                     }
 
+                   
+
                 }
 
                 //Deal with EventData Only
                 if (m_pollingOptions.DownloadEventData)
                 {
+                    if (m_pollingOptions.DownloadTrendingData && m_pollingOptions.StartFromCheckpoint)
+                        startingPoint = GetEventCheckpoint();
+
                     Console.WriteLine($"Processing Event Data Records...");
                     List<EventDataRecord> points = records.Where(r => r.Type == (int)RecordType.HC_Wave).
                         Select(item => new EventDataRecord(item)).OrderBy(item => item.Cycle).ToList();
@@ -210,6 +247,7 @@ namespace DranetzDowloader
                     int i = 0;
                     foreach (List<EventDataRecord> data in eventGroup.Values)
                     {
+                       
                         EventSeriesBuilder eventBuilder = new EventSeriesBuilder();
                         eventBuilder.Build(data);
                         List<EventSeries> eventSeries = eventBuilder.Series;
@@ -251,6 +289,9 @@ namespace DranetzDowloader
                             string destination = Path.Combine(m_pollingOptions.DestinationFolder ?? "./", fileName);
                             File.Move(tempPath, destination, true);
                             Console.WriteLine($"Processed event {i} out of {eventGroup.Count}...");
+
+                            if (m_pollingOptions.UpdateCheckpoint && eventBuilder.Checkpoint > DateTime.MinValue)
+                                UpdateEventCheckpoint(eventBuilder.Checkpoint);
                         }
                         finally
                         {
@@ -263,26 +304,72 @@ namespace DranetzDowloader
 
         }
 
-       
-        
-       
+
+        private static void UpdateTrendingCheckpoint(DateTime timestamp)
+        {
+            string deviceAcronym = m_pollingOptions.DeviceAcronym ?? "";
+            string connectionString = m_pollingOptions.DBConnectionString;
+            string dataProviderString = m_pollingOptions.DBDataProviderString;
+
+            using AdoDataConnection connection = new AdoDataConnection(connectionString, dataProviderString);
+            int count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM DranetzTrendingCheckpoint WHERE Device = {0}", deviceAcronym);
+
+            if (count == 0)
+                connection.ExecuteNonQuery("INSERT INTO DranetzTrendingCheckpoint(Device, TimeRecorded) VALUES({0}, {1})", deviceAcronym, timestamp);
+            else
+                connection.ExecuteNonQuery("UPDATE DranetzTrendingCheckpoint SET TimeRecorded = {1} WHERE Device = {0}", deviceAcronym, timestamp);
+        }
+
+        private static void UpdateEventCheckpoint(DateTime timestamp)
+        {
+            string deviceAcronym = m_pollingOptions.DeviceAcronym ?? ""; 
+            string connectionString = m_pollingOptions.DBConnectionString;
+            string dataProviderString = m_pollingOptions.DBDataProviderString;
+
+            using AdoDataConnection connection = new AdoDataConnection(connectionString, dataProviderString);
+            int count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM DranetzWaveformCheckpoint WHERE Device = {0}", deviceAcronym);
+
+            if (count == 0)
+                connection.ExecuteNonQuery("INSERT INTO DranetzWaveformCheckpoint(Device, TimeRecorded) VALUES({0}, {1})", deviceAcronym, timestamp);
+            else
+                connection.ExecuteNonQuery("UPDATE DranetzWaveformCheckpoint SET TimeRecorded = {1} WHERE Device = {0}", deviceAcronym, timestamp);
+        }
+
+        private static DateTime GetEventCheckpoint()
+        {
+            string deviceAcronym = m_pollingOptions.DeviceAcronym ?? "";
+            string connectionString = m_pollingOptions.DBConnectionString;
+            string dataProviderString = m_pollingOptions.DBDataProviderString;
+
+            using AdoDataConnection connection = new AdoDataConnection(connectionString, dataProviderString);
+            return connection.ExecuteScalar<DateTime>("SELECT TimeRecorded FROM DranetzWaveformCheckpoint WHERE Device = {0}", deviceAcronym);
+        }
+
+        private static DateTime GetTrendingCheckpoint()
+        {
+            string deviceAcronym = m_pollingOptions.DeviceAcronym ?? ""; 
+            string connectionString = m_pollingOptions.DBConnectionString;
+            string dataProviderString = m_pollingOptions.DBDataProviderString;
+
+            using AdoDataConnection connection = new AdoDataConnection(connectionString, dataProviderString);
+            return connection.ExecuteScalar<DateTime>("SELECT TimeRecorded FROM DranetzTrendingCheckpoint WHERE Device = {0}", deviceAcronym);
+        }
+
         private static void ConfigureAppSettings(IAppSettingsBuilder builder)
         {
-            const string DefaultDBConnectionString = "localhost";
+            const string DefaultIP = "localhost";
             const string DefaultDBDataProviderString = "AssemblyName={Microsoft.Data.SqlClient, Culture=neutral, PublicKeyToken=23ec7fc2d6eaa4a5}; ConnectionType=Microsoft.Data.SqlClient.SqlConnection; AdapterType=Microsoft.Data.SqlClient.SqlDataAdapter";
             const string DefaultEventFileNamingExpression = "event-{Timestamp:yyyyMMddTHHmmssfffffff}.pqd";
             const string DefaultTrendFileNamingExpression = "trend-{Timestamp:yyyyMMdd}.pqd";
-            const string DefaultDowloadAfter = "2021-01-04";
 
-            builder.Add("MeterIP", DefaultDBConnectionString, "Defines the IP of the Dranetz Meter");
+
+            builder.Add("MeterIP", DefaultIP, "Defines the IP of the Dranetz Meter");
             builder.Add("User", "", "Defines the User of the Dranetz Meter");
             builder.Add("Password", "", "Defines the Password of the Dranetz Meter");
 
             builder.Add("DBDataProviderString", DefaultDBDataProviderString, "Defines the ADO.NET provider for openMIC database connectivity");
             builder.Add("EventFileNamingExpression", DefaultEventFileNamingExpression, "Determines the format of files produced by the event poller");
             builder.Add("TrendFileNamingExpression", DefaultTrendFileNamingExpression, "Determines the format of files produced by the trend poller");
-
-            builder.Add("DownloadAfter", DefaultDowloadAfter, "Determines the earliest datapoint to be downloaded");
         }
 
         

@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 4 AS VersionNumber;
+SELECT 5 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -94,6 +94,22 @@ CREATE TABLE IONTrendingCheckpoint(
     TimeRecorded DATETIME NOT NULL,
     CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC)
 );
+
+CREATE TABLE DranetzWaveformCheckpoint(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME NOT NULL,
+    CONSTRAINT IX_DranetzWaveformCheckpoint_Device UNIQUE (Device ASC)
+);
+
+CREATE TABLE DranetzTrendingCheckpoint(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME NOT NULL,
+    CONSTRAINT IX_DranetzTrendingCheckpoint_Device UNIQUE (Device ASC)
+);
+
+
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
 CREATE INDEX IX_DownloadedFile_FilePath ON DownloadedFile (FilePath);

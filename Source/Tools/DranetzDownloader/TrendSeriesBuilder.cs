@@ -42,7 +42,8 @@ namespace DranetzDowloader
         private Dictionary<Tuple<Phase, DataClass, Guid>, TrendSeries> m_series;
 
         public List<TrendSeries> Series => m_series.Values.ToList();
-        
+
+        public DateTime Checkpoint;
         public TrendSeriesBuilder()
         { 
             m_series = new Dictionary<Tuple<Phase, DataClass, Guid>, TrendSeries>();
@@ -50,10 +51,13 @@ namespace DranetzDowloader
 
         public void Build(List<TrendDataRecord> records)
         {
-          
+
+            Checkpoint = DateTime.MinValue;
             foreach (TrendDataRecord record in records)
             {
-                
+                if (record.Time > Checkpoint)
+                    Checkpoint = record.Time;
+
                 switch ((DataClass)record.Class)
                 {
                     

@@ -30,7 +30,7 @@ namespace DranetzDowloader
     public class PollingOptions
     {
         public string? DeviceAcronym { get; set; }
-        public string? DestinationFolder { get; set; } = string.Empty;
+        public string DestinationFolder { get; set; } = string.Empty;
         public string EventFileNamingExpression { get; set; } = string.Empty;
         public string TrendFileNamingExpression { get; set; } = string.Empty;
        
@@ -40,7 +40,8 @@ namespace DranetzDowloader
 
         public int AnalyzerID { get; set; } = 0;
         public string DBDataProviderString { get; set; } = string.Empty;
-      
+        public string DBConnectionString { get; set; } = string.Empty;
+
         public DateTime DownloadAfter { get; set; } = DateTime.MinValue;
         public DateTime DownloadBefore { get; set; } = DateTime.MaxValue;
 
@@ -49,5 +50,7 @@ namespace DranetzDowloader
 
         public int Delay { get; set; } = 10000;
         public int MaxRequest { get; set; } = 150;
+        public bool StartFromCheckpoint { get; set; } = true;
+        public bool UpdateCheckpoint { get; set; } = true;
     }
 }

@@ -17,4 +17,10 @@
     <PackageReference Include="System.Linq.Async" Version="4.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="GSF.Core">
+      <HintPath>..\..\Dependencies\GSF\GSF.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

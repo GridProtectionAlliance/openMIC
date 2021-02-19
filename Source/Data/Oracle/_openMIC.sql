@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 4 AS VersionNumber
+SELECT 5 AS VersionNumber
 FROM dual;
 
 CREATE TABLE Setting(
@@ -197,6 +197,44 @@ CREATE SEQUENCE SEQ_IONTrendingCheckpoint START WITH 1 INCREMENT BY 1;
 
 CREATE TRIGGER AI_IONTrendingCheckpoint BEFORE INSERT ON IONTrendingCheckpoint
     FOR EACH ROW BEGIN SELECT SEQ_IONTrendingCheckpoint.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
+CREATE TABLE DranetzWaveformCheckpoint(
+    ID NUMBER NOT NULL,
+    Device VARCHAR2(200) NOT NULL,
+    TimeRecorded DATE NOT NULL,
+    CONSTRAINT IX_DranetzWaveformCheckpoint_Device UNIQUE (Device ASC)
+);
+
+CREATE UNIQUE INDEX IX_DranetzWaveformCheckpoint_ID ON DranetzWaveformCheckpoint (ID ASC) TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_DranetzWaveformCheckpoint_Dev ON DranetzWaveformCheckpoint (Device ASC)  TABLESPACE openMIC_INDEX;
+
+ALTER TABLE DranetzWaveformCheckpoint ADD CONSTRAINT PK_DranetzWaveformCheckpoint PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_DranetzWaveformCheckpoint START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_DranetzWaveformCheckpoint BEFORE INSERT ON DranetzWaveformCheckpoint
+    FOR EACH ROW BEGIN SELECT SEQ_DranetzWaveformCheckpoint.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
+CREATE TABLE DranetzTrendingCheckpoint(
+    ID NUMBER NOT NULL,
+    Device VARCHAR2(200) NOT NULL,
+    TimeRecorded DATE NOT NULL,
+    CONSTRAINT IX_DranetzTrendingCheckpoint_Device UNIQUE (Device ASC)
+);
+
+CREATE UNIQUE INDEX IX_DranetzTrendingCheckpoint_ID ON DranetzTrendingCheckpoint (ID ASC) TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_DranetzTrendingCheckpoint_Dev ON DranetzTrendingCheckpoint (Device ASC)  TABLESPACE openMIC_INDEX;
+
+ALTER TABLE DranetzTrendingCheckpoint ADD CONSTRAINT PK_DranetzTrendingCheckpoint PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_DranetzTrendingCheckpoint START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_DranetzTrendingCheckpoint BEFORE INSERT ON DranetzTrendingCheckpoint
+    FOR EACH ROW BEGIN SELECT SEQ_DranetzTrendingCheckpoint.nextval INTO :NEW.ID FROM dual;
 END;
 /
 
