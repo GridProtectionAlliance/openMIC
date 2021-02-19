@@ -55,8 +55,8 @@ namespace DranetzDowloader
             configuration.Bind(m_pollingOptions);
 
             // This is to adjust Time; for Testing.....
-            m_pollingOptions.DownloadAfter = new DateTime(2021,2,08,15,00,00);
-            m_pollingOptions.DownloadBefore = new DateTime(2021, 2, 08, 21, 00, 00);
+            //m_pollingOptions.DownloadAfter = new DateTime(2021,2,08,15,00,00);
+            //m_pollingOptions.DownloadBefore = new DateTime(2021, 2, 08, 21, 00, 00);
 
              if (m_pollingOptions.DeviceAcronym is null)
                 throw new ArgumentNullException(nameof(PollingOptions.DeviceAcronym));
