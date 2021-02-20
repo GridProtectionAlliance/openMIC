@@ -1865,7 +1865,7 @@ FROM AlarmDevice
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 4 AS VersionNumber;
+SELECT 5 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID INT AUTO_INCREMENT NOT NULL,
@@ -1964,6 +1964,22 @@ CREATE TABLE IONTrendingCheckpoint(
     TimeRecorded DATETIME NOT NULL,
     CONSTRAINT PK_IONTrendingCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
     CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE KEY (Device ASC)
+);
+
+CREATE TABLE DranetzWaveformCheckpoint(
+    ID INT AUTO_INCREMENT NOT NULL,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME NOT NULL,
+    CONSTRAINT PK_DranetzWaveformCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
+    CONSTRAINT IX_DranetzWaveformCheckpoint_Device UNIQUE KEY (Device ASC)
+);
+
+CREATE TABLE DranetzTrendingCheckpoint(
+    ID INT AUTO_INCREMENT NOT NULL,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME NOT NULL,
+    CONSTRAINT PK_DranetzTrendingCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
+    CONSTRAINT IX_DranetzTrendingCheckpoint_Device UNIQUE KEY (Device ASC)
 );
 
 ALTER TABLE ConnectionProfile ADD CONSTRAINT FK_ConnectionProfile_ConnectionProfileTaskQueue FOREIGN KEY(DefaultTaskQueueID) REFERENCES ConnectionProfileTaskQueue (ID);

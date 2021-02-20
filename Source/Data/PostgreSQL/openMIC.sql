@@ -1896,7 +1896,7 @@ FROM AlarmDevice
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 4 AS VersionNumber;
+SELECT 5 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID SERIAL NOT NULL PRIMARY KEY,
@@ -1987,6 +1987,20 @@ CREATE TABLE IONTrendingCheckpoint(
     Device VARCHAR(200) NOT NULL,
     TimeRecorded TIMESTAMP NOT NULL,
     CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC)
+);
+
+CREATE TABLE DranetzWaveformCheckpoint(
+    ID SERIAL NOT NULL PRIMARY KEY,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded TIMESTAMP NOT NULL,
+    CONSTRAINT IX_DranetzWaveformCheckpoint_Device UNIQUE (Device ASC)
+);
+
+CREATE TABLE DranetzTrendingCheckpoint(
+    ID SERIAL NOT NULL PRIMARY KEY,
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded TIMESTAMP NOT NULL,
+    CONSTRAINT IX_DranetzTrendingCheckpoint_Device UNIQUE (Device ASC)
 );
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
