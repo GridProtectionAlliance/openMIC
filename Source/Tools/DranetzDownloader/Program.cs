@@ -300,6 +300,14 @@ namespace DranetzDowloader
                     }
 
                 }
+
+                // Synchronize checkpoints if necessary
+                if (m_pollingOptions.DownloadEventData && m_pollingOptions.DownloadTrendingData && m_pollingOptions.UpdateCheckpoint)
+                {
+                    checkPoint = Max(GetTrendingCheckpoint(), GetEventCheckpoint());
+                    UpdateEventCheckpoint(checkPoint);
+                    UpdateTrendingCheckpoint(checkPoint);
+                }
             }
 
         }
