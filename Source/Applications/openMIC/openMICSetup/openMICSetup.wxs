@@ -11,6 +11,11 @@
       <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_46_OR_LATER_INSTALLED]]>
     </Condition>
 
+    <!-- Restore last installation folder -->
+    <Property Id="INSTALLFOLDER">
+      <RegistrySearch Id="InstallFolderRegSearch" Root="HKLM" Key="SOFTWARE\Grid Protection Alliance\openMIC" Name="InstallPath" Type="raw" />
+    </Property>
+
     <Feature Id="AllProducts" Title="All Products" Level="1" Display="expand" ConfigurableDirectory="INSTALLFOLDER">
       <!-- openMIC -->
       <Feature Id="openMICFeature" Title="openMIC">
@@ -121,7 +126,11 @@
     <Property Id="COMPANYNAME" Value="Grid Protection Alliance" />
     <Property Id="COMPANYACRONYM" Value="GPA" />
     <Property Id="SYSTEMNAME" Value=" " />
-    <SetProperty Id="SERVICEACCOUNT" Value="NT SERVICE\[SERVICENAME]" After="LaunchConditions" Sequence="first" />
+    <Property Id="REGSERVICEACCOUNT">
+      <RegistrySearch Id="ServiceAccountRegSearch" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\[SERVICENAME]" Name="ObjectName" Type="raw" />
+    </Property>
+    <SetProperty Action="SetServiceAccountDefault" Id="SERVICEACCOUNT" After="AppSearch" Value="NT SERVICE\[SERVICENAME]" Sequence="first"><![CDATA[NOT REGSERVICEACCOUNT]]></SetProperty>
+    <SetProperty Action="SetServiceAccountRegistry" Id="SERVICEACCOUNT" After="AppSearch" Value="[REGSERVICEACCOUNT]" Sequence="first"><![CDATA[REGSERVICEACCOUNT]]></SetProperty>
     <SetProperty Id="PROCESSSTARTINFO" Value="FileName={[#ConfigurationSetupUtility.exe]};Arguments=-install;UseShellExecute=True;Verb=runas" After="ExecuteAction" Sequence="ui" />
     <SetProperty Id="WEBMANAGERURL" Value="http://localhost:8089/" Before="CreateShortcuts" Sequence="execute" />
     <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\openMICSetupBanner.bmp" />
@@ -150,7 +159,7 @@
     <UI>
       <ProgressText Action="ConfigureServiceAction">Configuring service failure recovery operations...</ProgressText>
       <ProgressText Action="ServiceAccountAction">Applying minimum needed permissions for service user...</ProgressText>
-      <ProgressText Action="NetFxExecuteNativeImageInstall">Generating optimized native images for installation...</ProgressText>
+      <ProgressText Action="NetFxExecuteNativeImageInstall">Generating optimized native images for installation, this will take some time...</ProgressText>
     </UI>
 
     <InstallExecuteSequence>
@@ -282,7 +291,7 @@
         <File Id="openMIC.exe" Name="$(var.openMIC.TargetFileName)" Source="$(var.openMIC.TargetPath)" >
           <netfx:NativeImage Id="ngen_openMIC.exe" Platform="64bit" Priority="0" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
-        <ServiceInstall Id="openMICService" Name="openMIC" Account="[SERVICEACCOUNT]" Password="[SERVICEPASSWORD]" Type="ownProcess" Start="auto" ErrorControl="normal" Description="Provides processing for streaming time-series data in real-time including phasor data concentration services for synchrophasor applications." />
+        <ServiceInstall Id="openMICService" Name="openMIC" Account="[SERVICEACCOUNT]" Password="[SERVICEPASSWORD]" Type="ownProcess" Start="auto" ErrorControl="normal" Description="Provides processing for downloading event, trending and configuration data from metering devices as well as time-series data processing for Modbus and DNP3." />
         <ServiceControl Id="openMICServiceControl" Name="openMIC" Stop="both" Remove="uninstall" />
       </Component>
       <Component Id="openMICConfig" Permanent="yes">
@@ -425,7 +434,7 @@
       <Component Id="BenDownloader">
         <File Id="BenDownloader.exe" Name="BenDownloader.exe" Source="$(var.BenDownloader.TargetPath)">
           <netfx:NativeImage Id="ngen_BenDownloader.exe" Platform="64bit" Priority="1" AppBaseDirectory="INSTALLFOLDER"/>
-	</File>
+    </File>
       </Component>
       <Component Id="BenDownloaderConfig" Permanent="yes">
         <File Id="BenDownloader.exe.config" Name="BenDownloader.exe.config" Source="$(var.BenDownloader.TargetPath).config" />
@@ -436,7 +445,7 @@
       <Component Id="IGridDownloader">
         <File Id="IGridDownloader.exe" Name="IGridDownloader.exe" Source="$(var.IGridDownloader.TargetPath)" >
           <netfx:NativeImage Id="ngen_IGridDownloader.exe" Platform="64bit" Priority="1" AppBaseDirectory="INSTALLFOLDER"/>
-	</File>
+    </File>
       </Component>
       <Component Id="IGridDownloaderConfig">
         <File Id="IGridDownloader.exe.config" Name="IGridDownloader.exe.config" Source="$(var.IGridDownloader.TargetPath).config" />
@@ -594,12 +603,14 @@
           <netfx:NativeImage Id="ngen_KafkaAdapters.dll" Platform="64bit" Priority="1" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
       </Component>
-      <Component Id="NAudio"> <!-- Dependency for AudioAdapters -->
+      <Component Id="NAudio">
+        <!-- Dependency for AudioAdapters -->
         <File Id="NAudio.dll" Name="NAudio.dll" Source="$(var.SolutionDir)\Dependencies\GSF\NAudio.dll">
           <netfx:NativeImage Id="ngen_NAudio.dll" Platform="64bit" Priority="1" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
       </Component>
-      <Component Id="Misakai.Kafka"> <!-- Dependency for KafkaAdapters -->
+      <Component Id="Misakai.Kafka">
+        <!-- Dependency for KafkaAdapters -->
         <File Id="Misakai.Kafka.dll" Name="Misakai.Kafka.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Misakai.Kafka.dll">
           <netfx:NativeImage Id="ngen_Misakai.Kafka.dll" Platform="64bit" Priority="1" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
@@ -639,7 +650,8 @@
           <netfx:NativeImage Id="ngen_PhasorProtocolAdapters.dll" Platform="64bit" Priority="0" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
       </Component>
-      <Component Id="PIAdapters"> <!-- OSI-PI Historian Adapters -->
+      <Component Id="PIAdapters">
+        <!-- OSI-PI Historian Adapters -->
         <File Id="PIAdapters.dll" Name="PIAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\PIAdapters.dll">
           <netfx:NativeImage Id="ngen_PIAdapters.dll" Platform="64bit" Priority="0" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
@@ -669,7 +681,8 @@
           <netfx:NativeImage Id="ngen_WavInputAdapter.dll" Platform="64bit" Priority="1" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
       </Component>
-      <Component Id="eDNAAdapters"> <!-- eDNA Historian Adapters -->
+      <Component Id="eDNAAdapters">
+        <!-- eDNA Historian Adapters -->
         <File Id="eDNAAdapters.dll" Name="eDNAAdapters.dll" Source="$(var.SolutionDir)\Dependencies\GSF\eDNAAdapters.dll">
           <netfx:NativeImage Id="ngen_eDNAAdapters.dll" Platform="64bit" Priority="0" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
