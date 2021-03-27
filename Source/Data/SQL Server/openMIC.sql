@@ -116,7 +116,7 @@ GO
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[SchemaVersion] AS
-SELECT 12 AS VersionNumber
+SELECT 13 AS VersionNumber
 GO
 
 SET ANSI_NULLS ON
@@ -406,7 +406,7 @@ CREATE TABLE [dbo].[DataOperation](
 
 GO
 SET ANSI_NULLS ON
-GO
+GOIX_ApplicationRole
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Device](
@@ -428,7 +428,7 @@ CREATE TABLE [dbo].[Device](
     [InterconnectionID] [int] NULL,
     [ConnectionString] [varchar](max) NULL,
     [TimeZone] [varchar](200) NULL,
-    [FramesPerSecond] [int] NULL DEFAULT ((30)),
+    [FramesPerSecond] [int] NULL CONSTRAINT [DF_Device_FramesPerSecond] DEFAULT ((30)),
     [TimeAdjustmentTicks] [bigint] NOT NULL CONSTRAINT [DF_Device_TimeAdjustmentTicks]  DEFAULT ((0)),
     [DataLossInterval] [float] NOT NULL CONSTRAINT [DF_Device_DataLossInterval]  DEFAULT ((5)),
     [AllowedParsingExceptions] [int] NOT NULL CONSTRAINT [DF_Device_AllowedParsingExceptions]  DEFAULT ((10)),
@@ -447,6 +447,7 @@ CREATE TABLE [dbo].[Device](
     [CreatedBy] [varchar](50) NOT NULL CONSTRAINT [DF_Device_CreatedBy]  DEFAULT (suser_name()),
     [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_Device_UpdatedOn]  DEFAULT (getutcdate()),
     [UpdatedBy] [varchar](50) NOT NULL CONSTRAINT [DF_Device_UpdatedBy]  DEFAULT (suser_name()),
+ CONSTRAINT [UK_UniqueID] UNIQUE(UniqueID),
  CONSTRAINT [PK_Device] PRIMARY KEY CLUSTERED 
 (
     [ID] ASC
@@ -575,7 +576,7 @@ CREATE TABLE [dbo].[OutputStreamDeviceAnalog](
     [NodeID] [uniqueidentifier] NOT NULL,
     [OutputStreamDeviceID] [int] NOT NULL,
     [ID] [int] IDENTITY(1,1) NOT NULL,
-    [Label] [varchar](16) NOT NULL,
+    [Label] [varchar](200) NOT NULL,
     [Type] [int] NOT NULL CONSTRAINT [DF_OutputStreamDeviceAnalog_Type]  DEFAULT ((0)),
     [ScalingValue] [int] NOT NULL CONSTRAINT [DF_OutputStreamDeviceAnalog_ScalingValue]  DEFAULT ((0)),
     [LoadOrder] [int] NOT NULL CONSTRAINT [DF_OutputStreamDeviceAnalog_LoadOrder]  DEFAULT ((0)),
@@ -3110,18 +3111,18 @@ GO
 -- **************************
 
 CREATE TABLE AlarmState(
-	ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-	State VARCHAR(50) NULL,
-	Color VARCHAR(50) NULL,
+    ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    State VARCHAR(50) NULL,
+    Color VARCHAR(50) NULL,
 )
 GO
 
 CREATE TABLE AlarmDevice(
-	ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-	DeviceID INT NULL,
-	StateID INT NULL,
-	TimeStamp DATETIME NULL,
-	DisplayData VARCHAR(10) NULL
+    ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    DeviceID INT NULL,
+    StateID INT NULL,
+    TimeStamp DATETIME NULL,
+    DisplayData VARCHAR(10) NULL
 )
 GO
 
