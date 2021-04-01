@@ -213,6 +213,7 @@ namespace openMIC
             systemSettings.Add("SmtpPassword", "", "Password to authenticate to the SMTP server, if any.");
             systemSettings.Add("PoolMachines", "", "Comma separated list of openMIC pooled load-balancing machines. Should be blank when UseRemoteScheduler is true.");
             systemSettings.Add("UseRemoteScheduler", false, "Flag that determines if scheduling is handled locally or managed by remote master system");
+            systemSettings.Add("SystemName", "", "Name of system that will be prefixed to system level tags, when defined. Value should follow tag naming conventions, e.g., no spaces and all upper case.");
 
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
@@ -250,6 +251,7 @@ namespace openMIC
             Model.Global.DefaultCorsHeaders = systemSettings["DefaultCorsHeaders"].Value;
             Model.Global.DefaultCorsMethods = systemSettings["DefaultCorsMethods"].Value;
             Model.Global.DefaultCorsSupportsCredentials = systemSettings["DefaultCorsSupportsCredentials"].ValueAsBoolean(true);
+            Model.Global.SystemName = systemSettings["SystemName"].Value;
 
             // Setup pooled machine configuration
             string poolMachines = systemSettings["PoolMachines"].Value;
