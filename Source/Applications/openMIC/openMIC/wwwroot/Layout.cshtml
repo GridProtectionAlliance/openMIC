@@ -36,19 +36,36 @@
         ViewBag.PageControlScripts = new StringBuilder();
     }
 
+    string htmlTitle = Model.Global.ApplicationName;
     // Define ViewBag.CustomTitle in page code for custom page titles
-    string pageTitle = ViewBag.CustomTitle ?? ViewBag.Title;
+    string pageTitle = ViewBag.CustomTitle ?? ViewBag.Title ?? "";
+    string subTitle = ViewBag.SubTitle ?? "";
     bool pageHasSidebar = ViewBag.PageHasSidebar ?? false;
     bool setFullWidth = ViewBag.SetFullWidth ?? pageHasSidebar;
     bool hidePageTitle = false;
     bool showMenu = true;
+    bool backgroundUnset = false;
+
+    if (!string.IsNullOrWhiteSpace(Model.Global.SystemName)) {
+        htmlTitle += " [" + Model.Global.SystemName.Trim() + "]";
+    }
+
+    htmlTitle += " - " + pageTitle.Trim();
 
     if (ViewBag.HidePageTitle != null) {
         hidePageTitle = ViewBag.HidePageTitle;
     }
 
+    if (!string.IsNullOrWhiteSpace(subTitle) && !string.IsNullOrWhiteSpace(pageTitle)) {
+        pageTitle += "  ";
+    }
+
     if (ViewBag.ShowMenu != null) {
         showMenu = ViewBag.ShowMenu;
+    }
+
+    if (ViewBag.BackgroundUnset != null) {
+        backgroundUnset = ViewBag.BackgroundUnset;
     }
 
     HttpRequestMessage request = ViewBag.Request;
@@ -65,8 +82,15 @@
             loginPage = options.LoginPage;
         }
     }
+    string requiresEditor = UserIsAdminOrEditor() ? "" : " disabled";
 }
 @functions {
+    public string IsActivePage(string pageTitle, string pageName)
+    {
+        return pageTitle.Trim().Equals(pageName, StringComparison.OrdinalIgnoreCase) ?
+            "class=\"active\"" : "";
+    }
+
     public string GetCurrentUserID()
     {
         if (Thread.CurrentPrincipal.Identity == null)
@@ -84,6 +108,16 @@
 
         return securityPrincipal.IsInRole("Administrator");
     }
+
+    public bool UserIsAdminOrEditor()
+    {
+        SecurityPrincipal securityPrincipal = ViewBag.SecurityPrincipal as SecurityPrincipal;
+
+        if ((object)securityPrincipal == null)
+            return false;
+
+        return securityPrincipal.IsInRole("Administrator,Editor");
+    }
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -92,11 +126,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @* The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags *@
-    <title>@Model.Global.ApplicationName - @pageTitle</title>
+    <title>@htmlTitle</title>
     <meta name="application-name" content="@Model.Global.ApplicationName" />
     <meta name="description" content="@Model.Global.ApplicationDescription" />
     <meta name="keywords" content="@Model.Global.ApplicationKeywords" />
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <link href="@Resources.Root/Shared/Content/bootstrap.css" rel="stylesheet">
     <link href="@Model.Global.BootstrapTheme" rel="stylesheet">
     <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
@@ -110,7 +144,7 @@
                 float: none;
             }
 
-            .navbar-left, .navbar-right {
+            .navbar-left,.navbar-right {
                 float: none !important;
             }
 
@@ -129,28 +163,60 @@
             }
 
             .navbar-collapse.collapse {
-                display: none !important;
+                display: none!important;
             }
 
             .navbar-nav {
-                float: none !important;
+                float: none!important;
                 margin-top: 7.5px;
             }
 
-                .navbar-nav > li {
-                    float: none;
-                }
+            .navbar-nav>li {
+                float: none;
+            }
 
-                    .navbar-nav > li > a {
-                        padding-top: 10px;
-                        padding-bottom: 10px;
-                    }
+            .navbar-nav>li>a {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
 
             .collapse.in {
-                display: block !important;
+                display:block !important;
             }
         }
+
+        .sub-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+            vertical-align: middle;
+            font-size: 17px;
+            font-weight: 400;
+            line-height: 1.4;
+            color: #777777;
+        }
     </style>
+@if (!showMenu) { if (backgroundUnset){
+    <style>
+        body {
+            margin-top: -70px;
+            margin-right: 20px;
+        }
+    </style>
+} else {
+    <style>
+        body {
+            margin-top: -70px;
+            margin-right: 20px;
+            background-color: #105331;
+        }
+
+        h3 {
+            color: white;
+        }
+    </style>
+}}
     <script src="@Resources.Root/Shared/Scripts/jquery.js"></script>
     <script>
         const DateFormat = "@Model.Global.DateFormat";
@@ -159,31 +225,30 @@
     </script>
 </head>
 <body role="document">
-    @if (ViewBag.ShowMenu ?? true)
-    {
-        <div class="navbar navbar-inverse navbar-fixed-top" id="menuBar">
-            <div class="container">
-                <div class="navbar-header">
-                    <img class="pull-left" style="padding: 10px" alt="@Model.Global.ApplicationName" src="Images/@(Model.Global.ApplicationName).png">
-                    <a href="Index.cshtml" class="navbar-brand" style="font-size: larger; color: white" data-toggle="tooltip" data-placement="bottom" title="@Model.Global.ApplicationDescription">@Model.Global.ApplicationName</a>
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                </div>
-                <div id="navbar" class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                        <li @Raw(pageTitle == "Home" ? "class=\"active\"" : "")><a href="Index.cshtml">Home</a></li>
+@if (showMenu) {
+    <div class="navbar navbar-inverse navbar-fixed-top" id="menuBar">
+        <div class="container">
+            <div class="navbar-header">
+                <img class="pull-left" style="padding: 10px" alt="@Model.Global.ApplicationName" src="Images/@(Model.Global.ApplicationName).png">
+                <a href="Index.cshtml" class="navbar-brand" style="font-size: larger; color: white" data-toggle="tooltip" data-placement="bottom" title="@Model.Global.ApplicationDescription">@Model.Global.ApplicationName</a>
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li @Raw(IsActivePage(pageTitle, "Home"))><a href="Index.cshtml">Home</a></li>
                         <li @Raw(pageTitle == "Devices" ? "class=\"active\"" : "")><a href="Devices.cshtml">Devices</a></li>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configuration <span class="caret"></span></a>
                             <ul class="dropdown-menu">
-                                <li><a href="ConnectionProfiles.cshtml">Connection Profiles</a></li>
+                                <li><a href="ConnectionProfiles.cshtml" class="@(requiresEditor)"@requiresEditor>Connection Profiles</a></li>
                                 <li role="separator" class="divider"></li>
-                                <li><a href="ModbusConfig.cshtml">Modbus Configuration Builder</a></li>
-                                <li><a href="IGridConfig.cshtml">Manage I-Grid Connections</a></li>
+                                <li><a href="ModbusConfig.cshtml" class="@(requiresEditor)"@requiresEditor>Modbus Configuration Builder</a></li>
+                                <li><a href="IGridConfig.cshtml" class="@(requiresEditor)"@requiresEditor>Manage I-Grid Connections</a></li>
                             </ul>
                         </li>
                         <li class="dropdown">
@@ -214,23 +279,22 @@
                                 </ul>
                             </li>
                         }
-                        <li @Raw(pageTitle == "Help" ? "class=\"active\"" : "")><a href="Help.cshtml">Help</a></li>
-                    </ul>
-                    <div class="nav navbar-text navbar-right" style="margin-top: 10px; margin-bottom: 5px">
-                        <button id="logoutButton" type="button" class="btn btn-sm btn-info" style="display: none" title="Log out @GetCurrentUserID()" hub-dependent>Log Out</button>
-                        <a href="https://www.gridprotectionalliance.org/" target="_blank" style="padding-left: 10px">
-                            <img alt="Grid Protection Alliance" src="@Resources.Root/Shared/Images/gpa-smalllock.png">
-                        </a>
-                    </div>
+                    <li @Raw(IsActivePage(pageTitle, "Help"))><a href="Help.cshtml">Help</a></li>
+                </ul>
+                <div class="nav navbar-text navbar-right" style="margin-top: 10px; margin-bottom: 5px">
+                    <button id="logoutButton" type="button" class="btn btn-sm btn-info" style="display: none" title="Log out @GetCurrentUserID()" hub-dependent>Log Out</button>
+                    <a href="https://www.gridprotectionalliance.org/" target="_blank" style="padding-left: 10px">
+                        <img alt="Grid Protection Alliance" src="@Resources.Root/Shared/Images/gpa-smalllock.png">
+                    </a>
                 </div>
             </div>
-        </div><!--/.navbar -->
-    }
-    else
-    {
-        <div id="menuBar"></div>
-    }
-    <div class="container theme-showcase" @Raw(setFullWidth ? " style=\"width: 100%\"" : "") role="main" id="bodyContainer">
+        </div>
+    </div><!--/.navbar -->
+}
+else {
+    <div id="menuBar"></div>
+}
+    <div class="container theme-showcase" @Raw(setFullWidth ? " style=\"width: 100%\"" : "")  role="main" id="bodyContainer">
         <div class="page-header" id="pageHeader">
             <span class="glyphicon glyphicon-refresh pre-cache"></span>
             <span class="glyphicon glyphicon-info-sign pre-cache"></span>
@@ -247,28 +311,29 @@
                 <span class="sr-only">Error</span>
                 <span id="error-msg-text"></span>
             </div>
-            @if (!hidePageTitle)
-            {
-                <h3>
-                    @pageTitle <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
-                </h3>
+            @if (!hidePageTitle) {
+            <h3 id="pageTitle">
+                @Raw(pageTitle.Replace(" ", "&nbsp;"))<div id="subTitle" class="sub-title">@Raw(subTitle)</div> <small class="pull-right" id="titleText" style="margin-top: 8px"></small>
+            </h3>
             }
         </div>
         <!-- Page Body for @request.RequestUri.AbsolutePath -->
         @RenderBody()
     </div><!--/.container -->
+    @* jquery-ui.js needs to precede boostrap.js *@
+    <script src="@Resources.Root/Shared/Scripts/jquery-ui.js"></script>
     <script src="@Resources.Root/Shared/Scripts/bootstrap.js"></script>
     <script src="@Resources.Root/Shared/Scripts/jquery.signalR.js"></script>
-    <script src="@Resources.Root/Shared/Scripts/jquery-ui.js"></script>
     <script src="@Resources.Root/Shared/Scripts/js.cookie.js"></script>
     <script src="@Resources.Root/Shared/Scripts/gsf.web.client.js"></script>
     <script src="Scripts/jquery.jspanel.js"></script>
     <script src="signalr/hubs"></script>
     <script src="Scripts/Site.js"></script>
+
     @Raw(ViewBag.PageControlScripts.ToString())
     @RenderSection("Scripts", false)
     <script>
-        $("#logoutButton").click(function() {
+        $("#logoutButton").click(function () {
             if (!hubIsConnected)
                 return;
 
@@ -278,6 +343,34 @@
         });
 
         $("#logoutButton").show();
+
+    @if (!string.IsNullOrWhiteSpace(subTitle)) {
+    <text>
+        var pageTitleWidth;
+
+        function updateSubTitleProperties() {
+            const subTitle = $("#subTitle");
+
+            subTitle.width($("#pageHeader").width() - $("#titleText").width() - pageTitleWidth);
+            subTitle.prop("title", subTitle.text());
+            subTitle.show();
+        }
+
+        $(window).resize(updateSubTitleProperties);
+        
+        $(function() {
+            textMetrics.font = $("#pageTitle").css("font");
+
+            pageTitleWidth = textMetrics.measureText("@pageTitle.Replace("&nbsp;", " ")").width;
+
+            if (pageTitleWidth < 5)
+                pageTitleWidth = 100;
+
+            // Set initial sub-title width
+            updateSubTitleProperties();
+        });
+    </text>
+    }
     </script>
 </body>
 </html>
