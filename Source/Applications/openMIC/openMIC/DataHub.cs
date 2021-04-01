@@ -57,8 +57,8 @@ namespace openMIC
 
         public DataHub() : base(Program.Host.LogWebHostStatusMessage, Program.Host.LogException)
         {
-            Action<string, UpdateType> logStatusMessage = (message, updateType) => LogStatusMessage(message, updateType);
-            Action<Exception> logException = ex => LogException(ex);
+            void logStatusMessage(string message, UpdateType updateType) => LogStatusMessage(message, updateType);
+            void logException(Exception ex) => LogException(ex);
 
             m_dataSubscriptionOperations = new DataSubscriptionOperations(this, logStatusMessage, logException);
             m_modbusOperations = new ModbusOperations(this, logStatusMessage, logException);
@@ -93,10 +93,13 @@ namespace openMIC
         #region [ Static ]
 
         // Static Fields
+        private static string s_systemName;
         private static int s_downloaderProtocolID;
         private static int s_modbusProtocolID;
         private static readonly Func<char, bool> s_isInvalidAcronymChar;
         private static readonly char[] s_digits;
+
+        private static string SystemName => s_systemName ?? (s_systemName = Program.Host.Model.Global.SystemName ?? "");
 
         // Static Constructor
         static DataHub()
@@ -117,30 +120,41 @@ namespace openMIC
 
         private static void ProgressUpdated(object sender, EventArgs<string, List<ProgressUpdate>> e)
         {
-            Downloader downloader = sender as Downloader;
             string deviceName = null;
 
-            if ((object)downloader != null)
-                deviceName = downloader.Name;
+            switch (sender)
+            {
+                case Downloader downloader:
+                    deviceName = downloader.Name;
+                    break;
+                case ModbusPoller modbusPoller:
+                    deviceName = modbusPoller.Name;
+                    break;
+            }
 
-            ModbusPoller modbusPoller = sender as ModbusPoller;
-
-            if ((object)modbusPoller != null)
-                deviceName = modbusPoller.Name;
-
-            if ((object)deviceName == null)
+            if (deviceName is null)
                 return;
 
-            string clientID = e.Argument1;
+            // Inject system name at provided summary updates
+            List<ProgressUpdate> progressUpdates = e.Argument2;
+            string systemName = string.IsNullOrWhiteSpace(SystemName) ? "" : $"[@{SystemName}] ";
 
-            List<object> updates = e.Argument2
+            foreach (ProgressUpdate update in progressUpdates)
+            {
+                if (!string.IsNullOrWhiteSpace(update.Summary))
+                    update.Summary = $"{systemName}{update.Summary}";
+            }
+
+            List<object> updates = progressUpdates
                 .Select(update => update.AsExpandoObject())
                 .ToList();
+            
+            string clientID = e.Argument1;
 
-            if ((object)clientID != null)
-                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.Client(clientID).deviceProgressUpdate(deviceName, updates);
-            else
+            if (clientID is null)
                 GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(deviceName, updates);
+            else
+                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.Client(clientID).deviceProgressUpdate(deviceName, updates);
         }
 
         #endregion
@@ -787,7 +801,7 @@ namespace openMIC
 
                 Device deviceRecord = deviceTable.QueryRecordWhere("OriginalSource = {0}", serialNumber);
 
-                if ((object)deviceRecord == null)
+                if (deviceRecord is null)
                 {
                     deviceRecord = deviceTable.NewRecord();
 
@@ -834,7 +848,7 @@ namespace openMIC
             TableOperations<ConnectionProfile> profileTable = DataContext.Table<ConnectionProfile>();
             ConnectionProfile profile = profileTable.QueryRecordWhere("Name = {0}", DefaultIGridConnectionProfileName);
 
-            if ((object)profile == null)
+            if (profile is null)
             {
                 ConnectionProfileTaskQueue profileTaskQueue = profileTaskQueueTable.NewRecord();
                 profileTaskQueue.Name = DefaultIGridConnectionProfileTaskQueueName;
