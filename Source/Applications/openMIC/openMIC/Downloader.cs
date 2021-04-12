@@ -444,7 +444,7 @@ namespace openMIC
 
                 string[] poolMachines = Program.Host.Model.Global.PoolMachines;
                 bool useRemoteScheduler = Program.Host.Model.Global.UseRemoteScheduler;
-                bool scheduleMaster = poolMachines?.Length > 0;
+                bool primaryScheduler = poolMachines?.Length > 0;
 
                 status.Append(base.Status);
                 status.AppendFormat("      Connection host name: {0}", ConnectionHostName.ToNonNullNorWhiteSpace("undefined"));
@@ -455,10 +455,10 @@ namespace openMIC
                 status.AppendLine();
                 status.AppendFormat("         Download schedule: {0} - managed {1}", Schedule, useRemoteScheduler ? "remotely" : "locally");
                 status.AppendLine();
-                status.AppendFormat("       Functional identity: {0}", useRemoteScheduler ? "Subordinate" : scheduleMaster ? "Schedule Master" : "Independent");
+                status.AppendFormat("       Functional identity: {0}", useRemoteScheduler ? "Subordinate" : primaryScheduler ? "Primary Scheduler" : "Independent");
                 status.AppendLine();
 
-                if (scheduleMaster)
+                if (primaryScheduler)
                 {
                     status.AppendFormat("    Download pool machines: {0}", string.Join(", ", poolMachines));
                     status.AppendLine();
@@ -744,30 +744,24 @@ namespace openMIC
         /// <param name="taskName">Name of task.</param>
         /// <param name="task">Value will be set to found task, if any; otherwise, value will be set to <c>null</c>.</param>
         /// <returns><c>true</c> if <paramref name="taskName"/> was found; otherwise, <c>false</c>.</returns>
-        public bool TryGetConnectionProfileTask(string taskName, out ConnectionProfileTask task)
-        {
-            return AllTasks.ToDictionary(t => t.Name, StringComparer.OrdinalIgnoreCase).TryGetValue(taskName, out task);
-        }
+        public bool TryGetConnectionProfileTask(string taskName, out ConnectionProfileTask task) => 
+            AllTasks.ToDictionary(t => t.Name, StringComparer.OrdinalIgnoreCase).TryGetValue(taskName, out task);
 
         /// <summary>
         /// Queues all tasks for immediate, highest priority, execution to next machine in the distribution pool.
         /// </summary>
         [AdapterCommand("Queues all tasks for immediate, highest priority, execution to next machine in the distribution pool.", "Administrator", "Editor")]
-        public void QueueTasks()
-        {
+        public void QueueTasks() =>
             // This is for user requested items - these take precedence over all others,
             // call is made via ServiceHost to handle pooled distribution:
             Program.Host.QueueTasks(Name, AllTasksGroupID, QueuePriority.Urgent);
-        }
 
         /// <summary>
         /// Queues all tasks for immediate, highest priority, execution to local machine.
         /// </summary>
         [AdapterCommand("Queues all tasks for immediate, highest priority, execution to local machine.", "Administrator", "Editor")]
-        public void QueueTasksLocally()
-        {
+        public void QueueTasksLocally() => 
             QueueTasksByID(AllTasksGroupID, QueuePriority.Urgent);
-        }
 
         /// <summary>
         /// Queues all tasks for provided date range for execution.
@@ -1269,10 +1263,9 @@ namespace openMIC
                     }
                 }
 
-                if (deletedCount > 0)
-                    OnStatusMessage(MessageLevel.Info, $"Deleted {deletedCount} files during local file age limit processing.");
-                else
-                    OnStatusMessage(MessageLevel.Info, "No files deleted during local file age limit processing.");
+                OnStatusMessage(MessageLevel.Info, deletedCount > 0 ? 
+                    $"Deleted {deletedCount} files during local file age limit processing." : 
+                    "No files deleted during local file age limit processing.");
             }
             catch (Exception ex)
             {
@@ -1512,10 +1505,7 @@ namespace openMIC
             OnStatusMessage(MessageLevel.Info, $"Attempting to set remote FTP directory path \"{remotePathDirectory}\"...");
             client.SetCurrentDirectory(remotePathDirectory);
 
-            if (timeConstraintApplied)
-                OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePathDirectory}\" with time constraint from {settings.StartTimeConstraint.Value:yyyy-MM-dd HH:mm.ss.fff} to {settings.EndTimeConstraint.Value:yyyy-MM-dd HH:mm.ss.fff}...");
-            else
-                OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePathDirectory}\"...");
+            OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePathDirectory}\"{(timeConstraintApplied ? $" with time constraint from {settings.StartTimeConstraint.Value:yyyy-MM-dd HH:mm.ss.fff} to {settings.EndTimeConstraint.Value:yyyy-MM-dd HH:mm.ss.fff}" : "")}...");
 
             foreach (FtpFile file in client.CurrentDirectory.Files)
             {
@@ -2018,10 +2008,8 @@ namespace openMIC
 
         #region [ Event Handlers ]
 
-        private void RasDialer_Error(object sender, ErrorEventArgs e)
-        {
+        private void RasDialer_Error(object sender, ErrorEventArgs e) => 
             OnProcessException(MessageLevel.Warning, e.GetException());
-        }
 
         private void FtpClient_CommandSent(object sender, EventArgs<string> e)
         {
@@ -2047,10 +2035,8 @@ namespace openMIC
             });
         }
 
-        private void FtpClient_FileTransferNotification(object sender, EventArgs<FtpAsyncResult> e)
-        {
+        private void FtpClient_FileTransferNotification(object sender, EventArgs<FtpAsyncResult> e) => 
             OnStatusMessage(MessageLevel.Info, $"FTP File Transfer: {e.Argument.Message}, response code = {e.Argument.ResponseCode}");
-        }
 
         #endregion
 
@@ -2171,12 +2157,7 @@ namespace openMIC
                 }
 
                 lock (s_queuedProgressUpdates)
-                {
-                    if (s_queuedProgressUpdates.Count > 0)
-                        s_progressUpdateCancellationToken = sendProgressUpdates.DelayAndExecute(100);
-                    else
-                        s_progressUpdateCancellationToken = null;
-                }
+                    s_progressUpdateCancellationToken = s_queuedProgressUpdates.Count > 0 ? sendProgressUpdates.DelayAndExecute(100) : null;
             };
 
             lock (s_queuedProgressUpdates)
@@ -2217,7 +2198,7 @@ namespace openMIC
             }
         }
 
-        private string FTPPathCombine(params string[] args)
+        private static string FTPPathCombine(params string[] args)
         {
             const string Separator = "/";
             string path = "";
