@@ -45,6 +45,7 @@ using ModbusAdapters;
 using ModbusAdapters.Model;
 using Newtonsoft.Json.Linq;
 using openMIC.Model;
+using Microsoft.AspNet.SignalR.Hubs;
 
 namespace openMIC
 {
@@ -185,32 +186,40 @@ namespace openMIC
         [MethodImpl(MethodImplOptions.Synchronized)]
         internal static void ProgressUpdate(string deviceName, string clientID, List<ProgressUpdate> progressUpdates)
         {
-            List<object> updates = progressUpdates
-                .Select(update => update.AsExpandoObject())
-                .ToList();
+            IHubConnectionContext<dynamic> clients = GlobalHost.ConnectionManager?.GetHubContext<DataHub>()?.Clients;
 
-            if (clientID is null)
-                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(deviceName, updates);
-            else
-                GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.Client(clientID).deviceProgressUpdate(deviceName, updates);
+            if (!(clients is null))
+            {
+                List<object> updates = progressUpdates
+                    .Select(update => update.AsExpandoObject())
+                    .ToList();
+
+                if (clientID is null)
+                    clients.All.deviceProgressUpdate(deviceName, updates);
+                else
+                    clients.Client(clientID).deviceProgressUpdate(deviceName, updates);
+            }
 
             if (UseRemoteScheduler)
             {
-                try
+                Task.Run(async () =>
                 {
-                    string targetUri = RemoteSchedulerUri;
-
-                    if (!(targetUri is null))
+                    try
                     {
-                        string uri = $"{targetUri}/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}";
-                        string content = JArray.FromObject(progressUpdates).ToString();
-                        s_http.PostAsync(uri, new StringContent(content, Encoding.UTF8, "application/json")).Wait();
+                        string targetUri = RemoteSchedulerUri;
+
+                        if (!(targetUri is null))
+                        {
+                            string uri = $"{targetUri}/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}";
+                            string content = JArray.FromObject(progressUpdates).ToString();
+                            await s_http.PostAsync(uri, new StringContent(content, Encoding.UTF8, "application/json"));
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Logger.SwallowException(ex);
-                }
+                    catch (Exception ex)
+                    {
+                        Logger.SwallowException(ex);
+                    }
+                });
             }
         }
 
