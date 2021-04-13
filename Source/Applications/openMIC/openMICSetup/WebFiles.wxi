@@ -48,6 +48,9 @@
   <Component Id="ReorderableCollapsableSectionsTemplate_cshtml">
     <File Id="ReorderableCollapsableSectionsTemplate.cshtml" Name="ReorderableCollapsableSectionsTemplate.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ReorderableCollapsableSectionsTemplate.cshtml" />
   </Component>
+  <Component Id="ResetSchedules_cshtml">
+    <File Id="ResetSchedules.cshtml" Name="ResetSchedules.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ResetSchedules.cshtml" />
+  </Component>
   <Component Id="SelectTheme_cshtml">
     <File Id="SelectTheme.cshtml" Name="SelectTheme.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SelectTheme.cshtml" />
   </Component>
