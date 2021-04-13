@@ -44,7 +44,6 @@
     bool setFullWidth = ViewBag.SetFullWidth ?? pageHasSidebar;
     bool hidePageTitle = false;
     bool showMenu = true;
-    bool backgroundUnset = false;
 
     if (!string.IsNullOrWhiteSpace(Model.Global.SystemName)) {
         htmlTitle += " [" + Model.Global.SystemName.Trim() + "]";
@@ -62,10 +61,6 @@
 
     if (ViewBag.ShowMenu != null) {
         showMenu = ViewBag.ShowMenu;
-    }
-
-    if (ViewBag.BackgroundUnset != null) {
-        backgroundUnset = ViewBag.BackgroundUnset;
     }
 
     HttpRequestMessage request = ViewBag.Request;
@@ -197,26 +192,6 @@
             color: #777777;
         }
     </style>
-@if (!showMenu) { if (backgroundUnset){
-    <style>
-        body {
-            margin-top: -70px;
-            margin-right: 20px;
-        }
-    </style>
-} else {
-    <style>
-        body {
-            margin-top: -70px;
-            margin-right: 20px;
-            background-color: #105331;
-        }
-
-        h3 {
-            color: white;
-        }
-    </style>
-}}
     <script src="@Resources.Root/Shared/Scripts/jquery.js"></script>
     <script>
         const DateFormat = "@Model.Global.DateFormat";
@@ -275,6 +250,7 @@
                                     <li><a href="VendorDevices.cshtml">Vendor Devices</a></li>
                                     <li role="separator" class="divider"></li>
                                     <li><a href="Settings.cshtml">App Settings</a></li>
+                                    <li><a href="ResetSchedules.cshtml">Reset Schedules</a></li>
                                     <li><a href="SelectTheme.cshtml">Select Theme</a></li>
                                 </ul>
                             </li>

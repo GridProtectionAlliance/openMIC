@@ -1,0 +1,178 @@
+﻿@*******************************************************************************************************
+//  ResetSchedules.cshtml - Gbtc
+//
+//  Copyright © 2016, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  04/09/2021 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System
+@using System.Net.Http
+@using System.Text.RegularExpressions
+@using GSF
+@using GSF.Data.Model
+@using GSF.Web
+@using GSF.Web.Model
+@using openMIC.Model
+@inherits ExtendedTemplateBase<AppModel>
+@section StyleSheets {
+    <style>
+        html, body {
+            height: 100%;
+        }
+    </style>
+}
+@{
+    Layout = "Layout.cshtml";
+    ViewBag.Title = "Reset All Task Schedules";
+
+    DataContext dataContext = ViewBag.DataContext;
+    HttpRequestMessage request = ViewBag.Request;
+    string inputSchedule = null;
+
+    if (ViewBag.IsPost)
+    {
+        PostData postData = request.GetPostData();
+        inputSchedule = postData.FormData["inputSchedule"];
+    }
+
+    string result = null;
+    string resultClass = null;
+
+    if (!string.IsNullOrWhiteSpace(inputSchedule))
+    {
+        try
+        {
+            TableOperations<Device> deviceTable = dataContext.Table<Device>();
+            TableOperations<ConnectionProfileTask> connectionProfileTaskTable = dataContext.Table<ConnectionProfileTask>();
+            int updatedDevices = 0, updatedTasks = 0;
+
+            foreach (Device device in deviceTable.QueryRecords())
+            {
+                Dictionary<string, string> settings = device.ConnectionString.ParseKeyValuePairs();
+                settings["schedule"] = inputSchedule;
+                device.ConnectionString = settings.JoinKeyValuePairs();
+                deviceTable.UpdateRecord(device);
+                updatedDevices++;
+            }
+
+            foreach (ConnectionProfileTask profileTask in connectionProfileTaskTable.QueryRecords())
+            {
+                if (!string.IsNullOrWhiteSpace(profileTask.Settings.Schedule))
+                {
+                    profileTask.Settings.Schedule = "";
+                    connectionProfileTaskTable.UpdateRecord(profileTask);
+                    updatedTasks++;
+                }
+            }
+
+            result = "Reset " + updatedDevices.ToString("N0") + " device schedules and " + updatedTasks.ToString("N0") + " custom connection profile task schedules";
+            resultClass = "alert-success";
+        }
+        catch (Exception ex)
+        {
+            result = "Failed to reset schedules: " + ex.Message;
+            resultClass = "alert-warning";
+        }
+    }
+}
+@Include("CronHelpDialog.cshtml", dataContext, typeof(DataContext))
+@{
+    IEnumerable<KeyValuePair<string, string>> validations;
+    string cronValidationRegex = null;
+
+    if (dataContext.CustomTableOperationTokens.TryGetValue(typeof(Regex), out validations))
+    {
+        foreach (KeyValuePair<string, string> kvp in validations)
+        {
+            if (string.Equals(kvp.Key, "CronValidationRegex", StringComparison.Ordinal))
+            {
+                cronValidationRegex = kvp.Value;
+                break;
+            }
+        }
+    }
+}
+@if (!string.IsNullOrWhiteSpace(result)) {
+<div class="alert @Raw(resultClass)">
+    <strong>@result</strong>
+</div>
+}
+<div class="well">
+    <form role="form" method="post" onsubmit="return validate(true)">
+        <div id="cronGroup" class="form-group">
+            <label for="inputSchedule">Schedule Cron<span class="pull-right">&nbsp;&nbsp;<a href="#" data-toggle="modal" data-target="#cronHelpDialog" data-backdrop="static"><small><em>Syntax Help</em></small></a></span>:</label>
+            <input type="text" class="form-control" id="inputSchedule" name="inputSchedule" value="* * * * *" required><em id="cronErrorMessage" class="validationMessage small" style="display: none">Invalid cron syntax.</em>
+            <span id="cronIcon" class="glyphicon glyphicon-remove form-control-feedback" style="display: none"></span>
+            <br />
+            <button id="cronSubmit" type="submit" class="btn btn-primary pull-right">Apply</button>
+            <br />
+        </div>
+        @Html.RequestVerificationToken()
+    </form>
+</div>
+<h4 id="cronWarning" class="alert alert-danger pull-right" role="alert" style="display: none">WARNING: This will reset all task schedules! This cannot be undone.</h4>
+@section Scripts {
+    <script>
+    "use strict";
+
+    $("#inputSchedule").on("input", () => validate(false));
+    $("#inputSchedule").on("blur", () => validate(false));
+    $("#cronSubmit").mouseenter(() => $("#cronSubmit").hasClass("disabled") ? $("#cronWarning").hide() : $("#cronWarning").show());
+    $("#cronSubmit").mouseleave(() => $("#cronWarning").hide());
+
+    function updateSchedule(schedule) {
+        $("#inputSchedule").val(schedule);
+        validate(false);
+    }
+
+    function validate(showConfirm) {
+        const cronRegex = /@Raw(cronValidationRegex)/;
+        const value = $("#inputSchedule").val();
+
+        $("#cronIcon").hide();
+        $("#cronErrorMessage").hide();
+
+        if (isEmpty(value)) {
+            $("#cronGroup").addClass("has-error");
+            $("#cronGroup").addClass("has-feedback");
+            $("#cronSubmit").addClass("disabled");
+            return false;
+        } else {
+            $("#cronGroup").removeClass("has-error");
+            $("#cronGroup").removeClass("has-feedback");
+            $("#cronSubmit").removeClass("disabled");
+        }
+
+        if (cronRegex.test(value)) {
+            $("#cronGroup").removeClass("has-error");
+            $("#cronGroup").removeClass("has-feedback");
+            $("#cronSubmit").removeClass("disabled");
+        }
+        else {
+            $("#cronGroup").addClass("has-error");
+            $("#cronGroup").addClass("has-feedback");
+            $("#cronSubmit").addClass("disabled");
+            $("#cronIcon").show();
+            $("#cronErrorMessage").show();
+            return false;
+        }
+
+        return showConfirm ? confirm("Are you sure you want to reset all task schedules to '" + value + "'?") : true;
+    }
+    </script>
+}
