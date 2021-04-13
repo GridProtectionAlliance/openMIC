@@ -92,7 +92,10 @@ namespace openMIC
                         string remoteIP = Request.GetOwinContext().Request.RemoteIpAddress;
 
                         if (!Transport.IsLocalAddress(remoteIP))
+                        {
                             RemoteSchedulerAddress = remoteIP;
+                            Program.Host.LogStatusMessage($"[{nameof(OperationsController)}] Assigned remote scheduler address: {RemoteSchedulerAddress}");
+                        }
                     }
                     else
                     {
@@ -101,7 +104,7 @@ namespace openMIC
                 }
                 catch (Exception ex)
                 {
-                    Logger.SwallowException(ex);
+                    Program.Host.LogException(new InvalidOperationException($"[{nameof(OperationsController)}] Failed to assign remote scheduler address: {ex.Message}", ex));
                 }
             }
 

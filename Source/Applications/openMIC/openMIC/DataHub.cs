@@ -203,7 +203,7 @@ namespace openMIC
                     if (!(targetUri is null))
                     {
                         string uri = $"{targetUri}/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}";
-                        string content = JObject.FromObject(progressUpdates).ToString();
+                        string content = JArray.FromObject(progressUpdates).ToString();
                         s_http.PostAsync(uri, new StringContent(content, Encoding.UTF8, "application/json")).Wait();
                     }
                 }
