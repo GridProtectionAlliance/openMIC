@@ -212,7 +212,7 @@ namespace openMIC
             systemSettings.Add("SmtpUserName", "", "Username to authenticate to the SMTP server, if any.");
             systemSettings.Add("SmtpPassword", "", "Password to authenticate to the SMTP server, if any.");
             systemSettings.Add("PoolMachines", "", "Comma separated list of openMIC pooled load-balancing machines. Should be blank when UseRemoteScheduler is true.");
-            systemSettings.Add("UseRemoteScheduler", false, "Flag that determines if scheduling is handled locally or managed by remote master system");
+            systemSettings.Add("UseRemoteScheduler", false, "Flag that determines if scheduling is handled locally or managed by a remote scheduling system");
             systemSettings.Add("SystemName", "", "Name of system that will be prefixed to system level tags, when defined. Value should follow tag naming conventions, e.g., no spaces and all upper case.");
 
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;

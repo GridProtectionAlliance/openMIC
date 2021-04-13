@@ -21,12 +21,16 @@
 //
 //******************************************************************************************************
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using GSF.Communication;
 using GSF.Data;
 using GSF.Data.Model;
+using GSF.Diagnostics;
+using ModbusAdapters.Model;
 using openMIC.Model;
 
 namespace openMIC
@@ -36,6 +40,11 @@ namespace openMIC
     /// </summary>
     public class OperationsController : ApiController
     {
+        /// <summary>
+        /// Gets address of remote scheduler.
+        /// </summary>
+        public static string RemoteSchedulerAddress { get; private set; }
+
         /// <summary>
         /// Validates that openMIC operations are responding as expected.
         /// </summary>
@@ -73,6 +82,29 @@ namespace openMIC
         [HttpGet]
         public HttpResponseMessage QueueTasks([FromUri] string taskID, [FromUri] QueuePriority priority, [FromUri(Name = "target")] List<string> targets)
         {
+            if (RemoteSchedulerAddress is null)
+            {
+                try
+                {
+                    if (Program.Host.Model.Global.UseRemoteScheduler)
+                    {
+                        // Capture IP of caller as remote scheduler, if address is not local
+                        string remoteIP = Request.GetOwinContext().Request.RemoteIpAddress;
+
+                        if (!Transport.IsLocalAddress(remoteIP))
+                            RemoteSchedulerAddress = remoteIP;
+                    }
+                    else
+                    {
+                        RemoteSchedulerAddress = string.Empty;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.SwallowException(ex);
+                }
+            }
+
             using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 TableOperations<Device> deviceTable = new TableOperations<Device>(connection);
@@ -96,6 +128,21 @@ namespace openMIC
                 }
             }
 
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Handles progress updates from remotely scheduled pooled instances.
+        /// </summary>
+        /// <param name="deviceName">Source device name.</param>
+        /// <param name="progressUpdates">Serialized progress updates.</param>
+        [HttpPost]
+        public HttpResponseMessage ProgressUpdate([FromUri] string deviceName, [FromBody] List<ProgressUpdate> progressUpdates)
+        {
+            if (Program.Host.Model.Global.UseRemoteScheduler)
+                return new HttpResponseMessage(HttpStatusCode.Forbidden);
+
+            DataHub.ProgressUpdate(deviceName, null, progressUpdates);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }

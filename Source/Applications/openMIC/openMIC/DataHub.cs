@@ -25,6 +25,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -32,12 +36,14 @@ using Microsoft.AspNet.SignalR;
 using GSF;
 using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
+using GSF.Diagnostics;
 using GSF.Identity;
 using GSF.Web.Hubs;
 using GSF.Web.Model.HubOperations;
 using GSF.Web.Security;
 using ModbusAdapters;
 using ModbusAdapters.Model;
+using Newtonsoft.Json.Linq;
 using openMIC.Model;
 
 namespace openMIC
@@ -98,14 +104,39 @@ namespace openMIC
         private static int s_modbusProtocolID;
         private static readonly Func<char, bool> s_isInvalidAcronymChar;
         private static readonly char[] s_digits;
+        private static readonly HttpClient s_http;
+        private static bool? s_useRemoteScheduler;
+        private static string s_remoteSchedulerUri;
 
         private static string SystemName => s_systemName ?? (s_systemName = Program.Host.Model.Global.SystemName ?? "");
+        
+        private static bool UseRemoteScheduler => s_useRemoteScheduler ?? (s_useRemoteScheduler = Program.Host.Model.Global.UseRemoteScheduler).GetValueOrDefault();
+        
+        private static string RemoteSchedulerUri
+        {
+            get
+            {
+                if (s_remoteSchedulerUri is null)
+                {
+                    // At first queued task, remote scheduler address will be available
+                    string remoteSchedulerAddress = OperationsController.RemoteSchedulerAddress;
+
+                    if (!(remoteSchedulerAddress is null))
+                    {
+                        Uri webHostUri = Program.Host.Model.Global.WebHostUri;
+                        s_remoteSchedulerUri = $"{webHostUri.Scheme}://{remoteSchedulerAddress}:{webHostUri.Port}";
+                    }
+                }
+
+                return s_remoteSchedulerUri;
+            }
+        }
 
         // Static Constructor
         static DataHub()
         {
-            Downloader.ProgressUpdated += ProgressUpdated;
-            ModbusPoller.ProgressUpdated += (sender, args) => ProgressUpdated(sender, new EventArgs<string, List<ProgressUpdate>>(null, new List<ProgressUpdate>(new[] { args.Argument })));
+            Downloader.ProgressUpdated += HandleProgressUpdated;
+            ModbusPoller.ProgressUpdated += (sender, args) => HandleProgressUpdated(sender, new EventArgs<string, List<ProgressUpdate>>(null, new List<ProgressUpdate>(new[] { args.Argument })));
 
             s_digits = "0123456789".ToCharArray();
 
@@ -116,9 +147,12 @@ namespace openMIC
                 lock (acronymValidator)
                     return !acronymValidator.IsValid(testChar);
             };
+
+            // Create a shared HTTP client instance
+            s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
         }
 
-        private static void ProgressUpdated(object sender, EventArgs<string, List<ProgressUpdate>> e)
+        private static void HandleProgressUpdated(object sender, EventArgs<string, List<ProgressUpdate>> e)
         {
             string deviceName = null;
 
@@ -145,16 +179,39 @@ namespace openMIC
                     update.Summary = $"{systemName}{update.Summary}";
             }
 
+            ProgressUpdate(deviceName, e.Argument1, progressUpdates);
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        internal static void ProgressUpdate(string deviceName, string clientID, List<ProgressUpdate> progressUpdates)
+        {
             List<object> updates = progressUpdates
                 .Select(update => update.AsExpandoObject())
                 .ToList();
-            
-            string clientID = e.Argument1;
 
             if (clientID is null)
                 GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.All.deviceProgressUpdate(deviceName, updates);
             else
                 GlobalHost.ConnectionManager.GetHubContext<DataHub>().Clients.Client(clientID).deviceProgressUpdate(deviceName, updates);
+
+            if (UseRemoteScheduler)
+            {
+                try
+                {
+                    string targetUri = RemoteSchedulerUri;
+
+                    if (!(targetUri is null))
+                    {
+                        string uri = $"{targetUri}/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}";
+                        string content = JObject.FromObject(progressUpdates).ToString();
+                        s_http.PostAsync(uri, new StringContent(content, Encoding.UTF8, "application/json")).Wait();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.SwallowException(ex);
+                }
+            }
         }
 
         #endregion
