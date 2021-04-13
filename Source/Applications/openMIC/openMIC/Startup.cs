@@ -61,6 +61,16 @@ namespace openMIC
             GlobalHost.DependencyResolver.Register(typeof(JsonSerializer), () => serializer);
             AppModel model = Program.Host.Model;
 
+            // Load data hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
+            try
+            {
+                using (new DataHub()) { }
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(new SecurityException($"Failed to load Data Hub, validate database connection string in configuration file: {ex.Message}", ex));
+            }
+
             // Load security hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
             try
             {
