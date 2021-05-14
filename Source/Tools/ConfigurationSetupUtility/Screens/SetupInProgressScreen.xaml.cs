@@ -2053,6 +2053,50 @@ namespace ConfigurationSetupUtility.Screens
                 categorizedSettings.Add(securityProvider);
             }
 
+            if (serviceConfigFile)
+            {
+                XElement configuration = configFile.Element("configuration");
+
+                if (!(configuration is null))
+                {
+                    XElement runtime = configuration.Element("runtime");
+
+                    if (runtime is null)
+                    {
+                        configuration.Add(new XElement("runtime"));
+                        runtime = configuration.Element("runtime");
+                    }
+
+                    if (!(runtime is null))
+                    {
+                        void addOrUpdate(string name)
+                        {
+                            XElement element = runtime.Element(name);
+
+                            if (element is null)
+                            {
+                                runtime.Add(new XElement(name, new XAttribute("enabled", "true")));
+                            }
+                            else
+                            {
+                                XAttribute enabled = element.Attribute("enabled");
+
+                                if (enabled is null)
+                                    element.Add(new XAttribute("enabled", "true"));
+                                else
+                                    enabled.Value = "true";
+                            }
+                        }
+
+                        addOrUpdate("gcAllowVeryLargeObjects");
+                        addOrUpdate("gcConcurrent");
+                        addOrUpdate("gcServer");
+                        addOrUpdate("GCCpuGroup");
+                        addOrUpdate("Thread_UseAllCpuGroups");
+                    }
+                }
+            }
+
             configFile.Save(configFileName);
         }
 
