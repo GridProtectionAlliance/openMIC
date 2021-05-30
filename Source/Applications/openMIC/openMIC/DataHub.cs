@@ -40,6 +40,7 @@ using GSF.Identity;
 using GSF.Web.Hubs;
 using GSF.Web.Model.HubOperations;
 using GSF.Web.Security;
+using GSF.Web.Shared.Model;
 using ModbusAdapters;
 using ModbusAdapters.Model;
 using Newtonsoft.Json.Linq;
@@ -379,6 +380,15 @@ namespace openMIC
             DataContext.Table<Device>().AddNewOrUpdateRecord(device);
         }
 
+        public Vendor GetDeviceVendor(int? vendorDeviceID)
+        {
+            if (vendorDeviceID is null)
+                return null;
+
+            VendorDevice vendorDevice = DataContext.Table<VendorDevice>().QueryRecordWhere("ID = {0}", vendorDeviceID.Value);
+            return vendorDevice is null ? null : DataContext.Table<Vendor>().QueryRecordWhere("ID = {0}", vendorDevice.VendorID);
+        }
+
         #endregion
 
         #region [ Measurement Table Operations ]
@@ -610,6 +620,63 @@ namespace openMIC
         public void AddNewRuntime(Runtime runtime)
         {
             DataContext.Table<Runtime>().AddNewRecord(runtime);
+        }
+
+        #endregion
+
+        #region [ Historian Table Operations ]
+
+        [RecordOperation(typeof(Historian), RecordOperation.QueryRecordCount)]
+        public int QueryHistorianCount(string filterText)
+        {
+            return DataContext.Table<Historian>().QueryRecordCount(filterText);
+        }
+
+        [RecordOperation(typeof(Historian), RecordOperation.QueryRecords)]
+        public IEnumerable<Historian> QueryHistorians(string sortField, bool ascending, int page, int pageSize, string filterText)
+        {
+            return DataContext.Table<Historian>().QueryRecords(sortField, ascending, page, pageSize, filterText);
+        }
+
+        public Historian QueryHistorian(string acronym)
+        {
+            return DataContext.Table<Historian>().QueryRecordWhere("Acronym = {0}", acronym);
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Historian), RecordOperation.DeleteRecord)]
+        public void DeleteHistorian(int id)
+        {
+            DataContext.Table<Historian>().DeleteRecord(id);
+        }
+
+        [RecordOperation(typeof(Historian), RecordOperation.CreateNewRecord)]
+        public Historian NewHistorian()
+        {
+            return DataContext.Table<Historian>().NewRecord();
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Historian), RecordOperation.AddNewRecord)]
+        public void AddNewHistorian(Historian historian)
+        {
+            DataContext.Table<Historian>().AddNewRecord(historian);
+        }
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        [RecordOperation(typeof(Historian), RecordOperation.UpdateRecord)]
+        public void UpdateHistorian(Historian historian)
+        {
+            DataContext.Table<Historian>().UpdateRecord(historian);
+        }
+
+        /// <summary>
+        /// Gets loaded historian adapter instance names.
+        /// </summary>
+        /// <returns>Historian adapter instance names.</returns>
+        public IEnumerable<string> GetInstanceNames()
+        {
+            return DataContext.Table<Historian>().QueryRecordsWhere("Enabled != 0").Select(historian => historian.Acronym);
         }
 
         #endregion

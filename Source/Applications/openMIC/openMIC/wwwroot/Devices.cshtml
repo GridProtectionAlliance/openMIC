@@ -20,6 +20,8 @@
 //       Generated original version of source code.
 //
 //*****************************************************************************************************@
+@* ReSharper disable RedundantUsingDirective *@
+@* ReSharper disable UnknownCssClass *@
 @using System.Net.Http
 @using GSF.Data.Model
 @using GSF.Security.Model
@@ -267,7 +269,7 @@
                 return;
 
             if (record.Enabled)
-                serviceHub.sendCommand("initialize " + record.Acronym);
+                serviceHub.sendCommand(`initialize ${record.Acronym}`);
             else
                 serviceHub.sendCommand("reloadconfig");
         });
@@ -309,20 +311,38 @@
 
         function showEditScreen(readOnly, record) {
             if (record.ProtocolID === modbusProtocolID) {
-                window.location.href = "/ModbusConfig.cshtml?DeviceID=" + record.ID;
+                window.location.href = `/ModbusConfig.cshtml?DeviceID=${record.ID}`;
             }
             else {
                 // Parse connection string
                 const connectionString = new Dictionary(record.ConnectionString.parseKeyValuePairs());
 
                 if (parseInt(connectionString.get("connectionProfileID")) === defaultIGridProfileID) {
-                    window.location.href = "/IGridConfig.cshtml?DeviceID=" + record.ID;
+                    window.location.href = `/IGridConfig.cshtml?DeviceID=${record.ID}`;
                 }
                 else {
-                    if (readOnly)
-                        viewModel.viewPageRecord(record);
-                    else
-                        viewModel.editPageRecord(record);
+                    function showPageRecord() {
+                        if (readOnly)
+                            viewModel.viewPageRecord(record);
+                        else
+                            viewModel.editPageRecord(record);
+                    }
+
+                    if (hubIsConnected) {
+                        dataHub.getDeviceVendor(record.VendorDeviceID).done(function(vendor) {
+                            if (vendor.Acronym.toUpperCase() === "DRANETZ")
+                                window.location.href = `/DranetzConfig.cshtml?DeviceID=${record.ID}`;
+                            else
+                                showPageRecord();
+                            })
+                        .fail(function (error) {
+                            showErrorMessage(`Failed to query device vendor: ${error}`);
+                            showPageRecord();
+                        });
+                    }
+                    else {
+                        showPageRecord();
+                    }
                 }
             }
         }
@@ -332,7 +352,7 @@
                 return;
 
             if (record.Enabled)
-                serviceHub.sendCommand("initialize " + record.Acronym);
+                serviceHub.sendCommand(`initialize ${record.Acronym}`);
             else
                 serviceHub.sendCommand("reloadconfig");
         }
