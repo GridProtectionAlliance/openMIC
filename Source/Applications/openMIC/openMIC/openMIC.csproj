@@ -222,6 +222,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataHub.cs" />
+    <Compile Include="DataHub_IGrid.cs" />
+    <Compile Include="DataHub_Modbus.cs" />
     <Compile Include="DataSubscriptionHubClient.cs" />
     <Compile Include="DataSubscriptionOperations.cs" />
     <Compile Include="Downloader.cs" />

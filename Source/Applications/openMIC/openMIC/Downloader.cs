@@ -1566,7 +1566,7 @@ namespace openMIC
             if (!settings.RecursiveDownload)
                 return;
 
-            FtpDirectory[] directories = new FtpDirectory[0];
+            FtpDirectory[] directories = Array.Empty<FtpDirectory>();
 
             try
             {
