@@ -328,7 +328,7 @@
                             viewModel.editPageRecord(record);
                     }
 
-                    if (hubIsConnected) {
+                    if (hubIsConnected && readOnly) {
                         dataHub.getDeviceVendor(record.VendorDeviceID).done(function(vendor) {
                             if (vendor.Acronym.toUpperCase() === "DRANETZ")
                                 window.location.href = `/DranetzConfig.cshtml?DeviceID=${record.ID}`;
