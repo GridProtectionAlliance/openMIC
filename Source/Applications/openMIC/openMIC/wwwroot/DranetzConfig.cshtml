@@ -1,0 +1,354 @@
+﻿@*******************************************************************************************************
+//  DranetzConfig.cshtml - Gbtc
+//
+//  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  05/19/2021 - Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System.Net.Http
+@using System.Threading
+@using GSF.Identity
+@using GSF.Security
+@using GSF.Web
+@using GSF.Web.Model
+@using GSF.Web.Shared
+@using openMIC.Model
+@inherits ExtendedTemplateBase<AppModel>
+@{
+    Layout = "Layout.cshtml";
+    ViewBag.HidePageTitle = true;
+    ViewBag.Title = "Manage Dranetz Configuration";
+
+    HttpRequestMessage request = ViewBag.Request;
+    Dictionary<string, string> parameters = request.QueryParameters();
+    string parameter;
+    int deviceID;
+
+    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID))
+    {
+        deviceID = 0;
+    }
+
+    bool userIsEditor = UserIsEditor();
+}
+@section StyleSheets {
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        span.new-record {
+            border: red;
+            border-style: solid;
+            border-width: 4px;
+            display: inline-block;
+            padding-left: 3px;
+            padding-right: 4px;
+        }
+
+        span.existing-record {
+            border: lawngreen;
+            border-style: solid;
+            border-width: 4px;
+            display: inline-block;
+            padding-left: 3px;
+            padding-right: 4px;
+        }
+
+        /* Prevent label wrapping */
+        #baseURLArea {
+            width: 80%;
+            display: inline-table;
+            vertical-align: middle;
+        }
+
+        @@media screen {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -18px;
+            }
+        }
+
+        @@media screen and (min-width: 992px) {
+            .page-logo {
+                margin-bottom: -25px;
+                margin-top: -8px;
+            }
+        }
+    </style>
+}
+@functions {
+    public string GetCurrentUserID()
+    {
+        if (Thread.CurrentPrincipal.Identity == null)
+            return UserInfo.CurrentUserID;
+
+        return Thread.CurrentPrincipal.Identity.Name;
+    }
+
+    // This function simply limits access to UI elements that the user does not have access to, server-side
+    // functions will further validate user rights even if UI restriction was somehow bypassed
+    public bool UserIsEditor()
+    {
+        SecurityPrincipal securityPrincipal = ViewBag.SecurityPrincipal as SecurityPrincipal;
+
+        if ((object)securityPrincipal == null)
+            return false;
+
+        return securityPrincipal.IsInRole("Administrator") || securityPrincipal.IsInRole("Editor");
+    }
+}
+<div style="display: none" search-header></div>
+<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" src="Images/DranetzConfigEditor.png" /></h3>
+@*<form class="form-inline">
+    <label for="inputBaseURL">Base URL:</label>
+    <div id="baseURLArea" class="input-group" data-bind="css: { 'has-error': !fieldIsValid(baseURL, true), 'has-feedback': !fieldIsValid(baseURL, true) }">
+        <input type="text" class="form-control" style="width: 100%" data-bind="textInput: baseURL" id="inputBaseURL" required>
+        <span class="input-group-addon" style="border-left: none; background-color: #fff; width: 100px">&amp;action=getMonitorList</span>
+        <span class="input-group-btn">
+            <button class="btn btn-default" id="queryDevices" data-bind="enable: dataHubIsConnected">Query Devices</button>
+        </span>
+        <span class="glyphicon glyphicon-remove form-control-feedback" style="margin-right: 290px; z-index: 5; display: none" data-bind="visible: !fieldIsValid(baseURL, true)"></span>
+    </div>
+</form>*@
+<hr class="quarter-break" />
+<div id="contentWell" class="well well-dynamic-content" content-fill-height>
+    <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">
+        @*<span id="deviceCounts">i-Grid Monitor Records: <span data-bind='html: deviceCounts'></span></span>
+        <span class="pull-right" style="text-align: right">
+            @if (userIsEditor)
+            {
+                <span id="bulkSelectionButtons">
+                    <button type="button" class="btn btn-sm btn-default" id="selectAll">Select All</button>
+                    <button type="button" class="btn btn-sm btn-default" id="unselectAll">Unselect All</button>&nbsp;
+                </span>
+                <button type="button" class="btn btn-sm btn-primary pull-right" id="saveDevices" data-bind="disable: selectedDeviceCount() == 0 || validationErrors() > 0 || !dataHubIsConnected()">
+                    <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New&nbsp;/&nbsp;Update&nbsp;<span data-bind="text: selectedDeviceCount"></span>&nbsp;Selected
+                </button>
+            }
+            else
+            {
+                <span class="label label-danger label-md">User "@GetCurrentUserID()" does not have rights to add devices.</span>
+            }
+            <em data-bind="visible: validationErrors() > 0">
+                <br />
+                <span data-bind="text: validationErrors()"></span> validation error<span data-bind="visible: validationErrors() > 1">s</span>...
+            </em>
+        </span>
+        <table class="table table-condensed table-striped table-hover">
+            <thead>
+                <tr>
+                    <th class="text-center">Selected</th>
+                    <th class="text-left">openMIC&nbsp;Device&nbsp;Acronym</th>
+                    <th class="text-center">Serial&nbsp;Number</th>
+                    <th class="text-left">Name</th>
+                    <th class="text-left">Description</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: { data: devices }">
+                <tr id="deviceRow" style="visibility: hidden">
+                    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Selected" /></td>
+                    <td width="25%" class="text-left valign-middle">
+                        <div class="input-group" data-bind="css: { 'has-error': !fieldIsValid(Acronym, true), 'has-feedback': !fieldIsValid(Acronym, true) }">
+                            <input type="text" class="form-control" style="width: 250px" data-bind="acronym: Acronym, textInput: Acronym, enable: Selected" required>
+                            <span class="glyphicon glyphicon-remove form-control-feedback" style="z-index: 5" data-bind="visible: !fieldIsValid(Acronym, true)"></span>
+                        </div>
+                    </td>
+                    <td width="15%" class="text-center valign-middle" style="white-space: nowrap"><span data-bind="text: SerialNumber, css: DeviceStatus, attr: { title: DeviceID() === 0 ? 'Device does not exist in openMIC' : 'Device already exists within openMIC' }"></span></td>
+                    <td width="25%" class="text-left valign-middle"><span data-bind="text: Name, css: { 'disabled': !Selected() }"></span></td>
+                    <td width="30%" class="text-left valign-middle"><span data-bind="text: Description, css: { 'disabled': !Selected() }"></span></td>
+                </tr>
+            </tbody>
+        </table>*@
+        <div id="loadingDataLabel" style="display: none">
+            Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="@Resources.Root/Shared/Scripts/knockout.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.mapping.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.validation.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.reactor.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/gsf.web.knockout.js"></script>
+
+    <script>
+        "use strict";
+
+        var viewModel = null;
+        var deviceID = @deviceID;
+
+        function DeviceViewModel() {
+            const self = this;
+
+            // Observable fields
+            self.errors = ko.validation.group(self);
+
+            // Internal fields
+            self._dataHubIsConnected = ko.observable(false);
+            self._isDirty = ko.observable(false);
+
+            // Properties
+            self.dataHubIsConnected = ko.pureComputed({
+                read: self._dataHubIsConnected,
+                write: function(value) {
+                    if (value === undefined)
+                        value = false;
+
+                    self._dataHubIsConnected(value);
+
+                    if (value)
+                        self.refreshValidationErrors();
+                },
+                owner: self
+            });
+
+            self.isDirty = ko.pureComputed({
+                read: self._isDirty,
+                write: function(value) {
+                    if (value === undefined)
+                        value = true;
+
+                    self._isDirty(value);
+                },
+                owner: self
+            });
+
+
+            // Methods
+
+
+            self.refreshValidationErrors = function() {
+                //// Force re-evaluation of persnickety validation properties
+                //self.devices().forEach(function(device) {
+                //    device.Acronym.valueHasMutated();
+                //});
+
+                // Make sure any initial validation error messages are visible
+                self.errors.showAllMessages();
+            }
+
+            self.deriveObservableDevice = function(device, refreshValidationErrors) {
+                // Map all JSON elements as validated observables
+                const observableDevice = ko.mapping.fromJS(device);
+
+                //// Make sure device Acronym field meet specifications
+                //observableDevice.Acronym.extend({
+                //    required: { onlyIf: observableDevice.Selected },
+                //    pattern: {
+                //        onlyIf: observableDevice.Selected,
+                //        message: "Only upper case letters, numbers, '!', '-', '@@', '#', '_' , '.' and '$' are allowed.",
+                //        params: "^[A-Z0-9\\-!_\\.@@#\\$]+$"
+                //    },
+                //    uniqueOnPage: {
+                //        devices: self.devices,
+                //        targetDevice: observableDevice
+                //    },
+                //    uniqueInDatabase: {
+                //        targetDevice: observableDevice
+                //    }
+                //});
+
+                //observableDevice.DeviceStatus = ko.pureComputed(function() {
+                //    return (observableDevice.DeviceID() === 0 ? "new-record" : "existing-record") + (observableDevice.Selected() ? "" : " disabled");
+                //});
+
+                //if (refreshValidationErrors === undefined)
+                //    refreshValidationErrors = true;
+
+                //if (refreshValidationErrors)
+                //    self.refreshValidationErrors();
+
+                return observableDevice;
+            }
+
+            self.validationErrors = ko.pureComputed(function() {
+                return self.errors().length;
+            }).extend({ notify: "always" });
+        }
+
+        // Load existing device data
+        function loadDeviceConnection(id) {
+            if (!hubIsConnected)
+                return;
+
+            dataHub.queryDeviceByID(id).done(function (device) {
+                $("#editDeviceName").html("Editing&nbsp;" + device.Acronym + "&nbsp;Configuration");
+            });
+
+            dataHub.getInstanceStatus(id).done(function (status) {
+                console.log(status);
+            });
+        }
+
+        // Page initialization function
+        $(function() {
+            $("#bodyContainer").addClass("fill-height");
+
+            // Enable knockout validation
+            ko.validation.init({
+                registerExtenders: true,
+                messagesOnModified: true,
+                insertMessages: true,
+                parseInputAttributes: true,
+                allowHtmlMessages: true,
+                messageTemplate: null,
+                decorateElement: true,
+                errorElementClass: "has-error",
+                errorMessageClass: "help-block",
+                grouping: { deep: true, observable: true, live: true }
+            }, true);
+
+            // Enable deferred updates for better performance
+            ko.options.deferUpdates = true;
+
+            // Create the primary view model
+            viewModel = new DeviceViewModel();
+
+            //// Apply URL validation to baseURL field
+            //viewModel.baseURL.extend({
+            //    pattern: {
+            //        message: "Invalid URL.",
+            //        params: "^(?:(?:[a-zA-Z][a-zA-Z0-9.+-]*:\\/\\/)?[a-zA-Z0-9][a-zA-Z0-9.-]*(?::[0-9]+)?(?:\\/[^ \"]*)?)$"
+            //    }
+            //});
+
+            // Initialize primary view model
+            ko.applyBindings(viewModel, document.getElementsByTagName("body")[0]);
+
+            // Monitor for view model changes
+            ko.watch(viewModel.devices, { depth: -1 }, function(parents, child, item) {
+                viewModel.isDirty(true);
+            });
+
+            // Let view model know about hub connectivity changes
+            $(window).on("hubConnected", function() {
+                viewModel.dataHubIsConnected(true);
+
+                if (deviceID > 0) {
+                    loadDeviceConnection(deviceID);
+                    deviceID = 0;
+                }
+            });
+
+            $(window).on("hubDisconnected", function() {
+                viewModel.dataHubIsConnected(false);
+            });
+        });
+    </script>
+}
