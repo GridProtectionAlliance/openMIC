@@ -346,6 +346,8 @@ namespace openMIC
 
             DataContext.Table<StatusLog>().DeleteRecordWhere("DeviceID = {0}", id);
             DataContext.Table<DownloadedFile>().DeleteRecordWhere("DeviceID = {0}", id);
+
+            ClearCredential(id);
         }
 
         [RecordOperation(typeof(Device), RecordOperation.CreateNewRecord)]
@@ -372,12 +374,17 @@ namespace openMIC
                 device.ProtocolID = DownloaderProtocolID;
 
             DataContext.Table<Device>().UpdateRecord(device);
+
+            ClearCredential(device.ID);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
         public void AddNewOrUpdateDevice(Device device)
         {
             DataContext.Table<Device>().AddNewOrUpdateRecord(device);
+
+            if (device.ID != default)
+                ClearCredential(device.ID);
         }
 
         public Vendor GetDeviceVendor(int? vendorDeviceID)
