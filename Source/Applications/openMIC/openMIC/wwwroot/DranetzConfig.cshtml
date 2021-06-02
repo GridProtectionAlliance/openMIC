@@ -39,8 +39,7 @@
     string parameter;
     int deviceID;
 
-    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID))
-    {
+    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
         deviceID = 0;
     }
 
@@ -77,17 +76,57 @@
             vertical-align: middle;
         }
 
+        th.pad-right {
+            padding-right: 8px;
+            white-space: nowrap;
+            width: 50%;
+        }
+
+        th.header {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bolder;
+            padding-bottom: 5px;
+        }
+
+        div.header {
+            border-bottom: solid;
+        }
+
+        /* Collapsable button style */
+        .btn-collapsable.btn {
+            color: #606060;
+            font-family: "Glyphicons Halflings";
+            font-size: 8pt;
+            position: relative;
+            top: -9px;
+            right: -14px;
+            padding: 0 2px 2px 2px;
+            height: 18px;
+            float: right !important;
+        }
+
+        /* Collapsable button icon when content is shown - arrow down */
+        .btn-collapsable.btn:after {
+            content: "\e114";
+        }
+
+        /* Collapsable button icon when content is hidden - arrow right */
+        .btn-collapsable.btn.collapsed:after {
+            content: "\e080";
+        }
+
         @@media screen {
             .page-logo {
                 margin-bottom: -25px;
-                margin-top: -18px;
+                margin-top: 8px;
             }
         }
 
         @@media screen and (min-width: 992px) {
             .page-logo {
                 margin-bottom: -25px;
-                margin-top: -8px;
+                margin-top: 3px;
             }
         }
     </style>
@@ -115,69 +154,134 @@
 }
 <div style="display: none" search-header></div>
 <h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" src="Images/DranetzConfigEditor.png" /></h3>
-@*<form class="form-inline">
-    <label for="inputBaseURL">Base URL:</label>
-    <div id="baseURLArea" class="input-group" data-bind="css: { 'has-error': !fieldIsValid(baseURL, true), 'has-feedback': !fieldIsValid(baseURL, true) }">
-        <input type="text" class="form-control" style="width: 100%" data-bind="textInput: baseURL" id="inputBaseURL" required>
-        <span class="input-group-addon" style="border-left: none; background-color: #fff; width: 100px">&amp;action=getMonitorList</span>
-        <span class="input-group-btn">
-            <button class="btn btn-default" id="queryDevices" data-bind="enable: dataHubIsConnected">Query Devices</button>
-        </span>
-        <span class="glyphicon glyphicon-remove form-control-feedback" style="margin-right: 290px; z-index: 5; display: none" data-bind="visible: !fieldIsValid(baseURL, true)"></span>
-    </div>
-</form>*@
 <hr class="quarter-break" />
 <div id="contentWell" class="well well-dynamic-content" content-fill-height>
     <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">
-        @*<span id="deviceCounts">i-Grid Monitor Records: <span data-bind='html: deviceCounts'></span></span>
-        <span class="pull-right" style="text-align: right">
-            @if (userIsEditor)
-            {
-                <span id="bulkSelectionButtons">
-                    <button type="button" class="btn btn-sm btn-default" id="selectAll">Select All</button>
-                    <button type="button" class="btn btn-sm btn-default" id="unselectAll">Unselect All</button>&nbsp;
-                </span>
-                <button type="button" class="btn btn-sm btn-primary pull-right" id="saveDevices" data-bind="disable: selectedDeviceCount() == 0 || validationErrors() > 0 || !dataHubIsConnected()">
-                    <span class="glyphicon glyphicon-plus"></span>&nbsp;&nbsp;Add&nbsp;New&nbsp;/&nbsp;Update&nbsp;<span data-bind="text: selectedDeviceCount"></span>&nbsp;Selected
-                </button>
-            }
-            else
-            {
-                <span class="label label-danger label-md">User "@GetCurrentUserID()" does not have rights to add devices.</span>
-            }
-            <em data-bind="visible: validationErrors() > 0">
-                <br />
-                <span data-bind="text: validationErrors()"></span> validation error<span data-bind="visible: validationErrors() > 1">s</span>...
-            </em>
-        </span>
-        <table class="table table-condensed table-striped table-hover">
-            <thead>
-                <tr>
-                    <th class="text-center">Selected</th>
-                    <th class="text-left">openMIC&nbsp;Device&nbsp;Acronym</th>
-                    <th class="text-center">Serial&nbsp;Number</th>
-                    <th class="text-left">Name</th>
-                    <th class="text-left">Description</th>
-                </tr>
-            </thead>
-            <tbody data-bind="foreach: { data: devices }">
-                <tr id="deviceRow" style="visibility: hidden">
-                    <td width="5%" class="text-center valign-middle"><input type="checkbox" data-bind="checked: Selected" /></td>
-                    <td width="25%" class="text-left valign-middle">
-                        <div class="input-group" data-bind="css: { 'has-error': !fieldIsValid(Acronym, true), 'has-feedback': !fieldIsValid(Acronym, true) }">
-                            <input type="text" class="form-control" style="width: 250px" data-bind="acronym: Acronym, textInput: Acronym, enable: Selected" required>
-                            <span class="glyphicon glyphicon-remove form-control-feedback" style="z-index: 5" data-bind="visible: !fieldIsValid(Acronym, true)"></span>
-                        </div>
-                    </td>
-                    <td width="15%" class="text-center valign-middle" style="white-space: nowrap"><span data-bind="text: SerialNumber, css: DeviceStatus, attr: { title: DeviceID() === 0 ? 'Device does not exist in openMIC' : 'Device already exists within openMIC' }"></span></td>
-                    <td width="25%" class="text-left valign-middle"><span data-bind="text: Name, css: { 'disabled': !Selected() }"></span></td>
-                    <td width="30%" class="text-left valign-middle"><span data-bind="text: Description, css: { 'disabled': !Selected() }"></span></td>
-                </tr>
-            </tbody>
-        </table>*@
+        <table width="100%">
+            <tr>
+                <td width="50%" style="vertical-align: top">
+                    <table width="95%">
+                        <tr>
+                            <th class="header" colspan="2"><div class="header">System</div></th>
+                        </tr>
+                        <tr>
+                            <th class="text-center" style="padding-top: 2px; padding-bottom: 5px" colspan="2" data-bind="text: versionInfo"/>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Serial Number:</th>
+                            <td class="text-left" data-bind="text: serialNumber"/>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">System Health:</th>
+                            <td class="text-left" data-bind="text: systemHealth"/>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Database Health:</th>
+                            <td class="text-left" data-bind="text: databaseHealth"/>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Comm. Module Firmware:</th>
+                            <td class="text-left" data-bind="text: commFirmware"/>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Host Module Firmware:</th>
+                            <td class="text-left" data-bind="text: hostFirmware"/>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">GPS Installed:</th>
+                            <td class="text-left" data-bind="text: gpsInstalled"/>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">GPS Satellites:</th>
+                            <td class="text-left" data-bind="text: gpsSatellites"/>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">IP Address:</th>
+                            <td class="text-left" data-bind="text: ipAddress"/>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Site Name:</th>
+                            <td class="text-left" data-bind="text: siteName"/>
+                        </tr>
+                    </table>
+                </td>
+                <td width="50%" style="vertical-align: top">
+                    <table width="95%">
+                        <tr>
+                            <th class="header"><div class="header">Input Modules</div></th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <table class="table table-condensed table-striped table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">ID</th>
+                                        <th class="text-center">Model&nbsp;Number</th>
+                                        <th class="text-center">Firmware</th>
+                                        <th class="text-center">Changed?</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: modules">
+                                    <tr id="moduleRow" style="visibility: hidden">
+                                        <td width="5%" class="text-center valign-middle" data-bind="text: $data['@@id']"/>
+                                        <td width="75%" class="text-center valign-middle" style="white-space: nowrap"><span data-bind="text: $data['@@model']"></span></td>
+                                        <td width="15%" class="text-center valign-middle"><span data-bind="text: $data['@@firmware_version']"></span></td>
+                                        <td width="5%" class="text-center valign-middle"><span data-bind="text: $data['@@module_changed']"></span></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="padding-top: 5px">
+                    <table width="50%" style="margin: auto">
+                        <tr>
+                            <th class="header"><div class="header">Analyzers</div></th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <table class="table table-condensed table-striped table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">Name</th>
+                                        <th class="text-center">Type</th>
+                                        <th class="text-center">Monitoring&nbsp;Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: analyzers">
+                                    <tr id="analyzerRow" style="visibility: hidden">
+                                        <td width="80%" class="text-center valign-middle" style="white-space: nowrap"><btn type="button" class="btn btn-link" style="padding: 0" data-bind="text: $data['@@name'], click: loadAnalyzerConfig.bind($data)"/></td>
+                                        <td width="10%" class="text-center valign-middle" data-bind="text: $data['@@analyzer_type']"/>
+                                        <td width="10%" class="text-center valign-middle"><span data-bind="text: parseInt($data['@@monitoring_on']()) > 0 ? 'On' : 'Off'"></span></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                </td>
+            </tr>
+        </table>
         <div id="loadingDataLabel" style="display: none">
             Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
         </div>
+    </div>
+    <h3 id="noDeviceDataMessage" style="display: none; color: red">
+        No device data could be loaded for device with <code>ID=@deviceID</code>
+    </h3>
+</div>
+<hr id="view-spacer" class="thick-spacer" style="margin-top: -10px; margin-bottom: 8px"/>
+<div class="panel panel-default">
+    <div class="panel-heading" style="height: 30px; padding-top: 5px">
+        <label>Analyzer&nbsp;Configuration</label>
+        <button type="button" class="btn btn-xs btn-collapsable collapsed" style="top: 0; right: -10px" data-toggle="collapse" data-target="#analyzerConfiguration"></button>
+    </div>
+    <div class="panel-body collapse" style="padding: 2px; margin-bottom: -10px" id="analyzerConfiguration">
+        <pre data-bind="text: JSON.stringify(currentAnalyzerConfig(), null, 4)"></pre>
     </div>
 </div>
 @section Scripts {
@@ -197,6 +301,19 @@
             const self = this;
 
             // Observable fields
+            self.versionInfo = ko.observable("Encore Series Dranetz-BMI");
+            self.serialNumber = ko.observable("");
+            self.systemHealth = ko.observable("querying...");
+            self.databaseHealth = ko.observable("");
+            self.hostFirmware = ko.observable("");
+            self.commFirmware = ko.observable("");
+            self.gpsInstalled = ko.observable(false);
+            self.gpsSatellites = ko.observable(0);
+            self.ipAddress = ko.observable("");
+            self.siteName = ko.observable("");
+            self.modules = ko.observableArray();
+            self.analyzers = ko.observableArray();
+            self.currentAnalyzerConfig = ko.observable("");
             self.errors = ko.validation.group(self);
 
             // Internal fields
@@ -206,7 +323,7 @@
             // Properties
             self.dataHubIsConnected = ko.pureComputed({
                 read: self._dataHubIsConnected,
-                write: function(value) {
+                write: function (value) {
                     if (value === undefined)
                         value = false;
 
@@ -220,7 +337,7 @@
 
             self.isDirty = ko.pureComputed({
                 read: self._isDirty,
-                write: function(value) {
+                write: function (value) {
                     if (value === undefined)
                         value = true;
 
@@ -229,52 +346,81 @@
                 owner: self
             });
 
-
             // Methods
 
+            self.loadAnalyzerConfig = function (configID) {
+                if (!self.dataHubIsConnected())
+                    return $.Deferred().resolve().promise();
 
-            self.refreshValidationErrors = function() {
-                //// Force re-evaluation of persnickety validation properties
-                //self.devices().forEach(function(device) {
-                //    device.Acronym.valueHasMutated();
-                //});
-
-                // Make sure any initial validation error messages are visible
-                self.errors.showAllMessages();
+                return dataHub.getAnalyzerConfig(deviceID, configID).then(function (configResult) {
+                    self.currentAnalyzerConfig(JSON.parse(configResult));
+                });
             }
 
-            self.deriveObservableDevice = function(device, refreshValidationErrors) {
-                // Map all JSON elements as validated observables
-                const observableDevice = ko.mapping.fromJS(device);
+            self.queryModules = function () {
+                if (!self.dataHubIsConnected())
+                    return $.Deferred().resolve().promise();
 
-                //// Make sure device Acronym field meet specifications
-                //observableDevice.Acronym.extend({
-                //    required: { onlyIf: observableDevice.Selected },
-                //    pattern: {
-                //        onlyIf: observableDevice.Selected,
-                //        message: "Only upper case letters, numbers, '!', '-', '@@', '#', '_' , '.' and '$' are allowed.",
-                //        params: "^[A-Z0-9\\-!_\\.@@#\\$]+$"
-                //    },
-                //    uniqueOnPage: {
-                //        devices: self.devices,
-                //        targetDevice: observableDevice
-                //    },
-                //    uniqueInDatabase: {
-                //        targetDevice: observableDevice
-                //    }
-                //});
+                $("[id=moduleRow]").css("visibility", "hidden");
+                $("[id=analyzerRow]").css("visibility", "hidden");
+                self.modules.removeAll();
 
-                //observableDevice.DeviceStatus = ko.pureComputed(function() {
-                //    return (observableDevice.DeviceID() === 0 ? "new-record" : "existing-record") + (observableDevice.Selected() ? "" : " disabled");
-                //});
+                return dataHub.getInstanceStatus(deviceID).then(function (statusResult) {
+                    const status = JSON.parse(statusResult);
 
-                //if (refreshValidationErrors === undefined)
-                //    refreshValidationErrors = true;
+                    self.serialNumber(status.commandresult.characteristics["@@serial_number"]);
+                    self.systemHealth(status.commandresult.characteristics["@@system_health"]);
+                    self.databaseHealth(status.commandresult.characteristics["@@database_health"]);
+                    self.hostFirmware(status.commandresult.characteristics["@@cs_firmware_version"]);
+                    self.commFirmware(status.commandresult.characteristics["@@host_firmware_version"]);
+                    self.gpsInstalled(parseInt(status.commandresult.gps_status["@@installed"]) !== 0);
+                    self.gpsSatellites(status.commandresult.gps_status["@@gps_satellites"]);
 
-                //if (refreshValidationErrors)
-                //    self.refreshValidationErrors();
+                    var observableModules = [];
 
-                return observableDevice;
+                    status.commandresult.inputs.list.item.forEach(function (module) {
+                        const observableModule = ko.mapping.fromJS(module);
+                        observableModules.push(observableModule);
+                    });
+
+                    self.modules(observableModules);
+
+                    var observableAnalyzers = [];
+
+                    status.commandresult.analyzers.list.item.forEach(function (analyzer) {
+                        const observerableAnalyzer = ko.mapping.fromJS(analyzer);
+                        observableAnalyzers.push(observerableAnalyzer);
+                    });
+
+                    self.analyzers(observableAnalyzers);
+
+                    return dataHub.getInstanceConfig(deviceID).then(function (configResult) {
+                        const config = JSON.parse(configResult);
+
+                        self.versionInfo(config.commandresult.characteristics.psz_version_string["@@value"]);
+                        self.ipAddress(config.commandresult.communications.tcp_ip["@@ip_address"]);
+                        self.siteName(config.commandresult.characteristics.psz_sitename["@@value"]);
+
+                        // Make sure table is refreshed
+                        if (ko.options.deferUpdates)
+                            ko.tasks.runEarly();
+
+                        self.refreshValidationErrors();
+                        self.isDirty(false);
+
+                        $("[id=moduleRow]").css("visibility", "visible");
+                        $("[id=analyzerRow]").css("visibility", "visible");
+                    });
+                })
+                .fail(function (error) {
+                    showErrorMessage(error);
+                    $("#noDeviceDataMessage").show();
+                });
+            }
+
+            self.refreshValidationErrors = function() {
+                // Make sure any initial validation error messages are visible
+                self.errors.showAllMessages();
             }
 
             self.validationErrors = ko.pureComputed(function() {
@@ -282,23 +428,40 @@
             }).extend({ notify: "always" });
         }
 
-        // Load existing device data
-        function loadDeviceConnection(id) {
-            if (!hubIsConnected)
-                return;
 
-            dataHub.queryDeviceByID(id).done(function (device) {
-                $("#editDeviceName").html("Editing&nbsp;" + device.Acronym + "&nbsp;Configuration");
-            });
+        function showLoadingMessage() {
+            $("#responsiveTableDiv").show();
+            $("#loadingDataLabel").show();
+        }
 
-            dataHub.getInstanceStatus(id).done(function (status) {
-                console.log(status);
-            });
+        function hideLoadingMessage() {
+            $("#loadingDataLabel").hide();
+            $("#bulkSelectionButtons").show();
+        }
+
+        function loadAnalyzerConfig(record) {
+            const configID = parseInt(record["@@id"]());
+
+            showLoadingMessage();
+
+            viewModel.loadAnalyzerConfig(configID)
+                .done(function () {
+                    hideLoadingMessage();
+
+                    // TODO: Do not auto-expand for tabbed edit
+                    $("#analyzerConfiguration").collapse("show");
+
+                    setTimeout(function () {
+                        $("#view-spacer")[0].scrollIntoView();
+                    }, 500);
+                })
+                .fail(hideLoadingMessage);
         }
 
         // Page initialization function
         $(function() {
             $("#bodyContainer").addClass("fill-height");
+            $("#pageHeader").css("margin-bottom", "-20px");
 
             // Enable knockout validation
             ko.validation.init({
@@ -320,14 +483,6 @@
             // Create the primary view model
             viewModel = new DeviceViewModel();
 
-            //// Apply URL validation to baseURL field
-            //viewModel.baseURL.extend({
-            //    pattern: {
-            //        message: "Invalid URL.",
-            //        params: "^(?:(?:[a-zA-Z][a-zA-Z0-9.+-]*:\\/\\/)?[a-zA-Z0-9][a-zA-Z0-9.-]*(?::[0-9]+)?(?:\\/[^ \"]*)?)$"
-            //    }
-            //});
-
             // Initialize primary view model
             ko.applyBindings(viewModel, document.getElementsByTagName("body")[0]);
 
@@ -340,15 +495,26 @@
             $(window).on("hubConnected", function() {
                 viewModel.dataHubIsConnected(true);
 
-                if (deviceID > 0) {
-                    loadDeviceConnection(deviceID);
-                    deviceID = 0;
-                }
+                if (deviceID <= 0)
+                    return;
+                
+                showLoadingMessage();
+
+                dataHub.queryDeviceByID(deviceID).done(function (device) {
+                    $("#editDeviceName").html("Editing&nbsp;" + device.Acronym + "&nbsp;Configuration");
+                });
+
+                viewModel.queryModules()
+                    .done(hideLoadingMessage)
+                    .fail(hideLoadingMessage);
             });
 
             $(window).on("hubDisconnected", function() {
                 viewModel.dataHubIsConnected(false);
             });
+
+            if (deviceID === 0)
+                $("#noDeviceDataMessage").show();
         });
     </script>
 }
