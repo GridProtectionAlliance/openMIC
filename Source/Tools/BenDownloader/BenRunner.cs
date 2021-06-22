@@ -30,9 +30,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using GSF;
 using GSF.Collections;
 using GSF.Configuration;
+using static openMIC.SharedAssets.LogFunctions;
 
 namespace BenDownloader
 {
@@ -98,7 +98,8 @@ namespace BenDownloader
                     return;
                 }
 
-                Program.Log($"File list retrieved. Proceeding to download {myFiles.Count} records.");
+                LogConnectionSuccess($"Connection succeeded, downloading {myFiles.Count:N0} records.");
+
                 string workingDirectory = Path.Combine(m_tempDirectoryPath, "benfiles.req");
 
                 Directory.CreateDirectory(workingDirectory);
@@ -119,8 +120,10 @@ namespace BenDownloader
                 ExecBenCommand(workingDirectory);
                 UpdateTimestampsAndMoveFiles(workingDirectory);
             }
-            catch
+            catch (Exception ex)
             {
+                LogConnectionFailure(ex.Message);
+
                 if (m_saveRequestsOnError)
                 {
                     try
@@ -155,9 +158,9 @@ namespace BenDownloader
                         if (File.Exists(log2FilePath))
                             File.Copy(log2FilePath, Path.Combine("BenDownloader.logs", m_siteName, now, "benfiles.req", BenLogFileName), true);
                     }
-                    catch (Exception ex)
+                    catch (Exception ex2)
                     {
-                        Program.Log($"Failed to copy requests to BenDownloader.logs: {ex}", true);
+                        Program.Log($"Failed to copy requests to BenDownloader.logs: {ex2.Message}", true);
                     }
                 }
 
@@ -235,63 +238,67 @@ namespace BenDownloader
             string requestFileName = Path.Combine(workingDirectory, BenReqFileName);
 
             StringBuilder iniFileBuilder = new StringBuilder()
-                .AppendLine($"[Signature]")
-                .AppendLine($"Program=BenLink")
-                .AppendLine($"FileType=Request")
-                .AppendLine($"FileVersion=1")
+                .AppendLine("[Signature]")
+                .AppendLine("Program=BenLink")
+                .AppendLine("FileType=Request")
+                .AppendLine("FileVersion=1")
                 .AppendLine()
-                .AppendLine($"[General]")
-                .AppendLine($"NbRequest=1")
+                .AppendLine("[General]")
+                .AppendLine("NbRequest=1")
                 .AppendLine()
-                .AppendLine($"[Device]")
-                .AppendLine($"DeviceType=5")
+                .AppendLine("[Device]")
+                .AppendLine("DeviceType=5")
                 .AppendLine($"DeviceSN={m_serialNumber}")
-                .AppendLine($"NominalFrequency=60")
+                .AppendLine("NominalFrequency=60")
                 .AppendLine($"DataDirectory={workingDirectory}")
                 .AppendLine()
-                .AppendLine($"[ConnectionParam]")
-                .AppendLine($"AccessType=0")
-                .AppendLine($"UserName=0")
-                .AppendLine($"CommAddress=1")
+                .AppendLine("[ConnectionParam]")
+                .AppendLine("AccessType=0")
+                .AppendLine("UserName=0")
+                .AppendLine("CommAddress=1")
                 .AppendLine($"IPAddress={m_ipAddress}")
-                .AppendLine($"HangupTimeout=0")
+                .AppendLine("HangupTimeout=0")
                 .AppendLine()
-                .AppendLine($"[Request1]")
-                .AppendLine($"RequestType=1")
-                .AppendLine($"Origin=1")
-                .AppendLine($"SubBens=1")
+                .AppendLine("[Request1]")
+                .AppendLine("RequestType=1")
+                .AppendLine("Origin=1")
+                .AppendLine("SubBens=1")
                 .AppendLine($"DataPath={workingDirectory}");
 
             FileInfo file = new FileInfo(requestFileName);
+
+            if (file.Directory is null)
+                throw new NullReferenceException($"Failed to get directory info for {requestFileName}");
+
             file.Directory.Create();
             File.WriteAllText(file.FullName, iniFileBuilder.ToString(), Encoding.ASCII);
         }
 
         private void BuildBenLinkDLINI(string workingDirectory, List<BenRecord> fileList)
         {
-            string requestfilename = Path.Combine(workingDirectory, BenReqFileName);
+            string requestFileName = Path.Combine(workingDirectory, BenReqFileName);
 
             StringBuilder iniFileBuilder = new StringBuilder()
-                .AppendLine($"[Signature]")
-                .AppendLine($"Program=BenLink")
-                .AppendLine($"FileType=Request")
-                .AppendLine($"FileVersion=1")
+                .AppendLine("[Signature]")
+                .AppendLine("Program=BenLink")
+                .AppendLine("FileType=Request")
+                .AppendLine("FileVersion=1")
                 .AppendLine()
-                .AppendLine($"[General]")
+                .AppendLine("[General]")
                 .AppendLine($"NbRequest={fileList.Count}")
                 .AppendLine()
-                .AppendLine($"[Device]")
-                .AppendLine($"DeviceType=5")
+                .AppendLine("[Device]")
+                .AppendLine("DeviceType=5")
                 .AppendLine($"DeviceSN={m_serialNumber}")
-                .AppendLine($"NominalFrequency=60")
+                .AppendLine("NominalFrequency=60")
                 .AppendLine($"DataDirectory={workingDirectory}")
                 .AppendLine()
-                .AppendLine($"CommAddress=1")
-                .AppendLine($"[ConnectionParam]")
-                .AppendLine($"AccessType=0")
-                .AppendLine($"UserName=0")
+                .AppendLine("CommAddress=1")
+                .AppendLine("[ConnectionParam]")
+                .AppendLine("AccessType=0")
+                .AppendLine("UserName=0")
                 .AppendLine($"IPAddress={m_ipAddress}")
-                .AppendLine($"HangupTimeout=0");
+                .AppendLine("HangupTimeout=0");
 
             int i = 1;
 
@@ -300,16 +307,20 @@ namespace BenDownloader
                 iniFileBuilder
                     .AppendLine()
                     .AppendLine($"[Request{i++}]")
-                    .AppendLine($"RequestType=2")
+                    .AppendLine("RequestType=2")
                     .AppendLine($"RecordNum={currec.Id}")
-                    .AppendLine($"SubBenNum=0")
-                    .AppendLine($"Origin=1")
-                    .AppendLine($"OptionFlags=2")
+                    .AppendLine("SubBenNum=0")
+                    .AppendLine("Origin=1")
+                    .AppendLine("OptionFlags=2")
                     .AppendLine($"DataPath={workingDirectory}")
                     .AppendLine($"FileName={currec.Name}");
             }
 
-            FileInfo file = new FileInfo(requestfilename);
+            FileInfo file = new FileInfo(requestFileName);
+
+            if (file.Directory is null)
+                throw new NullReferenceException($"Failed to get directory info for {requestFileName}");
+
             file.Directory.Create();
             File.WriteAllText(file.FullName, iniFileBuilder.ToString(), Encoding.ASCII);
         }
@@ -322,7 +333,7 @@ namespace BenDownloader
             string shortPath = GetShortPath(workingDirectory);
             string benLogFilePath = Path.Combine(shortPath, BenLogFileName);
             string cmdLine = string.Format(benLinCmdLine, shortPath, benLogFilePath);
-            string[] cmdLineSplit = cmdLine.Split(new char[] { ' ' }, 2);
+            string[] cmdLineSplit = cmdLine.Split(new[] { ' ' }, 2);
 
             ProcessStartInfo psi = new ProcessStartInfo(cmdLineSplit[0])
             {
@@ -341,6 +352,9 @@ namespace BenDownloader
 
                 using (Process m_process = Process.Start(psi))
                 {
+                    if (m_process is null)
+                        throw new NullReferenceException($"Failed to start process {psi.FileName}");
+
                     m_process.OutputDataReceived += (sender, args) => { Program.Log(args.Data); };
                     m_process.ErrorDataReceived += (sender, args) => { Program.Log(args.Data, true); };
                     m_process.WaitForExit();
@@ -377,13 +391,13 @@ namespace BenDownloader
                         file.Delete();
                         fileCount++;
 
-                        Program.Log($"openMIC :: Log Downloaded File :: {newFilePath}");
+                        LogDownloadedFile(newFilePath);
                     }
                 }
             }
 
             if (fileCount > 0)
-                Program.Log($"Successfully downloaded {fileCount} files.");
+                Program.Log($"Successfully downloaded {fileCount:N0} files.");
             else
                 Program.Log("Failed to download any files.", true);
         }
@@ -405,33 +419,6 @@ namespace BenDownloader
             return new BenRecord(recordID, lastWriteTime, 0, fileName);
         }
 
-        private void ExecNotepad()
-        {
-            var psi = new ProcessStartInfo("C:\\Windows\\notepad.exe")
-            {
-                Arguments = "",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            try
-            {
-                s_lock?.WaitOne();
-                using (Process p = Process.Start(psi))
-                {
-                    p.WaitForExit();
-                }
-            }
-            catch(Exception ex)
-            {
-                Program.Log(ex.Message, true);
-            }
-            finally
-            {
-                s_lock?.Release();
-            }
-        }
-
         private string Get232Fn(DateTime myDate, string recordId, string timeStampType = "t")
         {
             DateTime dateUtc = myDate.ToUniversalTime();
@@ -439,20 +426,12 @@ namespace BenDownloader
             return myDate.ToString("yyMMdd,HHmmssfff") + "," + tzoffset + timeStampType + "," + m_siteName.Replace(" ", "_") + "," + m_serialNumber + ",TVA," + recordId;
         }
 
-        private string GetShortPath(string longPathName)
-        {
-            StringBuilder shortNameBuffer = new StringBuilder(256);
-            int bufferSize = GetShortPathName(longPathName, shortNameBuffer, shortNameBuffer.Capacity);
-            if (bufferSize == 0) throw new System.ComponentModel.Win32Exception();
-            return shortNameBuffer.ToString();
-        }
-
         #endregion
 
         #region [ Static ]
 
         // Static Fields
-        private static Semaphore s_lock;
+        private static readonly Semaphore s_lock;
 
         // Static Constructor
         static BenRunner()
@@ -466,6 +445,14 @@ namespace BenDownloader
         // Static Methods
         [DllImport("kernel32", EntryPoint = "GetShortPathName", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int GetShortPathName(string longPath, StringBuilder shortPath, int bufSize);
+
+        private static string GetShortPath(string longPathName)
+        {
+            StringBuilder shortNameBuffer = new StringBuilder(256);
+            int bufferSize = GetShortPathName(longPathName, shortNameBuffer, shortNameBuffer.Capacity);
+            if (bufferSize == 0) throw new System.ComponentModel.Win32Exception();
+            return shortNameBuffer.ToString();
+        }
 
         #endregion
     }
