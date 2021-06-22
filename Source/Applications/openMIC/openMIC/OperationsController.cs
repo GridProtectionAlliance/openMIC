@@ -29,7 +29,6 @@ using System.Web.Http;
 using GSF.Communication;
 using GSF.Data;
 using GSF.Data.Model;
-using GSF.Diagnostics;
 using ModbusAdapters.Model;
 using openMIC.Model;
 
