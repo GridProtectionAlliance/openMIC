@@ -53,6 +53,7 @@ using GSF.Units;
 using DotRas;
 using ModbusAdapters.Model;
 using openMIC.Model;
+using static openMIC.SharedAssets.LogFunctions;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedParameter.Local
@@ -1885,18 +1886,48 @@ namespace openMIC
 
         private bool HandleExternalOperationMessage(string message)
         {
-            const string LogDownloadedFilePattern = "openMIC :: Log Downloaded File :: (?<FilePath>.+)";
-            Match match = Regex.Match(message, LogDownloadedFilePattern);
+            Match downloadedFileMatch = Regex.Match(message, LogDownloadedFilePattern);
+            string patternMessage;
 
-            if (match.Success)
+            if (downloadedFileMatch.Success)
             {
-                m_lastDownloadedFileID = LogDownloadedFile(match.Groups["FilePath"].Value);
+                patternMessage = downloadedFileMatch.Groups["FilePath"].Value;
+                m_lastDownloadedFileID = LogDownloadedFile(patternMessage);
+
                 FilesDownloaded++;
                 TotalFilesDownloaded++;
+                
                 OnProgressUpdated(this, new ProgressUpdate { Summary = $"{FilesDownloaded:N0} Files Downloaded ({TotalFilesDownloaded:N0} Total)" });
             }
 
-            return match.Success;
+            Match connectionSuccessMatch = Regex.Match(message, LogConnectionSuccessPattern);
+
+            if (connectionSuccessMatch.Success)
+            {
+                patternMessage = downloadedFileMatch.Groups["Message"].Value;
+                LogOutcome(ProgressState.Processing);
+
+                AttemptedConnections++;
+                SuccessfulConnections++;
+
+                OnProgressUpdated(this, new ProgressUpdate { Summary = patternMessage });
+            }
+
+            Match connectionFailureMatch = Regex.Match(message, LogConnectionFailurePattern);
+
+            if (connectionFailureMatch.Success)
+            {
+                patternMessage = downloadedFileMatch.Groups["Message"].Value;
+                LogFailure(patternMessage);
+
+                AttemptedConnections++;
+                FailedConnections++;
+
+                OnProgressUpdated(this, new ProgressUpdate { State = ProgressState.Fail, ErrorMessage = patternMessage });
+                m_cancellationToken.Cancel();
+            }
+
+            return false;
         }
 
         #endregion
@@ -2049,6 +2080,9 @@ namespace openMIC
         private static readonly ConcurrentDictionary<string, Tuple<Downloader, ConnectionProfileTask>> s_taskSchedules;
         private static readonly List<ProgressUpdateWrapper> s_queuedProgressUpdates;
         private static ICancellationToken s_progressUpdateCancellationToken;
+        private static readonly string LogDownloadedFilePattern = string.Format(LogDownloadedFileTemplate, "(?<FilePath>.+)");
+        private static readonly string LogConnectionSuccessPattern = string.Format(LogConnectionSuccessTemplate, "(?<Message>.+)");
+        private static readonly string LogConnectionFailurePattern = string.Format(LogConnectionFailureTemplate, "(?<Message>.+)");
 
         // Static Events
 
