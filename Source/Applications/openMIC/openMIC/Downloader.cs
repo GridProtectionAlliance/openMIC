@@ -344,9 +344,24 @@ namespace openMIC
         public long SuccessfulConnections { get; set; }
 
         /// <summary>
+        /// Gets or sets last successful connection time.
+        /// </summary>
+        public DateTime? LastSuccessfulConnectionTime { get; set; }
+
+        /// <summary>
         /// Gets or sets total number of failed connections.
         /// </summary>
         public long FailedConnections { get; set; }
+
+        /// <summary>
+        /// Gets or sets last failed connection time.
+        /// </summary>
+        public DateTime? LastFailedConnectionTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets last failed connection reason.
+        /// </summary>
+        public string LastFailedConnectionReason { get; set; }
 
         /// <summary>
         /// Gets or sets total number of processed files.
@@ -725,6 +740,16 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Resets local statistics.
+        /// </summary>
+        public void ResetStatistics()
+        {
+            AttemptedConnections = SuccessfulConnections = FailedConnections = 0L;
+            LastSuccessfulConnectionTime = LastFailedConnectionTime = null;
+            LastFailedConnectionReason = null;
+        }
+
+        /// <summary>
         /// Gets all defined connection profile tasks.
         /// </summary>
         public IReadOnlyCollection<ConnectionProfileTask> GetAllTasks => Array.AsReadOnly(AllTasks);
@@ -961,11 +986,16 @@ namespace openMIC
                             ftpClient = ConnectFTPClient();
 
                             SuccessfulConnections++;
+                            LastSuccessfulConnectionTime = DateTime.UtcNow;
+
                             OnStatusMessage(MessageLevel.Info, $"Connected to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"");
                         }
                         catch (Exception ex)
                         {
                             FailedConnections++;
+                            LastFailedConnectionTime = DateTime.UtcNow;
+                            LastFailedConnectionReason = ex.Message;
+
                             OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                             OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
                         }
@@ -1077,11 +1107,16 @@ namespace openMIC
                             ftpClient = ConnectFTPClient();
 
                             SuccessfulConnections++;
+                            LastSuccessfulConnectionTime = DateTime.UtcNow;
+
                             OnStatusMessage(MessageLevel.Info, $"Connected to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"");
                         }
                         catch (Exception ex)
                         {
                             FailedConnections++;
+                            LastFailedConnectionTime = DateTime.UtcNow;
+                            LastFailedConnectionReason = ex.Message;
+
                             OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                             OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
                         }
@@ -1909,6 +1944,7 @@ namespace openMIC
 
                 AttemptedConnections++;
                 SuccessfulConnections++;
+                LastSuccessfulConnectionTime = DateTime.UtcNow;
 
                 OnProgressUpdated(this, new ProgressUpdate { Summary = patternMessage });
             }
@@ -1922,6 +1958,8 @@ namespace openMIC
 
                 AttemptedConnections++;
                 FailedConnections++;
+                LastFailedConnectionTime = DateTime.UtcNow;
+                LastFailedConnectionReason = patternMessage;
 
                 OnProgressUpdated(this, new ProgressUpdate { State = ProgressState.Fail, ErrorMessage = patternMessage });
                 m_cancellationToken.Cancel();
