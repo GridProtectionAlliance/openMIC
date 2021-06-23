@@ -18,6 +18,9 @@
   <Component Id="DirectoryBrowser_cshtml">
     <File Id="DirectoryBrowser.cshtml" Name="DirectoryBrowser.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\DirectoryBrowser.cshtml" />
   </Component>
+  <Component Id="DranetzConfig_cshtml">
+    <File Id="DranetzConfig.cshtml" Name="DranetzConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\DranetzConfig.cshtml" />
+  </Component>
   <Component Id="GraphMeasurements_cshtml">
     <File Id="GraphMeasurements.cshtml" Name="GraphMeasurements.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurements.cshtml" />
   </Component>
@@ -132,6 +135,9 @@
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_Components" Directory="IMAGESFOLDER">
+  <Component Id="Images_DranetzConfigEditor_png">
+    <File Id="Images_DranetzConfigEditor.png" Name="DranetzConfigEditor.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\DranetzConfigEditor.png" />
+  </Component>
   <Component Id="Images_iGridConfigEditor_png">
     <File Id="Images_iGridConfigEditor.png" Name="iGridConfigEditor.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\iGridConfigEditor.png" />
   </Component>
