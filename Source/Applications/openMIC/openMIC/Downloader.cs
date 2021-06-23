@@ -1933,6 +1933,7 @@ namespace openMIC
                 TotalFilesDownloaded++;
                 
                 OnProgressUpdated(this, new ProgressUpdate { Summary = $"{FilesDownloaded:N0} Files Downloaded ({TotalFilesDownloaded:N0} Total)" });
+                return true;
             }
 
             Match connectionSuccessMatch = Regex.Match(message, LogConnectionSuccessPattern);
@@ -1947,6 +1948,7 @@ namespace openMIC
                 LastSuccessfulConnectionTime = DateTime.UtcNow;
 
                 OnProgressUpdated(this, new ProgressUpdate { Summary = patternMessage });
+                return true;
             }
 
             Match connectionFailureMatch = Regex.Match(message, LogConnectionFailurePattern);
@@ -1963,6 +1965,7 @@ namespace openMIC
 
                 OnProgressUpdated(this, new ProgressUpdate { State = ProgressState.Fail, ErrorMessage = patternMessage });
                 m_cancellationToken.Cancel();
+                return true;
             }
 
             return false;
