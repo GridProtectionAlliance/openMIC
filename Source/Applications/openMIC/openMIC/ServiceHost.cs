@@ -47,7 +47,6 @@ using System.Reflection;
 using System.Security;
 using System.Security.Principal;
 using System.Threading;
-using System.Threading.Tasks;
 using static System.Net.WebUtility;
 
 namespace openMIC
@@ -112,16 +111,14 @@ namespace openMIC
         }
 
         /// <summary>
-        /// Gets the list of downloaders that were loaded into the input adapter collection.
+        /// Gets the list of <see cref="Downloader"/> adapters that were loaded into the input adapter collection.
         /// </summary>
-        public List<Downloader> Downloaders
+        public Downloader[] Downloaders
         {
             get
             {
                 lock (InputAdapters)
-                {
-                    return InputAdapters.OfType<Downloader>().ToList();
-                }
+                    return InputAdapters.OfType<Downloader>().ToArray();
             }
         }
 
