@@ -233,6 +233,7 @@
     <Compile Include="IOrderedQueryableExtensions.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Model\ConnectionProfileTaskQueue.cs" />
+    <Compile Include="Model\DailyStatistics.cs" />
     <Compile Include="Model\IGridDevice.cs" />
     <Compile Include="Model\DownloadedFile.cs" />
     <Compile Include="Model\Node.cs" />
