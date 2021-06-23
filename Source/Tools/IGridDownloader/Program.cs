@@ -132,10 +132,10 @@ namespace IGridDownloader
 
                         Console.WriteLine($"Downloading {eventList.Count} files...");
 
-                        for (int i = 0; i < eventList.Count; i++)
+                        foreach (Dictionary<string, string> evt in eventList)
                         {
-                            string eventID = eventList[i][EventIDKey];
-                            string startTimeText = eventList[i][StartTimeKey];
+                            string eventID = evt[EventIDKey];
+                            string startTimeText = evt[StartTimeKey];
                             DateTime eventStartTime = getEventStartTime(startTimeText);
                             string localPath = s_getLocalPath(eventStartTime);
                             string localFileName = getLocalFileName(eventID);
@@ -143,7 +143,7 @@ namespace IGridDownloader
                             string tempFilePath = Path.Combine(tempDirectoryPath, localFileName);
                             string address = string.Format(ExportDataURL, s_baseUrl, s_serialNumber, eventID);
 
-                            #pragma warning disable SG0018 // Path traversal
+                        #pragma warning disable SG0018 // Path traversal
                             using (MemoryStream webStream = new MemoryStream(client.GetByteArrayAsync(address).Result))
                             using (ZipFile zipFile = ZipFile.Read(webStream))
                             using (Stream zipEntry = zipFile.Entries.First().OpenReader())
@@ -151,7 +151,6 @@ namespace IGridDownloader
                             {
                                 zipEntry.CopyTo(fileStream);
                             }
-                        
                         #pragma warning restore SG0018 // Path traversal
 
                             if (!Directory.Exists(localPath))
