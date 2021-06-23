@@ -34,6 +34,7 @@ using GSF.IO;
 using GSF.Parsing;
 using Ionic.Zip;
 using openMIC.Model;
+using static openMIC.SharedAssets.LogFunctions;
 
 namespace IGridDownloader
 {
@@ -75,31 +76,37 @@ namespace IGridDownloader
                         const string EventIDKey = "EventId";
                         const string StartTimeKey = "StartTime";
 
-                        Func<string, string> getLocalFileName = eventID => $"Event{eventID}.pqd";
+                        string getLocalFileName(string eventID) => $"Event{eventID}.pqd";
 
-                        Func<string, DateTime> getEventStartTime = text =>
+                        DateTime getEventStartTime(string text)
                         {
-                            DateTime eventStartTime;
-
-                            if (DateTime.TryParse(text, out eventStartTime))
+                            if (DateTime.TryParse(text, out DateTime eventStartTime))
                                 return eventStartTime;
 
                             int index = text.LastIndexOf(' ');
                             string modifiedText = (index >= 0) ? text.Remove(index) : text;
 
-                            if (DateTime.TryParse(modifiedText, out eventStartTime))
-                                return eventStartTime;
-
-                            return DateTime.Now;
-                        };
+                            return DateTime.TryParse(modifiedText, out eventStartTime) ? eventStartTime : DateTime.Now;
+                        }
 
                         Console.WriteLine("Downloading list of events from I-Grid web service...");
 
-                        string eventInfo = client.GetStringAsync(string.Format(ExportEventListURL, s_baseUrl, s_serialNumber, startTime, endTime)).Result;
+                        string eventInfo;
+
+                        try
+                        {
+                            eventInfo = client.GetStringAsync(string.Format(ExportEventListURL, s_baseUrl, s_serialNumber, startTime, endTime)).Result;
+                            LogConnectionSuccess("Connection succeeded, downloading event files.");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogConnectionFailure(ex.Message);
+                            throw;
+                        }
 
                         string[][] table = eventInfo.Split(new [] { "\r\n", "\n" }, StringSplitOptions.None)
-                            .Select(line => line.Split('\t'))
-                            .ToArray();
+                                                    .Select(line => line.Split('\t'))
+                                                    .ToArray();
 
                         List<Dictionary<string, string>> eventList = table
                             .Select(line => new Dictionary<string, string>())
@@ -144,13 +151,15 @@ namespace IGridDownloader
                             {
                                 zipEntry.CopyTo(fileStream);
                             }
-                            #pragma warning restore SG0018 // Path traversal
+                        
+                        #pragma warning restore SG0018 // Path traversal
 
                             if (!Directory.Exists(localPath))
                                 Directory.CreateDirectory(localPath);
 
                             File.Move(tempFilePath, localFilePath);
-                            Console.WriteLine($"openMIC :: Log Downloaded File :: {Path.Combine(localPath, localFileName)}");
+                            
+                            LogDownloadedFile(Path.Combine(localPath, localFileName));
                             Console.WriteLine($"Downloaded \"{localFileName}\", {++processedFiles} out of {eventList.Count} files complete...");
                         }
 
@@ -248,9 +257,7 @@ namespace IGridDownloader
 
         private static DateTime ParseTimeTag(string timeTag)
         {
-            DateTime dateTime;
-
-            if (DateTime.TryParse(timeTag, out dateTime))
+            if (DateTime.TryParse(timeTag, out DateTime dateTime))
                 return dateTime;
 
             string strippedTimeTag = new string(timeTag.Where(c => !char.IsWhiteSpace(c)).ToArray());
@@ -262,9 +269,8 @@ namespace IGridDownloader
                 return DateTime.Today;
 
             char unit = strippedTimeTag.Last();
-            int offset;
 
-            if (!int.TryParse(strippedTimeTag.Substring(1, strippedTimeTag.Length - 2), out offset))
+            if (!int.TryParse(strippedTimeTag.Substring(1, strippedTimeTag.Length - 2), out int offset))
                 throw new FormatException($"\"{timeTag}\" is not recognized as a valid time tag.");
 
             switch (unit)
