@@ -332,6 +332,7 @@
     <Content Include="wwwroot\Content\fonts\jsglyph.woff" />
     <Content Include="wwwroot\CronHelpDialog.cshtml" />
     <Content Include="wwwroot\DranetzConfig.cshtml" />
+    <Content Include="wwwroot\ResetSchedules.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />
