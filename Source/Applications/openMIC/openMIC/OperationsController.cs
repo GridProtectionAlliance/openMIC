@@ -229,27 +229,35 @@ namespace openMIC
                     targetUri = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
                 }
 
-                string actionURI = $"{targetUri}/api/Operations/GetDailyStatistics?meter={UrlEncode(meter)}";
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, actionURI);
-                HttpResponseMessage response = await s_http.SendAsync(request);
-
-                if (response.StatusCode == HttpStatusCode.OK)
+                try
                 {
-                    string content = await response.Content.ReadAsStringAsync();
-                    DailyStatistics remoteStats = JsonConvert.DeserializeObject<DailyStatistics>(content);
+                    string actionURI = $"{targetUri}/api/Operations/GetDailyStatistics?meter={UrlEncode(meter)}";
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, actionURI);
+                    HttpResponseMessage response = await s_http.SendAsync(request);
 
-                    // Cumulate remote stats
-                    if (remoteStats.LastSuccessfulConnection > dailyStats.LastSuccessfulConnection)
-                        dailyStats.LastSuccessfulConnection = remoteStats.LastSuccessfulConnection;
-
-                    if (remoteStats.LastUnsuccessfulConnection > dailyStats.LastUnsuccessfulConnection)
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        dailyStats.LastUnsuccessfulConnection = remoteStats.LastUnsuccessfulConnection;
-                        dailyStats.LastUnsuccessfulConnectionExplanation = remoteStats.LastUnsuccessfulConnectionExplanation;
+                        string content = await response.Content.ReadAsStringAsync();
+                        DailyStatistics remoteStats = JsonConvert.DeserializeObject<DailyStatistics>(content);
+
+                        // Cumulate remote stats
+                        if (remoteStats.LastSuccessfulConnection > dailyStats.LastSuccessfulConnection)
+                            dailyStats.LastSuccessfulConnection = remoteStats.LastSuccessfulConnection;
+
+                        if (remoteStats.LastUnsuccessfulConnection > dailyStats.LastUnsuccessfulConnection)
+                        {
+                            dailyStats.LastUnsuccessfulConnection = remoteStats.LastUnsuccessfulConnection;
+                            dailyStats.LastUnsuccessfulConnectionExplanation = remoteStats.LastUnsuccessfulConnectionExplanation;
+                        }
+
+                        dailyStats.TotalSuccessfulConnections += remoteStats.TotalSuccessfulConnections;
+                        dailyStats.TotalUnsuccessfulConnections += remoteStats.TotalUnsuccessfulConnections;
                     }
 
-                    dailyStats.TotalSuccessfulConnections += remoteStats.TotalSuccessfulConnections;
-                    dailyStats.TotalUnsuccessfulConnections += remoteStats.TotalUnsuccessfulConnections;
+                }
+                catch (Exception ex)
+                {
+                    Program.Host.LogException(new InvalidOperationException($"Failed to query daily statistics from \"{targetUri}\": {ex.Message}", ex));
                 }
             }
 
