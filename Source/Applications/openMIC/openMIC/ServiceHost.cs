@@ -47,6 +47,7 @@ using System.Reflection;
 using System.Security;
 using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 using static System.Net.WebUtility;
 
 namespace openMIC
@@ -549,12 +550,17 @@ namespace openMIC
         /// <summary>
         /// Sends a command request to the service.
         /// </summary>
-        /// <param name="userInput">Request string.</param>
+        /// <param name="commandInput">Request string.</param>
         /// <param name="clientID">Client ID of sender.</param>
         /// <param name="principal">The principal used for role-based security.</param>
-        public void SendRequest(string userInput, Guid clientID = default(Guid), IPrincipal principal = null)
+        public void SendRequest(string commandInput, Guid clientID = default(Guid), IPrincipal principal = null)
         {
-            ClientRequest request = ClientRequest.Parse(userInput);
+            if (string.IsNullOrWhiteSpace(commandInput))
+                return;
+
+            commandInput = commandInput.Trim();
+
+            ClientRequest request = ClientRequest.Parse(commandInput);
 
             if (request == null)
                 return;
@@ -573,12 +579,68 @@ namespace openMIC
                 return;
             }
 
-            ClientInfo clientInfo = new ClientInfo();
-            clientInfo.ClientID = clientID;
+            ClientInfo clientInfo = new ClientInfo { ClientID = clientID };
             clientInfo.SetClientUser(principal ?? Thread.CurrentPrincipal);
 
             ClientRequestInfo requestInfo = new ClientRequestInfo(clientInfo, request);
             requestHandler.HandlerMethod(requestInfo);
+
+            GlobalSettings settings = Program.Host.Model.Global;
+
+            // Request task considered complete for remote or standalone instances
+            if (settings.UseRemoteScheduler || settings.PoolMachines is null || settings.PoolMachines.Length == 0)
+                return;
+
+            // Calls to service for device initializations and configuration reloads should be propagated to pool machines
+            if (CommandAllowedForRelay(commandInput))
+            {
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Return cumulated stats for all pool machines from primary scheduler
+                        foreach (string targetMachine in settings.PoolMachines)
+                        {
+                            if (targetMachine.Equals("localhost"))
+                                continue;
+
+                            string targetUri;
+
+                            if (targetMachine.Contains("://"))
+                            {
+                                // Pooled target machine specification includes scheme and possible port number
+                                targetUri = targetMachine;
+                            }
+                            else
+                            {
+                                // Pooled target machine specification is only target machine name, assume same
+                                // scheme and port number as local instance
+                                Uri webHostUri = settings.WebHostUri;
+                                targetUri = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
+                            }
+
+                            try
+                            {
+                                string actionURI = $"{targetUri}/api/Operations/RelayCommand?command={UrlEncode(commandInput)}";
+                                
+                                HttpResponseMessage response = await s_http.SendAsync(new HttpRequestMessage(HttpMethod.Get, actionURI));
+
+                                LogStatusMessage(response.StatusCode == HttpStatusCode.OK ?
+                                    $"Successfully relayed \"{request.Command}\" command to \"{targetMachine}\"." :
+                                    $"Failed to relay \"{request.Command}\" command to \"{targetMachine}\": {response.ReasonPhrase} [{response.StatusCode}:{(int)response.StatusCode}].");
+                            }
+                            catch (Exception ex)
+                            {
+                                LogException(new InvalidOperationException($"Failed to relay command \"{request.Command}\" to \"{targetMachine}\": {ex.Message}", ex));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(new InvalidOperationException($"Failed to relay service command \"{commandInput}\": {ex.Message}", ex));
+                    }
+                });
+            }
         }
 
         public void DisconnectClient(Guid clientID)
@@ -604,6 +666,15 @@ namespace openMIC
 
         // Static Fields
         private static readonly HttpClient s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
+
+        internal static bool CommandAllowedForRelay(string commandInput) => 
+            // Only allow single line commands
+            commandInput.Split(new[] { Environment.NewLine, "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries).Length == 1 &&
+            (
+                // Only allow Initialize and ReloadConfig commands for pool machine relay
+                commandInput.StartsWith("init", StringComparison.OrdinalIgnoreCase) || 
+                commandInput.StartsWith("reloadconfig", StringComparison.OrdinalIgnoreCase)
+            );
 
         #endregion
     }

@@ -46,6 +46,7 @@
     bool userIsEditor = UserIsEditor();
 }
 @section StyleSheets {
+    <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
     <style>
         html, body {
             height: 100%;
@@ -269,6 +270,109 @@
         <div id="loadingDataLabel" style="display: none">
             Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
         </div>
+        <div id="tabs">
+            <ul>
+                <li><a href="#tab1">Input Configuration</a></li>
+                <li><a href="#tab2">RMS Variations</a></li>
+                <li><a href="#tab3">Transients</a></li>
+                <li><a href="#tab4">Waveform Capture</a></li>
+                <li><a href="#tab5">Power</a></li>
+                <li><a href="#tab6">Energy and Demand</a></li>
+                <li><a href="#tab7">Harmonics</a></li>
+                <li><a href="#tab8">Flicker</a></li>
+                <li><a href="#tab9">Cross-Triggering</a></li>
+            </ul>
+            <div id="tab1" class="ui-tabs-active">
+                <table width="100%">
+                    <tr>
+                        <th class="header"><div class="header">Input Configuration</div></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="tab2" style="display: none">
+                <table width="100%">
+                    <tr>
+                        <th class="header"><div class="header">RMS Variations</div></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="tab3" style="display: none">
+                <table width="100%">
+                    <tr>
+                        <th class="header"><div class="header">Transients</div></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="tab4" style="display: none">
+                <table width="100%">
+                    <tr>
+                        <th class="header"><div class="header">Waveform Capture</div></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="tab5" style="display: none">
+                <table width="100%">
+                    <tr>
+                        <th class="header"><div class="header">Power</div></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="tab6" style="display: none">
+                <table width="100%">
+                    <tr>
+                        <th class="header"><div class="header">Energy and Demand</div></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="tab7" style="display: none">
+                <table width="100%">
+                    <tr>
+                        <th class="header"><div class="header">Harmonics</div></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="tab8" style="display: none">
+                <table width="100%">
+                    <tr>
+                        <th class="header"><div class="header">Flicker</div></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="tab9" style="display: none">
+                <table width="100%">
+                    <tr>
+                        <th class="header"><div class="header">Cross-Triggering</div></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
     </div>
     <h3 id="noDeviceDataMessage" style="display: none; color: red">
         No device data could be loaded for device with <code>ID=@deviceID</code>
@@ -428,6 +532,14 @@
             }).extend({ notify: "always" });
         }
 
+        function getActiveTab() {
+            return $("#tabs").tabs("option", "active");
+        }
+
+        function setActiveTab(tabIndex) {
+            $("#tabs").tabs({ active: tabIndex });
+            $("a[href='#tab" + (tabIndex + 1) + "']").parent().focus();
+        }
 
         function showLoadingMessage() {
             $("#responsiveTableDiv").show();
@@ -462,6 +574,20 @@
         $(function() {
             $("#bodyContainer").addClass("fill-height");
             $("#pageHeader").css("margin-bottom", "-20px");
+
+            $("#tabs").tabs({
+                active: 0,
+                activate: function(event, ui) {
+                    switch (ui.newPanel.attr("id")) {
+                        case "tab1":
+                            break;
+                        case "tab2":
+                            break;
+                        case "tab3":
+                            break;
+                    }
+                }
+            });
 
             // Enable knockout validation
             ko.validation.init({
