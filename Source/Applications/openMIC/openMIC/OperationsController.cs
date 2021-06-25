@@ -183,6 +183,25 @@ namespace openMIC
         }
 
         /// <summary>
+        /// Relays allowed service commands for pooled machine synchronizations.
+        /// </summary>
+        /// <param name="commandInput"></param>
+        /// <returns></returns>
+        public HttpResponseMessage RelayCommand(string commandInput)
+        {
+            if (string.IsNullOrWhiteSpace(commandInput))
+                return new HttpResponseMessage(HttpStatusCode.BadRequest);
+
+            commandInput = commandInput.Trim();
+
+            if (!ServiceHost.CommandAllowedForRelay(commandInput))
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+
+            Program.Host.SendRequest(commandInput);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+
+        /// <summary>
         /// Gets list of configured meter names.
         /// </summary>
         /// <returns>List of configured meter names.</returns>
