@@ -314,6 +314,7 @@
     <Content Include="wwwroot\Help.cshtml" />
     <Content Include="wwwroot\ModbusConfig.cshtml" />
     <Content Include="wwwroot\Groups.cshtml" />
+    <Content Include="wwwroot\SectionMaps\InputConfiguration.xml" />
     <Content Include="wwwroot\Users.cshtml" />
     <Content Include="wwwroot\SelectTheme.cshtml" />
     <Content Include="wwwroot\Status.cshtml" />
