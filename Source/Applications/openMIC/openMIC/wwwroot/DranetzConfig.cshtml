@@ -28,6 +28,8 @@
 @using GSF.Web.Model
 @using GSF.Web.Shared
 @using openMIC.Model
+@* ReSharper disable Html.PathError *@
+@* ReSharper disable UnknownCssClass *@
 @inherits ExtendedTemplateBase<AppModel>
 @{
     Layout = "Layout.cshtml";
@@ -43,7 +45,7 @@
         deviceID = 0;
     }
 
-    bool userIsEditor = UserIsEditor();
+    //bool userIsEditor = UserIsEditor();
 }
 @section StyleSheets {
     <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
