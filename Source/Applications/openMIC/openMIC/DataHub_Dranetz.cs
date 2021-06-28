@@ -23,7 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
@@ -122,7 +121,6 @@ namespace openMIC
 
                 return new DranetzCredential(deviceID, rootUri, userName, password);
             }
-
         }
 
         private void ClearCredential(int deviceID)
@@ -150,6 +148,9 @@ namespace openMIC
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(cmdParam))
+                    throw new ArgumentNullException(nameof(cmdParam));
+
                 DranetzCredential credential = GetCredential(deviceID);
 
                 using (HttpClient client = credential.GetNewClient())
@@ -175,11 +176,17 @@ namespace openMIC
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(cmdParam))
+                    throw new ArgumentNullException(nameof(cmdParam));
+
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentNullException(nameof(value));
+
                 DranetzCredential credential = GetCredential(deviceID);
+                XmlDocument commandResult = JsonConvert.DeserializeXmlNode(value) ?? throw new ArgumentException("Failed to deserialize XML Node", nameof(value));
 
                 using (HttpClient client = credential.GetNewClient())
                 {
-                    XmlDocument commandResult = JsonConvert.DeserializeXmlNode(value);
                     StringContent content = new StringContent(commandResult.ToString(), Encoding.UTF8, "text/xml");
                     HttpResponseMessage result = await client.PostAsync(credential.GetRequestUri(cmdParam), content);
 
