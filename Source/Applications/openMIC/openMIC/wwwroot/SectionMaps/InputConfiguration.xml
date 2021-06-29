@@ -87,7 +87,8 @@
 	<PROPDEF NAME="nominalV" ALIAS="Nominal voltage" TYPE="2" RO="0" MAP=".nominal_volts['@value']"/>
 	<PROPDEF NAME="nomnalI" ALIAS="Nominal current" TYPE="2" RO="0" MAP=".nominal_amps['@value']"/>
 	<PROPDEF NAME="nominalF" ALIAS="Nominal frequency" TYPE="2" RO="0" MAP=".nominal_freq['@value']"/>
-	<PROPDEF NAME="normalize" ALIAS="Normalize thresholds" TYPE="0" RO="0"/>
+	<!-- TODO: Will need to properly determine which thresholds this normalizes for proper application -->
+	<PROPDEF NAME="normalize" ALIAS="Normalize thresholds" TYPE="0" RO="0" ENABLED="0"/>
 	<PROPDEF NAME="Frequency Tracking" TYPE="3"/>
 	<PROPDEF NAME="freqTrackMode" ALIAS="Tracking mode" TYPE="8" DEFAULT="0" RO="0" MAP=".pll_sync_style['@value']">
 		<PARAM TYPE="1">
