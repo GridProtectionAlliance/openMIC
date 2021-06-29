@@ -402,6 +402,7 @@
     <script>
         "use strict";
 
+        const unmapped = [];
         var viewModel = null;
         var deviceID = @deviceID;
 
@@ -743,7 +744,7 @@
             const name = propDef["@@NAME"];
             const alias = propDef["@@ALIAS"];
             const readOnly = parseInt(propDef["@@RO"] || "1") > 0;
-            const mapExpr = propDef["@@MAP"] || "";
+            const mapExpr = propDef["@@MAP"] || "unmapped";
             const map = mapExpr.startsWith(".") ? `${mapRoot}${mapExpr}` : mapExpr;
             const defaultVal = propDef["@@DEFAULT"];
             const maxLen = propDef.PARAM ? propDef.PARAM["@@LEN"] : null;
