@@ -45,7 +45,7 @@
         deviceID = 0;
     }
 
-    //bool userIsEditor = UserIsEditor();
+    bool userIsEditor = UserIsEditor();
 }
 @section StyleSheets {
     <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
@@ -296,6 +296,11 @@
         <div id="loadingDataLabel" style="display: none">
             Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
         </div>
+        <div class="pull-right" style="margin-top: -35px">
+            <button type="button" class="btn btn-sm btn-primary pull-right" id="saveChangesButton" data-bind="enable: canSave">
+                <span class="glyphicon glyphicon-floppy-save"></span>&nbsp;&nbsp;Save&nbsp;Changes
+            </button>
+        </div>
         <div id="tabs">
             <ul>
                 <li><a href="#tab1">Input Configuration</a></li>
@@ -403,6 +408,8 @@
         function DeviceViewModel() {
             const self = this;
 
+            const SectionMappingScriptID = "sectionMappingScript";
+
             // Observable fields
             self.versionInfo = ko.observable("Encore Series Dranetz-BMI");
             self.serialNumber = ko.observable("");
@@ -422,6 +429,8 @@
             // Internal fields
             self._dataHubIsConnected = ko.observable(false);
             self._isDirty = ko.observable(false);
+            self._sectionMappingScript = document.createElement("script");
+            self._sectionMappingScript.id = SectionMappingScriptID;
 
             // Properties
             self.dataHubIsConnected = ko.pureComputed({
@@ -434,6 +443,16 @@
 
                     if (value)
                         self.refreshValidationErrors();
+                },
+                owner: self
+            });
+
+            self.canSave = ko.pureComputed({
+                read: function () {
+                    return @(userIsEditor.ToString().ToLower()) &&
+                        self.currentAnalyzerConfig().commandresult &&
+                        self.isDirty() &&
+                        self.dataHubIsConnected();
                 },
                 owner: self
             });
@@ -459,13 +478,22 @@
                     self.currentAnalyzerConfig(JSON.parse(configResult));
                 }).then(function () {
                     return dataHub.getSectionMap("InputConfiguration.xml").done(function (result) {
-                        const sectionHtml = buildSection(JSON.parse(result).SECTION);
+                        const [ sectionHtml, sectionScript ] = buildSection(JSON.parse(result).SECTION);
+
                         $("#tab1").html(sectionHtml);
+
+                        if (sectionScript.length > 0) {
+                            if ($(`#${SectionMappingScriptID}`).length)
+                                document.body.removeChild(self._sectionMappingScript);
+
+                            self._sectionMappingScript.innerHTML = sectionScript;
+                            document.body.appendChild(self._sectionMappingScript);
+                        }
                     });
                 }).then(function () {
                     $("[update-expr]").each(function () {
                         try {
-                            eval($(this).attr("update-expr"));
+                            eval(`${$(this).attr("update-expr")}()`);
                         } catch (e) {
                             console.error(e);
                         }
@@ -661,7 +689,7 @@
         function selectBankItem(bankTarget) {
             $(`[${bankTarget}]`).each(function () {
                 try {
-                    eval($(this).attr("update-expr"));
+                    eval(`${$(this).attr("update-expr")}()`);
                 } catch (e) {
                     console.error(e);
                 }
@@ -679,15 +707,21 @@
 
         function buildListElement(list, listID, map, bankTarget, readOnly, defaultVal, isBankList) {
             const html = [];
+            const script = [];
             let index = 0;
 
             if (!bankTarget)
                 bankTarget = "";
 
-            if (isBankList)
-                html.push(`<select multiple class="form-control list-bank" id="${listID}" onchange="selectBankItem('${listID}')" update-expr="$('#${listID} option[value=0]').prop('selected', true)">`);
-            else
-                html.push(`<select class="form-control" id="${listID}" onchange="${map} = getVal('${listID}')" update-expr="${readOnly ? `` : `$('#${listID} option[value=' + ${map} + ']').prop('selected', true)`}" ${bankTarget}>`);
+            if (isBankList) {
+                script.push(`const update${listID} = new Function("$('#${listID} option[value=0]').prop('selected', true);");`);
+                html.push(`<select multiple class="form-control list-bank" id="${listID}" onchange="selectBankItem('${listID}')" update-expr="update${listID}">`);
+            } else {
+                script.push(`const ${listID}changed = new Function("${map} = getVal('${listID}'); viewModel.isDirty(true);");`);
+                script.push(`$("#${listID}").change(${listID}changed);`);
+                script.push(`const update${listID} = new Function("${readOnly ? `` : `$('#${listID} option[value=' + ${map} + ']').prop('selected', true)`};");`);
+                html.push(`<select class="form-control" id="${listID}" update-expr="update${listID}" ${bankTarget}>`);
+            }
 
             for (let i = 0; i < list.ITEM.length; i++) {
                 const value = list.ITEM[i];
@@ -698,12 +732,12 @@
 
             html.push("</select>");
 
-            return html.join("");
+            return [ html.join(""), script.join("\r\n") ];
         }
 
         function buildPropDefElement(propDef, mapRoot, bankTarget) {
             if (parseInt(propDef["@@ENABLED"] || "1") === 0)
-                return "";
+                return [ "", "" ];
 
             const type = propDef["@@TYPE"];
             const name = propDef["@@NAME"];
@@ -714,6 +748,7 @@
             const defaultVal = propDef["@@DEFAULT"];
             const maxLen = propDef.PARAM ? propDef.PARAM["@@LEN"] : null;
             const html = [];
+            const script = [];
 
             if (!bankTarget)
                 bankTarget = "";
@@ -722,31 +757,51 @@
 
             switch (type) {
                 case PropDefType.CHECKBOX:
-                    html.push(`<input type="checkbox" id="${name}" onchange="${map} = $('#${name}').prop('checked') ? '1' : '0'" update-expr="${readOnly ? `` : `$('#${name}').prop('checked', parseInt(${map}) > 0)`}" ${bankTarget}/>`);
+                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').prop('checked') ? '1' : '0'; viewModel.isDirty(true);");`);
+                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').prop('checked', parseInt(${map}) > 0)`};");`);
+                    script.push(`$("#${name}").change(${name}changed);`);
+                    html.push(`<input type="checkbox" id="${name}" update-expr="update${name}" ${bankTarget}/>`);
                     break;
                 case PropDefType.NUMERIC:
-                    html.push(`<input type="number" id="${name}" onchange="${map} = $('#${name}').val()" update-expr="${readOnly ? `` : `$('#${name}').val(${map})`}" ${bankTarget}/>`);
+                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.isDirty(true);");`);
+                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
+                    script.push(`$("#${name}").change(${name}changed);`);
+                    html.push(`<input type="number" id="${name}" update-expr="update${name}" ${bankTarget}/>`);
                     break;
                 case PropDefType.FLOAT:
-                    html.push(`<input type="number" id="${name}" onchange="${map} = $('#${name}').val()" update-expr="${readOnly ? `` : `$('#${name}').val(parseFloat(${map}).toFixed(4))`}" ${bankTarget}/>`);
+                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.isDirty(true);");`);
+                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').val(parseFloat(${map}).toFixed(4))`};");`);
+                    script.push(`$("#${name}").change(${name}changed);`);
+                    html.push(`<input type="number" id="${name}" update-expr="update${name}" ${bankTarget}/>`);
                     break;
                 case PropDefType.TEXT:
-                    html.push(`<input type="text" id="${name}"${maxLen ? `` : ` maxlength="${maxLen}"`} onchange="${map} = $('#${name}').val()" update-expr="${readOnly ? `` : `$('#${name}').val(${map})`}" ${bankTarget}/>`);
+                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.isDirty(true);");`);
+                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
+                    script.push(`$("#${name}").change(${name}changed);`);
+                    html.push(`<input type="text" id="${name}"${maxLen ? `` : ` maxlength="${maxLen}"`} update-expr="update${name}" ${bankTarget}/>`);
                     break;
                 case PropDefType.SELECT:
-                    html.push(buildListElement(propDef.PARAM.LIST, name, map, bankTarget, readOnly, defaultVal));
+                    {
+                        const [ listHtml, listScript ] = buildListElement(propDef.PARAM.LIST, name, map, bankTarget, readOnly, defaultVal);
+
+                        html.push(listHtml);
+
+                        if (listScript.length > 0)
+                            script.push(listScript);
+                    }
                     break;
             }
 
             html.push("</td></tr>");
 
-            return html.join("");
+            return [ html.join(""), script.join("\r\n") ];
         }
 
         function buildBankElement(bank, mapRoot) {
             const bankName = bank["@@NAME"];
             const bankAlias = bank["@@ALIAS"];
             const html = [];
+            const script = [];
 
             html.push(`<tr><th class="header"><div class="header">${bankAlias}</div></th></tr>`);
             html.push("<tr><td>");
@@ -775,13 +830,26 @@
 
                     switch (key) {
                         case "LIST":
-                            closePropDefs();
-                            html.push(buildListElement(value, bankName, null, null, false, null, true));
+                            {
+                                const [ listHtml, listScript ] = buildListElement(value, bankName, null, null, false, null, true);
+
+                                closePropDefs();
+                                html.push(listHtml);
+
+                                if (listScript.length > 0)
+                                    script.push(listScript);
+                            }
                             break;
                         case "PROPDEF":
                             startPropDefs();
+
                             for (let i = 0; i < value.length; i++) {
-                                html.push(buildPropDefElement(value[i], mapRoot, bankName));
+                                const [ propDefHtml, propDefScript ] = buildPropDefElement(value[i], mapRoot, bankName);
+
+                                html.push(propDefHtml);
+
+                                if (propDefScript.length > 0)
+                                    script.push(propDefScript);
                             }
                             break;
                     }
@@ -793,12 +861,13 @@
             html.push("</td></tr>");
             html.push("<tr><th class=\"header-section-row\"><div class=\"header\"></div></th></tr>");
 
-            return html.join("");
+            return [ html.join(""), script.join("\r\n") ];
         }
 
         function buildSection(section) {
             const mapRoot = `viewModel.currentAnalyzerConfig().${section["@@MAPROOT"]}`;
             const html = [];
+            const script = [];
 
             html.push("<table width=\"75%\">");
 
@@ -826,8 +895,15 @@
 
                     switch (key) {
                         case "BANK":
-                            closePropDefs();
-                            html.push(buildBankElement(value, mapRoot));
+                            {
+                                const [ bankHtml, bankScript ] = buildBankElement(value, mapRoot);
+
+                                closePropDefs();
+                                html.push(bankHtml);
+
+                                if (bankScript.length > 0)
+                                    script.push(bankScript);
+                            }
                             break;
                         case "PROPDEF":
                             for (let i = 0; i < value.length; i++) {
@@ -838,8 +914,13 @@
                                     html.push(`<tr><th class="header-section-row"><div class="header">${propDef["@@ALIAS"] || propDef["@@NAME"]}</div></th></tr>`);
                                 }
                                 else {
+                                    const [ propDefHtml, propDefScript ] = buildPropDefElement(propDef, mapRoot);
+
                                     startPropDefs();
-                                    html.push(buildPropDefElement(propDef, mapRoot));
+                                    html.push(propDefHtml);
+
+                                    if (propDefScript.length > 0)
+                                        script.push(propDefScript);
                                 }
                             }
                             break;
@@ -850,7 +931,7 @@
             closePropDefs();
             html.push("</table>");
 
-            return html.join("");
+            return [ html.join(""), script.join("\r\n") ];
         }
     </script>
 }
