@@ -32,7 +32,7 @@
 				</LIST>
 			</PARAM>
 		</PROPDEF>
-		<PROPDEF NAME="inputIProbeType" ALIAS="Current probe type" TYPE="8" DEFAULT="0" RO="0" MAP=".probe_config.probe_type.list.item[getVal('bankInput') * 2]['@value']">
+		<PROPDEF NAME="inputIProbeType" ALIAS="Current probe type" TYPE="8" DEFAULT="0" RO="0" MAP=".probe_config.probe_type.list.item[getVal('bankInput')]['@value']">
 			<PARAM TYPE="1">
 				<LIST>
 					<ITEM NAME="Other"/>

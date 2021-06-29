@@ -37,6 +37,7 @@ using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 using GSF.Diagnostics;
 using GSF.Identity;
+using GSF.IO;
 using GSF.Web.Hubs;
 using GSF.Web.Model.HubOperations;
 using GSF.Web.Security;
@@ -101,6 +102,7 @@ namespace openMIC
 
         // Static Fields
         private static string s_systemName;
+        private static string s_webRootPath;
         private static int s_downloaderProtocolID;
         private static int s_modbusProtocolID;
         private static readonly Func<char, bool> s_isInvalidAcronymChar;
@@ -110,7 +112,9 @@ namespace openMIC
         private static string s_remoteSchedulerUri;
 
         private static string SystemName => s_systemName ?? (s_systemName = Program.Host.Model.Global.SystemName ?? "");
-        
+
+        private static string WebRootPath => s_webRootPath ?? (s_webRootPath = Program.Host.Model.Global.WebRootPath ?? FilePath.GetAbsolutePath("wwwroot"));
+
         private static bool UseRemoteScheduler => s_useRemoteScheduler ?? (s_useRemoteScheduler = Program.Host.Model.Global.UseRemoteScheduler).GetValueOrDefault();
         
         private static string RemoteSchedulerUri

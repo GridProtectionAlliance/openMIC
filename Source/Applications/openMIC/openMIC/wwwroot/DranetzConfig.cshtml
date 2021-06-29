@@ -90,10 +90,30 @@
             font-size: 18px;
             font-weight: bolder;
             padding-bottom: 5px;
+            width: 100%;
+        }
+
+        th.header-section-row {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bolder;
+            padding-bottom: 5px;
+            padding-top: 15px;
+            width: 100%;
         }
 
         div.header {
             border-bottom: solid;
+        }
+
+        .list-bank {
+            margin-bottom: 10px;
+        }
+
+        .btn-bank {
+            padding-top: 0;
+            padding-bottom: 0;
+            padding-left: 5px;
         }
 
         /* Collapsable button style */
@@ -117,6 +137,10 @@
         /* Collapsable button icon when content is hidden - arrow right */
         .btn-collapsable.btn.collapsed:after {
             content: "\e080";
+        }
+
+        .ui-tabs .ui-tabs-nav li a {
+            font-size: 10pt !important;
         }
 
         @@media screen {
@@ -285,92 +309,65 @@
                 <li><a href="#tab9">Cross-Triggering</a></li>
             </ul>
             <div id="tab1" class="ui-tabs-active">
-                <table width="100%">
+                <table width="75%">
                     <tr>
                         <th class="header"><div class="header">Input Configuration</div></th>
-                    </tr>
-                    <tr>
-                        <td></td>
                     </tr>
                 </table>
             </div>
             <div id="tab2" style="display: none">
-                <table width="100%">
+                <table width="75%">
                     <tr>
                         <th class="header"><div class="header">RMS Variations</div></th>
-                    </tr>
-                    <tr>
-                        <td></td>
                     </tr>
                 </table>
             </div>
             <div id="tab3" style="display: none">
-                <table width="100%">
+                <table width="75%">
                     <tr>
                         <th class="header"><div class="header">Transients</div></th>
-                    </tr>
-                    <tr>
-                        <td></td>
                     </tr>
                 </table>
             </div>
             <div id="tab4" style="display: none">
-                <table width="100%">
+                <table width="75%">
                     <tr>
                         <th class="header"><div class="header">Waveform Capture</div></th>
-                    </tr>
-                    <tr>
-                        <td></td>
                     </tr>
                 </table>
             </div>
             <div id="tab5" style="display: none">
-                <table width="100%">
+                <table width="75%">
                     <tr>
                         <th class="header"><div class="header">Power</div></th>
-                    </tr>
-                    <tr>
-                        <td></td>
                     </tr>
                 </table>
             </div>
             <div id="tab6" style="display: none">
-                <table width="100%">
+                <table width="75%">
                     <tr>
                         <th class="header"><div class="header">Energy and Demand</div></th>
-                    </tr>
-                    <tr>
-                        <td></td>
                     </tr>
                 </table>
             </div>
             <div id="tab7" style="display: none">
-                <table width="100%">
+                <table width="75%">
                     <tr>
                         <th class="header"><div class="header">Harmonics</div></th>
-                    </tr>
-                    <tr>
-                        <td></td>
                     </tr>
                 </table>
             </div>
             <div id="tab8" style="display: none">
-                <table width="100%">
+                <table width="75%">
                     <tr>
                         <th class="header"><div class="header">Flicker</div></th>
-                    </tr>
-                    <tr>
-                        <td></td>
                     </tr>
                 </table>
             </div>
             <div id="tab9" style="display: none">
-                <table width="100%">
+                <table width="75%">
                     <tr>
                         <th class="header"><div class="header">Cross-Triggering</div></th>
-                    </tr>
-                    <tr>
-                        <td></td>
                     </tr>
                 </table>
             </div>
@@ -460,6 +457,19 @@
 
                 return dataHub.getAnalyzerConfig(deviceID, configID).then(function (configResult) {
                     self.currentAnalyzerConfig(JSON.parse(configResult));
+                }).then(function () {
+                    return dataHub.getSectionMap("InputConfiguration.xml").done(function (result) {
+                        const sectionHtml = buildSection(JSON.parse(result).SECTION);
+                        $("#tab1").html(sectionHtml);
+                    });
+                }).then(function () {
+                    $("[update-expr]").each(function () {
+                        try {
+                            eval($(this).attr("update-expr"));
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    });
                 });
             }
 
@@ -520,7 +530,6 @@
                 })
                 .fail(function (error) {
                     showErrorMessage(error);
-                    $("#noDeviceDataMessage").show();
                 });
             }
 
@@ -559,16 +568,7 @@
             showLoadingMessage();
 
             viewModel.loadAnalyzerConfig(configID)
-                .done(function () {
-                    hideLoadingMessage();
-
-                    // TODO: Do not auto-expand for tabbed edit
-                    $("#analyzerConfiguration").collapse("show");
-
-                    setTimeout(function () {
-                        $("#view-spacer")[0].scrollIntoView();
-                    }, 500);
-                })
+                .done(hideLoadingMessage)
                 .fail(hideLoadingMessage);
         }
 
@@ -625,7 +625,7 @@
 
                 if (deviceID <= 0)
                     return;
-                
+
                 showLoadingMessage();
 
                 dataHub.queryDeviceByID(deviceID).done(function (device) {
@@ -644,5 +644,210 @@
             if (deviceID === 0)
                 $("#noDeviceDataMessage").show();
         });
+
+        function htmlEncode(value) {
+            return $("<div/>").text(value).html().replace(/&/g, "%26");
+        }
+
+        function getVal(name) {
+            const values = $(`#${name}`).val() || [];
+
+            if (values.length > 0)
+                return parseInt(values[0], 10);
+
+            return 0;
+        }
+
+        function selectBankItem(bankTarget) {
+            $(`[${bankTarget}]`).each(function () {
+                try {
+                    eval($(this).attr("update-expr"));
+                } catch (e) {
+                    console.error(e);
+                }
+            });
+        }
+
+        const PropDefType = {
+            CHECKBOX: "0",
+            NUMERIC: "1",
+            FLOAT: "2",
+            HEADER: "3",
+            TEXT: "4",
+            SELECT: "8"
+        }
+
+        function buildListElement(list, listID, map, bankTarget, readOnly, defaultVal, isBankList) {
+            const html = [];
+            let index = 0;
+
+            if (!bankTarget)
+                bankTarget = "";
+
+            if (isBankList)
+                html.push(`<select multiple class="form-control list-bank" id="${listID}" onchange="selectBankItem('${listID}')" update-expr="$('#${listID} option[value=0]').prop('selected', true)">`);
+            else
+                html.push(`<select class="form-control" id="${listID}" onchange="${map} = getVal('${listID}')" update-expr="${readOnly ? `` : `$('#${listID} option[value=' + ${map} + ']').prop('selected', true)`}" ${bankTarget}>`);
+
+            for (let i = 0; i < list.ITEM.length; i++) {
+                const value = list.ITEM[i];
+                const optVal = value["@@VALUE"] || index;
+                html.push(`<option value="${optVal}"${optVal === defaultVal ? " selected" : ""}>${htmlEncode(value["@@NAME"])}</option>`);
+                index++;
+            }
+
+            html.push("</select>");
+
+            return html.join("");
+        }
+
+        function buildPropDefElement(propDef, mapRoot, bankTarget) {
+            const type = propDef["@@TYPE"];
+            const name = propDef["@@NAME"];
+            const alias = propDef["@@ALIAS"];
+            const readOnly = parseInt(propDef["@@RO"] || "1") > 0;
+            const mapExpr = propDef["@@MAP"] || "";
+            const map = mapExpr.startsWith(".") ? `${mapRoot}${mapExpr}` : mapExpr;
+            const defaultVal = propDef["@@DEFAULT"];
+            const maxLen = propDef.PARAM ? propDef.PARAM["@@LEN"] : null;
+            const html = [];
+
+            if (!bankTarget)
+                bankTarget = "";
+
+            html.push(`<tr><th class="text-right pad-right" width="30%">${alias || name}:</th><td>`);
+
+            switch (type) {
+                case PropDefType.CHECKBOX:
+                    html.push(`<input type="checkbox" id="${name}" onchange="${map} = $('#${name}').prop('checked') ? '1' : '0'" update-expr="${readOnly ? `` : `$('#${name}').prop('checked', parseInt(${map}) > 0)`}" ${bankTarget}/>`);
+                    break;
+                case PropDefType.NUMERIC:
+                    html.push(`<input type="number" id="${name}" onchange="${map} = $('#${name}').val()" update-expr="${readOnly ? `` : `$('#${name}').val(${map})`}" ${bankTarget}/>`);
+                    break;
+                case PropDefType.FLOAT:
+                    html.push(`<input type="number" id="${name}" onchange="${map} = $('#${name}').val()" update-expr="${readOnly ? `` : `$('#${name}').val(parseFloat(${map}).toFixed(4))`}" ${bankTarget}/>`);
+                    break;
+                case PropDefType.TEXT:
+                    html.push(`<input type="text" id="${name}"${maxLen ? `` : ` maxlength="${maxLen}"`} onchange="${map} = $('#${name}').val()" update-expr="${readOnly ? `` : `$('#${name}').val(${map})`}" ${bankTarget}/>`);
+                    break;
+                case PropDefType.SELECT:
+                    html.push(buildListElement(propDef.PARAM.LIST, name, map, bankTarget, readOnly, defaultVal));
+                    break;
+            }
+
+            html.push("</td></tr>");
+
+            return html.join("");
+        }
+
+        function buildBankElement(bank, mapRoot) {
+            const bankName = bank["@@NAME"];
+            const bankAlias = bank["@@ALIAS"];
+            const html = [];
+
+            html.push(`<tr><th class="header"><div class="header">${bankAlias}</div></th></tr>`);
+            html.push("<tr><td>");
+
+            var propDefsStarted = false;
+
+            const startPropDefs = function () {
+                if (propDefsStarted)
+                    return;
+
+                propDefsStarted = true;
+                html.push("<table width=\"100%\">");
+            };
+
+            const closePropDefs = function () {
+                if (!propDefsStarted)
+                    return;
+
+                propDefsStarted = false;
+                html.push("</table>");
+            };
+
+            for (let key in bank) {
+                if (bank.hasOwnProperty(key) && !key.startsWith("@@")) {
+                    const value = bank[key];
+
+                    switch (key) {
+                        case "LIST":
+                            closePropDefs();
+                            html.push(buildListElement(value, bankName, null, null, false, null, true));
+                            break;
+                        case "PROPDEF":
+                            startPropDefs();
+                            for (let i = 0; i < value.length; i++) {
+                                html.push(buildPropDefElement(value[i], mapRoot, bankName));
+                            }
+                            break;
+                    }
+                }
+            }
+
+            closePropDefs();
+
+            html.push("</td></tr>");
+            html.push("<tr><th class=\"header-section-row\"><div class=\"header\"></div></th></tr>");
+
+            return html.join("");
+        }
+
+        function buildSection(section) {
+            const mapRoot = `viewModel.currentAnalyzerConfig().${section["@@MAPROOT"]}`;
+            const html = [];
+
+            html.push("<table width=\"75%\">");
+
+            var propDefsStarted = false;
+
+            const startPropDefs = function () {
+                if (propDefsStarted)
+                    return;
+
+                propDefsStarted = true;
+                html.push("<tr><td><table width=\"100%\">");
+            };
+
+            const closePropDefs = function () {
+                if (!propDefsStarted)
+                    return;
+
+                propDefsStarted = false;
+                html.push("</table></td></tr>");
+            };
+
+            for (let key in section) {
+                if (section.hasOwnProperty(key) && !key.startsWith("@@")) {
+                    const value = section[key];
+
+                    switch (key) {
+                        case "BANK":
+                            closePropDefs();
+                            html.push(buildBankElement(value, mapRoot));
+                            break;
+                        case "PROPDEF":
+                            for (let i = 0; i < value.length; i++) {
+                                const propDef = value[i];
+
+                                if (propDef["@@TYPE"] === PropDefType.HEADER) {
+                                    closePropDefs();
+                                    html.push(`<tr><th class="header-section-row"><div class="header">${propDef["@@ALIAS"] || propDef["@@NAME"]}</div></th></tr>`);
+                                }
+                                else {
+                                    startPropDefs();
+                                    html.push(buildPropDefElement(propDef, mapRoot));
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+
+            closePropDefs();
+            html.push("</table>");
+
+            return html.join("");
+        }
     </script>
 }

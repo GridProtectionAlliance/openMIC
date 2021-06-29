@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
@@ -127,6 +128,19 @@ namespace openMIC
         {
             lock (s_dranetzCredentialCache)
                 s_dranetzCredentialCache.Remove(deviceID.ToString());
+        }
+
+        public string GetSectionMap(string mapName)
+        {
+            string mapFileName = Path.Combine(WebRootPath, "SectionMaps", mapName);
+
+            if (!File.Exists(mapFileName))
+                throw new FileNotFoundException("Section Map Not Found", mapName);
+
+            XmlDocument mapFile = new XmlDocument();
+            mapFile.Load(mapFileName);
+            
+            return JsonConvert.SerializeXmlNode(mapFile);
         }
 
         public Task<string> GetInstanceStatus(int deviceID) => 
