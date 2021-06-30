@@ -282,7 +282,7 @@
                                     <tr id="analyzerRow" style="visibility: hidden">
                                         <td width="80%" class="text-center valign-middle" style="white-space: nowrap"><btn type="button" class="btn btn-link" style="padding: 0" data-bind="text: $data['@@name'], click: loadAnalyzerConfig.bind($data)"/></td>
                                         <td width="10%" class="text-center valign-middle" data-bind="text: $data['@@analyzer_type']"/>
-                                        <td width="10%" class="text-center valign-middle"><span data-bind="text: parseInt($data['@@monitoring_on']()) > 0 ? 'On' : 'Off'"></span></td>
+                                        <td width="10%" class="text-center valign-middle"><span data-bind="text: parseInt($data['@@monitoring_on'](), 10) > 0 ? 'On' : 'Off'"></span></td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -301,82 +301,7 @@
                 <span class="glyphicon glyphicon-floppy-save"></span>&nbsp;&nbsp;Save&nbsp;Changes
             </button>
         </div>
-        <div id="tabs">
-            <ul>
-                <li><a href="#tab1">Input Configuration</a></li>
-                <li><a href="#tab2">RMS Variations</a></li>
-                <li><a href="#tab3">Transients</a></li>
-                <li><a href="#tab4">Waveform Capture</a></li>
-                <li><a href="#tab5">Power</a></li>
-                <li><a href="#tab6">Energy and Demand</a></li>
-                <li><a href="#tab7">Harmonics</a></li>
-                <li><a href="#tab8">Flicker</a></li>
-                <li><a href="#tab9">Cross-Triggering</a></li>
-            </ul>
-            <div id="tab1" class="ui-tabs-active">
-                <table width="75%">
-                    <tr>
-                        <th class="header"><div class="header">Input Configuration</div></th>
-                    </tr>
-                </table>
-            </div>
-            <div id="tab2" style="display: none">
-                <table width="75%">
-                    <tr>
-                        <th class="header"><div class="header">RMS Variations</div></th>
-                    </tr>
-                </table>
-            </div>
-            <div id="tab3" style="display: none">
-                <table width="75%">
-                    <tr>
-                        <th class="header"><div class="header">Transients</div></th>
-                    </tr>
-                </table>
-            </div>
-            <div id="tab4" style="display: none">
-                <table width="75%">
-                    <tr>
-                        <th class="header"><div class="header">Waveform Capture</div></th>
-                    </tr>
-                </table>
-            </div>
-            <div id="tab5" style="display: none">
-                <table width="75%">
-                    <tr>
-                        <th class="header"><div class="header">Power</div></th>
-                    </tr>
-                </table>
-            </div>
-            <div id="tab6" style="display: none">
-                <table width="75%">
-                    <tr>
-                        <th class="header"><div class="header">Energy and Demand</div></th>
-                    </tr>
-                </table>
-            </div>
-            <div id="tab7" style="display: none">
-                <table width="75%">
-                    <tr>
-                        <th class="header"><div class="header">Harmonics</div></th>
-                    </tr>
-                </table>
-            </div>
-            <div id="tab8" style="display: none">
-                <table width="75%">
-                    <tr>
-                        <th class="header"><div class="header">Flicker</div></th>
-                    </tr>
-                </table>
-            </div>
-            <div id="tab9" style="display: none">
-                <table width="75%">
-                    <tr>
-                        <th class="header"><div class="header">Cross-Triggering</div></th>
-                    </tr>
-                </table>
-            </div>
-        </div>
+        <div id="tabs"></div>
     </div>
     <h3 id="noDeviceDataMessage" style="display: none; color: red">
         No device data could be loaded for device with <code>ID=@deviceID</code>
@@ -406,10 +331,22 @@
         var viewModel = null;
         var deviceID = @deviceID;
 
+        const sections = {
+            InputConfiguration: { index: 0, name: "Input Configuration" },
+            RMSVariations:      { index: 1, name: "RMS Variations" },
+            Transients:         { index: 2, name: "Transients" },
+            WaveformCapture:    { index: 3, name: "Waveform Capture" },
+            Power:              { index: 4, name: "Power" },
+            EnergyAndDemand:    { index: 5, name: "Energy and Demand" },
+            Harmonics:          { index: 6, name: "Harmonics" },
+            Flicker:            { index: 7, name: "Flicker" },
+            CrossTriggering:    { index: 8, name: "Cross-Triggering" }
+        };
+
+        const sectionKeys = Object.keys(sections);
+
         function DeviceViewModel() {
             const self = this;
-
-            const SectionMappingScriptID = "sectionMappingScript";
 
             // Observable fields
             self.versionInfo = ko.observable("Encore Series Dranetz-BMI");
@@ -424,14 +361,13 @@
             self.siteName = ko.observable("");
             self.modules = ko.observableArray();
             self.analyzers = ko.observableArray();
+            self.currentAnalyzerType = ko.observable(-1);
             self.currentAnalyzerConfig = ko.observable("");
             self.errors = ko.validation.group(self);
 
             // Internal fields
             self._dataHubIsConnected = ko.observable(false);
             self._isDirty = ko.observable(false);
-            self._sectionMappingScript = document.createElement("script");
-            self._sectionMappingScript.id = SectionMappingScriptID;
 
             // Properties
             self.dataHubIsConnected = ko.pureComputed({
@@ -461,9 +397,6 @@
             self.isDirty = ko.pureComputed({
                 read: self._isDirty,
                 write: function (value) {
-                    if (value === undefined)
-                        value = true;
-
                     self._isDirty(value);
                 },
                 owner: self
@@ -471,26 +404,55 @@
 
             // Methods
 
-            self.loadAnalyzerConfig = function (configID) {
+            self.configChanged = function () {
+                self.currentAnalyzerConfig.valueHasMutated();
+                self.isDirty(true);
+            }
+
+            self.addSection = function (sectionKey, inputs) {
+                const [ sectionHtml, sectionScript ] = inputs;
+
+                $(`#tab${sectionKey}`).html(sectionHtml);
+
+                if (sectionScript.length > 0) {
+                    const scriptID = `${sectionKey}SectionMappings`;
+
+                    if ($(`#${scriptID}`).length)
+                        return;
+
+                    const scriptElem = document.createElement("script");
+                    scriptElem.id = scriptID;
+                    scriptElem.innerHTML = sectionScript;
+                    document.body.appendChild(scriptElem);
+                }
+            }
+
+            self.loadAnalyzerConfig = function (configID, analyzerType) {
+                self.currentAnalyzerType(analyzerType);
+
                 if (!self.dataHubIsConnected())
                     return $.Deferred().resolve().promise();
 
                 return dataHub.getAnalyzerConfig(deviceID, configID).then(function (configResult) {
                     self.currentAnalyzerConfig(JSON.parse(configResult));
                 }).then(function () {
-                    return dataHub.getSectionMap("InputConfiguration.xml").done(function (result) {
-                        const [ sectionHtml, sectionScript ] = buildSection(JSON.parse(result).SECTION);
+                    const promises = [];
 
-                        $("#tab1").html(sectionHtml);
-
-                        if (sectionScript.length > 0) {
-                            if ($(`#${SectionMappingScriptID}`).length)
-                                document.body.removeChild(self._sectionMappingScript);
-
-                            self._sectionMappingScript.innerHTML = sectionScript;
-                            document.body.appendChild(self._sectionMappingScript);
+                    for (let key in sections) {
+                        if (sections.hasOwnProperty(key)) {
+                            promises.push(dataHub.getSectionMap(`${key}.xml`).done(function (result) {
+                                self.addSection(key, buildSection(JSON.parse(result).SECTION));
+                            }).fail(function (error) {
+                                showErrorMessage(error);
+                            }));
                         }
-                    });
+
+                        // DEBUG: Remove this
+                        if (sections[key].index === 0)
+                            break;
+                    }
+
+                    return $(promises).whenAll();
                 }).then(function () {
                     $("[update-expr]").each(function () {
                         try {
@@ -518,7 +480,7 @@
                     self.databaseHealth(status.commandresult.characteristics["@@database_health"]);
                     self.hostFirmware(status.commandresult.characteristics["@@cs_firmware_version"]);
                     self.commFirmware(status.commandresult.characteristics["@@host_firmware_version"]);
-                    self.gpsInstalled(parseInt(status.commandresult.gps_status["@@installed"]) !== 0);
+                    self.gpsInstalled(parseInt(status.commandresult.gps_status["@@installed"], 10) !== 0);
                     self.gpsSatellites(status.commandresult.gps_status["@@gps_satellites"]);
 
                     var observableModules = [];
@@ -572,15 +534,6 @@
             }).extend({ notify: "always" });
         }
 
-        function getActiveTab() {
-            return $("#tabs").tabs("option", "active");
-        }
-
-        function setActiveTab(tabIndex) {
-            $("#tabs").tabs({ active: tabIndex });
-            $("a[href='#tab" + (tabIndex + 1) + "']").parent().focus();
-        }
-
         function showLoadingMessage() {
             $("#responsiveTableDiv").show();
             $("#loadingDataLabel").show();
@@ -592,13 +545,53 @@
         }
 
         function loadAnalyzerConfig(record) {
-            const configID = parseInt(record["@@id"]());
+            const configID = parseInt(record["@@id"](), 10);
+            const analyzerType = parseInt(record["@@analyzer_type"](), 10);
 
             showLoadingMessage();
 
-            viewModel.loadAnalyzerConfig(configID)
+            viewModel.loadAnalyzerConfig(configID, analyzerType)
                 .done(hideLoadingMessage)
                 .fail(hideLoadingMessage);
+        }
+
+        function getActiveTab() {
+            return $("#tabs").tabs("option", "active");
+        }
+
+        function setActiveTab(section) {
+            const index = section.index;
+            $("#tabs").tabs({ active: index });
+            $(`a[href='#tab${sectionKeys[index]}']`).parent().focus();
+        }
+
+        function createTabSections() {
+            const tabList = [];
+            const tabSections = [];
+
+            tabList.push(`<ul>`);
+
+            for (let key in sections) {
+                if (sections.hasOwnProperty(key)) {
+                    const section = sections[key];
+                    const name = section.name;
+                    const index = section.index;
+
+                    tabList.push(`<li><a href="#tab${key}">${name}</a></li>`);
+
+                    tabSections.push(`<div id="tab${key}" ${index === 0 ? "class=\"ui-tabs-active\"" : "style=\"display: none\""}>`);
+                    tabSections.push(`    <table width="75%" class="table-center">`);
+                    tabSections.push(`        <tr>`);
+                    tabSections.push(`            <th class="header"><div class="header">${name}</div></th>`);
+                    tabSections.push(`        </tr>`);
+                    tabSections.push(`    </table>`);
+                    tabSections.push(`</div>`);
+                }
+            }
+
+            tabList.push(`</ul>`);
+
+            $("#tabs").html(tabList.join("\r\n") + tabSections.join("\r\n"));
         }
 
         // Page initialization function
@@ -606,15 +599,17 @@
             $("#bodyContainer").addClass("fill-height");
             $("#pageHeader").css("margin-bottom", "-20px");
 
+            createTabSections();
+
             $("#tabs").tabs({
                 active: 0,
                 activate: function(event, ui) {
                     switch (ui.newPanel.attr("id")) {
-                        case "tab1":
+                        case "tabInputConfiguration":
                             break;
-                        case "tab2":
+                        case "tabRMSVariations":
                             break;
-                        case "tab3":
+                        case "tabTransients":
                             break;
                     }
                 }
@@ -658,7 +653,7 @@
                 showLoadingMessage();
 
                 dataHub.queryDeviceByID(deviceID).done(function (device) {
-                    $("#editDeviceName").html("Editing&nbsp;" + device.Acronym + "&nbsp;Configuration");
+                    $("#editDeviceName").html(`Editing&nbsp;${device.Acronym}&nbsp;Configuration`);
                 });
 
                 viewModel.queryModules()
@@ -715,10 +710,10 @@
                 bankTarget = "";
 
             if (isBankList) {
-                script.push(`const update${listID} = new Function("$('#${listID} option[value=0]').prop('selected', true);");`);
+                script.push(`const update${listID} = new Function("$('#${listID} option').removeAttr('selected');  $('#${listID} option[value=0]').prop('selected', true);"); $('#${listID}').focus();`);
                 html.push(`<select multiple class="form-control list-bank" id="${listID}" onchange="selectBankItem('${listID}')" update-expr="update${listID}">`);
             } else {
-                script.push(`const ${listID}changed = new Function("${map} = getVal('${listID}'); viewModel.isDirty(true);");`);
+                script.push(`const ${listID}changed = new Function("${map} = getVal('${listID}'); viewModel.configChanged();");`);
                 script.push(`$("#${listID}").change(${listID}changed);`);
                 script.push(`const update${listID} = new Function("${readOnly ? `` : `$('#${listID} option[value=' + ${map} + ']').prop('selected', true)`};");`);
                 html.push(`<select class="form-control" id="${listID}" update-expr="update${listID}" ${bankTarget}>`);
@@ -731,19 +726,22 @@
                 index++;
             }
 
-            html.push("</select>");
+            html.push(`</select>`);
 
             return [ html.join(""), script.join("\r\n") ];
         }
 
         function buildPropDefElement(propDef, mapRoot, bankTarget) {
-            if (parseInt(propDef["@@ENABLED"] || "1") === 0)
+            if (parseInt(propDef["@@ENABLED"] || "1", 10) === 0)
                 return [ "", "" ];
 
+            const targetAnalyzer = parseInt(propDef["@@ANALYZER"] || "0", 10);
+            const currentAnalzer = viewModel.currentAnalyzerType();
+            const elementIncluded = targetAnalyzer === 0 || currentAnalzer === 0 || targetAnalyzer === currentAnalzer;
             const type = propDef["@@TYPE"];
             const name = propDef["@@NAME"];
             const alias = propDef["@@ALIAS"];
-            const readOnly = parseInt(propDef["@@RO"] || "1") > 0;
+            const readOnly = parseInt(propDef["@@RO"] || "1", 10) > 0;
             const mapExpr = propDef["@@MAP"] || "unmapped";
             const map = mapExpr.startsWith(".") ? `${mapRoot}${mapExpr}` : mapExpr;
             const defaultVal = propDef["@@DEFAULT"];
@@ -758,25 +756,25 @@
 
             switch (type) {
                 case PropDefType.CHECKBOX:
-                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').prop('checked') ? '1' : '0'; viewModel.isDirty(true);");`);
-                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').prop('checked', parseInt(${map}) > 0)`};");`);
+                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').prop('checked') ? '1' : '0'; viewModel.configChanged();");`);
+                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').prop('checked', parseInt(${map}, 10) > 0)`};");`);
                     script.push(`$("#${name}").change(${name}changed);`);
                     html.push(`<input type="checkbox" id="${name}" update-expr="update${name}" ${bankTarget}/>`);
                     break;
                 case PropDefType.NUMERIC:
-                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.isDirty(true);");`);
+                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
                     script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
                     script.push(`$("#${name}").change(${name}changed);`);
                     html.push(`<input type="number" id="${name}" update-expr="update${name}" ${bankTarget}/>`);
                     break;
                 case PropDefType.FLOAT:
-                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.isDirty(true);");`);
+                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
                     script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').val(parseFloat(${map}).toFixed(4))`};");`);
                     script.push(`$("#${name}").change(${name}changed);`);
                     html.push(`<input type="number" id="${name}" update-expr="update${name}" ${bankTarget}/>`);
                     break;
                 case PropDefType.TEXT:
-                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.isDirty(true);");`);
+                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
                     script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
                     script.push(`$("#${name}").change(${name}changed);`);
                     html.push(`<input type="text" id="${name}"${maxLen ? `` : ` maxlength="${maxLen}"`} update-expr="update${name}" ${bankTarget}/>`);
@@ -793,9 +791,9 @@
                     break;
             }
 
-            html.push("</td></tr>");
+            html.push(`</td></tr>`);
 
-            return [ html.join(""), script.join("\r\n") ];
+            return [ elementIncluded ? html.join("") : "", script.join("\r\n") ];
         }
 
         function buildBankElement(bank, mapRoot) {
@@ -805,7 +803,7 @@
             const script = [];
 
             html.push(`<tr><th class="header"><div class="header">${bankAlias}</div></th></tr>`);
-            html.push("<tr><td>");
+            html.push(`<tr><td>`);
 
             var propDefsStarted = false;
 
@@ -814,7 +812,7 @@
                     return;
 
                 propDefsStarted = true;
-                html.push("<table width=\"100%\">");
+                html.push(`<table width="100%">`);
             };
 
             const closePropDefs = function () {
@@ -822,7 +820,7 @@
                     return;
 
                 propDefsStarted = false;
-                html.push("</table>");
+                html.push(`</table>`);
             };
 
             for (let key in bank) {
@@ -859,8 +857,8 @@
 
             closePropDefs();
 
-            html.push("</td></tr>");
-            html.push("<tr><th class=\"header-section-row\"><div class=\"header\"></div></th></tr>");
+            html.push(`</td></tr>`);
+            html.push(`<tr><th class="header-section-row"><div class="header"></div></th></tr>`);
 
             return [ html.join(""), script.join("\r\n") ];
         }
@@ -870,7 +868,7 @@
             const html = [];
             const script = [];
 
-            html.push("<table width=\"75%\">");
+            html.push(`<table width="75%" class="table-center">`);
 
             var propDefsStarted = false;
 
@@ -879,7 +877,7 @@
                     return;
 
                 propDefsStarted = true;
-                html.push("<tr><td><table width=\"100%\">");
+                html.push(`<tr><td><table width="100%">`);
             };
 
             const closePropDefs = function () {
@@ -887,7 +885,7 @@
                     return;
 
                 propDefsStarted = false;
-                html.push("</table></td></tr>");
+                html.push(`</table></td></tr>`);
             };
 
             for (let key in section) {
@@ -930,7 +928,7 @@
             }
 
             closePropDefs();
-            html.push("</table>");
+            html.push(`</table>`);
 
             return [ html.join(""), script.join("\r\n") ];
         }
