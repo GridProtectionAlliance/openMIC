@@ -459,6 +459,8 @@
 
                     return $(promises).whenAll();
                 }).then(function () {
+                    setActiveTab(sections.InputConfiguration);
+
                     $("[update-expr]").each(function () {
                         try {
                             eval(`${$(this).attr("update-expr")}()`);
@@ -561,7 +563,7 @@
         }
 
         function getActiveTab() {
-            return $("#tabs").tabs("option", "active");
+            return sections[sectionKeys[$("#tabs").tabs("option", "active")]];
         }
 
         function setActiveTab(section) {
@@ -607,17 +609,17 @@
             createTabSections();
 
             $("#tabs").tabs({
-                active: 0,
-                activate: function(event, ui) {
-                    switch (ui.newPanel.attr("id")) {
-                        case "tabInputConfiguration":
-                            break;
-                        case "tabRMSVariations":
-                            break;
-                        case "tabTransients":
-                            break;
-                    }
-                }
+                active: 0
+                //activate: function(event, ui) {
+                //    switch (ui.newPanel.attr("id")) {
+                //        case `tab${sectionKeys[sections.InputConfiguration.index]}`:
+                //            break;
+                //        case `tab${sectionKeys[sections.RMSVariations.index]}`:
+                //            break;
+                //        case `tab${sectionKeys[sections.Transients.index]}`:
+                //            break;
+                //    }
+                //}
             });
 
             // Enable knockout validation
