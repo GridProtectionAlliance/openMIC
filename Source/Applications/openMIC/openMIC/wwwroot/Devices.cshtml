@@ -32,6 +32,7 @@
 @using openMIC
 @using openMIC.Model
 @using RazorEngine.Templating
+@using Newtonsoft.Json;
 @inherits ExtendedTemplateBase<AppModel>
 @section StyleSheets {
     <link href="Content/bootstrap-datetimepicker.css" rel="stylesheet">
@@ -53,6 +54,12 @@
 @{
     DataContext dataContext = ViewBag.DataContext;
     HttpRequestMessage request = ViewBag.Request;
+
+    Dictionary<string, string> parameters = request.QueryParameters();
+    string acronym = "";
+    if (parameters.ContainsKey("Acronym")) {
+        acronym = parameters["Acronym"].ToString();
+    }
 
     Layout = "Layout.cshtml";
     ViewBag.Title = "Devices";
@@ -183,6 +190,20 @@
 
     <script>
         "use strict";
+        var acronym = '@Raw(acronym)';
+        console.log('@Raw(JsonConvert.SerializeObject(parameters))', acronym)
+        $(viewModel).one('pageRecordsQueried', function () {
+            if (acronym != '') {
+                $('#searchFilter').val(acronym);
+                viewModel.filterText = acronym;
+                viewModel.queryPageRecords();
+                $(viewModel).one('pageRecordsQueried', function () {
+                    var record = viewModel.pageRecords()[0];
+                    if (record != undefined)
+                        viewModel.viewPageRecord(record);
+                });
+            }
+        });
 
         const MomentDateTimeFormat = dateFormat.convert(DateTimeFormat, dateFormat.dotnet, dateFormat.moment);
 
