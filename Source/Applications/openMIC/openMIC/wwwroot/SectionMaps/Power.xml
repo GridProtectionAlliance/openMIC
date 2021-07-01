@@ -44,71 +44,71 @@
 	</PROPDEF>
 	<BANK ORDER="4" NAME="bankJournal" ALIAS="Journal Channels (select the channel(s) to change)" ROWS="8">
 		<LIST>
-			<ITEM NAME="j73" ALIAS="Rms Voltage A"/>
-			<ITEM NAME="j83" ALIAS="Rms Voltage B"/>
-			<ITEM NAME="j85" ALIAS="Rms Voltage C"/>
-			<ITEM NAME="j87" ALIAS="Rms Voltage N"/>
-			<ITEM NAME="j89" ALIAS="Rms Voltage AB"/>
-			<ITEM NAME="j90" ALIAS="Rms Voltage BC"/>
-			<ITEM NAME="j91" ALIAS="Rms Voltage CA"/>
-			<ITEM NAME="j92" ALIAS="Rms Current A"/>
-			<ITEM NAME="j94" ALIAS="Rms Current B"/>
-			<ITEM NAME="j96" ALIAS="Rms Current C"/>
-			<ITEM NAME="j98" ALIAS="Rms Current N"/>
-			<ITEM NAME="j100" ALIAS="Active Power A"/>
-			<ITEM NAME="j102" ALIAS="Active Power B"/>
-			<ITEM NAME="j104" ALIAS="Active Power C"/>
-			<ITEM NAME="j107" ALIAS="Active Power Total"/>
-			<ITEM NAME="j108" ALIAS="Fundamental Reactive Power A"/>
-			<ITEM NAME="j110" ALIAS="Fundamental Reactive Power B"/>
-			<ITEM NAME="j112" ALIAS="Fundamental Reactive Power C"/>
-			<ITEM NAME="j115" ALIAS="Fundamental Reactive Power Total"/>
-			<ITEM NAME="j116" ALIAS="Apparent Power A"/>
-			<ITEM NAME="j118" ALIAS="Apparent Power B"/>
-			<ITEM NAME="j120" ALIAS="Apparent Power C"/>
-			<ITEM NAME="j123" ALIAS="Apparent Power Total"/>
+			<ITEM NAME="j73" ALIAS="Rms Voltage A" ANALYZER="1"/>
+			<ITEM NAME="j83" ALIAS="Rms Voltage B" ANALYZER="1"/>
+			<ITEM NAME="j85" ALIAS="Rms Voltage C" ANALYZER="1"/>
+			<ITEM NAME="j87" ALIAS="Rms Voltage N" ANALYZER="1"/>
+			<ITEM NAME="j89" ALIAS="Rms Voltage AB" ANALYZER="1"/>
+			<ITEM NAME="j90" ALIAS="Rms Voltage BC" ANALYZER="1"/>
+			<ITEM NAME="j91" ALIAS="Rms Voltage CA" ANALYZER="1"/>
+			<ITEM NAME="j92" ALIAS="Rms Current A" ANALYZER="2"/>
+			<ITEM NAME="j94" ALIAS="Rms Current B" ANALYZER="2"/>
+			<ITEM NAME="j96" ALIAS="Rms Current C" ANALYZER="2"/>
+			<ITEM NAME="j98" ALIAS="Rms Current N" ANALYZER="2"/>
+			<ITEM NAME="j100" ALIAS="Active Power A" ANALYZER="0!"/>
+			<ITEM NAME="j102" ALIAS="Active Power B" ANALYZER="0!"/>
+			<ITEM NAME="j104" ALIAS="Active Power C" ANALYZER="0!"/>
+			<ITEM NAME="j107" ALIAS="Active Power Total" ANALYZER="0!"/>
+			<ITEM NAME="j108" ALIAS="Fundamental Reactive Power A" ANALYZER="0!"/>
+			<ITEM NAME="j110" ALIAS="Fundamental Reactive Power B" ANALYZER="0!"/>
+			<ITEM NAME="j112" ALIAS="Fundamental Reactive Power C" ANALYZER="0!"/>
+			<ITEM NAME="j115" ALIAS="Fundamental Reactive Power Total" ANALYZER="0!"/>
+			<ITEM NAME="j116" ALIAS="Apparent Power A" ANALYZER="0!"/>
+			<ITEM NAME="j118" ALIAS="Apparent Power B" ANALYZER="0!"/>
+			<ITEM NAME="j120" ALIAS="Apparent Power C" ANALYZER="0!"/>
+			<ITEM NAME="j123" ALIAS="Apparent Power Total" ANALYZER="0!"/>
 			<ITEM NAME="j124" ALIAS="Frequency A"/>
-			<ITEM NAME="j132" ALIAS="VA (Arithmetic) Total"/>
-			<ITEM NAME="j133" ALIAS="VA (Vector) Total"/>
-			<ITEM NAME="j134" ALIAS="Fundamental VA (Arithmetic) Total"/>
-			<ITEM NAME="j135" ALIAS="Fundamental VA (Vector) Total"/>
-			<ITEM NAME="j136" ALIAS="True Power Factor A"/>
-			<ITEM NAME="j138" ALIAS="True Power Factor B"/>
-			<ITEM NAME="j140" ALIAS="True Power Factor C"/>
-			<ITEM NAME="j143" ALIAS="True Power Factor Worst Phase"/>
-			<ITEM NAME="j144" ALIAS="True Power Factor LN Average"/>
-			<ITEM NAME="j145" ALIAS="True PF (Arithmetic) Total"/>
-			<ITEM NAME="j146" ALIAS="True PF (Vector) Total"/>
-			<ITEM NAME="j147" ALIAS="Displacement Power Factor A"/>
-			<ITEM NAME="j149" ALIAS="Displacement Power Factor B"/>
-			<ITEM NAME="j151" ALIAS="Displacement Power Factor C"/>
-			<ITEM NAME="j154" ALIAS="Displacement Power Factor Worst Phase"/>
-			<ITEM NAME="j155" ALIAS="Displacement Power Factor LN Average"/>
-			<ITEM NAME="j156" ALIAS="DPF (Arithmetic) Total"/>
-			<ITEM NAME="j157" ALIAS="DPF (Vector) Total"/>
-			<ITEM NAME="j158" ALIAS="Rms Current Residual"/>
-			<ITEM NAME="j159" ALIAS="Rms Current Net"/>
-			<ITEM NAME="j166" ALIAS="V Unbalance (Rms/Rms Avg) A"/>
-			<ITEM NAME="j167" ALIAS="V Unbalance (Rms/Rms Avg) B"/>
-			<ITEM NAME="j168" ALIAS="V Unbalance (Rms/Rms Avg) C"/>
-			<ITEM NAME="j172" ALIAS="V Unbalance (Rms/Rms Avg) LN Average"/>
-			<ITEM NAME="j173" ALIAS="V Unbalance (Rms/Rms Avg) LL Average"/>
-			<ITEM NAME="j176" ALIAS="I Unbalance (Rms/Rms Avg) A"/>
-			<ITEM NAME="j177" ALIAS="I Unbalance (Rms/Rms Avg) B"/>
-			<ITEM NAME="j178" ALIAS="I Unbalance (Rms/Rms Avg) C"/>
-			<ITEM NAME="j179" ALIAS="I Unbalance (Rms/Rms Avg) LN Average"/>
-			<ITEM NAME="j530" ALIAS="Voltage Angle A"/>
-			<ITEM NAME="j532" ALIAS="Voltage Angle B"/>
-			<ITEM NAME="j534" ALIAS="Voltage Angle C"/>
-			<ITEM NAME="j540" ALIAS="Current Angle A"/>
-			<ITEM NAME="j542" ALIAS="Current Angle B"/>
-			<ITEM NAME="j544" ALIAS="Current Angle C"/>
-			<ITEM NAME="j547" ALIAS="Voltage to Current Angle A"/>
-			<ITEM NAME="j549" ALIAS="Voltage to Current Angle B"/>
-			<ITEM NAME="j551" ALIAS="Voltage to Current Angle C"/>
-			<ITEM NAME="j554" ALIAS="Rapid Voltage Change A"/>
-			<ITEM NAME="j557" ALIAS="Rapid Voltage Change B"/>
-			<ITEM NAME="j560" ALIAS="Rapid Voltage Change C"/>
+			<ITEM NAME="j132" ALIAS="VA (Arithmetic) Total" ANALYZER="0!"/>
+			<ITEM NAME="j133" ALIAS="VA (Vector) Total" ANALYZER="0!"/>
+			<ITEM NAME="j134" ALIAS="Fundamental VA (Arithmetic) Total" ANALYZER="0!"/>
+			<ITEM NAME="j135" ALIAS="Fundamental VA (Vector) Total" ANALYZER="0!"/>
+			<ITEM NAME="j136" ALIAS="True Power Factor A" ANALYZER="0!"/>
+			<ITEM NAME="j138" ALIAS="True Power Factor B" ANALYZER="0!"/>
+			<ITEM NAME="j140" ALIAS="True Power Factor C" ANALYZER="0!"/>
+			<ITEM NAME="j143" ALIAS="True Power Factor Worst Phase" ANALYZER="0!"/>
+			<ITEM NAME="j144" ALIAS="True Power Factor LN Average" ANALYZER="0!"/>
+			<ITEM NAME="j145" ALIAS="True PF (Arithmetic) Total" ANALYZER="0!"/>
+			<ITEM NAME="j146" ALIAS="True PF (Vector) Total" ANALYZER="0!"/>
+			<ITEM NAME="j147" ALIAS="Displacement Power Factor A" ANALYZER="0!"/>
+			<ITEM NAME="j149" ALIAS="Displacement Power Factor B" ANALYZER="0!"/>
+			<ITEM NAME="j151" ALIAS="Displacement Power Factor C" ANALYZER="0!"/>
+			<ITEM NAME="j154" ALIAS="Displacement Power Factor Worst Phase" ANALYZER="0!"/>
+			<ITEM NAME="j155" ALIAS="Displacement Power Factor LN Average" ANALYZER="0!"/>
+			<ITEM NAME="j156" ALIAS="DPF (Arithmetic) Total" ANALYZER="0!"/>
+			<ITEM NAME="j157" ALIAS="DPF (Vector) Total" ANALYZER="0!"/>
+			<ITEM NAME="j158" ALIAS="Rms Current Residual" ANALYZER="2"/>
+			<ITEM NAME="j159" ALIAS="Rms Current Net" ANALYZER="2"/>
+			<ITEM NAME="j166" ALIAS="V Unbalance (Rms/Rms Avg) A" ANALYZER="1"/>
+			<ITEM NAME="j167" ALIAS="V Unbalance (Rms/Rms Avg) B" ANALYZER="1"/>
+			<ITEM NAME="j168" ALIAS="V Unbalance (Rms/Rms Avg) C" ANALYZER="1"/>
+			<ITEM NAME="j172" ALIAS="V Unbalance (Rms/Rms Avg) LN Average" ANALYZER="1"/>
+			<ITEM NAME="j173" ALIAS="V Unbalance (Rms/Rms Avg) LL Average" ANALYZER="1"/>
+			<ITEM NAME="j176" ALIAS="I Unbalance (Rms/Rms Avg) A" ANALYZER="2"/>
+			<ITEM NAME="j177" ALIAS="I Unbalance (Rms/Rms Avg) B" ANALYZER="2"/>
+			<ITEM NAME="j178" ALIAS="I Unbalance (Rms/Rms Avg) C" ANALYZER="2"/>
+			<ITEM NAME="j179" ALIAS="I Unbalance (Rms/Rms Avg) LN Average" ANALYZER="2"/>
+			<ITEM NAME="j530" ALIAS="Voltage Angle A" ANALYZER="1"/>
+			<ITEM NAME="j532" ALIAS="Voltage Angle B" ANALYZER="1"/>
+			<ITEM NAME="j534" ALIAS="Voltage Angle C" ANALYZER="1"/>
+			<ITEM NAME="j540" ALIAS="Current Angle A" ANALYZER="2"/>
+			<ITEM NAME="j542" ALIAS="Current Angle B" ANALYZER="2"/>
+			<ITEM NAME="j544" ALIAS="Current Angle C" ANALYZER="2"/>
+			<ITEM NAME="j547" ALIAS="Voltage to Current Angle A" ANALYZER="0!"/>
+			<ITEM NAME="j549" ALIAS="Voltage to Current Angle B" ANALYZER="0!"/>
+			<ITEM NAME="j551" ALIAS="Voltage to Current Angle C" ANALYZER="0!"/>
+			<ITEM NAME="j554" ALIAS="Rapid Voltage Change A" ANALYZER="1"/>
+			<ITEM NAME="j557" ALIAS="Rapid Voltage Change B" ANALYZER="1"/>
+			<ITEM NAME="j560" ALIAS="Rapid Voltage Change C" ANALYZER="1"/>
 		</LIST>
 		<PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0" RO="0"/>
 		<PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>

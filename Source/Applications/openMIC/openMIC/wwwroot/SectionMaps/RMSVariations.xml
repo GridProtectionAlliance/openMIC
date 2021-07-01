@@ -1,28 +1,28 @@
 <SECTION NAME="rms" ALIAS="Rms Variations" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
-	<PROPDEF ORDER="0" NAME="Sliding Voltage Reference for High and Low Limits" TYPE="3"/>
-	<PROPDEF ORDER="1" NAME="rmsUSREnable" ALIAS="Enable threshold adjustment" TYPE="0" RO="0"/>
-	<PROPDEF ORDER="2" NAME="rmsUSRMax" ALIAS="Sliding reference maximum value" TYPE="4" RO="0"/>
-	<PROPDEF ORDER="3" NAME="rmsUSRMin" ALIAS="Sliding reference mimimum value" TYPE="4" RO="0"/>
+	<PROPDEF ORDER="0" NAME="Sliding Voltage Reference for High and Low Limits" TYPE="3" ANALYZER="1"/>
+	<PROPDEF ORDER="1" NAME="rmsUSREnable" ALIAS="Enable threshold adjustment" TYPE="0" RO="0" ANALYZER="1"/>
+	<PROPDEF ORDER="2" NAME="rmsUSRMax" ALIAS="Sliding reference maximum value" TYPE="4" RO="0" ANALYZER="1"/>
+	<PROPDEF ORDER="3" NAME="rmsUSRMin" ALIAS="Sliding reference mimimum value" TYPE="4" RO="0" ANALYZER="1"/>
 	<BANK ORDER="4" NAME="bankRMSLimits" ALIAS="RMS Magnitude Limits (select the channel(s) to change)" ROWS="11">
 		<LIST>
-			<ITEM NAME="ci46" ALIAS="Rms Voltage A"/>
-			<ITEM NAME="ci48" ALIAS="Rms Voltage B"/>
-			<ITEM NAME="ci50" ALIAS="Rms Voltage C"/>
-			<ITEM NAME="ci52" ALIAS="Rms Voltage N"/>
-			<ITEM NAME="ci54" ALIAS="Rms Voltage AB"/>
-			<ITEM NAME="ci55" ALIAS="Rms Voltage BC"/>
-			<ITEM NAME="ci56" ALIAS="Rms Voltage CA"/>
-			<ITEM NAME="ci57" ALIAS="Rms Current A"/>
-			<ITEM NAME="ci59" ALIAS="Rms Current B"/>
-			<ITEM NAME="ci61" ALIAS="Rms Current C"/>
-			<ITEM NAME="ci63" ALIAS="Rms Current N"/>
+			<ITEM NAME="ci46" ALIAS="Rms Voltage A" ANALYZER="1"/>
+			<ITEM NAME="ci48" ALIAS="Rms Voltage B" ANALYZER="1"/>
+			<ITEM NAME="ci50" ALIAS="Rms Voltage C" ANALYZER="1"/>
+			<ITEM NAME="ci52" ALIAS="Rms Voltage N" ANALYZER="1"/>
+			<ITEM NAME="ci54" ALIAS="Rms Voltage AB" ANALYZER="1"/>
+			<ITEM NAME="ci55" ALIAS="Rms Voltage BC" ANALYZER="1"/>
+			<ITEM NAME="ci56" ALIAS="Rms Voltage CA" ANALYZER="1"/>
+			<ITEM NAME="ci57" ALIAS="Rms Current A" ANALYZER="2"/>
+			<ITEM NAME="ci59" ALIAS="Rms Current B" ANALYZER="2"/>
+			<ITEM NAME="ci61" ALIAS="Rms Current C" ANALYZER="2"/>
+			<ITEM NAME="ci63" ALIAS="Rms Current N" ANALYZER="2"/>
 		</LIST>
 		<PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
 		<PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
 		<PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
 	</BANK>
-	<PROPDEF NAME="Rapid Voltage Change Limits" TYPE="3"/>
-	<PROPDEF NAME="rmsRVCLimit" ALIAS="RMS magnitude change (%)" TYPE="4" RO="0"/>
+	<PROPDEF NAME="Rapid Voltage Change Limits" TYPE="3" ANALYZER="1"/>
+	<PROPDEF NAME="rmsRVCLimit" ALIAS="RMS magnitude change (%)" TYPE="4" RO="0" ANALYZER="1"/>
 	<PROPDEF NAME="RMS Summary" TYPE="3"/>
 	<PROPDEF NAME="rmsPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="4" RO="0"/>
 	<PROPDEF NAME="rmsInOutPost" ALIAS="In-out post trigger (Cycles)" TYPE="4" RO="0"/>
