@@ -314,7 +314,15 @@
     <Content Include="wwwroot\Help.cshtml" />
     <Content Include="wwwroot\ModbusConfig.cshtml" />
     <Content Include="wwwroot\Groups.cshtml" />
+    <Content Include="wwwroot\SectionMaps\CrossTriggering.xml" />
+    <Content Include="wwwroot\SectionMaps\EnergyAndDemand.xml" />
+    <Content Include="wwwroot\SectionMaps\Flicker.xml" />
+    <Content Include="wwwroot\SectionMaps\Harmonics.xml" />
     <Content Include="wwwroot\SectionMaps\InputConfiguration.xml" />
+    <Content Include="wwwroot\SectionMaps\Power.xml" />
+    <Content Include="wwwroot\SectionMaps\RMSVariations.xml" />
+    <Content Include="wwwroot\SectionMaps\Transients.xml" />
+    <Content Include="wwwroot\SectionMaps\WaveformCapture.xml" />
     <Content Include="wwwroot\Users.cshtml" />
     <Content Include="wwwroot\SelectTheme.cshtml" />
     <Content Include="wwwroot\Status.cshtml" />

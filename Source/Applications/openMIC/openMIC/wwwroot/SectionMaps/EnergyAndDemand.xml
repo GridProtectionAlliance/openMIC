@@ -1,0 +1,86 @@
+<SECTION NAME="energy" ALIAS="Energy and Demand" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
+	<PROPDEF ORDER="0" NAME="dmdSubInterval" ALIAS="Demand sub-interval" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="Off"/>
+				<ITEM NAME="3 minutes"/>
+				<ITEM NAME="5 minutes"/>
+				<ITEM NAME="10 minutes"/>
+				<ITEM NAME="15 minutes"/>
+				<ITEM NAME="30 minutes"/>
+				<ITEM NAME="1 hour"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ORDER="1" NAME="dmdInterval" ALIAS="Sub-intervals per demand interval" TYPE="1" RO="0">
+		<PARAM MIN="1" MAX="6"/>
+	</PROPDEF>
+	<PROPDEF ORDER="2" NAME="enAccEnable" ALIAS="Enable energy accumulation" TYPE="0" RO="0"/>
+	<PROPDEF ORDER="3" NAME="enAccReset" ALIAS="Reset energy accumulations" TYPE="0" RO="0"/>
+	<BANK ORDER="4" NAME="bankJournal" ALIAS="Journal Channels (select the channel(s) to change)" ROWS="8">
+		<LIST>
+			<ITEM NAME="j373" ALIAS="Watthours A"/>
+			<ITEM NAME="j375" ALIAS="Watthours B"/>
+			<ITEM NAME="j377" ALIAS="Watthours C"/>
+			<ITEM NAME="j380" ALIAS="Watthours Total"/>
+			<ITEM NAME="j381" ALIAS="Varhours A"/>
+			<ITEM NAME="j383" ALIAS="Varhours B"/>
+			<ITEM NAME="j385" ALIAS="Varhours C"/>
+			<ITEM NAME="j388" ALIAS="Varhours Total"/>
+			<ITEM NAME="j389" ALIAS="Fwd Fundamental Watthours A"/>
+			<ITEM NAME="j391" ALIAS="Fwd Fundamental Watthours B"/>
+			<ITEM NAME="j393" ALIAS="Fwd Fundamental Watthours C"/>
+			<ITEM NAME="j396" ALIAS="Rev Fundamental Watthours A"/>
+			<ITEM NAME="j398" ALIAS="Rev Fundamental Watthours B"/>
+			<ITEM NAME="j400" ALIAS="Rev Fundamental Watthours C"/>
+			<ITEM NAME="j403" ALIAS="Fwd Fundamental Watthours Total"/>
+			<ITEM NAME="j404" ALIAS="Rev Fundamental Watthours Total"/>
+			<ITEM NAME="j405" ALIAS="Fwd Fundamental Varhours A"/>
+			<ITEM NAME="j407" ALIAS="Fwd Fundamental Varhours B"/>
+			<ITEM NAME="j409" ALIAS="Fwd Fundamental Varhours C"/>
+			<ITEM NAME="j412" ALIAS="Rev Fundamental Varhours A"/>
+			<ITEM NAME="j414" ALIAS="Rev Fundamental Varhours B"/>
+			<ITEM NAME="j416" ALIAS="Rev Fundamental Varhours C"/>
+			<ITEM NAME="j419" ALIAS="Fwd Fundamental Varhours Total"/>
+			<ITEM NAME="j420" ALIAS="Rev Fundamental Varhours Total"/>
+			<ITEM NAME="j421" ALIAS="Fundamental VA Hours A"/>
+			<ITEM NAME="j423" ALIAS="Fundamental VA Hours B"/>
+			<ITEM NAME="j425" ALIAS="Fundamental VA Hours C"/>
+			<ITEM NAME="j428" ALIAS="Fundamental VA Hours Total"/>
+			<ITEM NAME="j429" ALIAS="Active Power Demand Total"/>
+			<ITEM NAME="j430" ALIAS="Reactive Power Demand Total"/>
+			<ITEM NAME="j431" ALIAS="Apparent Power Demand Total"/>
+			<ITEM NAME="j432" ALIAS="True PF Demand Total"/>
+			<ITEM NAME="j433" ALIAS="Peak Active Power Demand Total"/>
+			<ITEM NAME="j434" ALIAS="Q Dmd at Peak P Dmd Total"/>
+			<ITEM NAME="j435" ALIAS="VA Dmd at Peak P Dmd Total"/>
+			<ITEM NAME="j436" ALIAS="Avg True PF at Peak P Dmd Total"/>
+			<ITEM NAME="j437" ALIAS="Peak Reactive Power Demand Total"/>
+			<ITEM NAME="j438" ALIAS="P Dmd at Peak Q Dmd Total"/>
+			<ITEM NAME="j439" ALIAS="VA Dmd at Peak Q Dmd Total"/>
+			<ITEM NAME="j440" ALIAS="Avg True PF at Peak Q Dmd Total"/>
+			<ITEM NAME="j441" ALIAS="Peak Apparent Power Demand Total"/>
+			<ITEM NAME="j442" ALIAS="P Dmd at Peak S Dmd Total"/>
+			<ITEM NAME="j443" ALIAS="Q Dmd at Peak VA Dmd Total"/>
+			<ITEM NAME="j444" ALIAS="True PF at Peak VA Dmd Total"/>
+			<ITEM NAME="j445" ALIAS="Predicted P Dmd Total"/>
+			<ITEM NAME="j446" ALIAS="Predicted Q Dmd Total"/>
+			<ITEM NAME="j447" ALIAS="Predicted VA Dmd Total"/>
+			<ITEM NAME="j448" ALIAS="Rms Current Demand A"/>
+			<ITEM NAME="j450" ALIAS="Rms Current Demand B"/>
+			<ITEM NAME="j452" ALIAS="Rms Current Demand C"/>
+			<ITEM NAME="j454" ALIAS="Rms Current Demand Total"/>
+			<ITEM NAME="j455" ALIAS="Peak Demand Current A"/>
+			<ITEM NAME="j457" ALIAS="Peak Demand Current B"/>
+			<ITEM NAME="j459" ALIAS="Peak Demand Current C"/>
+			<ITEM NAME="j461" ALIAS="Peak Demand Current Total"/>
+		</LIST>
+		<PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0" RO="0"/>
+		<PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
+		<PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4" RO="0"/>
+	</BANK>
+</SECTION>

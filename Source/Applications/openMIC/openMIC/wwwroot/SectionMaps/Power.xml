@@ -1,0 +1,122 @@
+<SECTION NAME="power" ALIAS="Power" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
+	<PROPDEF ORDER="0" NAME="journalPeriod" ALIAS="Journaling interval" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="Off"/>
+				<ITEM NAME="1 second"/>
+				<ITEM NAME="10 seconds"/>
+				<ITEM NAME="15 seconds"/>
+				<ITEM NAME="30 seconds"/>
+				<ITEM NAME="1 minute"/>
+				<ITEM NAME="2 minutes"/>
+				<ITEM NAME="3 minutes"/>
+				<ITEM NAME="5 minutes"/>
+				<ITEM NAME="10 minutes"/>
+				<ITEM NAME="15 minutes"/>
+				<ITEM NAME="1 hour"/>
+				<ITEM NAME="2 hours"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ORDER="1" NAME="Limit crossing events can change the rate at which data is trended. These settings specify the journaling interval to use when a limit is crossed and how long that interval is applied." TYPE="3"/>
+	<PROPDEF ORDER="2" NAME="journalEventPeriod" ALIAS="Journal event interval" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="Off"/>
+				<ITEM NAME="10 seconds"/>
+				<ITEM NAME="15 seconds"/>
+				<ITEM NAME="30 seconds"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ORDER="3" NAME="journalEventDuration" ALIAS="Journal event duration" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="Off"/>
+				<ITEM NAME="1 minute"/>
+				<ITEM NAME="2 minutes"/>
+				<ITEM NAME="3 minutes"/>
+				<ITEM NAME="5 minutes"/>
+				<ITEM NAME="10 minutes"/>
+				<ITEM NAME="15 minutes"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<BANK ORDER="4" NAME="bankJournal" ALIAS="Journal Channels (select the channel(s) to change)" ROWS="8">
+		<LIST>
+			<ITEM NAME="j73" ALIAS="Rms Voltage A"/>
+			<ITEM NAME="j83" ALIAS="Rms Voltage B"/>
+			<ITEM NAME="j85" ALIAS="Rms Voltage C"/>
+			<ITEM NAME="j87" ALIAS="Rms Voltage N"/>
+			<ITEM NAME="j89" ALIAS="Rms Voltage AB"/>
+			<ITEM NAME="j90" ALIAS="Rms Voltage BC"/>
+			<ITEM NAME="j91" ALIAS="Rms Voltage CA"/>
+			<ITEM NAME="j92" ALIAS="Rms Current A"/>
+			<ITEM NAME="j94" ALIAS="Rms Current B"/>
+			<ITEM NAME="j96" ALIAS="Rms Current C"/>
+			<ITEM NAME="j98" ALIAS="Rms Current N"/>
+			<ITEM NAME="j100" ALIAS="Active Power A"/>
+			<ITEM NAME="j102" ALIAS="Active Power B"/>
+			<ITEM NAME="j104" ALIAS="Active Power C"/>
+			<ITEM NAME="j107" ALIAS="Active Power Total"/>
+			<ITEM NAME="j108" ALIAS="Fundamental Reactive Power A"/>
+			<ITEM NAME="j110" ALIAS="Fundamental Reactive Power B"/>
+			<ITEM NAME="j112" ALIAS="Fundamental Reactive Power C"/>
+			<ITEM NAME="j115" ALIAS="Fundamental Reactive Power Total"/>
+			<ITEM NAME="j116" ALIAS="Apparent Power A"/>
+			<ITEM NAME="j118" ALIAS="Apparent Power B"/>
+			<ITEM NAME="j120" ALIAS="Apparent Power C"/>
+			<ITEM NAME="j123" ALIAS="Apparent Power Total"/>
+			<ITEM NAME="j124" ALIAS="Frequency A"/>
+			<ITEM NAME="j132" ALIAS="VA (Arithmetic) Total"/>
+			<ITEM NAME="j133" ALIAS="VA (Vector) Total"/>
+			<ITEM NAME="j134" ALIAS="Fundamental VA (Arithmetic) Total"/>
+			<ITEM NAME="j135" ALIAS="Fundamental VA (Vector) Total"/>
+			<ITEM NAME="j136" ALIAS="True Power Factor A"/>
+			<ITEM NAME="j138" ALIAS="True Power Factor B"/>
+			<ITEM NAME="j140" ALIAS="True Power Factor C"/>
+			<ITEM NAME="j143" ALIAS="True Power Factor Worst Phase"/>
+			<ITEM NAME="j144" ALIAS="True Power Factor LN Average"/>
+			<ITEM NAME="j145" ALIAS="True PF (Arithmetic) Total"/>
+			<ITEM NAME="j146" ALIAS="True PF (Vector) Total"/>
+			<ITEM NAME="j147" ALIAS="Displacement Power Factor A"/>
+			<ITEM NAME="j149" ALIAS="Displacement Power Factor B"/>
+			<ITEM NAME="j151" ALIAS="Displacement Power Factor C"/>
+			<ITEM NAME="j154" ALIAS="Displacement Power Factor Worst Phase"/>
+			<ITEM NAME="j155" ALIAS="Displacement Power Factor LN Average"/>
+			<ITEM NAME="j156" ALIAS="DPF (Arithmetic) Total"/>
+			<ITEM NAME="j157" ALIAS="DPF (Vector) Total"/>
+			<ITEM NAME="j158" ALIAS="Rms Current Residual"/>
+			<ITEM NAME="j159" ALIAS="Rms Current Net"/>
+			<ITEM NAME="j166" ALIAS="V Unbalance (Rms/Rms Avg) A"/>
+			<ITEM NAME="j167" ALIAS="V Unbalance (Rms/Rms Avg) B"/>
+			<ITEM NAME="j168" ALIAS="V Unbalance (Rms/Rms Avg) C"/>
+			<ITEM NAME="j172" ALIAS="V Unbalance (Rms/Rms Avg) LN Average"/>
+			<ITEM NAME="j173" ALIAS="V Unbalance (Rms/Rms Avg) LL Average"/>
+			<ITEM NAME="j176" ALIAS="I Unbalance (Rms/Rms Avg) A"/>
+			<ITEM NAME="j177" ALIAS="I Unbalance (Rms/Rms Avg) B"/>
+			<ITEM NAME="j178" ALIAS="I Unbalance (Rms/Rms Avg) C"/>
+			<ITEM NAME="j179" ALIAS="I Unbalance (Rms/Rms Avg) LN Average"/>
+			<ITEM NAME="j530" ALIAS="Voltage Angle A"/>
+			<ITEM NAME="j532" ALIAS="Voltage Angle B"/>
+			<ITEM NAME="j534" ALIAS="Voltage Angle C"/>
+			<ITEM NAME="j540" ALIAS="Current Angle A"/>
+			<ITEM NAME="j542" ALIAS="Current Angle B"/>
+			<ITEM NAME="j544" ALIAS="Current Angle C"/>
+			<ITEM NAME="j547" ALIAS="Voltage to Current Angle A"/>
+			<ITEM NAME="j549" ALIAS="Voltage to Current Angle B"/>
+			<ITEM NAME="j551" ALIAS="Voltage to Current Angle C"/>
+			<ITEM NAME="j554" ALIAS="Rapid Voltage Change A"/>
+			<ITEM NAME="j557" ALIAS="Rapid Voltage Change B"/>
+			<ITEM NAME="j560" ALIAS="Rapid Voltage Change C"/>
+		</LIST>
+		<PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0" RO="0"/>
+		<PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
+		<PROPDEF NAME="enableWF" ALIAS="Enable waveform capture" TYPE="0" RO="0"/>
+		<PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4" RO="0"/>
+	</BANK>
+</SECTION>

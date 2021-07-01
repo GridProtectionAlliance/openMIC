@@ -7,5 +7,6 @@
     <Directory Id="IMAGESICONSFOLDER" Name="Icons" />
   </Directory>
   <Directory Id="SCRIPTSFOLDER" Name="Scripts" />
+  <Directory Id="SECTIONMAPSFOLDER" Name="SectionMaps" />
 </Directory>
 </Include>

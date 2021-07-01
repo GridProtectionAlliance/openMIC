@@ -1,0 +1,21 @@
+<SECTION NAME="transients" ALIAS="Transients" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
+	<BANK NAME="bankTransientLimits" ALIAS="Transient Limits (select the channel(s) to change)" ROWS="8">
+		<LIST>
+			<ITEM NAME="ci1" ALIAS="Instantaneous Voltage A"/>
+			<ITEM NAME="ci6" ALIAS="Instantaneous Voltage B"/>
+			<ITEM NAME="ci11" ALIAS="Instantaneous Voltage C"/>
+			<ITEM NAME="ci17" ALIAS="Instantaneous Voltage N"/>
+			<ITEM NAME="ci27" ALIAS="Instantaneous Current A"/>
+			<ITEM NAME="ci32" ALIAS="Instantaneous Current B"/>
+			<ITEM NAME="ci37" ALIAS="Instantaneous Current C"/>
+			<ITEM NAME="ci42" ALIAS="Instantaneous Current N"/>
+		</LIST>
+		<PROPDEF NAME="TransIPTThreshold" ALIAS="Absolute instantaneous peak" TYPE="4" RO="0"/>
+		<PROPDEF NAME="transCCWSThreshold" ALIAS="Cycle-to-cycle waveshape threshold" TYPE="4" RO="0"/>
+		<PROPDEF NAME="transCCWSDuration" ALIAS="Cycle-to-cycle waveshape duration (% of cycle)" TYPE="4" RO="0"/>
+		<PROPDEF NAME="transRMSDistWSThreshold" ALIAS="RMS distortion waveshape" TYPE="4" RO="0"/>
+	</BANK>
+	<PROPDEF NAME="Waveform Capture" TYPE="3"/>
+	<PROPDEF NAME="transWFPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="4" RO="0"/>
+	<PROPDEF NAME="transWFPosttrigger" ALIAS="Post-trigger (Cycles)" TYPE="4" RO="0"/>
+</SECTION>

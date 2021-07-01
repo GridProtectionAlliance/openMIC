@@ -170,4 +170,33 @@
     <File Id="Scripts_Site.js" Name="Site.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\Site.js" />
   </Component>
 </ComponentGroup>
+<ComponentGroup Id="wwwroot_SectionMaps_Components" Directory="SECTIONMAPSFOLDER">
+  <Component Id="SectionMaps_CrossTriggering_xml">
+    <File Id="SectionMaps_CrossTriggering.xml" Name="CrossTriggering.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\CrossTriggering.xml" />
+  </Component>
+  <Component Id="SectionMaps_EnergyAndDemand_xml">
+    <File Id="SectionMaps_EnergyAndDemand.xml" Name="EnergyAndDemand.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\EnergyAndDemand.xml" />
+  </Component>
+  <Component Id="SectionMaps_Flicker_xml">
+    <File Id="SectionMaps_Flicker.xml" Name="Flicker.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Flicker.xml" />
+  </Component>
+  <Component Id="SectionMaps_Harmonics_xml">
+    <File Id="SectionMaps_Harmonics.xml" Name="Harmonics.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Harmonics.xml" />
+  </Component>
+  <Component Id="SectionMaps_InputConfiguration_xml">
+    <File Id="SectionMaps_InputConfiguration.xml" Name="InputConfiguration.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\InputConfiguration.xml" />
+  </Component>
+  <Component Id="SectionMaps_Power_xml">
+    <File Id="SectionMaps_Power.xml" Name="Power.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Power.xml" />
+  </Component>
+  <Component Id="SectionMaps_RMSVariations_xml">
+    <File Id="SectionMaps_RMSVariations.xml" Name="RMSVariations.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\RMSVariations.xml" />
+  </Component>
+  <Component Id="SectionMaps_Transients_xml">
+    <File Id="SectionMaps_Transients.xml" Name="Transients.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Transients.xml" />
+  </Component>
+  <Component Id="SectionMaps_WaveformCapture_xml">
+    <File Id="SectionMaps_WaveformCapture.xml" Name="WaveformCapture.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\WaveformCapture.xml" />
+  </Component>
+</ComponentGroup>
 </Include>

@@ -1,0 +1,41 @@
+<SECTION NAME="wfCapture" ALIAS="Waveform Capture" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
+	<PROPDEF ORDER="0" NAME="wfPeriod" ALIAS="Periodic capture interval" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="Off"/>
+				<ITEM NAME="30 seconds"/>
+				<ITEM NAME="1 minute"/>
+				<ITEM NAME="2 minutes"/>
+				<ITEM NAME="3 minutes"/>
+				<ITEM NAME="5 minutes"/>
+				<ITEM NAME="10 minutes"/>
+				<ITEM NAME="15 minutes"/>
+				<ITEM NAME="1 hour"/>
+				<ITEM NAME="2 hours"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<BANK ORDER="1" NAME="bankNWFCapture" ALIAS="Waveform Capture Enables (Select the trigger channel(s) to enable or disable)" ROWS="11">
+		<LIST>
+			<ITEM NAME="wfc0" ALIAS="Voltage A"/>
+			<ITEM NAME="wfc1" ALIAS="Voltage B"/>
+			<ITEM NAME="wfc2" ALIAS="Voltage C"/>
+			<ITEM NAME="wfc3" ALIAS="Voltage N"/>
+			<ITEM NAME="wfc8" ALIAS="Voltage AB"/>
+			<ITEM NAME="wfc9" ALIAS="Voltage BC"/>
+			<ITEM NAME="wfc10" ALIAS="Voltage CA"/>
+			<ITEM NAME="wfc4" ALIAS="Current A"/>
+			<ITEM NAME="wfc5" ALIAS="Current B"/>
+			<ITEM NAME="wfc6" ALIAS="Current C"/>
+			<ITEM NAME="wfc7" ALIAS="Current N"/>
+		</LIST>
+		<PROPDEF NAME="i0" ALIAS="Voltage A" TYPE="0" RO="0"/>
+		<PROPDEF NAME="i1" ALIAS="Voltage B" TYPE="0" RO="0"/>
+		<PROPDEF NAME="i2" ALIAS="Voltage C" TYPE="0" RO="0"/>
+		<PROPDEF NAME="i3" ALIAS="Voltage N" TYPE="0" RO="0"/>
+		<PROPDEF NAME="i4" ALIAS="Current A" TYPE="0" RO="0"/>
+		<PROPDEF NAME="i5" ALIAS="Current B" TYPE="0" RO="0"/>
+		<PROPDEF NAME="i6" ALIAS="Current C" TYPE="0" RO="0"/>
+		<PROPDEF NAME="i7" ALIAS="Current N" TYPE="0" RO="0"/>
+	</BANK>
+</SECTION>

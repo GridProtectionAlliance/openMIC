@@ -1,0 +1,204 @@
+<SECTION NAME="harmonics" ALIAS="Harmonics" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
+	<PROPDEF ORDER="0" NAME="journalPeriod" ALIAS="Journaling interval" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="Off"/>
+				<ITEM NAME="30 seconds"/>
+				<ITEM NAME="1 minute"/>
+				<ITEM NAME="2 minutes"/>
+				<ITEM NAME="3 minutes"/>
+				<ITEM NAME="5 minutes"/>
+				<ITEM NAME="10 minutes"/>
+				<ITEM NAME="15 minutes"/>
+				<ITEM NAME="1 hour"/>
+				<ITEM NAME="2 hours"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ORDER="2" NAME="maxDemandCurrent" ALIAS="Maximum demand load current" TYPE="2" RO="0"/>
+	<BANK ORDER="3" NAME="bankJournal" ALIAS="Journal Channels (select the channel(s) to change)" ROWS="8">
+		<LIST>
+			<ITEM NAME="j160" ALIAS="Positive Sequence Voltage Total"/>
+			<ITEM NAME="j161" ALIAS="Negative Sequence Voltage Total"/>
+			<ITEM NAME="j162" ALIAS="Zero Sequence Voltage Total"/>
+			<ITEM NAME="j163" ALIAS="Positive Sequence Current Total"/>
+			<ITEM NAME="j164" ALIAS="Negative Sequence Current Total"/>
+			<ITEM NAME="j165" ALIAS="Zero Sequence Current Total"/>
+			<ITEM NAME="j174" ALIAS="V Unbalance (S2/S1) Total"/>
+			<ITEM NAME="j175" ALIAS="V Unbalance (S0/S1) Total"/>
+			<ITEM NAME="j180" ALIAS="I Unbalance (S2/S1) Total"/>
+			<ITEM NAME="j181" ALIAS="I Unbalance (S0/S1) Total"/>
+			<ITEM NAME="j182" ALIAS="Voltage THD A"/>
+			<ITEM NAME="j184" ALIAS="Voltage THD B"/>
+			<ITEM NAME="j186" ALIAS="Voltage THD C"/>
+			<ITEM NAME="j188" ALIAS="Voltage THD N"/>
+			<ITEM NAME="j190" ALIAS="Even THD Voltage A"/>
+			<ITEM NAME="j193" ALIAS="Even THD Voltage B"/>
+			<ITEM NAME="j196" ALIAS="Even THD Voltage C"/>
+			<ITEM NAME="j199" ALIAS="Even THD Voltage N"/>
+			<ITEM NAME="j201" ALIAS="Odd THD Voltage A"/>
+			<ITEM NAME="j204" ALIAS="Odd THD Voltage B"/>
+			<ITEM NAME="j207" ALIAS="Odd THD Voltage C"/>
+			<ITEM NAME="j210" ALIAS="Odd THD Voltage N"/>
+			<ITEM NAME="j212" ALIAS="Voltage TID A"/>
+			<ITEM NAME="j214" ALIAS="Voltage TID B"/>
+			<ITEM NAME="j216" ALIAS="Voltage TID C"/>
+			<ITEM NAME="j218" ALIAS="Voltage TID N"/>
+			<ITEM NAME="j220" ALIAS="Harmonic Rms Voltage A"/>
+			<ITEM NAME="j222" ALIAS="Harmonic Rms Voltage B"/>
+			<ITEM NAME="j224" ALIAS="Harmonic Rms Voltage C"/>
+			<ITEM NAME="j226" ALIAS="Harmonic Rms Voltage N"/>
+			<ITEM NAME="j228" ALIAS="Interharmonic Rms Voltage A"/>
+			<ITEM NAME="j230" ALIAS="Interharmonic Rms Voltage B"/>
+			<ITEM NAME="j232" ALIAS="Interharmonic Rms Voltage C"/>
+			<ITEM NAME="j234" ALIAS="Interharmonic Rms Voltage N"/>
+			<ITEM NAME="j236" ALIAS="Voltage TIF A"/>
+			<ITEM NAME="j238" ALIAS="Voltage TIF B"/>
+			<ITEM NAME="j240" ALIAS="Voltage TIF C"/>
+			<ITEM NAME="j242" ALIAS="Voltage TIF N"/>
+			<ITEM NAME="j244" ALIAS="Voltage TIF (Rms) A"/>
+			<ITEM NAME="j246" ALIAS="Voltage TIF (Rms) B"/>
+			<ITEM NAME="j248" ALIAS="Voltage TIF (Rms) C"/>
+			<ITEM NAME="j250" ALIAS="Voltage TIF (Rms) N"/>
+			<ITEM NAME="j252" ALIAS="Voltage Crest Factor A"/>
+			<ITEM NAME="j254" ALIAS="Voltage Crest Factor B"/>
+			<ITEM NAME="j256" ALIAS="Voltage Crest Factor C"/>
+			<ITEM NAME="j258" ALIAS="Voltage Crest Factor N"/>
+			<ITEM NAME="j281" ALIAS="Current THD A"/>
+			<ITEM NAME="j283" ALIAS="Current THD B"/>
+			<ITEM NAME="j285" ALIAS="Current THD C"/>
+			<ITEM NAME="j287" ALIAS="Current THD N"/>
+			<ITEM NAME="j289" ALIAS="Even THD Current A"/>
+			<ITEM NAME="j291" ALIAS="Even THD Current B"/>
+			<ITEM NAME="j293" ALIAS="Even THD Current C"/>
+			<ITEM NAME="j295" ALIAS="Even THD Current N"/>
+			<ITEM NAME="j297" ALIAS="Odd THD Current A"/>
+			<ITEM NAME="j299" ALIAS="Odd THD Current B"/>
+			<ITEM NAME="j301" ALIAS="Odd THD Current C"/>
+			<ITEM NAME="j303" ALIAS="Odd THD Current N"/>
+			<ITEM NAME="j305" ALIAS="Current TID A"/>
+			<ITEM NAME="j307" ALIAS="Current TID B"/>
+			<ITEM NAME="j309" ALIAS="Current TID C"/>
+			<ITEM NAME="j311" ALIAS="Current TID N"/>
+			<ITEM NAME="j313" ALIAS="Harmonic Rms Current A"/>
+			<ITEM NAME="j315" ALIAS="Harmonic Rms Current B"/>
+			<ITEM NAME="j317" ALIAS="Harmonic Rms Current C"/>
+			<ITEM NAME="j319" ALIAS="Harmonic Rms Current N"/>
+			<ITEM NAME="j321" ALIAS="Interharmonic Rms Current A"/>
+			<ITEM NAME="j323" ALIAS="Interharmonic Rms Current B"/>
+			<ITEM NAME="j325" ALIAS="Interharmonic Rms Current C"/>
+			<ITEM NAME="j327" ALIAS="Interharmonic Rms Current N"/>
+			<ITEM NAME="j329" ALIAS="IT Product A"/>
+			<ITEM NAME="j331" ALIAS="IT Product B"/>
+			<ITEM NAME="j333" ALIAS="IT Product C"/>
+			<ITEM NAME="j335" ALIAS="IT Product N"/>
+			<ITEM NAME="j337" ALIAS="Current Crest Factor A"/>
+			<ITEM NAME="j339" ALIAS="Current Crest Factor B"/>
+			<ITEM NAME="j341" ALIAS="Current Crest Factor C"/>
+			<ITEM NAME="j343" ALIAS="Current Crest Factor N"/>
+			<ITEM NAME="j345" ALIAS="IEEE 519 Current TDD A"/>
+			<ITEM NAME="j347" ALIAS="IEEE 519 Current TDD B"/>
+			<ITEM NAME="j349" ALIAS="IEEE 519 Current TDD C"/>
+			<ITEM NAME="j352" ALIAS="Transformer K Factor A"/>
+			<ITEM NAME="j354" ALIAS="Transformer K Factor B"/>
+			<ITEM NAME="j356" ALIAS="Transformer K Factor C"/>
+			<ITEM NAME="j359" ALIAS="ANSI Transformer Derating Factor A"/>
+			<ITEM NAME="j361" ALIAS="ANSI Transformer Derating Factor B"/>
+			<ITEM NAME="j363" ALIAS="ANSI Transformer Derating Factor C"/>
+			<ITEM NAME="j366" ALIAS="Harmonic Power A"/>
+			<ITEM NAME="j368" ALIAS="Harmonic Power B"/>
+			<ITEM NAME="j370" ALIAS="Harmonic Power C"/>
+			<ITEM NAME="j564" ALIAS="Rms Underdeviation Voltage A"/>
+			<ITEM NAME="j565" ALIAS="Rms Underdeviation Voltage B"/>
+			<ITEM NAME="j566" ALIAS="Rms Underdeviation Voltage C"/>
+			<ITEM NAME="j567" ALIAS="Rms Underdeviation Voltage AB"/>
+			<ITEM NAME="j568" ALIAS="Rms Underdeviation Voltage BC"/>
+			<ITEM NAME="j569" ALIAS="Rms Underdeviation Voltage CA"/>
+			<ITEM NAME="j570" ALIAS="Rms Overdeviation Voltage A"/>
+			<ITEM NAME="j571" ALIAS="Rms Overdeviation Voltage B"/>
+			<ITEM NAME="j572" ALIAS="Rms Overdeviation Voltage C"/>
+			<ITEM NAME="j573" ALIAS="Rms Overdeviation Voltage AB"/>
+			<ITEM NAME="j574" ALIAS="Rms Overdeviation Voltage BC"/>
+			<ITEM NAME="j575" ALIAS="Rms Overdeviation Voltage CA"/>
+		</LIST>
+		<PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0" RO="0"/>
+		<PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
+		<PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4" RO="0"/>
+	</BANK>
+	<BANK NAME="bankHarmonicTrending" ALIAS="Individual Harmonic Trending (select the channel(s) to change)" ROWS="8">
+		<LIST>
+			<ITEM NAME="he576" ALIAS="Harmonic Voltage A"/>
+			<ITEM NAME="he579" ALIAS="Harmonic Voltage B"/>
+			<ITEM NAME="he582" ALIAS="Harmonic Voltage C"/>
+			<ITEM NAME="he585" ALIAS="Harmonic Voltage N"/>
+			<ITEM NAME="he587" ALIAS="Interharmonic Voltage A"/>
+			<ITEM NAME="he590" ALIAS="Interharmonic Voltage B"/>
+			<ITEM NAME="he593" ALIAS="Interharmonic Voltage C"/>
+			<ITEM NAME="he596" ALIAS="Interharmonic Voltage N"/>
+			<ITEM NAME="he598" ALIAS="Harmonic Current A"/>
+			<ITEM NAME="he600" ALIAS="Harmonic Current B"/>
+			<ITEM NAME="he602" ALIAS="Harmonic Current C"/>
+			<ITEM NAME="he604" ALIAS="Harmonic Current N"/>
+			<ITEM NAME="he606" ALIAS="Interharmonic Current A"/>
+			<ITEM NAME="he608" ALIAS="Interharmonic Current B"/>
+			<ITEM NAME="he610" ALIAS="Interharmonic Current C"/>
+			<ITEM NAME="he612" ALIAS="Interharmonic Current N"/>
+		</LIST>
+		<PROPDEF NAME="harmTrendingEnable" ALIAS="Harmonics to trend" TYPE="4" RO="0"/>
+	</BANK>
+	<BANK NAME="bankHarmonicLimits" ALIAS="Individual Harmonic Limits (select the channel(s) to change)" ROWS="8">
+		<LIST>
+			<ITEM NAME="hl614_0" ALIAS="Voltage Spectra A #1"/>
+			<ITEM NAME="hl614_1" ALIAS="Voltage Spectra A #2"/>
+			<ITEM NAME="hl614_2" ALIAS="Voltage Spectra A #3"/>
+			<ITEM NAME="hl614_3" ALIAS="Voltage Spectra A #4"/>
+			<ITEM NAME="hl614_4" ALIAS="Voltage Spectra A #5"/>
+			<ITEM NAME="hl617_0" ALIAS="Voltage Spectra B #1"/>
+			<ITEM NAME="hl617_1" ALIAS="Voltage Spectra B #2"/>
+			<ITEM NAME="hl617_2" ALIAS="Voltage Spectra B #3"/>
+			<ITEM NAME="hl617_3" ALIAS="Voltage Spectra B #4"/>
+			<ITEM NAME="hl617_4" ALIAS="Voltage Spectra B #5"/>
+			<ITEM NAME="hl620_0" ALIAS="Voltage Spectra C #1"/>
+			<ITEM NAME="hl620_1" ALIAS="Voltage Spectra C #2"/>
+			<ITEM NAME="hl620_2" ALIAS="Voltage Spectra C #3"/>
+			<ITEM NAME="hl620_3" ALIAS="Voltage Spectra C #4"/>
+			<ITEM NAME="hl620_4" ALIAS="Voltage Spectra C #5"/>
+			<ITEM NAME="hl623_0" ALIAS="Voltage Spectra N #1"/>
+			<ITEM NAME="hl623_1" ALIAS="Voltage Spectra N #2"/>
+			<ITEM NAME="hl623_2" ALIAS="Voltage Spectra N #3"/>
+			<ITEM NAME="hl623_3" ALIAS="Voltage Spectra N #4"/>
+			<ITEM NAME="hl623_4" ALIAS="Voltage Spectra N #5"/>
+			<ITEM NAME="hl625_0" ALIAS="Current Spectra A #1"/>
+			<ITEM NAME="hl625_1" ALIAS="Current Spectra A #2"/>
+			<ITEM NAME="hl625_2" ALIAS="Current Spectra A #3"/>
+			<ITEM NAME="hl625_3" ALIAS="Current Spectra A #4"/>
+			<ITEM NAME="hl625_4" ALIAS="Current Spectra A #5"/>
+			<ITEM NAME="hl627_0" ALIAS="Current Spectra B #1"/>
+			<ITEM NAME="hl627_1" ALIAS="Current Spectra B #2"/>
+			<ITEM NAME="hl627_2" ALIAS="Current Spectra B #3"/>
+			<ITEM NAME="hl627_3" ALIAS="Current Spectra B #4"/>
+			<ITEM NAME="hl627_4" ALIAS="Current Spectra B #5"/>
+			<ITEM NAME="hl629_0" ALIAS="Current Spectra C #1"/>
+			<ITEM NAME="hl629_1" ALIAS="Current Spectra C #2"/>
+			<ITEM NAME="hl629_2" ALIAS="Current Spectra C #3"/>
+			<ITEM NAME="hl629_3" ALIAS="Current Spectra C #4"/>
+			<ITEM NAME="hl629_4" ALIAS="Current Spectra C #5"/>
+			<ITEM NAME="hl631_0" ALIAS="Current Spectra N #1"/>
+			<ITEM NAME="hl631_1" ALIAS="Current Spectra N #2"/>
+			<ITEM NAME="hl631_2" ALIAS="Current Spectra N #3"/>
+			<ITEM NAME="hl631_3" ALIAS="Current Spectra N #4"/>
+			<ITEM NAME="hl631_4" ALIAS="Current Spectra N #5"/>
+		</LIST>
+		<PROPDEF NAME="harmonicFreq" ALIAS="Frequency (5Hz bin)" TYPE="1" RO="0"/>
+		<PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
+		<PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
+		<PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4" RO="0"/>
+	</BANK>
+</SECTION>

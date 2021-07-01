@@ -1,0 +1,99 @@
+<SECTION NAME="crossTrig" ALIAS="Cross-Triggering" REFRESH="1">
+	<PROPDEF ALIAS="Communication Configuration (common to all messages)" TYPE="3"/>
+	<PROPDEF NAME="crossTrigGroupID" ALIAS="Broadcast group ID" TYPE="4" RO="0"/>
+	<PROPDEF NAME="crossTrigBroadcastAddr" ALIAS="Broadcast address (empty for local)" TYPE="4" RO="0"/>
+	<PROPDEF ALIAS="RMS Event Message Configuration" TYPE="3"/>
+	<PROPDEF NAME="crossTrigSendRMS" ALIAS="Send this message when a RMS event is detected" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="None (disabled)"/>
+				<ITEM NAME="0 (default for Transient events)"/>
+				<ITEM NAME="1"/>
+				<ITEM NAME="2"/>
+				<ITEM NAME="3"/>
+				<ITEM NAME="4"/>
+				<ITEM NAME="5"/>
+				<ITEM NAME="6"/>
+				<ITEM NAME="7"/>
+				<ITEM NAME="8 (default for RMS events)"/>
+				<ITEM NAME="9"/>
+				<ITEM NAME="10"/>
+				<ITEM NAME="11"/>
+				<ITEM NAME="12"/>
+				<ITEM NAME="13"/>
+				<ITEM NAME="14"/>
+				<ITEM NAME="15"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="crossTrigReceiveRMS" ALIAS="Record a RMS event when this message is received" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="None (disabled)"/>
+				<ITEM NAME="0 (default for Transient events)"/>
+				<ITEM NAME="1"/>
+				<ITEM NAME="2"/>
+				<ITEM NAME="3"/>
+				<ITEM NAME="4"/>
+				<ITEM NAME="5"/>
+				<ITEM NAME="6"/>
+				<ITEM NAME="7"/>
+				<ITEM NAME="8 (default for RMS events)"/>
+				<ITEM NAME="9"/>
+				<ITEM NAME="10"/>
+				<ITEM NAME="11"/>
+				<ITEM NAME="12"/>
+				<ITEM NAME="13"/>
+				<ITEM NAME="14"/>
+				<ITEM NAME="15"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ALIAS="Transient Event Message Configuration" TYPE="3"/>
+	<PROPDEF NAME="crossTrigSendTransient" ALIAS="Send this message when a Transient event is detected" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="None (disabled)"/>
+				<ITEM NAME="0 (default for Transient events)"/>
+				<ITEM NAME="1"/>
+				<ITEM NAME="2"/>
+				<ITEM NAME="3"/>
+				<ITEM NAME="4"/>
+				<ITEM NAME="5"/>
+				<ITEM NAME="6"/>
+				<ITEM NAME="7"/>
+				<ITEM NAME="8 (default for RMS events)"/>
+				<ITEM NAME="9"/>
+				<ITEM NAME="10"/>
+				<ITEM NAME="11"/>
+				<ITEM NAME="12"/>
+				<ITEM NAME="13"/>
+				<ITEM NAME="14"/>
+				<ITEM NAME="15"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="crossTrigReceiveTransient" ALIAS="Record a Transient event when this message is received" TYPE="8" DEFAULT="0" RO="0">
+		<PARAM TYPE="1">
+			<LIST>
+				<ITEM NAME="None (disabled)"/>
+				<ITEM NAME="0 (default for Transient events)"/>
+				<ITEM NAME="1"/>
+				<ITEM NAME="2"/>
+				<ITEM NAME="3"/>
+				<ITEM NAME="4"/>
+				<ITEM NAME="5"/>
+				<ITEM NAME="6"/>
+				<ITEM NAME="7"/>
+				<ITEM NAME="8 (default for RMS events)"/>
+				<ITEM NAME="9"/>
+				<ITEM NAME="10"/>
+				<ITEM NAME="11"/>
+				<ITEM NAME="12"/>
+				<ITEM NAME="13"/>
+				<ITEM NAME="14"/>
+				<ITEM NAME="15"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+</SECTION>

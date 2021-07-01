@@ -103,11 +103,33 @@
         }
 
         div.header {
-            border-bottom: solid;
+            border-bottom: 4px solid;
+        }
+
+        table.section-elements {
+            border-spacing: 0 4px;
+            border-collapse: separate;
+            width: 100%;
         }
 
         .list-bank {
             margin-bottom: 10px;
+        }
+
+        th.bank-header {
+            padding-bottom: 0;
+        }
+
+        th.bank-footer {
+            padding-top: 0;
+        }
+
+        tr.bank-group {
+            border: 1px solid;
+        }
+
+        td.bank-group {
+            padding: 2px;
         }
 
         .btn-bank {
@@ -141,6 +163,10 @@
 
         .ui-tabs .ui-tabs-nav li a {
             font-size: 10pt !important;
+        }
+
+        input:out-of-range {
+            background-color: rgba(255, 0, 0, 0.25);
         }
 
         .tooltip-inner {
@@ -332,7 +358,6 @@
     <script>
         "use strict";
 
-        const unmapped = [];
         var viewModel = null;
         var deviceID = @deviceID;
 
@@ -451,10 +476,6 @@
                                 showErrorMessage(error);
                             }));
                         }
-
-                        // DEBUG: Remove this
-                        if (sections[key].index === 0)
-                            break;
                     }
 
                     return $(promises).whenAll();
@@ -699,8 +720,8 @@
             return $("<div/>").text(value).html().replace(/&/g, "%26");
         }
 
-        function getVal(name) {
-            const values = $(`#${name}`).val() || [];
+        function getVal(bankTarget) {
+            const values = $(`#${bankTarget}`).val() || [];
 
             if (values.length > 0)
                 return parseInt(values[0], 10);
@@ -709,7 +730,7 @@
         }
 
         function selectBankItem(bankTarget) {
-            $(`[${bankTarget}]`).each(function () {
+            $(`[bank="${bankTarget}"]`).each(function () {
                 try {
                     eval(`${$(this).attr("update-expr")}()`);
                 } catch (e) {
@@ -727,7 +748,9 @@
             SELECT: "8"
         }
 
-        function buildListElement(list, listID, map, bankTarget, readOnly, defaultVal, isBankList) {
+        const unmapped = 0;
+
+        function buildListElement(list, listID, map, bankTarget, readOnly, defaultVal, isBankList, rows) {
             const html = [];
             const script = [];
             let index = 0;
@@ -736,19 +759,19 @@
                 bankTarget = "";
 
             if (isBankList) {
-                script.push(`const update${listID} = new Function("$('#${listID} option').removeAttr('selected');  $('#${listID} option[value=0]').prop('selected', true);"); $('#${listID}').focus();`);
-                html.push(`<select multiple class="form-control list-bank" id="${listID}" onchange="selectBankItem('${listID}')" update-expr="update${listID}">`);
+                script.push(`const update_${listID} = new Function("$('#${listID} option').removeAttr('selected');  $('#${listID} option[value=0]').prop('selected', true);"); $('#${listID}').focus();`);
+                html.push(`<select multiple class="form-control list-bank" id="${listID}"${rows ? ` size="${rows}"`: ``} onchange="selectBankItem('${listID}')" update-expr="update_${listID}">`);
             } else {
-                script.push(`const ${listID}changed = new Function("${map} = getVal('${listID}'); viewModel.configChanged();");`);
-                script.push(`$("#${listID}").change(${listID}changed);`);
-                script.push(`const update${listID} = new Function("${readOnly ? `` : `$('#${listID} option[value=' + ${map} + ']').prop('selected', true)`};");`);
-                html.push(`<select class="form-control" id="${listID}" update-expr="update${listID}" data-toggle="tooltip" title="${map}" ${bankTarget}>`);
+                script.push(`const ${listID}_changed = new Function("${map} = getVal('${listID}'); viewModel.configChanged();");`);
+                script.push(`$("#${listID}").change(${listID}_changed);`);
+                script.push(`const update_${listID} = new Function("${readOnly ? `` : `$('#${listID} option[value=' + ${map} + ']').prop('selected', true)`};");`);
+                html.push(`<select class="form-control" id="${listID}" update-expr="update_${listID}" data-toggle="tooltip" title="${map}" bank="${bankTarget}">`);
             }
 
             for (let i = 0; i < list.ITEM.length; i++) {
                 const value = list.ITEM[i];
                 const optVal = value["@@VALUE"] || index;
-                html.push(`<option value="${optVal}"${optVal === defaultVal ? " selected" : ""}>${htmlEncode(value["@@NAME"])}</option>`);
+                html.push(`<option value="${optVal}"${optVal === defaultVal ? " selected" : ""}>${htmlEncode(value["@@ALIAS"] || value["@@NAME"])}</option>`);
                 index++;
             }
 
@@ -769,9 +792,12 @@
             const alias = propDef["@@ALIAS"];
             const readOnly = parseInt(propDef["@@RO"] || "1", 10) > 0;
             const mapExpr = propDef["@@MAP"] || "unmapped";
-            const map = mapExpr.startsWith(".") ? `${mapRoot}${mapExpr}` : mapExpr;
+            const map = String.format(mapExpr.startsWith(".") ? `${mapRoot}${mapExpr}` : mapExpr, bankTarget);
             const defaultVal = propDef["@@DEFAULT"];
-            const maxLen = propDef.PARAM ? propDef.PARAM["@@LEN"] : null;
+            const hasParam = propDef.hasOwnProperty("PARAM");
+            const min = hasParam ? propDef.PARAM["@@MIN"] : undefined;
+            const max = hasParam ? propDef.PARAM["@@MAX"] : undefined;
+            const maxLen = hasParam ? propDef.PARAM["@@LEN"] : undefined;
             const html = [];
             const script = [];
 
@@ -782,39 +808,39 @@
 
             switch (type) {
                 case PropDefType.CHECKBOX:
-                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').prop('checked') ? '1' : '0'; viewModel.configChanged();");`);
-                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').prop('checked', parseInt(${map}, 10) > 0)`};");`);
-                    script.push(`$("#${name}").change(${name}changed);`);
-                    html.push(`<input type="checkbox" id="${name}" update-expr="update${name}" data-toggle="tooltip" title="${map}" ${bankTarget}/>`);
+                    script.push(`const ${name}_changed = new Function("${map} = $('#${name}').prop('checked') ? '1' : '0'; viewModel.configChanged();");`);
+                    script.push(`const update_${name} = new Function("${readOnly ? `` : `$('#${name}').prop('checked', parseInt(${map}, 10) > 0)`};");`);
+                    script.push(`$("#${name}").change(${name}_changed);`);
+                    html.push(`<input type="checkbox" id="${name}" update-expr="update_${name}" data-toggle="tooltip" title="${map}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.NUMERIC:
-                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
-                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
-                    script.push(`$("#${name}").change(${name}changed);`);
-                    html.push(`<input type="number" id="${name}" update-expr="update${name}" data-toggle="tooltip" title="${map}" ${bankTarget}/>`);
+                    script.push(`const ${name}_changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
+                    script.push(`const update_${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
+                    script.push(`$("#${name}").change(${name}_changed);`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${min ? ` min="${min}"` : ``}${max ? ` max="${max}"` : ``} update-expr="update_${name}" data-toggle="tooltip" title="${map}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.FLOAT:
-                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
-                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').val(parseFloat(${map}).toFixed(4))`};");`);
-                    script.push(`$("#${name}").change(${name}changed);`);
-                    html.push(`<input type="number" id="${name}" update-expr="update${name}" data-toggle="tooltip" title="${map}" ${bankTarget}/>`);
+                    script.push(`const ${name}_changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
+                    script.push(`const update_${name} = new Function("${readOnly ? `` : `$('#${name}').val(parseFloat(${map}).toFixed(4))`};");`);
+                    script.push(`$("#${name}").change(${name}_changed);`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${min ? ` min="${min}"` : ``}${max ? ` max="${max}"` : ``} update-expr="update_${name}" data-toggle="tooltip" title="${map}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.TEXT:
-                    script.push(`const ${name}changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
-                    script.push(`const update${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
-                    script.push(`$("#${name}").change(${name}changed);`);
-                    html.push(`<input type="text" id="${name}"${maxLen ? `` : ` maxlength="${maxLen}"`} update-expr="update${name}" data-toggle="tooltip" title="${map}" ${bankTarget}/>`);
+                    script.push(`const ${name}_changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
+                    script.push(`const update_${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
+                    script.push(`$("#${name}").change(${name}_changed);`);
+                    html.push(`<input type="text" class="form-control" id="${name}"${maxLen ? ` maxlength="${maxLen}"` : ``} update-expr="update_${name}" data-toggle="tooltip" title="${map}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.SELECT:
-                    {
-                        const [ listHtml, listScript ] = buildListElement(propDef.PARAM.LIST, name, map, bankTarget, readOnly, defaultVal);
+                {
+                    const [ listHtml, listScript ] = buildListElement(propDef.PARAM.LIST, name, map, bankTarget, readOnly, defaultVal);
 
-                        html.push(listHtml);
+                    html.push(listHtml);
 
-                        if (listScript.length > 0)
-                            script.push(listScript);
-                    }
-                    break;
+                    if (listScript.length > 0)
+                        script.push(listScript);
+                }
+                break;
             }
 
             html.push(`</td></tr>`);
@@ -822,14 +848,14 @@
             return [ elementIncluded ? html.join("") : "", script.join("\r\n") ];
         }
 
-        function buildBankElement(bank, mapRoot) {
-            const bankName = bank["@@NAME"];
-            const bankAlias = bank["@@ALIAS"];
+        function buildBankElement(definition, mapRoot, sectionName) {
+            const bankName = definition["@@NAME"];
+            const bankAlias = definition["@@ALIAS"];
             const html = [];
             const script = [];
 
-            html.push(`<tr><th class="header"><div class="header">${bankAlias}</div></th></tr>`);
-            html.push(`<tr><td>`);
+            html.push(`<tr><th class="header${definition.order > 0 ? "-section-row" : ""} bank-header"><div class="header">${bankAlias}</div></th></tr>`);
+            html.push(`<tr class="bank-group"><td class="bank-group">`);
 
             var propDefsStarted = false;
 
@@ -838,7 +864,7 @@
                     return;
 
                 propDefsStarted = true;
-                html.push(`<table width="100%">`);
+                html.push(`<table class="section-elements">`);
             };
 
             const closePropDefs = function () {
@@ -849,34 +875,52 @@
                 html.push(`</table>`);
             };
 
-            for (let key in bank) {
-                if (bank.hasOwnProperty(key) && !key.startsWith("@@")) {
-                    const value = bank[key];
+            const addPropDef = function (propDef) {
+                if (propDef["@@TYPE"] === PropDefType.HEADER) {
+                    console.warn(`Unexpected header property definition encountered in section "${sectionName}" bank "${bankName}"`);
+                    return;
+                }
+
+                if (propDef.hasOwnProperty("@@NAME"))
+                    propDef["@@NAME"] = `${bankName}_${propDef["@@NAME"]}`;
+
+                const [ propDefHtml, propDefScript ] = buildPropDefElement(propDef, mapRoot, bankName);
+
+                html.push(propDefHtml);
+
+                if (propDefScript.length > 0)
+                    script.push(propDefScript);
+            }
+
+            for (let key in definition) {
+                if (definition.hasOwnProperty(key) && !key.startsWith("@@")) {
+                    const value = definition[key];
 
                     switch (key) {
                         case "LIST":
-                            {
-                                const [ listHtml, listScript ] = buildListElement(value, bankName, null, null, false, null, true);
+                        {
+                            const [ listHtml, listScript ] = buildListElement(value, bankName, null, null, false, null, true, definition["@@ROWS"]);
 
-                                closePropDefs();
-                                html.push(listHtml);
+                            closePropDefs();
+                            html.push(listHtml);
 
-                                if (listScript.length > 0)
-                                    script.push(listScript);
-                            }
-                            break;
+                            if (listScript.length > 0)
+                                script.push(listScript);
+                        }
+                        break;
                         case "PROPDEF":
+                        {
                             startPropDefs();
 
-                            for (let i = 0; i < value.length; i++) {
-                                const [ propDefHtml, propDefScript ] = buildPropDefElement(value[i], mapRoot, bankName);
-
-                                html.push(propDefHtml);
-
-                                if (propDefScript.length > 0)
-                                    script.push(propDefScript);
+                            if (Array.isArray(value)) {
+                                for (let i = 0; i < value.length; i++)
+                                    addPropDef(value[i]);
                             }
-                            break;
+                            else {
+                                addPropDef(value);
+                            }
+                        }
+                        break;
                     }
                 }
             }
@@ -884,15 +928,18 @@
             closePropDefs();
 
             html.push(`</td></tr>`);
-            html.push(`<tr><th class="header-section-row"><div class="header"></div></th></tr>`);
+            html.push(`<tr><th class="header-section-row bank-footer"><div class="header"></div></th></tr>`);
 
             return [ html.join(""), script.join("\r\n") ];
         }
 
         function buildSection(section) {
             const mapRoot = `viewModel.currentAnalyzerConfig().${section["@@MAPROOT"]}`;
+            const sectionName = section["@@NAME"];
             const html = [];
             const script = [];
+            const definitions = [];
+            let naturalOrder = 100000;
 
             html.push(`<table width="75%" class="table-center">`);
 
@@ -903,7 +950,7 @@
                     return;
 
                 propDefsStarted = true;
-                html.push(`<tr><td><table width="100%">`);
+                html.push(`<tr><td><table class="section-elements">`);
             };
 
             const closePropDefs = function () {
@@ -914,42 +961,72 @@
                 html.push(`</table></td></tr>`);
             };
 
-            for (let key in section) {
-                if (section.hasOwnProperty(key) && !key.startsWith("@@")) {
-                    const value = section[key];
+            const addSectionElementDefinition = function (definition, elementType) {
+                if (definition.hasOwnProperty("@@NAME") && definition["@@TYPE"] !== PropDefType.HEADER)
+                    definition["@@NAME"] = `${sectionName}Section_${definition["@@NAME"]}`;
 
-                    switch (key) {
-                        case "BANK":
-                            {
-                                const [ bankHtml, bankScript ] = buildBankElement(value, mapRoot);
+                definition.order = definition.hasOwnProperty("@@ORDER") ?
+                    parseInt(definition["@@ORDER"], 10) :
+                    definitions.length > 0 ? naturalOrder++ : 0;
 
-                                closePropDefs();
-                                html.push(bankHtml);
+                definition.elementType = elementType;
 
-                                if (bankScript.length > 0)
-                                    script.push(bankScript);
-                            }
-                            break;
-                        case "PROPDEF":
-                            for (let i = 0; i < value.length; i++) {
-                                const propDef = value[i];
+                definitions.push(definition);
+            }
 
-                                if (propDef["@@TYPE"] === PropDefType.HEADER) {
-                                    closePropDefs();
-                                    html.push(`<tr><th class="header-section-row"><div class="header">${propDef["@@ALIAS"] || propDef["@@NAME"]}</div></th></tr>`);
-                                }
-                                else {
-                                    const [ propDefHtml, propDefScript ] = buildPropDefElement(propDef, mapRoot);
+            const addSectionElementDefinitions = function (elementType) {
+                const definition = section[elementType];
 
-                                    startPropDefs();
-                                    html.push(propDefHtml);
+                if (!definition)
+                    return;
 
-                                    if (propDefScript.length > 0)
-                                        script.push(propDefScript);
-                                }
-                            }
-                            break;
+                if (Array.isArray(definition)) {
+                    for (let i = 0; i < definition.length; i++) {
+                        addSectionElementDefinition(definition[i], elementType);
                     }
+                }
+                else {
+                    addSectionElementDefinition(definition, elementType);
+                }
+            };
+
+            addSectionElementDefinitions("BANK");
+            addSectionElementDefinitions("PROPDEF");
+
+            definitions.sort((a, b) => a.order > b.order ? 1 : -1);
+
+            for (let i = 0; i < definitions.length; i++) {
+                const definition = definitions[i];
+
+                switch (definition.elementType) {
+                    case "BANK":
+                    {
+                        const [ bankHtml, bankScript ] = buildBankElement(definition, mapRoot, sectionName);
+
+                        closePropDefs();
+                        html.push(bankHtml);
+
+                        if (bankScript.length > 0)
+                            script.push(bankScript);
+                    }
+                    break;
+                    case "PROPDEF":
+                    {
+                        if (definition["@@TYPE"] === PropDefType.HEADER) {
+                            closePropDefs();
+                            html.push(`<tr><th class="header${definition.order > 0 ? "-section-row": ""}"><div class="header">${definition["@@ALIAS"] || definition["@@NAME"]}</div></th></tr>`);
+                        }
+                        else {
+                            const [ propDefHtml, propDefScript ] = buildPropDefElement(definition, mapRoot);
+
+                            startPropDefs();
+                            html.push(propDefHtml);
+
+                            if (propDefScript.length > 0)
+                                script.push(propDefScript);
+                        }
+                    }
+                    break;
                 }
             }
 
