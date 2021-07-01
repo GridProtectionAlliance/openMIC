@@ -107,6 +107,10 @@
             background-color: #FFCF8B
         }
 
+        .row-hover-highlight tr:hover {
+            background-color: lightgray
+        }
+
         div.header {
             border-bottom: 4px solid;
         }
@@ -288,7 +292,7 @@
                                     <tbody data-bind="foreach: modules">
                                     <tr id="moduleRow" style="visibility: hidden">
                                         <td width="5%" class="text-center valign-middle" data-bind="text: $data['@@id']"/>
-                                        <td width="75%" class="text-center valign-middle" style="white-space: nowrap"><span data-bind="text: $data['@@model']"></span></td>
+                                        <td width="75%" class="text-center valign-middle nowrap"><span data-bind="text: $data['@@model']"></span></td>
                                         <td width="15%" class="text-center valign-middle"><span data-bind="text: $data['@@firmware_version']"></span></td>
                                         <td width="5%" class="text-center valign-middle"><span data-bind="text: $data['@@module_changed']"></span></td>
                                     </tr>
@@ -307,7 +311,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <table class="table table-condensed">
+                                <table class="table table-condensed row-hover-highlight">
                                     <thead>
                                     <tr>
                                         <th class="text-center">Name</th>
@@ -317,9 +321,9 @@
                                     </thead>
                                     <tbody data-bind="foreach: analyzers">
                                     <tr id="analyzerRow" style="visibility: hidden" data-bind="css: { selected: isSelected }">
-                                        <td width="80%" class="text-center valign-middle" style="white-space: nowrap"><btn type="button" class="btn btn-link" style="padding: 0" data-bind="text: $data['@@name'], click: loadAnalyzerConfig.bind($data)"/></td>
-                                        <td width="10%" class="text-center valign-middle" data-bind="text: $data['@@analyzer_type']"/>
-                                        <td width="10%" class="text-center valign-middle"><span data-bind="text: parseInt($data['@@monitoring_on'](), 10) > 0 ? 'On' : 'Off'"></span></td>
+                                        <td width="80%" class="text-center valign-middle nowrap"><btn type="button" class="btn btn-link" style="padding: 0" data-bind="text: $data['@@name'], click: loadAnalyzerConfig.bind($data)"/></td>
+                                        <td width="10%" class="text-center valign-middle align-left nowrap" style="text-align: left" data-bind="text: analyzerTypeName"/>
+                                        <td width="10%" class="text-center valign-middle"><span data-bind="text: montitoringStatus"></span></td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -368,14 +372,16 @@
         var deviceID = @deviceID;
 
         const analyzerTypes = {
-            PQDataNode: 0,
-            VoltageDataNode: 1,
-            CurrentDataNode: 2
+            PQDataNode:      { index: 0, name: "61000 PQ DataNode" },
+            VoltageDataNode: { index: 1, name: "61000 Voltage DataNode" },
+            CurrentDataNode: { index: 2, name: "61000 Current DataNode" }
         };
+
+        const analyzerTypeKeys = Object.keys(analyzerTypes);
 
         const sections = [
         {
-            // [0] PQ Data Node Sections
+            // [0] PQ Data Node Analyzer Sections
             InputConfiguration: { index: 0, name: "Input Configuration" },
             RMSVariations:      { index: 1, name: "RMS Variations" },
             Transients:         { index: 2, name: "Transients" },
@@ -387,7 +393,7 @@
             CrossTriggering:    { index: 8, name: "Cross-Triggering" }
         },
         {
-            // [1] Voltage Data Node Sections
+            // [1] Voltage Data Node Analyzer Sections
             InputConfiguration: { index: 0, name: "Input Configuration" },
             RMSVariations:      { index: 1, name: "RMS Variations" },
             Transients:         { index: 2, name: "Transients" },
@@ -398,7 +404,7 @@
             CrossTriggering:    { index: 7, name: "Cross-Triggering" }
         },
         {
-            // [2] Current Data Node Sections
+            // [2] Current Data Node Analyzer Sections
             InputConfiguration: { index: 0, name: "Input Configuration" },
             RMSVariations:      { index: 1, name: "RMS Variations" },
             Transients:         { index: 2, name: "Transients" },
@@ -410,9 +416,9 @@
         }];
 
         const sectionKeys = [
-            Object.keys(sections[analyzerTypes.PQDataNode]),
-            Object.keys(sections[analyzerTypes.VoltageDataNode]),
-            Object.keys(sections[analyzerTypes.CurrentDataNode])
+            Object.keys(sections[analyzerTypes.PQDataNode.index]),
+            Object.keys(sections[analyzerTypes.VoltageDataNode.index]),
+            Object.keys(sections[analyzerTypes.CurrentDataNode.index])
         ];
 
         function DeviceViewModel() {
@@ -437,7 +443,7 @@
             // Internal fields
             self._dataHubIsConnected = ko.observable(false);
             self._isDirty = ko.observable(false);
-            self._currentAnalyzerType = ko.observable(analyzerTypes.PQDataNode);
+            self._currentAnalyzerType = ko.observable(analyzerTypes.PQDataNode.index);
 
             // Properties
             self.dataHubIsConnected = ko.pureComputed({
@@ -552,9 +558,7 @@
             }
 
             self.loadAnalyzerConfig = function (configID, analyzerType) {
-                if (analyzerType !== analyzerTypes.PQDataNode &&
-                    analyzerType !== analyzerTypes.VoltageDataNode &&
-                    analyzerType !== analyzerTypes.CurrentDataNode)
+                if (analyzerTypeKeys.every(key => analyzerType !== analyzerTypes[key].index))
                 {
                     showErrorMessage(`Cannot load configuration from unknown analyzer type "${analyzerType}"`);
                     return $.Deferred().resolve().promise();
@@ -629,13 +633,25 @@
 
                     self.modules(observableModules);
 
-                    var observableAnalyzers = [];
+                    const observableAnalyzers = [];
 
                     status.commandresult.analyzers.list.item.forEach(function (analyzer) {
                         const observerableAnalyzer = ko.mapping.fromJS(analyzer);
 
+                        observerableAnalyzer.analyzerType = ko.pureComputed({
+                            read: () => parseInt(observerableAnalyzer["@@analyzer_type"](), 10)
+                        });
+
+                        observerableAnalyzer.analyzerTypeName = ko.pureComputed({
+                            read: () => `[${observerableAnalyzer.analyzerType()}]: ${analyzerTypes[analyzerTypeKeys[observerableAnalyzer.analyzerType()]].name}`
+                        });
+
                         observerableAnalyzer.isSelected = ko.pureComputed({
-                            read: () => parseInt(observerableAnalyzer["@@analyzer_type"](), 10) === viewModel.currentAnalyzerType()
+                            read: () => observerableAnalyzer.analyzerType() === viewModel.currentAnalyzerType()
+                        });
+
+                        observerableAnalyzer.montitoringStatus = ko.pureComputed({
+                            read: () => parseInt(observerableAnalyzer["@@monitoring_on"](), 10) > 0 ? "On" : "Off"
                         });
 
                         observableAnalyzers.push(observerableAnalyzer);
