@@ -54,12 +54,10 @@
 @{
     DataContext dataContext = ViewBag.DataContext;
     HttpRequestMessage request = ViewBag.Request;
-
     Dictionary<string, string> parameters = request.QueryParameters();
-    string acronym = "";
-    if (parameters.ContainsKey("Acronym")) {
-        acronym = parameters["Acronym"].ToString();
-    }
+
+    string acronym;
+    parameters.TryGetValue("Acronym", out acronym);
 
     Layout = "Layout.cshtml";
     ViewBag.Title = "Devices";
@@ -190,18 +188,21 @@
 
     <script>
         "use strict";
-        var acronym = '@Raw(acronym)';
-        console.log('@Raw(JsonConvert.SerializeObject(parameters))', acronym)
+
         $(viewModel).one('pageRecordsQueried', function () {
-            if (acronym != '') {
-                $('#searchFilter').val(acronym);
+            const acronym = "@Raw(acronym)";
+
+            if (notNull(acronym)) {
+                $(viewModel).one('pageRecordsQueried', function (event, records) {
+                    if (records && records.length > 0) {
+                        const record = records[0];
+                        showEditScreen(true, record);
+                    }
+                });
+
+                $("#searchFilter").val(acronym);
                 viewModel.filterText = acronym;
                 viewModel.queryPageRecords();
-                $(viewModel).one('pageRecordsQueried', function () {
-                    var record = viewModel.pageRecords()[0];
-                    if (record != undefined)
-                        viewModel.viewPageRecord(record);
-                });
             }
         });
 
@@ -349,8 +350,9 @@
                             viewModel.editPageRecord(record);
                     }
 
+                    // For link click from acronym, readonly will be true
                     if (hubIsConnected && readOnly) {
-                        dataHub.getDeviceVendor(record.VendorDeviceID).done(function(vendor) {
+                        dataHub.getDeviceVendor(record.VendorDeviceID).done(function (vendor) {
                             if (vendor.Acronym.toUpperCase() === "DRANETZ")
                                 window.location.href = `/DranetzConfig.cshtml?DeviceID=${record.ID}`;
                             else
