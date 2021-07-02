@@ -37,7 +37,7 @@ const defaultErrorMessageTimeout = 6000;
 const defaultHighEmphasisInfoMessageTimeout = 4000;
 const defaultHighEmphasisErrorMessageTimeout = -1;
 
-const messagePrefix = "<div><i class=\"fa fa-exclamation\" style=\"margin: auto\"></i></div><div><p style=\"margin: auto\">";
+const messagePrefix = "<div><i class=\"fa fa-exclamation\" style=\"margin: auto\"></i></div><div><p style=\"margin: auto; padding: 0 10px 0 5px; width: inherit\">";
 const messageSuffix = "</p></div><div><i class=\"fa fa-remove\"></i><a href=\"#\" class=\"close\" aria-label=\"close\">×</a></div>";
 
 const messagePanel = {
