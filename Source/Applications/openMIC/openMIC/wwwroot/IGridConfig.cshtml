@@ -306,7 +306,7 @@
                     self.deviceCounts(String.format("{0} &ndash; <span class='existing-record'>{1} Existing</span> &ndash; <span class='new-record'>{2} New</span>", self.devices().length, self.existingDeviceCount(), self.newDeviceCount()));
                     self.isDirty(false);
                 }).fail(function(error) {
-                    showErrorMessage(error);
+                    showErrorMessage(error, -1, true);
                 });
             }
 
@@ -321,7 +321,7 @@
                         device.Selected(false);
                     });
                 }).fail(function(error){
-                    showErrorMessage(String.format("Failed to save device \"{0}\": {1}", openMICDevice.Acronym, error));
+                    showErrorMessage(String.format("Failed to save device \"{0}\": {1}", openMICDevice.Acronym, error), -1, true);
                 });
             }
 
@@ -339,7 +339,7 @@
 
                     savePromises.push(self.saveDevice(device, openMICDevice));
                 }).fail(function(error) {
-                    showErrorMessage(String.format("Failed to load device \"{0}\": {1}", device.Acronym(), error));
+                    showErrorMessage(String.format("Failed to load device \"{0}\": {1}", device.Acronym(), error), -1, true);
                 });
             }
 

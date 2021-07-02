@@ -189,11 +189,11 @@
     <script>
         "use strict";
 
-        $(viewModel).one('pageRecordsQueried', function () {
+        $(viewModel).one("pageRecordsQueried", function () {
             const acronym = "@Raw(acronym)";
 
             if (notNull(acronym)) {
-                $(viewModel).one('pageRecordsQueried', function (event, records) {
+                $(viewModel).one("pageRecordsQueried", function (event, records) {
                     if (records && records.length > 0) {
                         const record = records[0];
                         showEditScreen(true, record);
@@ -359,7 +359,7 @@
                                 showPageRecord();
                             })
                         .fail(function (error) {
-                            showErrorMessage(`Failed to query device vendor: ${error}`);
+                            showErrorMessage(`Failed to query device vendor: ${error}`, -1, true);
                             showPageRecord();
                         });
                     }

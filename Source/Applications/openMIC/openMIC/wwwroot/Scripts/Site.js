@@ -32,121 +32,191 @@ var serviceHub, serviceHubClient;
 var hubIsConnecting = false;
 var hubIsConnected = false;
 
-function hideErrorMessage() {
+const defaultInfoMessageTimeout = 2000;
+const defaultErrorMessageTimeout = 6000;
+const defaultHighEmphasisInfoMessageTimeout = 4000;
+const defaultHighEmphasisErrorMessageTimeout = -1;
+
+const messagePrefix = "<div><i class=\"fa fa-exclamation\" style=\"margin: auto\"></i></div><div><p style=\"margin: auto\">";
+const messageSuffix = "</p></div><div><i class=\"fa fa-remove\"></i><a href=\"#\" class=\"close\" aria-label=\"close\">×</a></div>";
+
+const messagePanel = {
+    template: jsPanel.tplContentOnly,
+    paneltype: "hint",
+    position: `right-top -5 ${Math.ceil($("#menuBar").height()) + 5} DOWN`,
+    border: "2px solid",
+    contentSize: "350 auto",
+    show: "animated slideInUp",
+    callback: function (panel) {
+        this.content.css({ display: "flex" });
+
+        $("div", this.content).eq(1).css({
+            display: "flex",
+            fontSize: "16px",
+            textAlign: "center",
+            width: "100%"
+        });
+
+        $("div", this.content).eq(2).css({
+            display: "flex",
+            flexDirection: "row-reverse",
+            alignItems: "flex-start",
+            fontSize: "18px",
+            width: "5px",
+            padding: "5px 10px 4px 0"
+        });
+
+        $("div", this.content).eq(2).find("i").css({
+            cursor: "pointer"
+        }).click(function () { panel.close(); });
+    }
+};
+
+function repositionPanels() {
+    let index = Math.ceil($("#menuBar").height()) + 5;
+
     $(jsPanel.activePanels.list).each(function () {
-        if (this.startsWith("errorPanel"))
-            jsPanel.activePanels.getPanel(this).close();
+        const panel = jsPanel.activePanels.getPanel(this);
+        panel.reposition(`right-top -25 ${index}`);
+        index += panel.height() + 10;
     });
 }
 
-function hideInfoMessage() {
-    $(jsPanel.activePanels.list).each(function () {
-        if (this.startsWith("infoPanel"))
-            jsPanel.activePanels.getPanel(this).close();
-    });
+$(window).on("resize", repositionPanels);
+
+function hideErrorMessage(options) {
+    if (!options)
+        options = { closeHeaderPanel: true, closeFloatingPanels: true };
+
+    if (options.closeHeaderPanel) {
+        const wasVisible = $("#error-msg-block").is(":visible");
+
+        $("#error-msg-block").hide();
+
+        // Raise "messageVisibiltyChanged" event
+        if (wasVisible)
+            $(window).trigger("messageVisibiltyChanged");
+    }
+
+    if (options.closeFloatingPanels) {
+        const activePanels = jsPanel.activePanels;
+
+        $(activePanels.list).each(function () {
+            const panel = activePanels.getPanel(this);
+
+            if (panel.isErrorPanel)
+                panel.close();
+        });
+    }
 }
 
-function showErrorMessage(message, timeout) {
-    hideErrorMessage();
-    $.jsPanel({
-        id: 'errorPanel-1',
-        autoclose: timeout,
-        template: jsPanel.tplContentOnly,
-        paneltype: 'hint',
-        position: "right-top -4 4",
-        theme: 'red filledlight',
-        border: '2px solid',
-        contentSize: '500 auto',
-        show: 'animated slideInUp',
-        content: "<div><i class='fa fa-exclamation' style='margin:auto;'></i></div>" +
-                     "<div><p style='margin:auto;'>" + message + "</p></div>" +
-                     "<div><i class='fa fa-remove'></i></div>",
-        callback: function (panel) {
-            this.content.css({
-                display: 'flex',
-                color: 'darkred'
-            });
-            $('div:first-of-type', this.content).css({
-                borderRadius: '50%',
-                display: 'flex',
-                fontSize: '36px',
-                margin: '12px',
-                width: '60px'
-            });
-            $('div', this.content).eq(1).css({
-                display: 'flex',
-                fontSize: '16px',
-                textAlign: 'center',
-                width: 'calc(100% - 126px)'
-            });
-            $('div', this.content).eq(2).css({
-                display: 'flex',
-                flexDirection: 'row-reverse',
-                alignItems: 'flex-start',
-                fontSize: '18px',
-                width: '45px',
-                padding: '4px'
-            });
-            $('div', this.content).eq(2).find('i').css({
-                cursor: 'pointer'
-            }).click(function () { panel.close(); });
-        }
-    });
+function hideInfoMessage(options) {
+    if (!options)
+        options = { closeHeaderPanel: true, closeFloatingPanels: true };
+
+    if (options.closeHeaderPanel) {
+        const wasVisible = $("#info-msg-block").is(":visible");
+
+        $("#info-msg-block").hide();
+
+        // Raise "messageVisibiltyChanged" event
+        if (wasVisible)
+            $(window).trigger("messageVisibiltyChanged");
+    }
+
+    if (options.closeFloatingPanels) {
+        const activePanels = jsPanel.activePanels;
+
+        $(activePanels.list).each(function () {
+            const panel = activePanels.getPanel(this);
+
+            if (panel.isInfoPanel)
+                panel.close();
+        });
+    }
 }
 
-function showInfoMessage(message, timeout) {
-    hideInfoMessage();
-    $.jsPanel({
-        id: 'infoPanel-1',
-        autoclose: timeout,
-        template: jsPanel.tplContentOnly,
-        paneltype: 'hint',
-        position: "right-top -4 4",
-        theme: 'green filledlight',
-        border: '2px solid',
-        contentSize: '500 auto',
-        show: 'animated slideInUp',
-        content: "<div><i class='fa fa-check' style='margin:auto;'></i></div>" +
-                     "<div><p style='margin:auto;'>" + message + "</p></div>" +
-                     "<div><i class='fa fa-remove'></i></div>",
-        callback: function (panel) {
-            this.content.css({
-                display: 'flex',
-                color: 'darkgreen'
-            });
-            $('div:first-of-type', this.content).css({
-                borderRadius: '50%',
-                display: 'flex',
-                fontSize: '36px',
-                margin: '12px',
-                width: '60px'
-            });
-            $('div', this.content).eq(1).css({
-                display: 'flex',
-                fontSize: '16px',
-                textAlign: 'center',
-                width: 'calc(100% - 126px)'
-            });
-            $('div', this.content).eq(2).css({
-                display: 'flex',
-                flexDirection: 'row-reverse',
-                alignItems: 'flex-start',
-                fontSize: '18px',
-                width: '45px',
-                padding: '4px'
-            });
-            $('div', this.content).eq(2).find('i').css({
-                cursor: 'pointer'
-            }).click(function () { panel.close(); });
-        }
-    });
+function showErrorMessage(message, timeout, highEmphasis) {
+    if (highEmphasis) {
+        // Show high-emphasis messages in header block
+        const wasVisible = $("#error-msg-block").is(":visible");
+
+        $("#error-msg-text").html(message);
+        $("#error-msg-block").show();
+
+        if (timeout === undefined || timeout === null)
+            timeout = defaultHighEmphasisErrorMessageTimeout;
+
+        if (timeout > 0)
+            setTimeout(() => hideErrorMessage({ closeHeaderPanel: true }), timeout);
+
+        // Raise "messageVisibiltyChanged" event
+        if (!wasVisible)
+            $(window).trigger("messageVisibiltyChanged");
+    }
+    else {
+        if (timeout === undefined || timeout === null)
+            timeout = defaultErrorMessageTimeout;
+
+        const errorPanel = $.jsPanel($.extend({}, messagePanel, {
+            autoclose: timeout,
+            theme: "red filledlight",
+            content: `${messagePrefix}${message}${messageSuffix}`
+        }));
+
+        const panelID = errorPanel.attr("id");
+        const dismissPanelID = `dismissPanel-${panelID}`;
+
+        errorPanel.isErrorPanel = true;
+        errorPanel.content.find("a:first").attr("id", dismissPanelID);
+
+        $(`#${dismissPanelID}`).click(() => {
+            errorPanel.close();
+            repositionPanels();
+        });
+    }
 }
 
-$(window).on('resize', function () {
-    $(jsPanel.activePanels.list).each(function () {
-        jsPanel.activePanels.getPanel(this).reposition("right-top -4 4");
-    });
-});
+function showInfoMessage(message, timeout, highEmphasis) {
+    if (highEmphasis) {
+        // Show high-emphasis messages in header block
+        const wasVisible = $("#info-msg-block").is(":visible");
+
+        $("#info-msg-text").html(message);
+        $("#info-msg-block").show();
+
+        if (timeout === undefined || timeout === null)
+            timeout = defaultHighEmphasisInfoMessageTimeout;
+
+        if (timeout > 0)
+            setTimeout(() => hideInfoMessage({ closeHeaderPanel: true }), timeout);
+
+        // Raise "messageVisibiltyChanged" event
+        if (!wasVisible)
+            $(window).trigger("messageVisibiltyChanged");
+    }
+    else {
+        if (timeout === undefined || timeout === null)
+            timeout = defaultInfoMessageTimeout;
+
+        const infoPanel = $.jsPanel($.extend({}, messagePanel, {
+            autoclose: timeout,
+            theme: "green filledlight",
+            content: `${messagePrefix}${message}${messageSuffix}`
+        }));
+
+        const panelID = infoPanel.attr("id");
+        const dismissPanelID = `dismissPanel-${panelID}`;
+
+        infoPanel.isInfoPanel = true;
+        infoPanel.content.find("a:first").attr("id", dismissPanelID);
+
+        $(`#${dismissPanelID}`).click(() => {
+            infoPanel.close();
+            repositionPanels();
+        });
+    }
+}
 
 function calculateRemainingBodyHeight() {
     // Calculation based on content in Layout.cshtml
@@ -195,13 +265,15 @@ function startHubConnection() {
 
         if (err.context.status === 401) {
             if (isIE) {
+                // Attempt to clear any credentials cached by browser
                 clearCachedCredentials(null, function (success) {
                     window.location.reload();
                 });
-            } else {
+            }
+            else {
                 window.location.reload();
             }
-        }
+        }            
     });
 }
 
@@ -242,8 +314,13 @@ $(function () {
         }
     });
 
-    $("#dismissInfoMsg").click(hideInfoMessage);
-    $("#dismissErrorMsg").click(hideErrorMessage);
+    $("#dismissInfoMsg").click(() => hideInfoMessage({ closeHeaderPanel: true }));
+    $("#dismissErrorMsg").click(() => hideErrorMessage({ closeHeaderPanel: true }));
+
+    // Prevent clicking on disabled anchors
+    $("body").on("click", "a.disabled", function (event) {
+        event.preventDefault();
+    });
 
     // Set initial state of hub dependent controls
     updateHubDependentControlState(false);
@@ -260,7 +337,7 @@ $(function () {
 
     $.connection.hub.reconnecting(function() {
         hubIsConnecting = true;
-        showInfoMessage("Attempting to reconnect to service&nbsp;&nbsp;<span class='glyphicon glyphicon-refresh glyphicon-spin'></span>", -1);
+        showInfoMessage("Attempting to reconnect to service&nbsp;&nbsp;<span class='glyphicon glyphicon-refresh glyphicon-spin'></span>", -1, true);
 
         // Disable hub dependent controls
         updateHubDependentControlState(false);
@@ -277,7 +354,7 @@ $(function () {
         hubIsConnected = false;
 
         if (hubIsConnecting)
-            showErrorMessage("Disconnected from server");
+            showErrorMessage("Disconnected from server", -1, true);
 
         // Disable hub dependent controls
         updateHubDependentControlState(false);
@@ -292,13 +369,13 @@ $(function () {
     function encodeInfoMessage(message, timeout) {
         // Html encode message
         const encodedMessage = $("<div />").text(message).html();
-        showInfoMessage(encodedMessage, timeout);
+        showInfoMessage(encodedMessage, timeout, true);
     }
 
     function encodeErrorMessage(message, timeout) {
         // Html encode message
         const encodedMessage = $("<div />").text(message).html();
-        showErrorMessage(encodedMessage, timeout);
+        showErrorMessage(encodedMessage, timeout, true);
     }
 
     // Register info and error message handlers for each hub client
