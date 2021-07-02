@@ -452,15 +452,20 @@ var jsPanel = {
       var jsPop = panel.option.position;
 
       if (jsPop.autoposition || typeof jsPop === 'string' && jsPop.match(/DOWN|RIGHT|UP|LEFT/i)) {
-        var regex = /left-top|center-top|right-top|left-center|center|right-center|left-bottom|center-bottom|right-bottom/,
-            parent = jQuery(panel).parent(),
-            match = document.getElementById(id).className.match(regex);
+          var regex = /left-top|center-top|right-top|left-center|center|right-center|left-bottom|center-bottom|right-bottom/,
+              parent = jQuery(panel).parent(),
+              panelElem = document.getElementById(id);
 
-        if (match) {
-          jsPanel.lastbeforeclose = {
-            parent: parent,
-            class: match[0]
-          };
+          // JRC: Fixed 7/2/21 - check if element no longer exists
+          if (panelElem) {
+              var match = panelElem.className.match(regex);
+
+              if (match) {
+                  jsPanel.lastbeforeclose = {
+                      parent: parent,
+                      class: match[0]
+                  };
+          }
         }
       } // ------------------------------------------------------------------------------------------
       // close all childpanels and then the panel itself
