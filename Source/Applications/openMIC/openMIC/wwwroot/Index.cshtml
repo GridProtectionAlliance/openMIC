@@ -80,6 +80,8 @@
         databaseName = "Not Available";
     }
 
+    string requiresAdmin = UserIsAdmin() ? "" : " disabled";
+    string requiresEditor = UserIsAdminOrEditor() ? "" : " disabled";
     string[] poolMachines = Model.Global.PoolMachines;
     bool useRemoteScheduler = Model.Global.UseRemoteScheduler;
     bool primaryScheduler = poolMachines != null && poolMachines.Length > 0;
@@ -219,13 +221,32 @@
     </script>
 }
 @functions {
-    public string GetCurrentUserID() {
-        return Thread.CurrentPrincipal.Identity == null ? UserInfo.CurrentUserID : Thread.CurrentPrincipal.Identity.Name;
+    public string GetCurrentUserID()
+    {
+        if (Thread.CurrentPrincipal.Identity == null)
+            return UserInfo.CurrentUserID;
+
+        return Thread.CurrentPrincipal.Identity.Name;
     }
 
-    public bool UserIsAdmin() {
+    public bool UserIsAdmin()
+    {
         SecurityPrincipal securityPrincipal = ViewBag.SecurityPrincipal as SecurityPrincipal;
-        return securityPrincipal != null && securityPrincipal.IsInRole("Administrator");
+
+        if ((object)securityPrincipal == null)
+            return false;
+
+        return securityPrincipal.IsInRole("Administrator");
+    }
+
+    public bool UserIsAdminOrEditor()
+    {
+        SecurityPrincipal securityPrincipal = ViewBag.SecurityPrincipal as SecurityPrincipal;
+
+        if ((object)securityPrincipal == null)
+            return false;
+
+        return securityPrincipal.IsInRole("Administrator,Editor");
     }
 }
 <div class="row">
@@ -240,9 +261,7 @@
                     <a href="ModbusConfig.cshtml" role="button" class="btn btn-default">Add Modbus Mapping</a>
                     <a href="IGridConfig.cshtml" role="button" class="btn btn-default">Manage I-Grid Connections</a>
                     <a href="GraphMeasurements.cshtml" role="button" class="btn btn-default">Real-time Measurements</a>
-                    @if (UserIsAdmin()) {
-                        <button type="button" class="btn btn-default" id="restartButton" hub-dependent>Restart Service</button>
-                    }
+                    <button type="button" class="btn btn-default@(requiresAdmin)" id="restartButton"@requiresAdmin hub-dependent>Restart Service</button>
                 </div>
             </div>
         </div>
