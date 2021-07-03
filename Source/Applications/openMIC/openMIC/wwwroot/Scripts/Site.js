@@ -37,8 +37,8 @@ const defaultErrorMessageTimeout = 6000;
 const defaultHighEmphasisInfoMessageTimeout = 4000;
 const defaultHighEmphasisErrorMessageTimeout = -1;
 
-const messagePrefix = "<div><i class=\"fa fa-exclamation\" style=\"margin: auto\"></i></div><div><p style=\"margin: auto; padding: 0 10px 0 5px; width: inherit\">";
-const messageSuffix = "</p></div><div><i class=\"fa fa-remove\"></i><a href=\"#\" class=\"close\" aria-label=\"close\">×</a></div>";
+const messagePrefix = "<div><p>";
+const messageSuffix = "</p></div><div><a href=\"#\" class=\"close\" aria-label=\"close\">×</a></div>";
 
 const messagePanel = {
     template: jsPanel.tplContentOnly,
@@ -50,25 +50,21 @@ const messagePanel = {
     callback: function (panel) {
         this.content.css({ display: "flex" });
 
-        $("div", this.content).eq(1).css({
-            display: "flex",
+        $("div", this.content).eq(0).css({
             fontSize: "16px",
             textAlign: "center",
             width: "100%"
         });
 
-        $("div", this.content).eq(2).css({
-            display: "flex",
-            flexDirection: "row-reverse",
-            alignItems: "flex-start",
-            fontSize: "18px",
-            width: "5px",
-            padding: "5px 10px 4px 0"
+        $("p", this.content).eq(0).css({
+            margin: "auto",
+            padding: "4px 4px"
         });
 
-        $("div", this.content).eq(2).find("i").css({
-            cursor: "pointer"
-        }).click(function () { panel.close(); });
+        $("div", this.content).eq(1).css({
+            width: "5px",
+            padding: "0 4px 0 12px"
+        });
     }
 };
 
@@ -164,6 +160,8 @@ function showErrorMessage(message, timeout, highEmphasis) {
             content: `${messagePrefix}${message}${messageSuffix}`
         }));
 
+        errorPanel.css("backgroundColor", errorPanel.content.css("backgroundColor"));
+
         const panelID = errorPanel.attr("id");
         const dismissPanelID = `dismissPanel-${panelID}`;
 
@@ -204,6 +202,8 @@ function showInfoMessage(message, timeout, highEmphasis) {
             theme: "green filledlight",
             content: `${messagePrefix}${message}${messageSuffix}`
         }));
+
+        infoPanel.css("backgroundColor", infoPanel.content.css("backgroundColor"));
 
         const panelID = infoPanel.attr("id");
         const dismissPanelID = `dismissPanel-${panelID}`;
