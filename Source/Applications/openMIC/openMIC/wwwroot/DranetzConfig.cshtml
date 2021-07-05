@@ -560,7 +560,7 @@
             self.loadAnalyzerConfig = function (configID, analyzerType) {
                 if (analyzerTypeKeys.every(key => analyzerType !== analyzerTypes[key].index))
                 {
-                    showErrorMessage(`Cannot load configuration from unknown analyzer type "${analyzerType}"`);
+                    showErrorMessage(`Cannot load configuration from unknown analyzer type "${analyzerType}"`, null, true);
                     return $.Deferred().resolve().promise();
                 }
 
@@ -582,7 +582,7 @@
                             promises.push(dataHub.getSectionMap(`${key}.xml`).done(function (result) {
                                 self.addSection(key, buildSection(JSON.parse(result).SECTION));
                             }).fail(function (error) {
-                                showErrorMessage(error);
+                                showErrorMessage(error, null, true);
                             }));
                         }
                     }
@@ -678,7 +678,7 @@
                     });
                 })
                 .fail(function (error) {
-                    showErrorMessage(error);
+                    showErrorMessage(error, null, true);
                 });
             }
 
