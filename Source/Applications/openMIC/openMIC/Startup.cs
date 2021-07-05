@@ -59,6 +59,7 @@ namespace openMIC
             settings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
             JsonSerializer serializer = JsonSerializer.Create(settings);
             GlobalHost.DependencyResolver.Register(typeof(JsonSerializer), () => serializer);
+            GlobalHost.Configuration.MaxIncomingWebSocketMessageSize = null;
             AppModel model = Program.Host.Model;
 
             // Load data hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
