@@ -2091,7 +2091,6 @@ namespace openMIC
                 LastFailedConnectionReason = patternMessage;
 
                 OnProgressUpdated(this, new ProgressUpdate { State = ProgressState.Fail, ErrorMessage = patternMessage });
-                m_cancellationToken.Cancel();
                 return true;
             }
 
