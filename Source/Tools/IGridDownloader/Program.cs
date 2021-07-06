@@ -46,11 +46,21 @@ namespace IGridDownloader
         private static string s_baseUrl;
         private static Func<DateTime, string> s_getLocalPath;
         private static string s_serialNumber;
+        private static bool s_testConnection;
 
         public static void Main(string[] args)
         {
             try
             {
+                if (args.Length > 0)
+                {
+                    if (args[0].Equals(TestConnectionParameter, StringComparison.OrdinalIgnoreCase))
+                    {
+                        s_testConnection = true;
+                        args = args.Skip(1).ToArray();
+                    }
+                }
+
                 if (args.Length < 2)
                     throw new ArgumentOutOfRangeException($"Expected 2 command line parameters, received {args.Length}.");
 
@@ -102,6 +112,13 @@ namespace IGridDownloader
                         {
                             LogConnectionFailure(ex.Message);
                             throw;
+                        }
+
+                        if (s_testConnection)
+                        {
+                            Console.WriteLine("Connection test completed.");
+                            Environment.Exit(2);
+                            return;
                         }
 
                         string[][] table = eventInfo.Split(new [] { "\r\n", "\n" }, StringSplitOptions.None)
