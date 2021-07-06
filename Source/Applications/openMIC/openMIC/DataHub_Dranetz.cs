@@ -142,6 +142,19 @@ namespace openMIC
                 settings.TryGetValue("connectionUserName", out string userName);
                 settings.TryGetValue("connectionPassword", out string password);
 
+                // Strip off any analyzer specifications
+                string[] pathParts = rootUri.Split('/');
+
+                if (pathParts.Length == 2)
+                {
+                    rootUri = pathParts[0];
+                    
+                    string[] portParts = pathParts[1].Split(':');
+
+                    if (portParts.Length == 2)
+                        rootUri = $"{rootUri}:{portParts[1]}";
+                }
+
                 if (!rootUri.StartsWith("http"))
                     rootUri = $"http://{rootUri}";
 
