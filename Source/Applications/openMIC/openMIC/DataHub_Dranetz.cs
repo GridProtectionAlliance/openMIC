@@ -213,7 +213,9 @@ namespace openMIC
                 else
                 {
                     Uri rootUri = credential.RootUri;
-                    string[] cookies = result.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value?.ToArray() ?? Array.Empty<string>();
+                    string[] cookies = result.Headers.SingleOrDefault(header => 
+                        header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase)).Value?
+                        .ToArray() ?? Array.Empty<string>();
 
                     foreach (string cookie in cookies)
                     {
