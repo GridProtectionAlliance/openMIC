@@ -55,18 +55,20 @@ namespace BenDownloader
         private readonly string m_tempDirectoryPath;
         private readonly BenRecord m_lastFileDownloaded;
         private readonly int m_maxRetriesOnFileInUse;
+        private readonly bool m_testConnection;
         private bool m_saveRequestsOnError;
 
         #endregion
 
         #region [ Constructors ]
 
-        public BenRunner(string localPath, string siteName, string ip, string serialNumber)
+        public BenRunner(string localPath, string siteName, string ip, string serialNumber, bool testConnection)
         {
             m_localPath = localPath;
             m_siteName = siteName;
             m_ipAddress = ip;
             m_serialNumber = serialNumber;
+            m_testConnection = testConnection;
 
             Directory.CreateDirectory(m_localPath);
             m_lastFileDownloaded = GetLastDownloadedFile();
@@ -100,6 +102,9 @@ namespace BenDownloader
 
                 LogConnectionSuccess($"Connection succeeded, downloading {myFiles.Count:N0} records.");
 
+                if (m_testConnection)
+                    return;
+
                 string workingDirectory = Path.Combine(m_tempDirectoryPath, "benfiles.req");
 
                 Directory.CreateDirectory(workingDirectory);
@@ -123,6 +128,9 @@ namespace BenDownloader
             catch (Exception ex)
             {
                 LogConnectionFailure(ex.Message);
+
+                if (m_testConnection)
+                    return;
 
                 if (m_saveRequestsOnError)
                 {

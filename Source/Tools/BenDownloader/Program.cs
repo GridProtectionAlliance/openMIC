@@ -22,8 +22,8 @@
 //******************************************************************************************************
 
 using System;
-using System.IO;
-using GSF.Configuration;
+using System.Linq;
+using static openMIC.SharedAssets.LogFunctions;
 
 namespace BenDownloader
 {
@@ -33,13 +33,24 @@ namespace BenDownloader
         {
             try
             {
+                bool testConnection = false;
+
+                if (args.Length > 0)
+                {
+                    if (args[0].Equals(TestConnectionParameter, StringComparison.OrdinalIgnoreCase))
+                    {
+                        testConnection = true;
+                        args = args.Skip(1).ToArray();
+                    }
+                }
+
                 if (args.Length != 4)
                 {
                     Log("Please pass four and only four parameters to BenDownloader...", true);
                     return;
                 }
 
-                BenRunner br = new BenRunner(args[0], args[1], args[2], args[3]);
+                BenRunner br = new BenRunner(args[0], args[1], args[2], args[3], testConnection);
                 br.TransferAllFiles();
             }
             catch(Exception ex)
