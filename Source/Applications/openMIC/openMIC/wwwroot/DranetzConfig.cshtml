@@ -233,43 +233,43 @@
                             <th class="header" colspan="2"><div class="header">System</div></th>
                         </tr>
                         <tr>
-                            <th class="text-center" style="padding-top: 2px; padding-bottom: 5px" colspan="2" data-bind="text: versionInfo"/>
+                            <th class="text-center" style="padding-top: 2px; padding-bottom: 5px" colspan="2" data-bind="text: versionInfo" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">Serial Number:</th>
-                            <td class="text-left" data-bind="text: serialNumber"/>
+                            <td class="text-left" data-bind="text: serialNumber" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">System Health:</th>
-                            <td class="text-left" data-bind="text: systemHealth"/>
+                            <td class="text-left" data-bind="text: systemHealth" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">Database Health:</th>
-                            <td class="text-left" data-bind="text: databaseHealth"/>
+                            <td class="text-left" data-bind="text: databaseHealth" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">Comm. Module Firmware:</th>
-                            <td class="text-left" data-bind="text: commFirmware"/>
+                            <td class="text-left" data-bind="text: commFirmware" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">Host Module Firmware:</th>
-                            <td class="text-left" data-bind="text: hostFirmware"/>
+                            <td class="text-left" data-bind="text: hostFirmware" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">GPS Installed:</th>
-                            <td class="text-left" data-bind="text: gpsInstalled"/>
+                            <td class="text-left" data-bind="text: gpsInstalled" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">GPS Satellites:</th>
-                            <td class="text-left" data-bind="text: gpsSatellites"/>
+                            <td class="text-left" data-bind="text: gpsSatellites" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">IP Address:</th>
-                            <td class="text-left" data-bind="text: ipAddress"/>
+                            <td class="text-left" data-bind="text: ipAddress" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">Site Name:</th>
-                            <td class="text-left" data-bind="text: siteName"/>
+                            <td class="text-left" data-bind="text: siteName" />
                         </tr>
                     </table>
                 </td>
@@ -282,20 +282,20 @@
                             <td>
                                 <table class="table table-condensed table-striped table-hover">
                                     <thead>
-                                    <tr>
-                                        <th class="text-center">ID</th>
-                                        <th class="text-center">Model&nbsp;Number</th>
-                                        <th class="text-center">Firmware</th>
-                                        <th class="text-center">Changed?</th>
-                                    </tr>
+                                        <tr>
+                                            <th class="text-center">ID</th>
+                                            <th class="text-center">Model&nbsp;Number</th>
+                                            <th class="text-center">Firmware</th>
+                                            <th class="text-center">Changed?</th>
+                                        </tr>
                                     </thead>
                                     <tbody data-bind="foreach: modules">
-                                    <tr id="moduleRow" style="visibility: hidden">
-                                        <td width="5%" class="text-center valign-middle" data-bind="text: $data['@@id']"/>
-                                        <td width="75%" class="text-center valign-middle nowrap"><span data-bind="text: $data['@@model']"></span></td>
-                                        <td width="15%" class="text-center valign-middle"><span data-bind="text: $data['@@firmware_version']"></span></td>
-                                        <td width="5%" class="text-center valign-middle"><span data-bind="text: $data['@@module_changed']"></span></td>
-                                    </tr>
+                                        <tr id="moduleRow" style="visibility: hidden">
+                                            <td width="5%" class="text-center valign-middle" data-bind="text: $data['@@id']" />
+                                            <td width="75%" class="text-center valign-middle nowrap"><span data-bind="text: $data['@@model']"></span></td>
+                                            <td width="15%" class="text-center valign-middle"><span data-bind="text: $data['@@firmware_version']"></span></td>
+                                            <td width="5%" class="text-center valign-middle"><span data-bind="text: $data['@@module_changed']"></span></td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </td>
@@ -313,18 +313,18 @@
                             <td>
                                 <table class="table table-condensed row-hover-highlight">
                                     <thead>
-                                    <tr>
-                                        <th class="text-center">Name</th>
-                                        <th class="text-center">Type</th>
-                                        <th class="text-center">Monitoring&nbsp;Status</th>
-                                    </tr>
+                                        <tr>
+                                            <th class="text-center">Name</th>
+                                            <th class="text-center">Type</th>
+                                            <th class="text-center">Monitoring&nbsp;Status</th>
+                                        </tr>
                                     </thead>
                                     <tbody data-bind="foreach: analyzers">
-                                    <tr id="analyzerRow" style="visibility: hidden" data-bind="css: { selected: isSelected }">
-                                        <td width="80%" class="text-center valign-middle nowrap"><btn type="button" class="btn btn-link" style="padding: 0" data-bind="text: $data['@@name'], click: loadAnalyzerConfig.bind($data)"/></td>
-                                        <td width="10%" class="text-center valign-middle align-left nowrap" style="text-align: left" data-bind="text: analyzerTypeName"/>
-                                        <td width="10%" class="text-center valign-middle"><span data-bind="text: montitoringStatus"></span></td>
-                                    </tr>
+                                        <tr id="analyzerRow" style="visibility: hidden" data-bind="css: { selected: isSelected }">
+                                            <td width="80%" class="text-center valign-middle nowrap"><btn type="button" class="btn btn-link" style="padding: 0" data-bind="text: $data['@@name'], click: loadAnalyzerConfig.bind($data)" /></td>
+                                            <td width="10%" class="text-center valign-middle align-left nowrap" style="text-align: left" data-bind="text: analyzerTypeName" />
+                                            <td width="10%" class="text-center valign-middle"><span data-bind="text: montitoringStatus"></span></td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </td>
@@ -334,11 +334,11 @@
                 </td>
             </tr>
         </table>
-        <div id="loadingDataLabel" style="display: none">
-            Loading&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+        <div id="busyDataBlock" style="display: none">
+            <span id="busyDataLabel">Loading</span>&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
         </div>
         <div class="pull-right" style="margin-top: -35px">
-            <button type="button" class="btn btn-sm btn-primary pull-right" id="saveChangesButton" data-bind="enable: canSave" onclick="viewModel.saveSection()">
+            <button type="button" class="btn btn-sm btn-primary pull-right" id="saveChangesButton" data-bind="enable: canSave">
                 <span class="glyphicon glyphicon-floppy-save"></span>&nbsp;&nbsp;Save&nbsp;Changes
             </button>
         </div>
@@ -437,12 +437,14 @@
             self.siteName = ko.observable("");
             self.modules = ko.observableArray();
             self.analyzers = ko.observableArray();
+            self.currentConfigID = ko.observable(-1);
             self.currentAnalyzerConfig = ko.observable("");
             self.errors = ko.validation.group(self);
 
             // Internal fields
             self._dataHubIsConnected = ko.observable(false);
             self._isDirty = ko.observable(false);
+            self._isSaving = ko.observable(false);
             self._currentAnalyzerType = ko.observable(analyzerTypes.PQDataNode.index);
 
             // Properties
@@ -463,8 +465,10 @@
             self.canSave = ko.pureComputed({
                 read: function () {
                     return @(userIsEditor.ToString().ToLower()) &&
+                        self.currentConfigID() > -1 &&
                         self.currentAnalyzerConfig().commandresult &&
                         self.isDirty() &&
+                        !self.isSaving() &&
                         self.dataHubIsConnected();
                 },
                 owner: self
@@ -475,6 +479,11 @@
                 write: function (value) {
                     self._isDirty(value);
                 },
+                owner: self
+            });
+
+            self.isSaving = ko.pureComputed({
+                read: self._isSaving,
                 owner: self
             });
 
@@ -536,7 +545,42 @@
             }
 
             self.saveSection = function () {
-                self.isDirty(false);
+                if (!self.canSave()) {
+                    showErrorMessage("Cannot save record at this time.");
+                    return;
+                }
+
+                showInfoMessage("Saving changes, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
+                showSavingMessage();
+                self._isSaving(true);
+
+                const configID = self.currentConfigID();
+
+                dataHub.beginTransaction(deviceID).then(function () {
+                    return dataHub.setAnalyzerConfig(deviceID, configID, JSON.stringify(self.currentAnalyzerConfig())).done(function () {
+                        self.isDirty(false);
+                        showInfoMessage("Save complete.", 5000);
+                        hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
+                        hideSavingMessage();
+                    })
+                    .fail(function (error) {
+                        hideInfoMessage();
+                        showErrorMessage(`Save Changes ${error}`, null, true);
+                        hideSavingMessage();
+                    });
+                })
+                .fail(function (error) {
+                    hideInfoMessage();
+                    showErrorMessage(`Begin Transaction ${error}`, null, true);
+                    hideSavingMessage();
+                })
+                .always(function () {
+                    dataHub.endTransaction(deviceID).fail(function (error) {
+                        showErrorMessage(`End Transaction ${error}`, null, true);
+                    });
+
+                    self._isSaving(false);
+                });
             }
 
             self.addSection = function (sectionKey, inputs) {
@@ -565,6 +609,7 @@
                 }
 
                 self.isDirty(false);
+                self.currentConfigID(configID);
                 self.currentAnalyzerType(analyzerType);
                 self.createSectionTabs();
 
@@ -613,7 +658,7 @@
                 $("[id=analyzerRow]").css("visibility", "hidden");
                 self.modules.removeAll();
 
-                return dataHub.getInstanceStatus(deviceID).then(function (statusResult) {
+                return dataHub.getInstanceStatus(deviceID).done(function (statusResult) {
                     const status = JSON.parse(statusResult);
 
                     self.serialNumber(status.commandresult.characteristics["@@serial_number"]);
@@ -692,13 +737,23 @@
             }).extend({ notify: "always" });
         }
 
+        function showSavingMessage() {
+            $("#busyDataLabel").text("Saving");
+            $("#busyDataBlock").show();
+        }
+
+        function hideSavingMessage() {
+            $("#busyDataBlock").hide();
+        }
+
         function showLoadingMessage() {
             $("#responsiveTableDiv").show();
-            $("#loadingDataLabel").show();
+            $("#busyDataLabel").text("Loading");
+            $("#busyDataBlock").show();
         }
 
         function hideLoadingMessage() {
-            $("#loadingDataLabel").hide();
+            $("#busyDataBlock").hide();
             $("#bulkSelectionButtons").show();
         }
 
@@ -711,9 +766,9 @@
 
             showLoadingMessage();
 
-            return viewModel.loadAnalyzerConfig(configID, analyzerType)
-                .done(hideLoadingMessage)
-                .fail(hideLoadingMessage);
+            return viewModel.loadAnalyzerConfig(configID, analyzerType).always(function () {
+                hideLoadingMessage();
+            });
         }
 
         function getActiveTabIndex() {
@@ -779,6 +834,11 @@
 
             if (deviceID === 0)
                 $("#noDeviceDataMessage").show();
+
+            $("#saveChangesButton").click(function (e) {
+                e.preventDefault(); // Stop form submission
+                viewModel.saveSection();
+            });
         });
 
         let shiftIsDown = false;

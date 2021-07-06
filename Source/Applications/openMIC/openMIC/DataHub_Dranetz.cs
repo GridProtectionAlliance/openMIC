@@ -24,6 +24,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
@@ -64,6 +66,10 @@ namespace openMIC
                 });
             }
 
+            public CookieContainer Cookies { get; private set; } = new CookieContainer();
+
+            public Uri RootUri => new Uri(m_rootUri.ToUnsecureString());
+
             public void Dispose()
             {
                 try
@@ -81,15 +87,34 @@ namespace openMIC
                 }
             }
 
-            public HttpClient GetNewClient() => new HttpClient
+            public HttpClient GetNewClient()
             {
-                DefaultRequestHeaders =
+                HttpClient client =  new HttpClient(new HttpClientHandler
                 {
-                    Authorization = new AuthenticationHeaderValue("Basic",
-                        Convert.ToBase64String(Encoding.UTF8.GetBytes(
-                        $"{m_userName.ToUnsecureString()}:{m_password.ToUnsecureString()}")))
-                }
-            };
+                    UseCookies = true,
+                    CookieContainer = Cookies
+                }, true)
+                {
+                    DefaultRequestHeaders =
+                    {
+                        Authorization = new AuthenticationHeaderValue("Basic", 
+                            Convert.ToBase64String(Encoding.UTF8.GetBytes($"{m_userName.ToUnsecureString()}:{m_password.ToUnsecureString()}"))),
+                    }
+                };
+
+                List<string> cookies = new List<string>();
+
+                foreach (Cookie cookie in Cookies.GetCookies(RootUri))
+                    cookies.Add($"{cookie.Name}={cookie.Value}");
+
+                if (cookies.Count > 0)
+                    client.DefaultRequestHeaders.Add("Cookie", string.Join(",", cookies));
+
+                return client;
+            }
+
+            public void ClearCookies() =>
+                Cookies = new CookieContainer();
 
             public string GetRequestUri(string cmdParam) =>
                 $"{m_rootUri.ToUnsecureString()}/cmd={cmdParam}";
@@ -144,73 +169,94 @@ namespace openMIC
         }
 
         public Task<string> GetInstanceStatus(int deviceID) => 
-            GetCommandResult(deviceID, "getinststatus");
+            GetCommand(deviceID, "getinststatus");
 
         public Task<string> GetInstanceConfig(int deviceID) =>
-            GetCommandResult(deviceID, "getinstconfig");
+            GetCommand(deviceID, "getinstconfig");
 
         public Task<string> GetAnalyzerConfig(int deviceID, int configID) =>
-            GetCommandResult(deviceID, $"getanalyzerconfig&id={configID}");
+            GetCommand(deviceID, $"getanalyzerconfig&id={configID}");
 
-        public Task PutInstanceConfig(int deviceID, string value) =>
-            PutCommandResult(deviceID, "putinstconfig", value);
+        public Task BeginTransaction(int deviceID) =>
+            GetCommand(deviceID, "begintransaction"); // Sets TransactionID cookie
 
-        public Task PutAnalyzerConfig(int deviceID, int configID, string value) =>
-            PutCommandResult(deviceID, $"putanalyzerconfig&id={configID}", value);
+        public Task SetInstanceConfig(int deviceID, string value) =>
+            SendCommand(deviceID, "setinstconfig", value);
 
-        private async Task<string> GetCommandResult(int deviceID, string cmdParam)
+        public Task SetAnalyzerConfig(int deviceID, int configID, string value) =>
+            SendCommand(deviceID, $"setanalyzerconfig&id={configID}", value);
+
+        public Task EndTransaction(int deviceID) =>
+            GetCommand(deviceID, "endtransaction", true); // Clears TransactionID cookie
+
+        private async Task<string> GetCommand(int deviceID, string cmdParam, bool clearCookies = false)
         {
-            try
+            if (string.IsNullOrWhiteSpace(cmdParam))
+                throw new ArgumentNullException(nameof(cmdParam));
+
+            DranetzCredential credential = GetCredential(deviceID);
+
+            using (HttpClient client = credential.GetNewClient())
             {
-                if (string.IsNullOrWhiteSpace(cmdParam))
-                    throw new ArgumentNullException(nameof(cmdParam));
+                HttpResponseMessage result = await client.GetAsync(credential.GetRequestUri(cmdParam));
 
-                DranetzCredential credential = GetCredential(deviceID);
+                if (!result.IsSuccessStatusCode)
+                    throw new HttpRequestException($"Failed to get command, result = {result.StatusCode}: {result.ReasonPhrase}");
 
-                using (HttpClient client = credential.GetNewClient())
+                XmlDocument commandResult = new XmlDocument();
+                commandResult.Load(await result.Content.ReadAsStreamAsync());
+
+                if (clearCookies)
                 {
-                    HttpResponseMessage result = await client.GetAsync(credential.GetRequestUri(cmdParam));
-
-                    if (!result.IsSuccessStatusCode)
-                        throw new HttpRequestException($"Failed to get command result: status response code {result.StatusCode} - {result.ReasonPhrase}");
-
-                    XmlDocument commandResult = new XmlDocument();
-                    commandResult.Load(await result.Content.ReadAsStreamAsync());
-                    return JsonConvert.SerializeXmlNode(commandResult);
+                    credential.ClearCookies();
                 }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-                return default;
+                else
+                {
+                    Uri rootUri = credential.RootUri;
+                    string[] cookies = result.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value?.ToArray() ?? Array.Empty<string>();
+
+                    foreach (string cookie in cookies)
+                    {
+                        string[] parts = cookie.Split('=');
+
+                        if (parts.Length == 2 && parts[0].Trim().Equals("TransactionID", StringComparison.OrdinalIgnoreCase))
+                            credential.Cookies.SetCookies(rootUri, cookie);
+                    }
+                }
+                    
+                return JsonConvert.SerializeXmlNode(commandResult);
             }
         }
 
-        private async Task PutCommandResult(int deviceID, string cmdParam, string value)
+        private async Task SendCommand(int deviceID, string cmdParam, string value)
         {
-            try
+            if (string.IsNullOrWhiteSpace(cmdParam))
+                throw new ArgumentNullException(nameof(cmdParam));
+
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentNullException(nameof(value));
+
+            DranetzCredential credential = GetCredential(deviceID);
+            XmlDocument commandResult = JsonConvert.DeserializeXmlNode(value) ?? throw new ArgumentException("Failed to deserialize XML Node", nameof(value));
+
+            if (commandResult.FirstChild is XmlDeclaration declaration)
             {
-                if (string.IsNullOrWhiteSpace(cmdParam))
-                    throw new ArgumentNullException(nameof(cmdParam));
-
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new ArgumentNullException(nameof(value));
-
-                DranetzCredential credential = GetCredential(deviceID);
-                XmlDocument commandResult = JsonConvert.DeserializeXmlNode(value) ?? throw new ArgumentException("Failed to deserialize XML Node", nameof(value));
-
-                using (HttpClient client = credential.GetNewClient())
-                {
-                    StringContent content = new StringContent(commandResult.ToString(), Encoding.UTF8, "text/xml");
-                    HttpResponseMessage result = await client.PostAsync(credential.GetRequestUri(cmdParam), content);
-
-                    if (!result.IsSuccessStatusCode)
-                        throw new HttpRequestException($"Failed to put command result: status response code {result.StatusCode} - {result.ReasonPhrase}");
-                }
+                declaration.Encoding = Encoding.UTF8.HeaderName;
             }
-            catch (Exception ex)
+            else
             {
-                LogException(ex);
+                declaration = (XmlDeclaration)commandResult.CreateNode(XmlNodeType.XmlDeclaration, "xml", string.Empty);
+                declaration.Encoding = Encoding.UTF8.HeaderName;
+                commandResult.InsertBefore(declaration, commandResult.FirstChild);
+            }
+
+            using (HttpClient client = credential.GetNewClient())
+            {
+                StringContent content = new StringContent(commandResult.InnerXml, Encoding.UTF8, "text/xml");
+                HttpResponseMessage result = await client.PostAsync(credential.GetRequestUri(cmdParam), content);
+
+                if (!result.IsSuccessStatusCode)
+                    throw new HttpRequestException($"Failed to send command, result = {result.StatusCode}: {result.ReasonPhrase}");
             }
         }
     }
