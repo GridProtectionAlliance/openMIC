@@ -53,6 +53,7 @@ using GSF.Units;
 using DotRas;
 using ModbusAdapters.Model;
 using openMIC.Model;
+using openMIC.SharedAssets;
 using static openMIC.SharedAssets.LogFunctions;
 
 // ReSharper disable UnusedMember.Local
@@ -936,6 +937,56 @@ namespace openMIC
             }
         }
 
+        /// <summary>
+        /// Test connection using first defined connection profile task.
+        /// </summary>
+        /// <returns><c>true</c> if connection succeeded; otherwise, <c>false</c>.</returns>
+        public bool TestConnection()
+        {
+            if (!AdapterIsEnabled())
+                return false;
+
+            if (m_cancellationToken.IsCancelled)
+                return false;
+
+            ConnectionProfileTask[] allTasks = AllTasks;
+
+            if (allTasks is null || allTasks.Length == 0)
+                return false;
+
+            ConnectionProfileTask task = allTasks[0];
+            FtpClient ftpClient = null;
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(task.Settings.ExternalOperation))
+                {
+                    if (string.IsNullOrWhiteSpace(ConnectionHostName))
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        ftpClient = ConnectFTPClient();
+                        return true;
+                    }
+                }
+                else
+                {
+                    return TestExternalOperationConnection(task);
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                if (ftpClient != null)
+                    DisconnectFTPClient(ftpClient);
+            }
+        }
+
         #region [ Task Execution Operations ]
 
         // Execute a single task with an overridden schedule. This method exists in addition
@@ -1808,6 +1859,79 @@ namespace openMIC
 
         #region [ External Task Operations ]
 
+        private bool TestExternalOperationConnection(ConnectionProfileTask task)
+        {
+            ConnectionProfileTaskSettings settings = task.Settings;
+
+            Dictionary<string, string> substitutions = new Dictionary<string, string>
+            {
+                { "<DeviceID>", m_deviceRecord.ID.ToString() },
+                { "<DeviceName>", m_deviceRecord.Name ?? "undefined" },
+                { "<DeviceAcronym>", m_deviceRecord.Acronym },
+                { "<ConnectionHostName>", ConnectionHostName },
+                { "<ConnectionUserName>", ConnectionUserName },
+                { "<ConnectionPassword>", ConnectionPassword },
+                { "<ConnectionTimeout>", ConnectionTimeout.ToString() },
+                { "<ProfileName>", m_connectionProfile.Name ?? "undefined" },
+                { "<TaskID>", task.ID.ToString() }
+            };
+
+            string command = substitutions.Aggregate(settings.ExternalOperation.Trim(), (str, kvp) => str.Replace(kvp.Key, kvp.Value));
+            string executable = Arguments.ParseCommand(command)[0];
+            string args = $"{TestConnectionParameter} {command.Substring(executable.Length).Trim()}";
+            TimeSpan timeout = TimeSpan.FromSeconds(settings.ExternalOperationTimeout ?? ConnectionTimeout / 1000.0D);
+
+            try
+            {
+                using (Process externalOperation = new Process())
+                {
+                    DateTime lastUpdate = DateTime.UtcNow;
+                    LogType logType = LogType.Unknown;
+
+                    externalOperation.StartInfo.FileName = executable;
+                    externalOperation.StartInfo.Arguments = args;
+                    externalOperation.StartInfo.RedirectStandardOutput = true;
+                    externalOperation.StartInfo.UseShellExecute = false;
+                    externalOperation.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+
+                    externalOperation.OutputDataReceived += (sender, processArgs) =>
+                    {
+                        if (string.IsNullOrWhiteSpace(processArgs.Data))
+                            return;
+
+                        if (HandleExternalOperationMessage(processArgs.Data, out logType))
+                            return;
+
+                        lastUpdate = DateTime.UtcNow;
+                    };
+
+                    externalOperation.Start();
+                    externalOperation.BeginOutputReadLine();
+
+                    while (!externalOperation.WaitForExit(1000))
+                    {
+                        if (m_cancellationToken.IsCancelled)
+                        {
+                            TerminateProcessTree(externalOperation.Id);
+                            return false;
+                        }
+
+                        if (timeout > TimeSpan.Zero && DateTime.UtcNow - lastUpdate > timeout)
+                        {
+                            TerminateProcessTree(externalOperation.Id);
+                            return false;
+                        }
+                    }
+
+                    return logType == LogType.ConnectionSuccess;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void ExecuteExternalOperationTask(ConnectionProfileTask task, DateTime localTime)
         {
             ConnectionProfileTaskSettings settings = task.Settings;
@@ -1863,7 +1987,7 @@ namespace openMIC
                         if (string.IsNullOrWhiteSpace(processArgs.Data))
                             return;
 
-                        if (HandleExternalOperationMessage(processArgs.Data))
+                        if (HandleExternalOperationMessage(processArgs.Data, out _))
                             return;
 
                         lastUpdate = DateTime.UtcNow;
@@ -1919,13 +2043,14 @@ namespace openMIC
             }
         }
 
-        private bool HandleExternalOperationMessage(string message)
+        private bool HandleExternalOperationMessage(string message, out LogType logType)
         {
             Match downloadedFileMatch = Regex.Match(message, LogDownloadedFilePattern);
             string patternMessage;
 
             if (downloadedFileMatch.Success)
             {
+                logType = LogType.Download;
                 patternMessage = downloadedFileMatch.Groups["FilePath"].Value;
                 m_lastDownloadedFileID = LogDownloadedFile(patternMessage);
 
@@ -1940,6 +2065,7 @@ namespace openMIC
 
             if (connectionSuccessMatch.Success)
             {
+                logType = LogType.ConnectionSuccess;
                 patternMessage = downloadedFileMatch.Groups["Message"].Value;
                 LogOutcome(ProgressState.Processing);
 
@@ -1955,6 +2081,7 @@ namespace openMIC
 
             if (connectionFailureMatch.Success)
             {
+                logType = LogType.ConnectionFailure;
                 patternMessage = downloadedFileMatch.Groups["Message"].Value;
                 LogFailure(patternMessage);
 
@@ -1968,6 +2095,7 @@ namespace openMIC
                 return true;
             }
 
+            logType = LogType.Unknown;
             return false;
         }
 

@@ -209,6 +209,17 @@ namespace openMIC
             Program.Host.Downloaders.Select(adapter => adapter.Name);
 
         /// <summary>
+        /// Tests meter connectivity.
+        /// </summary>
+        /// <param name="meter">Meter name to test/</param>
+        /// <returns><c>true</c> if meter connection succeeds; otherwise, <c>false</c>.</returns>
+        public bool TestConnection(string meter)
+        {
+            Downloader downloader = GetDownloader(meter);
+            return !(downloader is null) && downloader.TestConnection();
+        }
+
+        /// <summary>
         /// Gets current daily stats for specified <paramref name="meter"/>.
         /// </summary>
         /// <param name="meter">Meter name to lookup for stats.</param>

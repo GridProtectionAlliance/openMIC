@@ -29,12 +29,25 @@ namespace openMIC.SharedAssets
     // This file is shared between .NET Core and .NET Framework, make sure changes compile on both platforms
 
     /// <summary>
+    /// Represents a log type.
+    /// </summary>
+    public enum LogType
+    {
+        Unknown,
+        Download,
+        ConnectionSuccess,
+        ConnectionFailure
+    }
+
+    /// <summary>
     /// Defines shared log operations, functions and constants that are shared between openMIC and external
     /// operations, e.g., BenDownloader, IONDownloader and DranetzDownloader.
     /// </summary>
     public static class LogFunctions
     {
         public const string HostService = nameof(openMIC);
+
+        public const string TestConnectionParameter = "--TestConnection=true";
 
         public const string OperationSeparator = " :: ";
 
