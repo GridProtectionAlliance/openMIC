@@ -55,29 +55,8 @@
             height: 100%;
         }
 
-        span.new-record {
-            border: red;
-            border-style: solid;
-            border-width: 4px;
-            display: inline-block;
-            padding-left: 3px;
-            padding-right: 4px;
-        }
-
-        span.existing-record {
-            border: lawngreen;
-            border-style: solid;
-            border-width: 4px;
-            display: inline-block;
-            padding-left: 3px;
-            padding-right: 4px;
-        }
-
-        /* Prevent label wrapping */
-        #baseURLArea {
-            width: 80%;
-            display: inline-table;
-            vertical-align: middle;
+        .btn-group-vertical > button {
+            margin-bottom: 2px;
         }
 
         th.pad-right {
@@ -337,10 +316,32 @@
         <div id="busyDataBlock" style="display: none">
             <span id="busyDataLabel">Loading</span>&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
         </div>
-        <div class="pull-right" style="margin-top: -35px">
+        <div class="btn-group-vertical pull-right" role="group" style="margin-top: -100px; width: 130px">
             <button type="button" class="btn btn-sm btn-primary pull-right" id="saveChangesButton" data-bind="enable: canSave">
                 <span class="glyphicon glyphicon-floppy-save"></span>&nbsp;&nbsp;Save&nbsp;Changes
             </button>
+            <button type="button" class="btn btn-sm btn-default pull-right" id="exportConfigButton" data-bind="enable: canExport" onclick="showExportConfigFileNameDialog()">
+                <span class="glyphicon glyphicon-save-file"></span>&nbsp;&nbsp;Export&nbsp;Config
+            </button>
+            <div class="well well-sm floating-form" id="exportConfigFileNameDialog" style="z-index: 1000; margin-left: -100px; margin-top: 65px">
+                <form class="form-inline" role="form">
+                    <div class="form-group form-group-sm">
+                        <button type="button" class="close" onclick="$('#exportConfigFileNameDialog').hide()" style="margin-top: -5px; margin-left: 8px">&times;</button>
+                        <label for="exportConfigFileName">Config file name:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="exportConfigFileName" placeholder="File name..." />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default btn-sm" id="exportConfigFile" style="margin-right: -3px; font-weight: bold">Save</button>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <a href="#" id="exportConfigFileLink" target="_blank" style="display: none"></a>
+            <button type="button" class="btn btn-sm btn-default pull-right" id="importConfigButton" data-bind="enable: canImport" onclick="showImportConfigFileNameDialog()">
+                <span class="glyphicon glyphicon-open-file"></span>&nbsp;&nbsp;Import&nbsp;Config
+            </button>
+            <input id="importConfigFileName" type="file" accept="text/json" style="position: fixed; top: -100em" onchange="importConfigFile(event)">
         </div>
         <div id="tabs"></div>
     </div>
@@ -455,9 +456,6 @@
                         value = false;
 
                     self._dataHubIsConnected(value);
-
-                    if (value)
-                        self.refreshValidationErrors();
                 },
                 owner: self
             });
@@ -469,6 +467,24 @@
                         self.currentAnalyzerConfig().commandresult &&
                         self.isDirty() &&
                         !self.isSaving() &&
+                        self.dataHubIsConnected();
+                },
+                owner: self
+            });
+
+            self.canExport = ko.pureComputed({
+                read: function () {
+                    return self.currentConfigID() > -1 &&
+                        self.currentAnalyzerConfig().commandresult &&
+                        !self.isSaving() &&
+                        self.dataHubIsConnected();
+                },
+                owner: self
+            });
+
+            self.canImport = ko.pureComputed({
+                read: function () {
+                    return !self.isSaving() &&
                         self.dataHubIsConnected();
                 },
                 owner: self
@@ -536,11 +552,12 @@
                 $("#tabs").html(tabList.join("\r\n") + tabSections.join("\r\n"));
 
                 $("#tabs").tabs({
-                    active: 0,
-                    activate: function(event, ui) {
-                        if (self.isDirty() && confirm("Do you want to keep the changes?"))
-                            self.saveSection();
-                    }
+                    active: 0
+                    // Uncomment to enable intra-tab save promt
+                    //activate: function(event, ui) {
+                    //    if (self.isDirty() && confirm("Do you want to keep the changes?"))
+                    //        self.saveSection();
+                    //}
                 });
             }
 
@@ -550,7 +567,7 @@
                     return;
                 }
 
-                showInfoMessage("Saving changes, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
+                showInfoMessage("Saving configuration, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
                 showSavingMessage();
                 self._isSaving(true);
 
@@ -565,7 +582,7 @@
                     })
                     .fail(function (error) {
                         hideInfoMessage();
-                        showErrorMessage(`Save Changes ${error}`, null, true);
+                        showErrorMessage(`Save Configuration ${error}`, null, true);
                         hideSavingMessage();
                     });
                 })
@@ -601,9 +618,67 @@
                 }
             }
 
+            self.importAnalyzerConfig = function (fileData) {
+                const reader = new FileReader();
+
+                reader.onload = function () {
+                    const configID = self.currentConfigID();
+                    const config = JSON.parse(reader.result);
+
+                    if (!config.commandresult || !config.commandresult.characteristics || !config.commandresult.characteristics.anyalyzer) {
+                        showErrorMessage("Unexpected config file format", null, true);
+                        return;
+                    }
+
+                    const analyzerType = parseInt(config.commandresult.characteristics.anyalyzer.analyzer_type["@@value"], 10);
+
+                    self._loadAnalyzerConfig(configID, analyzerType, config).done(function () {
+                        self.analyzers().forEach(function (analyzer) {
+                            if (analyzer.isSelected()) {
+                                analyzer["@@name"](config.commandresult["@@name"]);
+                                analyzer["@@analyzer_type"](analyzerType.toString());
+                            }
+                        });
+
+                        self.isDirty(true);
+                    });
+                };
+
+                reader.onloadend = function () {
+                    if (reader.error && reader.error.message)
+                        showErrorMessage("Failed to import config file: " + reader.error.message);
+                };
+
+                reader.readAsText(fileData);
+            }
+
+            self.exportAnalyzerConfig = function (fileName) {
+                const data = JSON.stringify(self.currentAnalyzerConfig(), null, 4);
+                const anchor = $("#exportConfigFileLink");
+
+                if (typeof anchor[0].download != "undefined") {
+                    anchor.attr("href", "data:text/json;charset=utf-8," + encodeURIComponent(data));
+                    anchor.attr("download", fileName);
+                    anchor[0].click();
+                } else {
+                    if (isIE)
+                        window.navigator.msSaveBlob(new Blob([data]), fileName);
+                    else
+                        window.open("data:text/json;charset=utf-8," + encodeURIComponent(data), "_blank", "");
+                }
+            };
+
             self.loadAnalyzerConfig = function (configID, analyzerType) {
-                if (analyzerTypeKeys.every(key => analyzerType !== analyzerTypes[key].index))
-                {
+                return dataHub.getAnalyzerConfig(deviceID, configID).then(function (configResult) {
+                    return self._loadAnalyzerConfig(configID, analyzerType, JSON.parse(configResult));
+                })
+                .fail(function (error) {
+                    showErrorMessage(`Load Analyzer Config "${error}"`, null, true);
+                });
+            }
+
+            self._loadAnalyzerConfig = function (configID, analyzerType, analyzerConfig) {
+                if (analyzerTypeKeys.every(key => analyzerType !== analyzerTypes[key].index)) {
                     showErrorMessage(`Cannot load configuration from unknown analyzer type "${analyzerType}"`, null, true);
                     return $.Deferred().resolve().promise();
                 }
@@ -611,29 +686,26 @@
                 self.isDirty(false);
                 self.currentConfigID(configID);
                 self.currentAnalyzerType(analyzerType);
+                self.currentAnalyzerConfig(analyzerConfig);
                 self.createSectionTabs();
 
                 if (!self.dataHubIsConnected())
                     return $.Deferred().resolve().promise();
 
-                return dataHub.getAnalyzerConfig(deviceID, configID).then(function (configResult) {
-                    self.currentAnalyzerConfig(JSON.parse(configResult));
-                }).then(function () {
-                    const promises = [];
-                    const activeSections = sections[analyzerType];
+                const promises = [];
+                const activeSections = sections[analyzerType];
 
-                    for (let key in activeSections) {
-                        if (activeSections.hasOwnProperty(key)) {
-                            promises.push(dataHub.getSectionMap(`${key}.xml`).done(function (result) {
-                                self.addSection(key, buildSection(JSON.parse(result).SECTION));
-                            }).fail(function (error) {
-                                showErrorMessage(error, null, true);
-                            }));
-                        }
+                for (let key in activeSections) {
+                    if (activeSections.hasOwnProperty(key)) {
+                        promises.push(dataHub.getSectionMap(`${key}.xml`).done(function (result) {
+                            self.addSection(key, buildSection(JSON.parse(result).SECTION));
+                        }).fail(function (error) {
+                            showErrorMessage(error, null, true);
+                        }));
                     }
+                }
 
-                    return $(promises).whenAll();
-                }).then(function () {
+                return $(promises).whenAll().then(function () {
                     setActiveTabIndex(0);
 
                     $("[update-expr]").each(function () {
@@ -683,6 +755,10 @@
                     status.commandresult.analyzers.list.item.forEach(function (analyzer) {
                         const observerableAnalyzer = ko.mapping.fromJS(analyzer);
 
+                        observerableAnalyzer.configID = ko.pureComputed({
+                            read: () => parseInt(observerableAnalyzer["@@id"](), 10)
+                        });
+
                         observerableAnalyzer.analyzerType = ko.pureComputed({
                             read: () => parseInt(observerableAnalyzer["@@analyzer_type"](), 10)
                         });
@@ -692,7 +768,7 @@
                         });
 
                         observerableAnalyzer.isSelected = ko.pureComputed({
-                            read: () => observerableAnalyzer.analyzerType() === viewModel.currentAnalyzerType()
+                            read: () => observerableAnalyzer.configID() === viewModel.currentConfigID()
                         });
 
                         observerableAnalyzer.montitoringStatus = ko.pureComputed({
@@ -715,7 +791,6 @@
                         if (ko.options.deferUpdates)
                             ko.tasks.runEarly();
 
-                        self.refreshValidationErrors();
                         self.isDirty(false);
 
                         $("[id=moduleRow]").css("visibility", "visible");
@@ -726,15 +801,6 @@
                     showErrorMessage(error, null, true);
                 });
             }
-
-            self.refreshValidationErrors = function() {
-                // Make sure any initial validation error messages are visible
-                self.errors.showAllMessages();
-            }
-
-            self.validationErrors = ko.pureComputed(function() {
-                return self.errors().length;
-            }).extend({ notify: "always" });
         }
 
         function showSavingMessage() {
@@ -754,7 +820,6 @@
 
         function hideLoadingMessage() {
             $("#busyDataBlock").hide();
-            $("#bulkSelectionButtons").show();
         }
 
         function loadAnalyzerConfig(record) {
@@ -769,6 +834,30 @@
             return viewModel.loadAnalyzerConfig(configID, analyzerType).always(function () {
                 hideLoadingMessage();
             });
+        }
+
+        function importConfigFile(event) {
+            setTimeout(function () {
+                const files = event.target.files;
+
+                viewModel.importAnalyzerConfig(files[0]);
+
+                $("#importConfigFileName").val("");
+            }, 100);
+        }
+
+        function showImportConfigFileNameDialog() {
+            if (viewModel.isDirty() && !confirm("Are you sure you want to skip unsaved configuration changes?"))
+                return;
+
+            $("#importConfigFileName").trigger("click");
+        }
+
+        function showExportConfigFileNameDialog() {
+            $("#exportConfigFileNameDialog").toggle();
+
+            if ($("#exportConfigFileNameDialog").is(":visible"))
+                $("#exportConfigFileName").focus();
         }
 
         function getActiveTabIndex() {
@@ -808,24 +897,69 @@
                 viewModel.isDirty(true);
             });
 
+            // Setup export config file name dialog functionality
+            $("#exportConfigFile").click(function () {
+                $("#exportConfigFileNameDialog").hide();
+
+                let fileName = $("#exportConfigFileName").val();
+
+                if (!fileName.endsWith(".json"))
+                    fileName += ".json";
+
+                viewModel.exportAnalyzerConfig(fileName);
+            });
+
+            // Make enter key auto-click save
+            $("#exportConfigFileName").keyup(function (event) {
+                if (event.keyCode === 13)
+                    $("#exportConfigFile").click();
+            });
+
+            // Auto-select all text on focus
+            $("#exportConfigFileName").focus(function () {
+                $(this).select();
+            });
+
+            // Prevent default form submission when user presses enter
+            $("#exportConfigFileNameDialog").submit(function () {
+                return false;
+            });
+
+            // Auto-hide pop-up form when user clicks outside form area
+            $("#exportConfigFileNameDialog").focusout(function () {
+                if (!$("#exportConfigFileNameDialog").is(":hover") && !$("#exportConfigButton").is(":hover"))
+                    $("#exportConfigFileNameDialog").hide();
+            });
+
             // Let view model know about hub connectivity changes
             $(window).on("hubConnected", function() {
                 viewModel.dataHubIsConnected(true);
 
-                if (deviceID <= 0)
+                if (deviceID <= 0 || viewModel.currentAnalyzerConfig().commandresult)
                     return;
 
+                // Handle initial page load
+                showInfoMessage("Loading configuration, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
                 showLoadingMessage();
 
                 dataHub.queryDeviceByID(deviceID).done(function (device) {
                     $("#editDeviceName").html(`Editing&nbsp;${device.Acronym}&nbsp;Configuration`);
                 });
 
-                viewModel.queryModules().done(function () {
+                viewModel.queryModules().then(function () {
                     viewModel.createSectionTabs(true);
                     return loadAnalyzerConfig(viewModel.analyzers()[viewModel.currentAnalyzerType()]);
                 })
-                .fail(hideLoadingMessage);
+                .done(function () {
+                    showInfoMessage("Load complete.", 5000);
+                    hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
+                    hideLoadingMessage();
+                })
+                .fail(function (error) {
+                    hideInfoMessage();
+                    showErrorMessage(`Load Configuration ${error}`, null, true);
+                    hideLoadingMessage();
+                });
             });
 
             $(window).on("hubDisconnected", function() {
