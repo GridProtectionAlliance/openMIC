@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -35,6 +36,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Newtonsoft.Json;
 using GSF;
+using GSF.Web.Security;
 using openMIC.Model;
 
 namespace openMIC
@@ -183,17 +185,34 @@ namespace openMIC
         public Task<string> GetAnalyzerConfig(int deviceID, int configID) =>
             GetCommand(deviceID, $"getanalyzerconfig&id={configID}");
 
+        // Sets TransactionID cookie
+        [AuthorizeHubRole("Administrator, Editor")]
         public Task BeginTransaction(int deviceID) =>
-            GetCommand(deviceID, "begintransaction"); // Sets TransactionID cookie
+            GetCommand(deviceID, "begintransaction");
 
+        [AuthorizeHubRole("Administrator, Editor")]
         public Task SetInstanceConfig(int deviceID, string value) =>
             SendCommand(deviceID, "setinstconfig", value);
 
+        [AuthorizeHubRole("Administrator, Editor")]
         public Task SetAnalyzerConfig(int deviceID, int configID, string value) =>
             SendCommand(deviceID, $"setanalyzerconfig&id={configID}", value);
 
+        // Clears TransactionID cookie
+        [AuthorizeHubRole("Administrator, Editor")]
         public Task EndTransaction(int deviceID) =>
-            GetCommand(deviceID, "endtransaction", true); // Clears TransactionID cookie
+            GetCommand(deviceID, "endtransaction", true);
+
+        public Task<string> GetDeviceTime(int deviceID) =>
+            GetCommand(deviceID, "gettime");
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        public Task SetDeviceTime(int deviceID, string time) =>
+            GetCommand(deviceID, $"puttime&time={DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal):MM/dd/yyyy HH:mm:ss}");
+
+        [AuthorizeHubRole("Administrator, Editor")]
+        public Task RestartDevice(int deviceID, bool hard) =>
+            GetCommand(deviceID, $"restart&hard={(hard ? "yes" : "no")}");
 
         private async Task<string> GetCommand(int deviceID, string cmdParam, bool clearCookies = false)
         {
