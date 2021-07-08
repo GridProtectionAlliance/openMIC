@@ -144,20 +144,6 @@ namespace openMIC
             // Load ServiceHub SignalR class
             app.MapSignalR(hubConfig);
 
-            // Map custom API controllers
-            try
-            {
-                httpConfig.Routes.MapHttpRoute(
-                    name: "CustomAPIs",
-                    routeTemplate: "api/{controller}/{action}/{id}",
-                    defaults: new { action = "Index", id = RouteParameter.Optional }
-                );
-            }
-            catch (Exception ex)
-            {
-                Program.Host.LogException(new InvalidOperationException($"Failed to initialize custom API controllers: {ex.Message}", ex));
-            }
-
             // Set configuration to use reflection to setup routes
             httpConfig.MapHttpAttributeRoutes();
 

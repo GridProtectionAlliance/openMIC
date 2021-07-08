@@ -46,6 +46,7 @@ namespace openMIC
     /// <summary>
     /// Represents a REST based API for openMIC operations.
     /// </summary>
+    [RoutePrefix("api/Operations")]
     public class OperationsController : ApiController
     {
         private static readonly HttpClient s_http;
@@ -81,7 +82,7 @@ namespace openMIC
         /// <summary>
         /// Validates that openMIC operations are responding as expected.
         /// </summary>
-        [HttpGet]
+        [HttpGet, Route("")]
         public HttpResponseMessage Index() => new HttpResponseMessage(HttpStatusCode.OK);
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace openMIC
         /// </code>
         /// </para>
         /// </remarks>
-        [HttpGet]
+        [HttpGet, Route("QueueTasks")]
         public HttpResponseMessage QueueTasks([FromUri] string taskID, [FromUri] QueuePriority priority, [FromUri(Name = "target")] List<string> targets)
         {
             if (RemoteSchedulerAddress is null)
@@ -172,7 +173,7 @@ namespace openMIC
         /// </summary>
         /// <param name="deviceName">Source device name.</param>
         /// <param name="progressUpdates">Serialized progress updates.</param>
-        [HttpPost]
+        [HttpPost, Route("ProgressUpdate")]
         public HttpResponseMessage ProgressUpdate([FromUri] string deviceName, [FromBody] List<ProgressUpdate> progressUpdates)
         {
             if (Program.Host.Model.Global.UseRemoteScheduler)
@@ -187,6 +188,7 @@ namespace openMIC
         /// </summary>
         /// <param name="commandInput"></param>
         /// <returns></returns>
+        [HttpGet, Route("RelayCommand")]
         public HttpResponseMessage RelayCommand(string commandInput)
         {
             if (string.IsNullOrWhiteSpace(commandInput))
@@ -205,18 +207,23 @@ namespace openMIC
         /// Gets list of configured meter names.
         /// </summary>
         /// <returns>List of configured meter names.</returns>
-        public IEnumerable<string> GetMeterList() =>
-            Program.Host.Downloaders.Select(adapter => adapter.Name);
+        [HttpGet, Route("Meters")]
+        public IHttpActionResult GetMeterList()
+        {
+            string[] meters = Program.Host.Downloaders.Select(adapter => adapter.Name).ToArray();
+            return Ok(meters);
+        }
 
         /// <summary>
         /// Tests meter connectivity.
         /// </summary>
         /// <param name="meter">Meter name to test/</param>
         /// <returns><c>true</c> if meter connection succeeds; otherwise, <c>false</c>.</returns>
-        public bool TestConnection(string meter)
+        [HttpGet, Route("Test/{meter}")]
+        public IHttpActionResult TestConnection(string meter)
         {
             Downloader downloader = GetDownloader(meter);
-            return !(downloader is null) && downloader.TestConnection();
+            return Ok(!(downloader is null) && downloader.TestConnection());
         }
 
         /// <summary>
@@ -224,6 +231,7 @@ namespace openMIC
         /// </summary>
         /// <param name="meter">Meter name to lookup for stats.</param>
         /// <returns>Current daily stats for specified <paramref name="meter"/>.</returns>
+        [HttpGet, Route("Statistics/{meter}")]
         public async Task<DailyStatistics> GetDailyStatistics(string meter)
         {
             Downloader downloader = GetDownloader(meter);
