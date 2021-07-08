@@ -55,6 +55,10 @@
             height: 100%;
         }
 
+        body.wait, body.wait * {
+            cursor: wait !important;   
+        }
+
         .btn-group-vertical > button {
             margin-bottom: 2px;
         }
@@ -830,20 +834,24 @@
         function showSavingMessage() {
             $("#busyDataLabel").text("Saving");
             $("#busyDataBlock").show();
+            $("body").addClass("wait");
         }
 
         function hideSavingMessage() {
             $("#busyDataBlock").hide();
+            $("body").removeClass("wait");
         }
 
         function showLoadingMessage() {
             $("#responsiveTableDiv").show();
             $("#busyDataLabel").text("Loading");
             $("#busyDataBlock").show();
+            $("body").addClass("wait");
         }
 
         function hideLoadingMessage() {
             $("#busyDataBlock").hide();
+            $("body").removeClass("wait");
         }
 
         function loadAnalyzerConfig(record) {
@@ -857,6 +865,7 @@
 
             showInfoMessage(`Loading \"${viewModel.selectedAnalyzer()["@@name"]()}\" configuration, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1, true);
             hideInfoMessage({ closeHeaderPanel: false, closeFloatingPanels: true });
+            hideErrorMessage();
             showLoadingMessage();
 
             return viewModel.loadAnalyzerConfig(configID, analyzerType).done(function () {
@@ -998,13 +1007,13 @@
                     })
                     .fail(function (error) {
                         hideInfoMessage();
-                        showErrorMessage(`Load Configuration ${error}`, null, true);
+                        showErrorMessage(`Device Info Load ${error}`, null, true);
                         hideLoadingMessage();
                     });
                 })
                 .fail(function (error) {
                     hideInfoMessage();
-                    showErrorMessage(`Load Configuration ${error}`, null, true);
+                    showErrorMessage(`Device Query ${error}`, null, true);
                     hideLoadingMessage();
                 });
             });
