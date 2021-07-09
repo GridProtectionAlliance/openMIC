@@ -1065,17 +1065,34 @@
             return $("<div/>").text(value).html().replace(/&/g, "%26");
         }
 
-        function getVal(bankTarget) {
-            const values = $(`#${bankTarget}`).val() || [];
+        function getVal(targetID, targetType) {
+            const target = $(`#${targetID}`);
 
-            if (values.length > 0)
-                return parseInt(values[0], 10);
+            if (target[0].hasAttribute("bank-list")) {
+                const values = target.val() || [];
 
-            return 0;
+                if (values.length > 0)
+                    return parseInt(values[0], 10);
+
+                return 0;
+            }
+            else {
+                const value = target.val();
+
+                switch (targetType) {
+                    case undefined:
+                    case "float":
+                        return parseFloat(value);
+                    case "int":
+                        return parseInt(value, 10);
+                    default:
+                        return value.toString();
+                }
+            }
         }
 
-        function selectBankItem(bankTarget) {
-            $(`[bank="${bankTarget}"]`).each(function () {
+        function selectBankItem(bankTargetID) {
+            $(`[bank="${bankTargetID}"]`).each(function () {
                 try {
                     eval($(this).attr("update-expr"));
                 } catch (e) {
@@ -1090,7 +1107,12 @@
             FLOAT: "2",
             HEADER: "3",
             TEXT: "4",
-            SELECT: "8"
+            DATE: "5",
+            TIME: "6",
+            SELECT: "8",
+            DATETIMERANGE: "11",
+            PASSWORD: "12",
+            MULTILINETEXT: "13"
         }
 
         const unmapped = 0;
@@ -1127,10 +1149,10 @@
 
             if (isBankList) {
                 script.push(`const update_${listID} = new Function("$('#${listID} option').removeAttr('selected'); $('#${listID} option[value=0]').prop('selected', true); $('#${listID}').focus();");`);
-                html.push(`<select multiple class="form-control list-bank" id="${listID}"${sizeToken} onchange="selectBankItem('${listID}')" update-expr="update_${listID}()">`);
+                html.push(`<select multiple class="form-control list-bank" id="${listID}"${sizeToken} onchange="selectBankItem('${listID}')" update-expr="update_${listID}()" bank-list>`);
             } else {
-                script.push(`const ${listID}_changed = new Function("${map} = getVal('${listID}'); viewModel.configChanged();");`);
                 script.push(`const update_${listID} = new Function("${readOnly ? `` : `$('#${listID} option[value=' + ${map} + ']').prop('selected', true)`};");`);
+                script.push(`const ${listID}_changed = new Function("${map} = getVal('${listID}'); viewModel.configChanged();");`);
                 html.push(`<select class="form-control" id="${listID}" onchange="${listID}_changed()" update-expr="update_${listID}()" data-toggle="tooltip" title="${map}" bank="${bankTarget}">`);
             }
 
@@ -1168,18 +1190,40 @@
             const type = propDef["@@TYPE"];
             const name = propDef["@@NAME"];
             const alias = propDef["@@ALIAS"];
+            const getPropVal = `$('#${name}').val()`;
+            const setPropVal = `$('#${name}').val({0})`;
             const readOnly = parseInt(propDef["@@RO"] || "1", 10) > 0;
-            const mapExpr = propDef["@@MAP"] || "unmapped";
-            const map = String.format(mapExpr.startsWith(".") ? `${mapRoot}${mapExpr}` : mapExpr, bankTarget);
+            const map = propDef["@@MAP"] || "unmapped";
+            const mapExpr = String.format(map.startsWith(".") ? `${mapRoot}${map}` : map, bankTarget);
+            const readExpr = propDef["@@READ"];
+            const writeExpr = propDef["@@WRITE"];
+
+            const applySubstitutions = value => value
+                .replaceAll("{name}", name)
+                .replaceAll("{value}", getPropVal)
+                .replaceAll("{mapExpr}", mapExpr)
+                .replaceAll("{readExpr}", readExpr)
+                .replaceAll("{writeExpr}", writeExpr)
+                .replaceAll("{mapRoot}", mapRoot)
+                .replaceAll("{bankTarget}", bankTarget);
+
+            const preReadExpr = propDef["@@PREREAD"] ? `${applySubstitutions(propDef["@@PREREAD"])}; ` : "";
+            const postReadExpr = propDef["@@POSTREAD"] ? ` ${applySubstitutions(propDef["@@POSTREAD"])};` : "";
+            const preWriteExpr = propDef["@@PREWRITE"] ? `${applySubstitutions(propDef["@@PREWRITE"])}; ` : "";
+            const postWriteExpr = propDef["@@POSTWRITE"] ? ` ${applySubstitutions(propDef["@@POSTWRITE"])};` : "";
+
+            const updateFunction = `const update_{0} = new Function("${readOnly ? "" : `${preReadExpr}{1};${postReadExpr}`}");`;
+            const changedFunction = `const {0}_changed = new Function("${preWriteExpr}{1};${postWriteExpr} viewModel.configChanged();");`;
+
             const defaultVal = propDef["@@DEFAULT"];
-            const placeHolder = propDef["@@PLACEHOLDER"];
-            const placeHolderText = `${placeHolder ? ` placeholder="${placeHolder}"` : ``}`;
+            const placeHolderText = propDef["@@PLACEHOLDER"] ? ` placeholder="${propDef["@@PLACEHOLDER"]}"` : "";
             const hasParam = propDef.hasOwnProperty("PARAM");
             const min = hasParam ? propDef.PARAM["@@MIN"] : undefined;
             const max = hasParam ? propDef.PARAM["@@MAX"] : undefined;
             const minMaxText = `${min ? ` min="${min}"` : ``}${max ? ` max="${max}"` : ``}`;
             const maxLen = hasParam ? propDef.PARAM["@@LEN"] : undefined;
             const maxLenText = `${maxLen ? ` maxlength="${maxLen}"` : ``}`;
+
             const html = [];
             const script = [];
 
@@ -1190,28 +1234,29 @@
 
             switch (type) {
                 case PropDefType.CHECKBOX:
-                    script.push(`const ${name}_changed = new Function("${map} = $('#${name}').prop('checked') ? '1' : '0'; viewModel.configChanged();");`);
-                    script.push(`const update_${name} = new Function("${readOnly ? `` : `$('#${name}').prop('checked', parseInt(${map}, 10) > 0)`};");`);
-                    html.push(`<input type="checkbox" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${map}" bank="${bankTarget}"/>`);
+                    script.push(String.format(updateFunction, name, `$('#${name}').prop('checked', parseInt(${mapExpr}, 10) > 0)`));
+                    script.push(String.format(changedFunction, name, `${mapExpr} = $('#${name}').prop('checked') ? '1' : '0'`));
+                    html.push(`<input type="checkbox" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.NUMERIC:
-                    script.push(`const ${name}_changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
-                    script.push(`const update_${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${map}" bank="${bankTarget}"/>`);
-                    break;
+                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
+                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${mapExpr}" bank="${bankTarget}"/>`);
+                break;
                 case PropDefType.FLOAT:
-                    script.push(`const ${name}_changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
-                    script.push(`const update_${name} = new Function("${readOnly ? `` : `$('#${name}').val(parseFloat(${map}).toFixed(4))`};");`);
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${map}" bank="${bankTarget}"/>`);
+                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? `(${String.format(readExpr, mapExpr)})` : `parseFloat(${mapExpr})`}.toFixed(4)`)}`));
+                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.TEXT:
-                    script.push(`const ${name}_changed = new Function("${map} = $('#${name}').val(); viewModel.configChanged();");`);
-                    script.push(`const update_${name} = new Function("${readOnly ? `` : `$('#${name}').val(${map})`};");`);
-                    html.push(`<input type="text" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${map}" bank="${bankTarget}"/>`);
+                case PropDefType.PASSWORD:
+                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
+                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
+                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.SELECT:
                 {
-                    const [ listHtml, listScript ] = buildListElement(propDef.PARAM.LIST, name, map, bankTarget, readOnly, defaultVal);
+                    const [ listHtml, listScript ] = buildListElement(propDef.PARAM.LIST, name, mapExpr, bankTarget, readOnly, defaultVal);
 
                     html.push(listHtml);
 
