@@ -222,6 +222,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\RequestVerificationHeaderTokenController.cs" />
     <Compile Include="DataHub.cs" />
     <Compile Include="DataHub_Dranetz.cs" />
     <Compile Include="DataHub_IGrid.cs" />
@@ -261,7 +262,7 @@
     <Compile Include="Model\StatusLight.cs" />
     <Compile Include="Model\StatusLog.cs" />
     <Compile Include="Model\ConnectionProfileTask.cs" />
-    <Compile Include="OperationsController.cs" />
+    <Compile Include="Controllers\OperationsController.cs" />
     <Compile Include="Model\QueuePriority.cs" />
     <Compile Include="ServiceConnectionHubClient.cs" />
     <Compile Include="ServiceConnectionOperations.cs" />
