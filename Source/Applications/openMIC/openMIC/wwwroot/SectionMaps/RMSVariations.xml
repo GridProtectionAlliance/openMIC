@@ -1,33 +1,33 @@
 <SECTION NAME="rms" ALIAS="Rms Variations" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
-	<PROPDEF ORDER="0" NAME="Sliding Voltage Reference for High and Low Limits" TYPE="3" ANALYZER="1"/>
-	<PROPDEF ORDER="1" NAME="rmsUSREnable" ALIAS="Enable threshold adjustment" TYPE="0" RO="0" ANALYZER="1"/>
-	<PROPDEF ORDER="2" NAME="rmsUSRMax" ALIAS="Sliding reference maximum value" TYPE="4" RO="0" ANALYZER="1"/>
-	<PROPDEF ORDER="3" NAME="rmsUSRMin" ALIAS="Sliding reference mimimum value" TYPE="4" RO="0" ANALYZER="1"/>
-	<BANK ORDER="4" NAME="bankRMSLimits" ALIAS="RMS Magnitude Limits (select the channel(s) to change)" ROWS="11">
-		<LIST>
-			<ITEM NAME="ci46" ALIAS="Rms Voltage A" ANALYZER="1"/>
-			<ITEM NAME="ci48" ALIAS="Rms Voltage B" ANALYZER="1"/>
-			<ITEM NAME="ci50" ALIAS="Rms Voltage C" ANALYZER="1"/>
-			<ITEM NAME="ci52" ALIAS="Rms Voltage N" ANALYZER="1"/>
-			<ITEM NAME="ci54" ALIAS="Rms Voltage AB" ANALYZER="1"/>
-			<ITEM NAME="ci55" ALIAS="Rms Voltage BC" ANALYZER="1"/>
-			<ITEM NAME="ci56" ALIAS="Rms Voltage CA" ANALYZER="1"/>
-			<ITEM NAME="ci57" ALIAS="Rms Current A" ANALYZER="2"/>
-			<ITEM NAME="ci59" ALIAS="Rms Current B" ANALYZER="2"/>
-			<ITEM NAME="ci61" ALIAS="Rms Current C" ANALYZER="2"/>
-			<ITEM NAME="ci63" ALIAS="Rms Current N" ANALYZER="2"/>
-		</LIST>
-		<PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
-		<PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
-		<PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
-	</BANK>
-	<PROPDEF NAME="Rapid Voltage Change Limits" TYPE="3" ANALYZER="1"/>
-	<PROPDEF NAME="rmsRVCLimit" ALIAS="RMS magnitude change (%)" TYPE="4" RO="0" ANALYZER="1"/>
-	<PROPDEF NAME="RMS Summary" TYPE="3"/>
-	<PROPDEF NAME="rmsPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="4" RO="0"/>
-	<PROPDEF NAME="rmsInOutPost" ALIAS="In-out post trigger (Cycles)" TYPE="4" RO="0"/>
-	<PROPDEF NAME="rmsOutInPost" ALIAS="Out-in post trigger (Cycles)" TYPE="4" RO="0"/>
-	<PROPDEF NAME="Waveform Capture" TYPE="3"/>
-	<PROPDEF NAME="rmsWFPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="4" RO="0"/>
-	<PROPDEF NAME="rmsWFPosttrigger" ALIAS="Post-trigger (Cycles)" TYPE="4" RO="0"/>
+  <PROPDEF ORDER="0" NAME="Sliding Voltage Reference for High and Low Limits" TYPE="3" ANALYZER="1"/>
+  <PROPDEF ORDER="1" NAME="rmsUSREnable" ALIAS="Enable threshold adjustment" TYPE="0" RO="0" ANALYZER="1" MAP=".usr.bEnabled['@value']"/>
+  <PROPDEF ORDER="2" NAME="rmsUSRMax" ALIAS="Sliding reference maximum value (%)" TYPE="4" RO="0" ANALYZER="1" MAP=".usr.fHighLimit['@value']" READ="(parseFloat({0}) / getVal('inputSection_nominalV') * 100).toFixed(1)" WRITE="{0} / 100 * getVal('inputSection_nominalV')"/>
+  <PROPDEF ORDER="3" NAME="rmsUSRMin" ALIAS="Sliding reference mimimum value (%)" TYPE="4" RO="0" ANALYZER="1" MAP=".usr.fLowLimit['@value']" READ="(parseFloat({0}) / getVal('inputSection_nominalV') * 100).toFixed(1)" WRITE="{0} / 100 * getVal('inputSection_nominalV')"/>
+  <BANK ORDER="4" NAME="bankRMSLimits" ALIAS="RMS Magnitude Limits (select the channel(s) to change)" ROWS="11">
+    <LIST>
+      <ITEM NAME="ci46" ALIAS="Rms Voltage A" ANALYZER="1"/>
+      <ITEM NAME="ci48" ALIAS="Rms Voltage B" ANALYZER="1"/>
+      <ITEM NAME="ci50" ALIAS="Rms Voltage C" ANALYZER="1"/>
+      <ITEM NAME="ci52" ALIAS="Rms Voltage N" ANALYZER="1"/>
+      <ITEM NAME="ci54" ALIAS="Rms Voltage AB" ANALYZER="1"/>
+      <ITEM NAME="ci55" ALIAS="Rms Voltage BC" ANALYZER="1"/>
+      <ITEM NAME="ci56" ALIAS="Rms Voltage CA" ANALYZER="1"/>
+      <ITEM NAME="ci57" ALIAS="Rms Current A" ANALYZER="2"/>
+      <ITEM NAME="ci59" ALIAS="Rms Current B" ANALYZER="2"/>
+      <ITEM NAME="ci61" ALIAS="Rms Current C" ANALYZER="2"/>
+      <ITEM NAME="ci63" ALIAS="Rms Current N" ANALYZER="2"/>
+    </LIST>
+    <PROPDEF NAME="limitHigh" ALIAS="High (%)" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig1.hi_lims.list.item[0]['@value']" READ="(parseFloat({0}) / getVal('inputSection_nominalV') * 100).toFixed(1)" WRITE="{0} / 100 * getVal('inputSection_nominalV')"/>
+    <PROPDEF NAME="limitLow" ALIAS="Low (%)" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig2.rms_lo_very_lo_lims.list.item[0]['@value']" READ="(parseFloat({0}) / getVal('inputSection_nominalV') * 100).toFixed(1)" WRITE="{0} / 100 * getVal('inputSection_nominalV')"/>
+    <PROPDEF NAME="limitlLowLow" ALIAS="Very low (%)" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig2.rms_lo_very_lo_lims.list.item[1]['@value']" READ="(parseFloat({0}) / getVal('inputSection_nominalV') * 100).toFixed(1)" WRITE="{0} / 100 * getVal('inputSection_nominalV')"/>
+  </BANK>
+  <PROPDEF NAME="Rapid Voltage Change Limits" TYPE="3" ANALYZER="1"/>
+  <PROPDEF NAME="rmsRVCLimit" ALIAS="RMS magnitude change (%)" TYPE="4" RO="0" ANALYZER="1" MAP=".thresholds.list.item[0].tconfig1.hi_lims.list.item[5]['@value']" POSTWRITE="{mapRoot}.thresholds.list.item[1].tconfig1.hi_lims.list.item[5]['@value'] = {value}; {mapRoot}.thresholds.list.item[2].tconfig1.hi_lims.list.item[5]['@value'] = {value}"/>
+  <PROPDEF NAME="RMS Summary" TYPE="3"/>
+  <PROPDEF NAME="rmsPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.summary_pretrig_cycles['@value']"/>
+  <PROPDEF NAME="rmsInOutPost" ALIAS="In-out post trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.summary_in_out_posttrig_cycles['@value']"/>
+  <PROPDEF NAME="rmsOutInPost" ALIAS="Out-in post trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.summary_out_in_posttrig_cycles['@value']"/>
+  <PROPDEF NAME="Waveform Capture" TYPE="3"/>
+  <PROPDEF NAME="rmsWFPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.wave_picture_pretrig_cycles['@value']"/>
+  <PROPDEF NAME="rmsWFPosttrigger" ALIAS="Post-trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.wave_picture_posttrig_cycles['@value']"/>
 </SECTION>
