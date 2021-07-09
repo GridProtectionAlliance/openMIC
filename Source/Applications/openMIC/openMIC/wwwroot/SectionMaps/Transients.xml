@@ -10,10 +10,10 @@
 			<ITEM NAME="ci37" ALIAS="Instantaneous Current C" ANALYZER="2"/>
 			<ITEM NAME="ci42" ALIAS="Instantaneous Current N" ANALYZER="2"/>
 		</LIST>
-		<PROPDEF NAME="TransIPTThreshold" ALIAS="Absolute instantaneous peak" TYPE="4" RO="0"/>
-		<PROPDEF NAME="transCCWSThreshold" ALIAS="Cycle-to-cycle waveshape threshold" TYPE="4" RO="0"/>
-		<PROPDEF NAME="transCCWSDuration" ALIAS="Cycle-to-cycle waveshape duration (% of cycle)" TYPE="4" RO="0"/>
-		<PROPDEF NAME="transRMSDistWSThreshold" ALIAS="RMS distortion waveshape" TYPE="4" RO="0"/>
+		<PROPDEF NAME="TransIPTThreshold" ALIAS="Absolute instantaneous peak (%)" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig1.hi_lims.list.item[1]['@value']" READ="(parseFloat({0}) / (getVal('inputSection_nominalV') * Math.sqrt(2)) * 100).toFixed(1)" WRITE="{0} / 100 * (getVal('inputSection_nominalV') * Math.sqrt(2))"/>
+		<PROPDEF NAME="transCCWSThreshold" ALIAS="Cycle-to-cycle waveshape threshold (%)" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig1.hi_lims.list.item[6]['@value']" READ="(parseFloat({0}) / (getVal('inputSection_nominalV') * Math.sqrt(2)) * 100).toFixed(1)" WRITE="{0} / 100 * (getVal('inputSection_nominalV') * Math.sqrt(2))"/>
+		<PROPDEF NAME="transCCWSDuration" ALIAS="Cycle-to-cycle waveshape duration (% of cycle)" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig1.hi_lims.list.item[7]['@value']"/>
+		<PROPDEF NAME="transRMSDistWSThreshold" ALIAS="RMS distortion waveshape (%)" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig1.hi_lims.list.item[2]['@value']" READ="(parseFloat({0}) / (getVal('inputSection_nominalV') * Math.sqrt(2)) * 100).toFixed(1)" WRITE="{0} / 100 * (getVal('inputSection_nominalV') * Math.sqrt(2))"/>
 	</BANK>
 	<PROPDEF NAME="Waveform Capture" TYPE="3"/>
 	<PROPDEF NAME="transWFPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="4" RO="0"/>
