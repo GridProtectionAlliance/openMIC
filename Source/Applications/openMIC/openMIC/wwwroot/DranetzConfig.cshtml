@@ -1190,23 +1190,21 @@
             const type = propDef["@@TYPE"];
             const name = propDef["@@NAME"];
             const alias = propDef["@@ALIAS"];
-            const getPropVal = `$('#${name}').val()`;
-            const setPropVal = `$('#${name}').val({0})`;
+            const getPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked')` : `$('#${name}').val()`;
+            const setPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked', {0})` : `$('#${name}').val({0})`;
             const readOnly = parseInt(propDef["@@RO"] || "1", 10) > 0;
             const map = propDef["@@MAP"] || "unmapped";
             const mapExpr = String.format(map.startsWith(".") ? `${mapRoot}${map}` : map, bankTarget);
-            const readExpr = propDef["@@READ"];
-            const writeExpr = propDef["@@WRITE"];
 
             const applySubstitutions = value => value
                 .replaceAll("{name}", name)
                 .replaceAll("{value}", getPropVal)
                 .replaceAll("{mapExpr}", mapExpr)
-                .replaceAll("{readExpr}", readExpr)
-                .replaceAll("{writeExpr}", writeExpr)
                 .replaceAll("{mapRoot}", mapRoot)
                 .replaceAll("{bankTarget}", bankTarget);
 
+            const readExpr = propDef["@@READ"] ? applySubstitutions(propDef["@@READ"]) : undefined;
+            const writeExpr = propDef["@@WRITE"] ? applySubstitutions(propDef["@@WRITE"]) : undefined;
             const preReadExpr = propDef["@@PREREAD"] ? `${applySubstitutions(propDef["@@PREREAD"])}; ` : "";
             const postReadExpr = propDef["@@POSTREAD"] ? ` ${applySubstitutions(propDef["@@POSTREAD"])};` : "";
             const preWriteExpr = propDef["@@PREWRITE"] ? `${applySubstitutions(propDef["@@PREWRITE"])}; ` : "";
@@ -1234,8 +1232,8 @@
 
             switch (type) {
                 case PropDefType.CHECKBOX:
-                    script.push(String.format(updateFunction, name, `$('#${name}').prop('checked', parseInt(${mapExpr}, 10) > 0)`));
-                    script.push(String.format(changedFunction, name, `${mapExpr} = $('#${name}').prop('checked') ? '1' : '0'`));
+                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) > 0`}`)}`));
+                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? String.format(writeExpr, getPropVal) : `${getPropVal} ? '1' : '0'`}`));
                     html.push(`<input type="checkbox" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.NUMERIC:

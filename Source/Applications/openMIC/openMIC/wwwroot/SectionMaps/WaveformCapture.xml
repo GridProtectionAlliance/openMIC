@@ -1,41 +1,41 @@
 <SECTION NAME="wfCapture" ALIAS="Waveform Capture" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
-	<PROPDEF ORDER="0" NAME="wfPeriod" ALIAS="Periodic capture interval" TYPE="8" DEFAULT="0" RO="0">
-		<PARAM TYPE="1">
-			<LIST>
-				<ITEM NAME="Off"/>
-				<ITEM NAME="30 seconds"/>
-				<ITEM NAME="1 minute"/>
-				<ITEM NAME="2 minutes"/>
-				<ITEM NAME="3 minutes"/>
-				<ITEM NAME="5 minutes"/>
-				<ITEM NAME="10 minutes"/>
-				<ITEM NAME="15 minutes"/>
-				<ITEM NAME="1 hour"/>
-				<ITEM NAME="2 hours"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<BANK ORDER="1" NAME="bankNWFCapture" ALIAS="Waveform Capture Enables (Select the trigger channel(s) to enable or disable)" ROWS="11">
-		<LIST>
-			<ITEM NAME="wfc0" ALIAS="Voltage A" ANALYZER="1"/>
-			<ITEM NAME="wfc1" ALIAS="Voltage B" ANALYZER="1"/>
-			<ITEM NAME="wfc2" ALIAS="Voltage C" ANALYZER="1"/>
-			<ITEM NAME="wfc3" ALIAS="Voltage N" ANALYZER="1"/>
-			<ITEM NAME="wfc8" ALIAS="Voltage AB" ANALYZER="1"/>
-			<ITEM NAME="wfc9" ALIAS="Voltage BC" ANALYZER="1"/>
-			<ITEM NAME="wfc10" ALIAS="Voltage CA" ANALYZER="1"/>
-			<ITEM NAME="wfc4" ALIAS="Current A" ANALYZER="2"/>
-			<ITEM NAME="wfc5" ALIAS="Current B" ANALYZER="2"/>
-			<ITEM NAME="wfc6" ALIAS="Current C" ANALYZER="2"/>
-			<ITEM NAME="wfc7" ALIAS="Current N" ANALYZER="2"/>
-		</LIST>
-		<PROPDEF NAME="i0" ALIAS="Voltage A" TYPE="0" RO="0" ANALYZER="1"/>
-		<PROPDEF NAME="i1" ALIAS="Voltage B" TYPE="0" RO="0" ANALYZER="1"/>
-		<PROPDEF NAME="i2" ALIAS="Voltage C" TYPE="0" RO="0" ANALYZER="1"/>
-		<PROPDEF NAME="i3" ALIAS="Voltage N" TYPE="0" RO="0" ANALYZER="1"/>
-		<PROPDEF NAME="i4" ALIAS="Current A" TYPE="0" RO="0" ANALYZER="2"/>
-		<PROPDEF NAME="i5" ALIAS="Current B" TYPE="0" RO="0" ANALYZER="2"/>
-		<PROPDEF NAME="i6" ALIAS="Current C" TYPE="0" RO="0" ANALYZER="2"/>
-		<PROPDEF NAME="i7" ALIAS="Current N" TYPE="0" RO="0" ANALYZER="2"/>
-	</BANK>
+  <PROPDEF ORDER="0" NAME="wfPeriod" ALIAS="Periodic capture interval" TYPE="8" DEFAULT="0" RO="0" MAP=".trig_resp.save_waveform_interval_seconds['@value']">
+    <PARAM TYPE="1">
+      <LIST>
+        <ITEM NAME="Off" VALUE="0"/>
+        <ITEM NAME="30 seconds" VALUE="30"/>
+        <ITEM NAME="1 minute" VALUE="60"/>
+        <ITEM NAME="2 minutes" VALUE="120"/>
+        <ITEM NAME="3 minutes" VALUE="180"/>
+        <ITEM NAME="5 minutes" VALUE="300"/>
+        <ITEM NAME="10 minutes" VALUE="600"/>
+        <ITEM NAME="15 minutes" VALUE="900"/>
+        <ITEM NAME="1 hour" VALUE="3600"/>
+        <ITEM NAME="2 hours" VALUE="7200"/>
+      </LIST>
+    </PARAM>
+  </PROPDEF>
+  <BANK ORDER="1" NAME="bankNWFCapture" ALIAS="Waveform Capture Enables (Select the trigger channel(s) to enable or disable)" ROWS="11">
+    <LIST>
+      <ITEM NAME="wfc0" ALIAS="Voltage A" ANALYZER="1" VALUE="0"/>
+      <ITEM NAME="wfc1" ALIAS="Voltage B" ANALYZER="1" VALUE="1"/>
+      <ITEM NAME="wfc2" ALIAS="Voltage C" ANALYZER="1" VALUE="2"/>
+      <ITEM NAME="wfc3" ALIAS="Voltage N" ANALYZER="1" VALUE="3"/>
+      <ITEM NAME="wfc8" ALIAS="Voltage AB" ANALYZER="1" VALUE="8"/>
+      <ITEM NAME="wfc9" ALIAS="Voltage BC" ANALYZER="1" VALUE="9"/>
+      <ITEM NAME="wfc10" ALIAS="Voltage CA" ANALYZER="1" VALUE="10"/>
+      <ITEM NAME="wfc4" ALIAS="Current A" ANALYZER="2" VALUE="4"/>
+      <ITEM NAME="wfc5" ALIAS="Current B" ANALYZER="2" VALUE="5"/>
+      <ITEM NAME="wfc6" ALIAS="Current C" ANALYZER="2" VALUE="6"/>
+      <ITEM NAME="wfc7" ALIAS="Current N" ANALYZER="2" VALUE="7"/>
+    </LIST>
+    <PROPDEF NAME="i0" ALIAS="Voltage A" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; (1 &lt;&lt; 0)) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | (1 &lt;&lt; 0) : parseInt({mapExpr}, 10) &amp; ~(1 &lt;&lt; 0)).toString()"/>
+    <PROPDEF NAME="i1" ALIAS="Voltage B" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; (1 &lt;&lt; 1)) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | (1 &lt;&lt; 1) : parseInt({mapExpr}, 10) &amp; ~(1 &lt;&lt; 1)).toString()"/>
+    <PROPDEF NAME="i2" ALIAS="Voltage C" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; (1 &lt;&lt; 2)) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | (1 &lt;&lt; 2) : parseInt({mapExpr}, 10) &amp; ~(1 &lt;&lt; 2)).toString()"/>
+    <PROPDEF NAME="i3" ALIAS="Voltage N" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; (1 &lt;&lt; 3)) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | (1 &lt;&lt; 3) : parseInt({mapExpr}, 10) &amp; ~(1 &lt;&lt; 3)).toString()"/>
+    <PROPDEF NAME="i4" ALIAS="Current A" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; (1 &lt;&lt; 4)) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | (1 &lt;&lt; 4) : parseInt({mapExpr}, 10) &amp; ~(1 &lt;&lt; 4)).toString()"/>
+    <PROPDEF NAME="i5" ALIAS="Current B" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; (1 &lt;&lt; 5)) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | (1 &lt;&lt; 5) : parseInt({mapExpr}, 10) &amp; ~(1 &lt;&lt; 5)).toString()"/>
+    <PROPDEF NAME="i6" ALIAS="Current C" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; (1 &lt;&lt; 6)) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | (1 &lt;&lt; 6) : parseInt({mapExpr}, 10) &amp; ~(1 &lt;&lt; 6)).toString()"/>
+    <PROPDEF NAME="i7" ALIAS="Current N" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; (1 &lt;&lt; 7)) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | (1 &lt;&lt; 7) : parseInt({mapExpr}, 10) &amp; ~(1 &lt;&lt; 7)).toString()"/>
+  </BANK>
 </SECTION>
