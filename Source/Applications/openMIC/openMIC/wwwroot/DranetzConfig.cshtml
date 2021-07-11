@@ -56,7 +56,13 @@
         }
 
         body.wait, body.wait * {
-            cursor: wait !important;   
+            cursor: wait !important;
+        }
+
+        .tooltip-inner {
+            white-space: pre;
+            min-width: 100px;
+            max-width: 100%;
         }
 
         .btn-group-vertical > button {
@@ -162,11 +168,6 @@
             background-color: rgba(255, 0, 0, 0.25);
         }
 
-        .tooltip-inner {
-            min-width: 100px;
-            max-width: 100%;
-        }
-
         @@media screen {
             .page-logo {
                 margin-bottom: -25px;
@@ -210,6 +211,11 @@
     <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">
         <table width="100%">
             <tr>
+                <td colspan="2">
+                    <button type="button" class="btn btn-xs btn-collapsable" style="left: -5px; top: 0; margin-bottom: -10px;" data-toggle="collapse" data-target="#topRow" aria-expanded="true"></button>        
+                </td>
+            </tr>
+            <tr id="topRow" aria-expanded="true" class="collapse in">
                 <td width="50%" style="vertical-align: top">
                     <table width="95%">
                         <tr>
@@ -377,9 +383,13 @@
         var deviceID = @deviceID;
 
         const analyzerTypes = {
-            PQDataNode:      { index: 0, name: "61000 PQ DataNode" },
-            VoltageDataNode: { index: 1, name: "61000 Voltage DataNode" },
-            CurrentDataNode: { index: 2, name: "61000 Current DataNode" }
+            PQDataNode:            { index: 0, name: "61000 PQ DataNode" },
+            VoltageDataNode:       { index: 1, name: "61000 Voltage DataNode" },
+            CurrentDataNode:       { index: 2, name: "61000 Current DataNode" },
+            VoltageTransducerNode: { index: 3, name: "61000 Voltage Transducer Node" },
+            CurrentTransducerNode: { index: 4, name: "61000 Current Transducer Node" },
+            DigitalInputDataNode:  { index: 5, name: "61000 Digital Input DataNode" },
+            DigitalOutputDataNode: { index: 6, name: "61000 Digital Output DataNode" }
         };
 
         const analyzerTypeKeys = Object.keys(analyzerTypes);
@@ -418,12 +428,36 @@
             EnergyAndDemand:    { index: 5, name: "Demand" },
             Harmonics:          { index: 6, name: "Harmonics" },
             CrossTriggering:    { index: 7, name: "Cross-Triggering" }
+        },
+        {
+            // [3] Voltage Transducer Analyzer Sections
+            InputConfiguration: { index: 0, name: "Input Configuration" }
+            // Remaining sections TBD...
+        },
+        {
+            // [4] Current Transducer Analyzer Sections
+            InputConfiguration: { index: 0, name: "Input Configuration" }
+            // Remaining sections TBD...
+        },
+        {
+            // [5] Digital Input Analyzer Sections
+            DigitalInputConfiguration:  { index: 0, name: "Input Configuration" },
+            DigitalCrossTriggering:     { index: 1, name: "Cross-Triggering" }
+        },
+        {
+            // [6] Digital Output Analyzer Sections
+            DigitalOutputConfiguration: { index: 0, name: "Output Configuration" },
+            DigitalCrossTriggering:     { index: 1, name: "Cross-Triggering" }
         }];
 
         const sectionKeys = [
             Object.keys(sections[analyzerTypes.PQDataNode.index]),
             Object.keys(sections[analyzerTypes.VoltageDataNode.index]),
-            Object.keys(sections[analyzerTypes.CurrentDataNode.index])
+            Object.keys(sections[analyzerTypes.CurrentDataNode.index]),
+            Object.keys(sections[analyzerTypes.VoltageTransducerNode.index]),
+            Object.keys(sections[analyzerTypes.CurrentTransducerNode.index]),
+            Object.keys(sections[analyzerTypes.DigitalInputDataNode.index]),
+            Object.keys(sections[analyzerTypes.DigitalOutputDataNode.index])
         ];
 
         function DeviceViewModel() {
@@ -825,7 +859,7 @@
                     });
 
                     $("[data-toggle='tooltip']")
-                        .tooltip({ trigger: "manual" })
+                        .tooltip({ html: true, trigger: "manual" })
                         .hover(showToolTip, hideToolTip);
                 });
             }
@@ -1053,8 +1087,13 @@
         });
 
         function showToolTip() {
-            if (shiftIsDown)
-                $(this).tooltip("show");
+            if (shiftIsDown) {
+                const mapRootLen = "viewModel.currentAnalyzerConfig().".length;
+                const mapExpr = $(this).attr("map-expr");
+                $(this).attr("data-original-title", `<p class="text-left">map: ${mapExpr.substr(mapRootLen)}<br/>value: ${eval(mapExpr)}</p>`)
+                    .tooltip("fixTitle")
+                    .tooltip("show");
+            }
         }
 
         function hideToolTip() {
@@ -1137,7 +1176,7 @@
             return targetAnalyzer === 0 || currentAnalyzer === 0 || targetAnalyzer === currentAnalyzer;
         }
 
-        function buildListElement(list, listID, map, bankTarget, readOnly, defaultVal, isBankList, rows) {
+        function buildListElement(list, listID, mapExpr, bankTarget, readOnly, defaultVal, isBankList, rows) {
             const sizeToken = "[_SIZE-TOKEN_]";
             const html = [];
             const script = [];
@@ -1151,9 +1190,9 @@
                 script.push(`const update_${listID} = new Function("$('#${listID} option').removeAttr('selected'); $('#${listID} option[value=0]').prop('selected', true); $('#${listID}').focus();");`);
                 html.push(`<select multiple class="form-control list-bank" id="${listID}"${sizeToken} onchange="selectBankItem('${listID}')" update-expr="update_${listID}()" bank-list>`);
             } else {
-                script.push(`const update_${listID} = new Function("${readOnly ? `` : `$('#${listID} option[value=' + ${map} + ']').prop('selected', true)`};");`);
-                script.push(`const ${listID}_changed = new Function("${map} = getVal('${listID}'); viewModel.configChanged();");`);
-                html.push(`<select class="form-control" id="${listID}" onchange="${listID}_changed()" update-expr="update_${listID}()" data-toggle="tooltip" title="${map}" bank="${bankTarget}">`);
+                script.push(`const update_${listID} = new Function("${readOnly ? `` : `$('#${listID} option[value=' + ${mapExpr} + ']').prop('selected', true)`};");`);
+                script.push(`const ${listID}_changed = new Function("${mapExpr} = getVal('${listID}'); viewModel.configChanged();");`);
+                html.push(`<select class="form-control" id="${listID}" onchange="${listID}_changed()" update-expr="update_${listID}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}">`);
             }
 
             for (let i = 0; i < list.ITEM.length; i++) {
@@ -1234,23 +1273,23 @@
                 case PropDefType.CHECKBOX:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) > 0`}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? String.format(writeExpr, getPropVal) : `${getPropVal} ? '1' : '0'`}`));
-                    html.push(`<input type="checkbox" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="checkbox" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.NUMERIC:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                 break;
                 case PropDefType.FLOAT:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? `(${String.format(readExpr, mapExpr)})` : `parseFloat(${mapExpr})`}.toFixed(4)`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.TEXT:
                 case PropDefType.PASSWORD:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.SELECT:
                 {

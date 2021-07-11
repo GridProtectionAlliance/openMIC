@@ -1,0 +1,73 @@
+﻿<SECTION NAME="input" ALIAS="Input Configuration" REFRESH="1">
+  <BANK NAME="bankChannel" ALIAS="Channels (select the channel(s) to change)" ROWS="8">
+    <LIST>
+      <ITEM NAME="D1" ALIAS="D1"/>
+      <ITEM NAME="D2" ALIAS="D2"/>
+      <ITEM NAME="D3" ALIAS="D3"/>
+      <ITEM NAME="D4" ALIAS="D4"/>
+      <ITEM NAME="D5" ALIAS="D5"/>
+      <ITEM NAME="D6" ALIAS="D6"/>
+      <ITEM NAME="D7" ALIAS="D7"/>
+      <ITEM NAME="D8" ALIAS="D8"/>
+    </LIST>
+    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="4" RO="0"/>
+    <PROPDEF NAME="function" ALIAS="Function" TYPE="8" DEFAULT="0" RO="0">
+      <PARAM TYPE="1">
+        <LIST>
+          <ITEM NAME="Unused"/>
+          <ITEM NAME="Change of state"/>
+          <ITEM NAME="Counter reset"/>
+          <ITEM NAME="Counter"/>
+          <ITEM NAME="KYZ counter (A)"/>
+          <ITEM NAME="KYZ counter (C)"/>
+          <ITEM NAME="KYZ counter (Q)"/>
+          <ITEM NAME="Frequency monitor"/>
+        </LIST>
+      </PARAM>
+    </PROPDEF>
+    <PROPDEF NAME="input" ALIAS="Input" TYPE="8" DEFAULT="0" RO="0">
+      <PARAM TYPE="1">
+        <LIST>
+          <ITEM NAME="I1"/>
+          <ITEM NAME="I2"/>
+          <ITEM NAME="I3"/>
+          <ITEM NAME="I4"/>
+          <ITEM NAME="I5"/>
+          <ITEM NAME="I6"/>
+          <ITEM NAME="I7"/>
+          <ITEM NAME="I8"/>
+        </LIST>
+      </PARAM>
+    </PROPDEF>
+    <PROPDEF NAME="activeState" ALIAS="Active state" TYPE="8" DEFAULT="0" RO="0">
+      <PARAM TYPE="1">
+        <LIST>
+          <ITEM NAME="Low to high transitions"/>
+          <ITEM NAME="High to low transitions"/>
+          <ITEM NAME="All transitions"/>
+        </LIST>
+      </PARAM>
+    </PROPDEF>
+    <PROPDEF NAME="inputDebounceTime" ALIAS="Debounce time (microseconds)" TYPE="1" RO="0"/>
+  </BANK>
+  <PROPDEF NAME="Journaling Setup (for all appropriate channels)" TYPE="3" RO="0"/>
+  <PROPDEF NAME="journalPeriod" ALIAS="Journaling interval" TYPE="8" DEFAULT="0" RO="0">
+    <PARAM TYPE="1">
+      <LIST>
+        <ITEM NAME="Off"/>
+        <ITEM NAME="1 second"/>
+        <ITEM NAME="10 seconds"/>
+        <ITEM NAME="15 seconds"/>
+        <ITEM NAME="30 seconds"/>
+        <ITEM NAME="1 minute"/>
+        <ITEM NAME="2 minutes"/>
+        <ITEM NAME="3 minutes"/>
+        <ITEM NAME="5 minutes"/>
+        <ITEM NAME="10 minutes"/>
+        <ITEM NAME="15 minutes"/>
+        <ITEM NAME="1 hour"/>
+        <ITEM NAME="2 hours"/>
+      </LIST>
+    </PARAM>
+  </PROPDEF>
+</SECTION>

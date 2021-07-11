@@ -316,6 +316,8 @@
     <Content Include="wwwroot\ModbusConfig.cshtml" />
     <Content Include="wwwroot\Groups.cshtml" />
     <Content Include="wwwroot\SectionMaps\CrossTriggering.xml" />
+    <Content Include="wwwroot\SectionMaps\DigitalCrossTriggering.xml" />
+    <Content Include="wwwroot\SectionMaps\DigitalInputConfiguration.xml" />
     <Content Include="wwwroot\SectionMaps\EnergyAndDemand.xml" />
     <Content Include="wwwroot\SectionMaps\Flicker.xml" />
     <Content Include="wwwroot\SectionMaps\Harmonics.xml" />
