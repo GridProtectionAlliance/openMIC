@@ -1176,24 +1176,11 @@
             return targetAnalyzer === 0 || currentAnalyzer === 0 || targetAnalyzer === currentAnalyzer;
         }
 
-        function buildListElement(list, listID, mapExpr, bankTarget, readOnly, defaultVal, isBankList, rows) {
-            const sizeToken = "[_SIZE-TOKEN_]";
-            const html = [];
-            const script = [];
+        function buildListElements(list, defaultVal) {
             let index = 0;
             let totalOptions = 0;
 
-            if (!bankTarget)
-                bankTarget = "";
-
-            if (isBankList) {
-                script.push(`const update_${listID} = new Function("$('#${listID} option').removeAttr('selected'); $('#${listID} option[value=0]').prop('selected', true); $('#${listID}').focus();");`);
-                html.push(`<select multiple class="form-control list-bank" id="${listID}"${sizeToken} onchange="selectBankItem('${listID}')" update-expr="update_${listID}()" bank-list>`);
-            } else {
-                script.push(`const update_${listID} = new Function("${readOnly ? `` : `$('#${listID} option[value=' + ${mapExpr} + ']').prop('selected', true)`};");`);
-                script.push(`const ${listID}_changed = new Function("${mapExpr} = getVal('${listID}'); viewModel.configChanged();");`);
-                html.push(`<select class="form-control" id="${listID}" onchange="${listID}_changed()" update-expr="update_${listID}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}">`);
-            }
+            const html = [];
 
             for (let i = 0; i < list.ITEM.length; i++) {
                 const value = list.ITEM[i];
@@ -1203,23 +1190,11 @@
                     html.push(`<option value="${optVal}"${optVal === defaultVal ? " selected" : ""}>${htmlEncode(value["@@ALIAS"] || value["@@NAME"])}</option>`);
                     totalOptions++;
                 }
+
                 index++;
             }
 
-            let sizeAttribute = "";
-
-            if (rows) {
-                let selectSize = parseInt(rows, 10);
-
-                if (selectSize > totalOptions && totalOptions > 0)
-                    selectSize = totalOptions;
-
-                sizeAttribute = ` size="${selectSize}"`;
-            }
-
-            html.push(`</select>`);
-
-            return [ html.join("").replace(sizeToken, sizeAttribute), script.join("\r\n") ];
+            return [ html.join(""), totalOptions ];
         }
 
         function buildPropDefElement(propDef, mapRoot, bankTarget) {
@@ -1273,34 +1248,31 @@
                 case PropDefType.CHECKBOX:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) > 0`}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? String.format(writeExpr, getPropVal) : `${getPropVal} ? '1' : '0'`}`));
-                    html.push(`<input type="checkbox" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="checkbox" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.NUMERIC:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                 break;
                 case PropDefType.FLOAT:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? `(${String.format(readExpr, mapExpr)})` : `parseFloat(${mapExpr})`}.toFixed(4)`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.TEXT:
                 case PropDefType.PASSWORD:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" title="Loading..." map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.SELECT:
-                {
-                    const [ listHtml, listScript ] = buildListElement(propDef.PARAM.LIST, name, mapExpr, bankTarget, readOnly, defaultVal);
-
-                    html.push(listHtml);
-
-                    if (listScript.length > 0)
-                        script.push(listScript);
-                }
-                break;
+                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
+                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
+                    html.push(`<select class="form-control" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}">`);
+                    html.push(buildListElements(propDef.PARAM.LIST, defaultVal)[0]);
+                    html.push(`</select>`);
+                    break;
             }
 
             html.push(`</td></tr>`);
@@ -1311,6 +1283,11 @@
         function buildBankElement(definition, mapRoot, sectionName) {
             const bankName = definition["@@NAME"];
             const bankAlias = definition["@@ALIAS"];
+            const rows = definition["@@ROWS"];
+
+            const sizeToken = "[_SIZE-TOKEN_]";
+            let sizeAttribute = "";
+
             const html = [];
             const script = [];
 
@@ -1359,13 +1336,24 @@
                     switch (key) {
                         case "LIST":
                         {
-                            const [ listHtml, listScript ] = buildListElement(value, bankName, null, null, false, null, true, definition["@@ROWS"]);
-
                             closePropDefs();
+
+                            script.push(`const update_${bankName} = new Function("$('#${bankName} option').removeAttr('selected'); $('#${bankName} option[value=0]').prop('selected', true); $('#${bankName}').focus();");`);
+                            html.push(`<select multiple class="form-control list-bank" id="${bankName}"${sizeToken} onchange="selectBankItem('${bankName}')" update-expr="update_${bankName}()" bank-list>`);
+
+                            const [ listHtml, totalOptions ] = buildListElements(value, null);
                             html.push(listHtml);
 
-                            if (listScript.length > 0)
-                                script.push(listScript);
+                            if (rows) {
+                                let selectSize = parseInt(rows, 10);
+
+                                if (selectSize > totalOptions && totalOptions > 0)
+                                    selectSize = totalOptions;
+
+                                sizeAttribute = ` size="${selectSize}"`;
+                            }
+
+                            html.push(`</select>`);
                         }
                         break;
                         case "PROPDEF":
@@ -1390,7 +1378,7 @@
             html.push(`</td></tr>`);
             html.push(`<tr><th class="header-section-row bank-footer"><div class="header"></div></th></tr>`);
 
-            return [ elementTargetsCurrentAnalyzer(definition) ? html.join("") : "", script.join("\r\n") ];
+            return [ elementTargetsCurrentAnalyzer(definition) ? html.join("").replace(sizeToken, sizeAttribute) : "", script.join("\r\n") ];
         }
 
         function buildSection(section) {
