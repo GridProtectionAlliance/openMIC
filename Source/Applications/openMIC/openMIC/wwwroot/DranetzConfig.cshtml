@@ -88,7 +88,7 @@
             font-size: 18px;
             font-weight: bolder;
             padding-bottom: 5px;
-            padding-top: 15px;
+            padding-top: 10px;
             width: 100%;
         }
         
@@ -102,6 +102,12 @@
 
         div.header {
             border-bottom: 4px solid;
+        }
+
+        div.tab-section {
+            overflow: auto;
+            margin-top: 5px;
+            margin-bottom: 5px;
         }
 
         table.section-elements {
@@ -209,10 +215,10 @@
 <hr class="quarter-break" />
 <div id="contentWell" class="well well-dynamic-content" content-fill-height>
     <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">
-        <table width="100%">
+        <table id="headerArea" width="100%" style="margin-top: -10px">
             <tr>
                 <td colspan="2">
-                    <button type="button" class="btn btn-xs btn-collapsable" style="left: -5px; top: 0; margin-bottom: -10px;" data-toggle="collapse" data-target="#topRow" aria-expanded="true"></button>        
+                    <button type="button" class="btn btn-xs btn-collapsable" style="left: 0; top: 10px; margin-bottom: -10px;" data-toggle="collapse" data-target="#topRow" aria-expanded="true"></button>        
                 </td>
             </tr>
             <tr id="topRow" aria-expanded="true" class="collapse in">
@@ -758,7 +764,7 @@
                 const tabList = [];
                 const tabSections = [];
 
-                tabList.push(`<ul>`);
+                tabList.push(`<ul id="tablist">`);
 
                 for (let key in activeSections) {
                     if (activeSections.hasOwnProperty(key)) {
@@ -768,7 +774,7 @@
 
                         tabList.push(`<li><a href="#tab${key}">${name}</a></li>`);
 
-                        tabSections.push(`<div id="tab${key}" ${index === 0 ? "class=\"ui-tabs-active\"" : "style=\"display: none\""}>`);
+                        tabSections.push(`<div id="tab${key}" ${index === 0 ? `class="ui-tabs-active tab-section"` : `class="tab-section" style="display: none"`} tab-section>`);
                         tabSections.push(`    <table width="75%" class="table-center">`);
                         tabSections.push(`        <tr>`);
                         tabSections.push(`            <th class="header"><div class="header">${name}</div></th>`);
@@ -791,7 +797,6 @@
 
                 $("#tabs").tabs({
                     active: 0
-                    // Uncomment to enable intra-tab save prompt like
                     //activate: function(event, ui) {
                     //    if (self.canSave() && confirm("Do you want to keep the changes?"))
                     //        self.saveAnalyzerConfig();
@@ -831,6 +836,8 @@
                 if (!$("#stubTabSections").length)
                     self.createSectionTabs();
 
+                resizePageElements();
+
                 if (!self.dataHubIsConnected())
                     return $.Deferred().resolve().promise();
 
@@ -859,7 +866,15 @@
                     });
 
                     $("[data-toggle='tooltip']")
-                        .tooltip({ html: true, trigger: "manual" })
+                        .tooltip({
+                            html: true,
+                            trigger: "manual",
+                            boundary: "viewport",
+                            placement: "top",
+                            container: "body",
+                            sanitize: true,
+                            appendToBody: true
+                        })
                         .hover(showToolTip, hideToolTip);
                 });
             }
@@ -869,11 +884,13 @@
             $("#busyDataLabel").text("Saving");
             $("#busyDataBlock").show();
             $("body").addClass("wait");
+            resizePageElements();
         }
 
         function hideSavingMessage() {
             $("#busyDataBlock").hide();
             $("body").removeClass("wait");
+            resizePageElements();
         }
 
         function showLoadingMessage() {
@@ -881,11 +898,13 @@
             $("#busyDataLabel").text("Loading");
             $("#busyDataBlock").show();
             $("body").addClass("wait");
+            resizePageElements();
         }
 
         function hideLoadingMessage() {
             $("#busyDataBlock").hide();
             $("body").removeClass("wait");
+            resizePageElements();
         }
 
         function loadAnalyzerConfig(record) {
@@ -962,6 +981,20 @@
 
         function setActiveTabSection(section) {
             setActiveTabIndex(section.index);
+        }
+
+        function resizePageElements() {
+            let height = $("#contentWell").height() -
+                $("#headerArea").outerHeight(true) - 55;
+
+            if ($("#tablist").length)
+                height -= $("#tablist").outerHeight(true);
+
+            if ($("#busyDataBlock").is(":visible"))
+                height -= $("#busyDataBlock").outerHeight(true);
+
+            if (height > 75)
+                $("[tab-section]").height(height);
         }
 
         // Page initialization function
@@ -1056,9 +1089,6 @@
                 viewModel.dataHubIsConnected(false);
             });
 
-            if (deviceID === 0)
-                $("#noDeviceDataMessage").show();
-
             $("#saveChangesButton").click(function (e) {
                 e.preventDefault();
                 viewModel.saveAnalyzerConfig();
@@ -1074,6 +1104,27 @@
                         undefined;
                 }
             });
+            
+            $("#headerArea").on("shown.bs.collapse", function() {
+                resizePageElements();
+            });
+            
+            $("#headerArea").on("hidden.bs.collapse", function() {
+                resizePageElements();
+            });
+
+            $(window).on("messageVisibiltyChanged", function () {
+                resizePageElements();
+            });
+
+            $(window).resize(function () {
+                resizePageElements();
+            });
+
+            resizePageElements();
+
+            if (deviceID === 0)
+                $("#noDeviceDataMessage").show();
         });
 
         let shiftIsDown = false;
