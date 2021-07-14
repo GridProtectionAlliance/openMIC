@@ -1,103 +1,104 @@
 <SECTION NAME="input" ALIAS="Input Configuration" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
-	<BANK NAME="bankInput" ALIAS="Input Configuration (select the input(s) to change)">
-		<LIST>
-			<ITEM NAME="A"/>
-			<ITEM NAME="B"/>
-			<ITEM NAME="C"/>
-			<ITEM NAME="D"/>
-		</LIST>
-		<PROPDEF NAME="inputVTPrimary" ALIAS="Voltage transducer primary" TYPE="1" RO="0" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2].psratio.list.item[0]['@value']"/>
-		<PROPDEF NAME="inputVTSecondary" ALIAS="Voltage transducer secondary" TYPE="1" RO="0" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2].psratio.list.item[1]['@value']"/>
-		<PROPDEF NAME="inputVInverted" ALIAS="Voltage input inverted" TYPE="0" RO="0" ANALYZER="1" MAP=".invert_inputs.list.item[getVal('{0}') * 2]['@value']"/>
-		<PROPDEF NAME="inputVOrder" ALIAS="Voltage input order" TYPE="8" DEFAULT="0" RO="0" ANALYZER="1" MAP=".order_of_inputs.list.item[getVal('{0}') * 2]['@value']">
-			<PARAM TYPE="1">
-				<LIST>
-					<ITEM NAME="V1" VALUE="0"/>
-					<ITEM NAME="V2" VALUE="2"/>
-					<ITEM NAME="V3" VALUE="4"/>
-					<ITEM NAME="V4" VALUE="6"/>
-				</LIST>
-			</PARAM>
-		</PROPDEF>
-		<PROPDEF NAME="inputITPrimary" ALIAS="Current transducer primary" TYPE="1" RO="0" ANALYZER="2" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2 + 1].psratio.list.item[0]['@value']"/>
-		<PROPDEF NAME="inputITSecondary" ALIAS="Current transducer secondary" TYPE="1" RO="0" ANALYZER="2" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2 + 1].psratio.list.item[1]['@value']"/>
-		<PROPDEF NAME="inputIInverted" ALIAS="Current input inverted" TYPE="0" RO="0" ANALYZER="2" MAP=".invert_inputs.list.item[getVal('{0}') * 2 + 1]['@value']"/>
-		<PROPDEF NAME="inputIOrder" ALIAS="Current input order" TYPE="8" DEFAULT="0" RO="0" ANALYZER="2" MAP=".order_of_inputs.list.item[getVal('{0}') * 2 + 1]['@value']">
-			<PARAM TYPE="1">
-				<LIST>
-					<ITEM NAME="I1" VALUE="1"/>
-					<ITEM NAME="I2" VALUE="3"/>
-					<ITEM NAME="I3" VALUE="5"/>
-					<ITEM NAME="I4" VALUE="7"/>
-				</LIST>
-			</PARAM>
-		</PROPDEF>
-		<PROPDEF NAME="inputIProbeType" ALIAS="Current probe type" TYPE="8" DEFAULT="0" RO="0" ANALYZER="2" MAP=".probe_config.probe_type.list.item[getVal('{0}')]['@value']">
-			<PARAM TYPE="1">
-				<LIST>
-					<ITEM NAME="Other"/>
-					<ITEM NAME="TR2500 (10A-500A RMS)"/>
-					<ITEM NAME="TR2510 (0A-10A RMS)"/>
-					<ITEM NAME="TR2520 (300A-3000A RMS)"/>
-					<ITEM NAME="AC/DC (0A-150A RMS)"/>
-					<ITEM NAME="AC/DC (0A-1500A RMS)"/>
-					<ITEM NAME="TR2019B (1A-300A RMS)"/>
-					<ITEM NAME="TR2021 (1A-30A RMS)"/>
-					<ITEM NAME="TR2022 (10A-1000A RMS)"/>
-					<ITEM NAME="TR2023 (100A-3000A RMS)"/>
-					<ITEM NAME="LEMFlex RR3000-SD (Range1, 300A)"/>
-					<ITEM NAME="LEMFlex RR3000-SD (Range2, 3000A)"/>
-					<ITEM NAME="LEMFlex RR3035 (Range1, 30A)"/>
-					<ITEM NAME="LEMFlex RR3035 (Range2, 300A)"/>
-					<ITEM NAME="LEMFlex RR3035 (Range3, 3000A)"/>
-					<ITEM NAME="3000XL, LEMFlex RR3035A (Range1, 30A)"/>
-					<ITEM NAME="3000XL, LEMFlex RR3035A (Range2, 300A)"/>
-					<ITEM NAME="3000XL, LEMFlex RR3035A (Range3, 3000A)"/>
-					<ITEM NAME="LEMFlex RR6035 (Range1, 60A)"/>
-					<ITEM NAME="LEMFlex RR6035 (Range2, 600A)"/>
-					<ITEM NAME="LEMFlex RR6035 (Range3, 6000A)"/>
-					<ITEM NAME="6000XL, LEMFlex RR6035A (Range1, 60A)"/>
-					<ITEM NAME="6000XL, LEMFlex RR6035A (Range2, 600A)"/>
-					<ITEM NAME="6000XL, LEMFlex RR6035A (Range3, 6000A)"/>
-					<ITEM NAME="LEM PR150 AC/DC (0A-150A)"/>
-					<ITEM NAME="LEM PR1500 AC/DC (0A-1500A)"/>
-					<ITEM NAME="TR2501 (1A RMS)"/>
-					<ITEM NAME="TR2530 (300A RMS)"/>
-					<ITEM NAME="TR2540 (1000A RMS)"/>
-					<ITEM NAME="TR2550 (100A RMS)"/>
-				</LIST>
-			</PARAM>
-		</PROPDEF>
-	</BANK>
-	<PROPDEF NAME="wiringConfig" ALIAS="Circuit type" TYPE="8" DEFAULT="0" RO="0" MAP=".config['@value']">
-		<PARAM TYPE="1">
-			<LIST>
-				<ITEM NAME="Single phase"/>
-				<ITEM NAME="Split phase"/>
-				<ITEM NAME="Delta"/>
-				<ITEM NAME="Wye"/>
-				<ITEM NAME="Generic"/>
-				<ITEM NAME="Delta 2 Watt Meter"/>
-				<ITEM NAME="Wye 2.5 element, no B"/>
-				<ITEM NAME="Wye 2.5 element, no C"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<PROPDEF NAME="Nominal Values" TYPE="3"/>
-	<PROPDEF NAME="nominalV" ALIAS="Nominal voltage" TYPE="2" RO="0" MAP=".nominal_volts['@value']"/>
-	<PROPDEF NAME="nomnalI" ALIAS="Nominal current" TYPE="2" RO="0" MAP=".nominal_amps['@value']"/>
-	<PROPDEF NAME="nominalF" ALIAS="Nominal frequency" TYPE="2" RO="0" MAP=".nominal_freq['@value']"/>
-	<PROPDEF NAME="normalize" ALIAS="Normalize thresholds" TYPE="0" RO="0" ENABLED="0"/>
-	<PROPDEF NAME="Frequency Tracking" TYPE="3"/>
-	<PROPDEF NAME="freqTrackMode" ALIAS="Tracking mode" TYPE="8" DEFAULT="0" RO="0" MAP=".pll_sync_style['@value']">
-		<PARAM TYPE="1">
-			<LIST>
-				<ITEM NAME="Standard (utility power line)" VALUE="2"/>
-				<ITEM NAME="Fast (local generator)" VALUE="3"/>
-				<ITEM NAME="Internal" VALUE="1"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<PROPDEF NAME="freqMin" ALIAS="Minimum frequency" TYPE="2" RO="0" MAP=".min_and_max_track_freq.list.item[0]['@value']"/>
-	<PROPDEF NAME="freqMax" ALIAS="Maximum frequency" TYPE="2" RO="0" MAP=".min_and_max_track_freq.list.item[1]['@value']"/>
+  <BANK NAME="bankInput" ALIAS="Input Configuration (select the input(s) to change)">
+    <LIST>
+      <ITEM NAME="A"/>
+      <ITEM NAME="B"/>
+      <ITEM NAME="C"/>
+      <ITEM NAME="D"/>
+    </LIST>
+    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="4" RO="0" CONFIG="Generic"/>
+    <PROPDEF NAME="inputVTPrimary" ALIAS="Voltage transducer primary" TYPE="1" RO="0" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2].psratio.list.item[0]['@value']"/>
+    <PROPDEF NAME="inputVTSecondary" ALIAS="Voltage transducer secondary" TYPE="1" RO="0" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2].psratio.list.item[1]['@value']"/>
+    <PROPDEF NAME="inputVInverted" ALIAS="Voltage input inverted" TYPE="0" RO="0" ANALYZER="1" MAP=".invert_inputs.list.item[getVal('{0}') * 2]['@value']"/>
+    <PROPDEF NAME="inputVOrder" ALIAS="Voltage input order" TYPE="8" DEFAULT="0" RO="0" ANALYZER="1" MAP=".order_of_inputs.list.item[getVal('{0}') * 2]['@value']">
+      <PARAM TYPE="1">
+        <LIST>
+          <ITEM NAME="V1" VALUE="0"/>
+          <ITEM NAME="V2" VALUE="2"/>
+          <ITEM NAME="V3" VALUE="4"/>
+          <ITEM NAME="V4" VALUE="6"/>
+        </LIST>
+      </PARAM>
+    </PROPDEF>
+    <PROPDEF NAME="inputITPrimary" ALIAS="Current transducer primary" TYPE="1" RO="0" ANALYZER="2" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2 + 1].psratio.list.item[0]['@value']"/>
+    <PROPDEF NAME="inputITSecondary" ALIAS="Current transducer secondary" TYPE="1" RO="0" ANALYZER="2" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2 + 1].psratio.list.item[1]['@value']"/>
+    <PROPDEF NAME="inputIInverted" ALIAS="Current input inverted" TYPE="0" RO="0" ANALYZER="2" MAP=".invert_inputs.list.item[getVal('{0}') * 2 + 1]['@value']"/>
+    <PROPDEF NAME="inputIOrder" ALIAS="Current input order" TYPE="8" DEFAULT="0" RO="0" ANALYZER="2" MAP=".order_of_inputs.list.item[getVal('{0}') * 2 + 1]['@value']">
+      <PARAM TYPE="1">
+        <LIST>
+          <ITEM NAME="I1" VALUE="1"/>
+          <ITEM NAME="I2" VALUE="3"/>
+          <ITEM NAME="I3" VALUE="5"/>
+          <ITEM NAME="I4" VALUE="7"/>
+        </LIST>
+      </PARAM>
+    </PROPDEF>
+    <PROPDEF NAME="inputIProbeType" ALIAS="Current probe type" TYPE="8" DEFAULT="0" RO="0" ANALYZER="2" MAP=".probe_config.probe_type.list.item[getVal('{0}')]['@value']">
+      <PARAM TYPE="1">
+        <LIST>
+          <ITEM NAME="Other" KEYVALUE="1.5"/>
+          <ITEM NAME="TR2500 (10A-500A RMS)" KEYVALUE="500"/>
+          <ITEM NAME="TR2510 (0A-10A RMS)" KEYVALUE="10"/>
+          <ITEM NAME="TR2520 (300A-3000A RMS)" KEYVALUE="3000"/>
+          <ITEM NAME="AC/DC (0A-150A RMS)" KEYVALUE="150"/>
+          <ITEM NAME="AC/DC (0A-1500A RMS)" KEYVALUE="1500"/>
+          <ITEM NAME="TR2019B (1A-300A RMS)" KEYVALUE="300"/>
+          <ITEM NAME="TR2021 (1A-30A RMS)" KEYVALUE="30"/>
+          <ITEM NAME="TR2022 (10A-1000A RMS)" KEYVALUE="1000"/>
+          <ITEM NAME="TR2023 (100A-3000A RMS)" KEYVALUE="3000"/>
+          <ITEM NAME="LEMFlex RR3000-SD (Range1, 300A)" KEYVALUE="300"/>
+          <ITEM NAME="LEMFlex RR3000-SD (Range2, 3000A)" KEYVALUE="3000"/>
+          <ITEM NAME="LEMFlex RR3035 (Range1, 30A)" KEYVALUE="30"/>
+          <ITEM NAME="LEMFlex RR3035 (Range2, 300A)" KEYVALUE="300"/>
+          <ITEM NAME="LEMFlex RR3035 (Range3, 3000A)" KEYVALUE="3000"/>
+          <ITEM NAME="3000XL, LEMFlex RR3035A (Range1, 30A)" KEYVALUE="30"/>
+          <ITEM NAME="3000XL, LEMFlex RR3035A (Range2, 300A)" KEYVALUE="300"/>
+          <ITEM NAME="3000XL, LEMFlex RR3035A (Range3, 3000A)" KEYVALUE="3000"/>
+          <ITEM NAME="LEMFlex RR6035 (Range1, 60A)" KEYVALUE="60"/>
+          <ITEM NAME="LEMFlex RR6035 (Range2, 600A)" KEYVALUE="600"/>
+          <ITEM NAME="LEMFlex RR6035 (Range3, 6000A)" KEYVALUE="6000"/>
+          <ITEM NAME="6000XL, LEMFlex RR6035A (Range1, 60A)" KEYVALUE="60"/>
+          <ITEM NAME="6000XL, LEMFlex RR6035A (Range2, 600A)" KEYVALUE="600"/>
+          <ITEM NAME="6000XL, LEMFlex RR6035A (Range3, 6000A)" KEYVALUE="6000"/>
+          <ITEM NAME="LEM PR150 AC/DC (0A-150A)" KEYVALUE="150"/>
+          <ITEM NAME="LEM PR1500 AC/DC (0A-1500A)" KEYVALUE="1500"/>
+          <ITEM NAME="TR2501 (1A RMS)" KEYVALUE="1"/>
+          <ITEM NAME="TR2530 (300A RMS)" KEYVALUE="300"/>
+          <ITEM NAME="TR2540 (1000A RMS)" KEYVALUE="1000"/>
+          <ITEM NAME="TR2550 (100A RMS)" KEYVALUE="100"/>
+        </LIST>
+      </PARAM>
+    </PROPDEF>
+  </BANK>
+  <PROPDEF NAME="wiringConfig" ALIAS="Circuit type" TYPE="8" DEFAULT="0" RO="0" MAP=".config['@value']">
+    <PARAM TYPE="1">
+      <LIST>
+        <ITEM NAME="Single phase" KEYVALUE="Single"/>
+        <ITEM NAME="Split phase" KEYVALUE="Split"/>
+        <ITEM NAME="Delta" KEYVALUE="Delta"/>
+        <ITEM NAME="Wye" KEYVALUE="Wye"/>
+        <ITEM NAME="Generic" KEYVALUE="Generic"/>
+        <ITEM NAME="Delta 2 Watt Meter" ANALYZER="0!" KEYVALUE="Delta"/>
+        <ITEM NAME="Wye 2.5 element, no B" ANALYZER="0!" KEYVALUE="Wye"/>
+        <ITEM NAME="Wye 2.5 element, no C" ANALYZER="0!" KEYVALUE="Wye"/>
+      </LIST>
+    </PARAM>
+  </PROPDEF>
+  <PROPDEF NAME="Nominal Values" TYPE="3"/>
+  <PROPDEF NAME="nominalV" ALIAS="Nominal voltage" TYPE="2" RO="0" MAP=".nominal_volts['@value']"/>
+  <PROPDEF NAME="nomnalI" ALIAS="Nominal current" TYPE="2" RO="0" MAP=".nominal_amps['@value']"/>
+  <PROPDEF NAME="nominalF" ALIAS="Nominal frequency" TYPE="2" RO="0" MAP=".nominal_freq['@value']"/>
+  <PROPDEF NAME="normalize" ALIAS="Normalize thresholds" TYPE="0" DEFAULT="1" RO="0" MAP="normalizeThresholdState" POSTWRITE="normalizeThresholdStateUpdated()"/>
+  <PROPDEF NAME="Frequency Tracking" TYPE="3"/>
+  <PROPDEF NAME="freqTrackMode" ALIAS="Tracking mode" TYPE="8" DEFAULT="0" RO="0" MAP=".pll_sync_style['@value']">
+    <PARAM TYPE="1">
+      <LIST>
+        <ITEM NAME="Standard (utility power line)" VALUE="2"/>
+        <ITEM NAME="Fast (local generator)" VALUE="3"/>
+        <ITEM NAME="Internal" VALUE="1"/>
+      </LIST>
+    </PARAM>
+  </PROPDEF>
+  <PROPDEF NAME="freqMin" ALIAS="Minimum frequency" TYPE="2" RO="0" MAP=".min_and_max_track_freq.list.item[0]['@value']"/>
+  <PROPDEF NAME="freqMax" ALIAS="Maximum frequency" TYPE="2" RO="0" MAP=".min_and_max_track_freq.list.item[1]['@value']"/>
 </SECTION>

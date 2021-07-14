@@ -169,6 +169,11 @@
             font-size: 10pt !important;
         }
 
+        input[type=checkbox] {
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
         input:out-of-range {
             background-color: #ff0000;
             background-color: rgba(255, 0, 0, 0.25);
@@ -438,12 +443,12 @@
         {
             // [3] Voltage Transducer Analyzer Sections
             InputConfiguration: { index: 0, name: "Input Configuration" }
-            // Remaining sections TBD...
+            // Sections TBD...
         },
         {
             // [4] Current Transducer Analyzer Sections
             InputConfiguration: { index: 0, name: "Input Configuration" }
-            // Remaining sections TBD...
+            // Sections TBD...
         },
         {
             // [5] Digital Input Analyzer Sections
@@ -804,22 +809,48 @@
                 });
             }
 
-            self._loadTabSection = function (sectionKey, inputs) {
-                const [ sectionHtml, sectionScript ] = inputs;
+            self.loadTabSection = function (sectionKey) {
+                return dataHub.getSectionMap(`${sectionKey}.xml`).done(function (result) {
+                    const [ sectionHtml, sectionScript ] = buildSection(JSON.parse(result).SECTION);
 
-                $(`#tab${sectionKey}`).html(sectionHtml);
+                    $(`#tab${sectionKey}`).html(sectionHtml);
 
-                if (sectionScript.length > 0) {
-                    const scriptID = `${sectionKey}SectionMappings`;
+                    if (sectionScript.length > 0) {
+                        const scriptID = `${sectionKey}SectionMappings`;
 
-                    if ($(`#${scriptID}`).length)
-                        return;
+                        if ($(`#${scriptID}`).length)
+                            return;
 
-                    const scriptElem = document.createElement("script");
-                    scriptElem.id = scriptID;
-                    scriptElem.innerHTML = sectionScript;
-                    document.body.appendChild(scriptElem);
-                }
+                        const scriptElem = document.createElement("script");
+                        scriptElem.id = scriptID;
+                        scriptElem.innerHTML = sectionScript;
+                        document.body.appendChild(scriptElem);
+                    }
+                }).fail(function (error) {
+                    showErrorMessage(error, null, true);
+                });
+            }
+
+            self.refreshTabSections = function () {
+                $("[update-expr]").each(function () {
+                    try {
+                        eval($(this).attr("update-expr"));
+                    } catch (e) {
+                        console.error(e);
+                    }
+                });
+
+                $("[data-toggle='tooltip']")
+                    .tooltip({
+                        html: true,
+                        trigger: "manual",
+                        boundary: "viewport",
+                        placement: "top",
+                        container: "body",
+                        sanitize: true,
+                        appendToBody: true
+                    })
+                    .hover(showToolTip, hideToolTip);
             }
 
             self._loadAnalyzerConfig = function (configID, analyzerType, analyzerConfig) {
@@ -841,41 +872,23 @@
                 if (!self.dataHubIsConnected())
                     return $.Deferred().resolve().promise();
 
-                const promises = [];
                 const activeSections = sections[analyzerType];
+                const promises = [];
 
                 for (let key in activeSections) {
                     if (activeSections.hasOwnProperty(key)) {
-                        promises.push(dataHub.getSectionMap(`${key}.xml`).done(function (result) {
-                            self._loadTabSection(key, buildSection(JSON.parse(result).SECTION));
-                        }).fail(function (error) {
-                            showErrorMessage(error, null, true);
-                        }));
+                        // Other tabs depend on values loaded into primary tabs, so make sure
+                        // values are refreshed for first tab as soon as it is loaded
+                        if (activeSections[key].index === 0)
+                            promises.push(self.loadTabSection(key).done(self.refreshTabSections));
+                        else
+                            promises.push(self.loadTabSection(key));
                     }
                 }
 
                 return $(promises).whenAll().then(function () {
                     setActiveTabIndex(0);
-
-                    $("[update-expr]").each(function () {
-                        try {
-                            eval($(this).attr("update-expr"));
-                        } catch (e) {
-                            console.error(e);
-                        }
-                    });
-
-                    $("[data-toggle='tooltip']")
-                        .tooltip({
-                            html: true,
-                            trigger: "manual",
-                            boundary: "viewport",
-                            placement: "top",
-                            container: "body",
-                            sanitize: true,
-                            appendToBody: true
-                        })
-                        .hover(showToolTip, hideToolTip);
+                    self.refreshTabSections();
                 });
             }
         }
@@ -1175,9 +1188,43 @@
                         return parseFloat(value);
                     case "int":
                         return parseInt(value, 10);
+                    case "bool":
+                        return parseInt(value, 10) !== 0;
                     default:
                         return value.toString();
                 }
+            }
+        }
+
+        function getKeyValue(targetSelectID, targetType) {
+            const selectedOption = $(`#${targetSelectID} option:selected`);
+
+            if (selectedOption.length === 0) {
+                switch (targetType) {
+                    case undefined:
+                    case "float":
+                        return 0.0;
+                    case "int":
+                        return 0;
+                    case "bool":
+                        return false;
+                    default:
+                        return "";
+                }
+            }
+
+            const value = selectedOption.attr("key-value");
+
+            switch (targetType) {
+                case undefined:
+                case "float":
+                    return parseFloat(value);
+                case "int":
+                    return parseInt(value, 10);
+                case "bool":
+                    return parseInt(value, 10) !== 0;
+                default:
+                    return value.toString();
             }
         }
 
@@ -1205,9 +1252,64 @@
             MULTILINETEXT: "13"
         }
 
+        const maxAliasParams = 5;
         const unmapped = 0;
 
-        function elementTargetsCurrentAnalyzer(definition) {
+        let normalizeThresholdState = Cookies.get("normalizeThresholds") || "1";
+
+        function normalizeThresholds() {
+            return parseInt(normalizeThresholdState, 10) > 0;
+        } 
+
+        function normalizeThresholdStateUpdated() {
+            Cookies.set("normalizeThresholds", normalizeThresholdState, { expires: 365 });
+            reloadTabSections('RMSVariations', 'Power', 'Harmonics');
+            showInfoMessage(`Changed to ${normalizeThresholds() ? 'normalized' : 'raw'} thresholds`);
+        }
+
+        function reloadTabSections() {
+            const currentSectionKeys = sectionKeys[viewModel.currentAnalyzerType()];
+            const targetSectionKeys = arguments.length === 0 ? currentSectionKeys : Array.from(arguments);
+            const promises = [];
+
+            for (let i = 0; i < targetSectionKeys.length; i++) {
+                const sectionKey = targetSectionKeys[i];
+
+                if (currentSectionKeys.indexOf(sectionKey) !== -1)
+                    promises.push(viewModel.loadTabSection(sectionKey));
+            }
+
+            $(promises).whenAll().then(viewModel.refreshTabSections);
+        }
+
+        function configMatches() {
+            const keyValue = getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase();
+            const args = arguments.length === 1 && Array.isArray(arguments[0]) ? arguments[0] : Array.from(arguments);
+
+            for (let i = 0; i < args.length; i++) {
+                let target = args[i].trim().toUpperCase();
+                let opEquals = true;
+
+                if (target.startsWith("!")) {
+                    target = target.substr(1);
+                    opEquals = false;
+                }
+
+                if (opEquals ? target === keyValue : target !== keyValue)
+                    return true;
+            }
+
+            return false;
+        }
+
+        function elementTargetsInputConfig(definition) {
+            if (definition.hasOwnProperty("@@CONFIG")) {
+                const config = definition["@@CONFIG"].trim();
+
+                if (config.length > 0 && config !== "*" && !configMatches(config.split(",")))
+                    return false;
+            }
+
             const currentAnalyzer = viewModel.currentAnalyzerType();
             let targetAnalyzer = 0;
 
@@ -1236,9 +1338,23 @@
             for (let i = 0; i < list.ITEM.length; i++) {
                 const value = list.ITEM[i];
 
-                if (elementTargetsCurrentAnalyzer(value)) {
+                if (elementTargetsInputConfig(value)) {
                     const optVal = value["@@VALUE"] || index;
-                    html.push(`<option value="${optVal}"${optVal === defaultVal ? " selected" : ""}>${htmlEncode(value["@@ALIAS"] || value["@@NAME"])}</option>`);
+                    const keyVal = value["@@KEYVALUE"] ? ` key-value="${htmlEncode(value["@@KEYVALUE"])}"` : "";
+                    let alias = value["@@ALIAS"];
+
+                    if (alias) {
+                        for (let j = 0; j < maxAliasParams; j++) {
+                            const aliasParam = value[`@@ALIAS${j}`];
+
+                            if (aliasParam)
+                                alias = alias.replaceAll(`{${j}}`, eval(aliasParam));
+                            else
+                                break;
+                        }
+                    }
+
+                    html.push(`<option value="${optVal}"${keyVal}${optVal === defaultVal ? " selected" : ""}>${htmlEncode(alias || value["@@NAME"])}</option>`);
                     totalOptions++;
                 }
 
@@ -1254,7 +1370,19 @@
 
             const type = propDef["@@TYPE"];
             const name = propDef["@@NAME"];
-            const alias = propDef["@@ALIAS"];
+            let alias = propDef["@@ALIAS"];
+
+            if (alias) {
+                for (let i = 0; i < maxAliasParams; i++) {
+                    const aliasParam = propDef[`@@ALIAS${i}`];
+
+                    if (aliasParam)
+                        alias = alias.replaceAll(`{${i}}`, eval(aliasParam));
+                    else
+                        break;
+                }
+            }
+
             const getPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked')` : `$('#${name}').val()`;
             const setPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked', {0})` : `$('#${name}').val({0})`;
             const readOnly = parseInt(propDef["@@RO"] || "1", 10) > 0;
@@ -1297,7 +1425,7 @@
 
             switch (type) {
                 case PropDefType.CHECKBOX:
-                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) > 0`}`)}`));
+                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) !== 0`}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? String.format(writeExpr, getPropVal) : `${getPropVal} ? '1' : '0'`}`));
                     html.push(`<input type="checkbox" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
@@ -1328,7 +1456,7 @@
 
             html.push(`</td></tr>`);
 
-            return [ elementTargetsCurrentAnalyzer(propDef) ? html.join("") : "", script.join("\r\n") ];
+            return [ elementTargetsInputConfig(propDef) ? html.join("") : "", script.join("\r\n") ];
         }
 
         function buildBankElement(definition, mapRoot, sectionName) {
@@ -1429,7 +1557,7 @@
             html.push(`</td></tr>`);
             html.push(`<tr><th class="header-section-row bank-footer"><div class="header"></div></th></tr>`);
 
-            return [ elementTargetsCurrentAnalyzer(definition) ? html.join("").replace(sizeToken, sizeAttribute) : "", script.join("\r\n") ];
+            return [ elementTargetsInputConfig(definition) ? html.join("").replace(sizeToken, sizeAttribute) : "", script.join("\r\n") ];
         }
 
         function buildSection(section) {
@@ -1512,7 +1640,7 @@
                     case "PROPDEF":
                     {
                         if (definition["@@TYPE"] === PropDefType.HEADER) {
-                            if (elementTargetsCurrentAnalyzer(definition)) {
+                            if (elementTargetsInputConfig(definition)) {
                                 closePropDefs();
                                 html.push(`<tr><th class="header${definition.order > 0 ? "-section-row": ""}"><div class="header">${definition["@@ALIAS"] || definition["@@NAME"]}</div></th></tr>`);
                             }
