@@ -165,6 +165,13 @@
             content: "\e080";
         }
 
+        #header-collapse {
+            left: 0;
+            top: 10px;
+            margin-bottom: -10px;
+            visibility: hidden;
+        }
+
         .ui-tabs .ui-tabs-nav li a {
             font-size: 10pt !important;
         }
@@ -223,7 +230,7 @@
         <table id="headerArea" width="100%" style="margin-top: -10px">
             <tr>
                 <td colspan="2">
-                    <button type="button" class="btn btn-xs btn-collapsable" style="left: 0; top: 10px; margin-bottom: -10px;" data-toggle="collapse" data-target="#topRow" aria-expanded="true"></button>        
+                    <button id="header-collapse" type="button" class="btn btn-xs btn-collapsable header-collapse" data-toggle="collapse" data-target="#topRow" aria-expanded="true"></button>
                 </td>
             </tr>
             <tr id="topRow" aria-expanded="true" class="collapse in">
@@ -636,6 +643,9 @@
 
                         observableAnalyzers.push(observerableAnalyzer);
                     });
+
+                    if (observableAnalyzers.length > 0)
+                        $("#header-collapse").css("visibility", "visible");
 
                     self.analyzers(observableAnalyzers);
 
