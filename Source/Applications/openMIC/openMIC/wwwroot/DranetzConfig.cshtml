@@ -230,7 +230,7 @@
         <table id="headerArea" width="100%" style="margin-top: -10px">
             <tr>
                 <td colspan="2">
-                    <button id="header-collapse" type="button" class="btn btn-xs btn-collapsable header-collapse" data-toggle="collapse" data-target="#topRow" aria-expanded="true"></button>
+                    <button id="header-collapse" type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-target="#topRow" aria-expanded="true"></button>
                 </td>
             </tr>
             <tr id="topRow" aria-expanded="true" class="collapse in">
@@ -478,6 +478,26 @@
             Object.keys(sections[analyzerTypes.DigitalOutputDataNode.index])
         ];
 
+        const wiringConfig = {
+            Config1: { name: "Single phase", type: "Single" },
+            Config2: { name: "Split phase", type: "Split" },
+            Config3: { name: "Delta", type: "Delta" },
+            Config4: { name: "Wye", type: "Wye" },
+            Config5: { name: "Generic", type: "Generic" },
+            Config6: { name: "Delta 2 Watt Mete", type: "Delta" },
+            Config7: { name: "Wye 2.5 element, no B", type: "Wye"},
+            Config8: { name: "Wye 2.5 element, no C", type: "Wye" }
+        };
+
+        function getWiringConfig(index) {
+            const key = `Config${index}`;
+
+            if (wiringConfig.hasOwnProperty(key))
+                return wiringConfig[key];
+
+            return { name: "Undefined", type: "Undefined" };
+        }
+
         function DeviceViewModel() {
             const self = this;
 
@@ -503,6 +523,7 @@
             self._isDirty = ko.observable(false);
             self._isSaving = ko.observable(false);
             self._currentAnalyzerType = ko.observable(analyzerTypes.PQDataNode.index);
+            self._currentWiringConfig = ko.observable(0);
 
             // Properties
             self.dataHubIsConnected = ko.pureComputed({
@@ -586,7 +607,18 @@
                 owner: self
             });
 
+            self.currentWiringConfig = ko.pureComputed({
+                read: function () {
+                    return getWiringConfig(self._currentWiringConfig());
+                },
+                owner: self
+            });
+
             // Methods
+
+            self.setWiringConfigValue = function (value) {
+                self._currentWiringConfig(parseInt(value, 10));
+            }
 
             self.queryModules = function () {
                 if (!self.dataHubIsConnected())
@@ -874,6 +906,9 @@
                 self.currentAnalyzerType(analyzerType);     // Integer analyzer type (see analyzerTypes)
                 self.currentAnalyzerConfig(analyzerConfig); // Dranetz XML config serialized as JSON
 
+                // Set circuit type, i.e., wiring config value, early as this is a key config parameter
+                self.setWiringConfigValue(analyzerConfig.commandresult.characteristics.anyalyzer.VA_power.config['@@value']);
+
                 if (!$("#stubTabSections").length)
                     self.createSectionTabs();
 
@@ -1127,11 +1162,11 @@
                         undefined;
                 }
             });
-            
+
             $("#headerArea").on("shown.bs.collapse", function() {
                 resizePageElements();
             });
-            
+
             $("#headerArea").on("hidden.bs.collapse", function() {
                 resizePageElements();
             });
@@ -1173,6 +1208,68 @@
         function hideToolTip() {
             $(this).tooltip("hide");
         }
+
+        function reloadTabSections() {
+            const currentSectionKeys = sectionKeys[viewModel.currentAnalyzerType()];
+            const targetSectionKeys = arguments.length === 0 ? currentSectionKeys : Array.from(arguments);
+            const promises = [];
+
+            for (let i = 0; i < targetSectionKeys.length; i++) {
+                const sectionKey = targetSectionKeys[i];
+
+                if (currentSectionKeys.indexOf(sectionKey) !== -1)
+                    promises.push(viewModel.loadTabSection(sectionKey));
+            }
+
+            $(promises).whenAll().then(viewModel.refreshTabSections);
+        }
+
+        // Non-config related UI control variables
+
+        function updateWiringConfig(value) {
+            viewModel.setWiringConfigValue(value);
+            reloadTabSections(); // Reload all tabs
+            showInfoMessage(`Selected "${viewModel.currentWiringConfig().name}" circuit type...`);
+        }
+
+        let normalizeThresholdState = Cookies.get("normalizeThresholds") || "1";
+
+        function normalizeThresholds() {
+            return parseInt(normalizeThresholdState, 10) > 0;
+        }
+
+        function normalizeThresholdStateUpdated() {
+            Cookies.set("normalizeThresholds", normalizeThresholdState, { expires: 365 });
+            reloadTabSections('RMSVariations', 'Power', 'Harmonics');
+            showInfoMessage(`Switched to ${normalizeThresholds() ? 'normalized' : 'raw'} thresholds...`);
+        }
+
+        let genericChannelNames = (Cookies.get("genericChannelNames") || "1|2|3|4").split("|");
+
+        if (genericChannelNames.length !== 4) {
+            if (genericChannelNames.length < 4) {
+                for (let i = genericChannelNames.length; i < 4; i++)
+                    genericChannelNames.push((i + 1).toString());
+            }
+            else {
+                genericChannelNames.splice(4, genericChannelNames.length - 4);
+            }
+        }
+
+        function genericChannelNameUpdated() {
+            Cookies.set("genericChannelNames", genericChannelNames.join("|"), { expires: 365 });
+            reloadTabSections('RMSVariations', 'Transients', 'WaveformCapture', 'Power', 'EnergyAndDemand', 'Harmonics');
+            showInfoMessage(`Generic channel name updated...`);
+            $("#inputSection_bankInput").val([0]);
+        }
+
+        function getChannelName(index) {
+            return configMatches("Generic") ?
+                genericChannelNames[index] :
+                index < 3 ? String.fromCharCode(65 + index) : "N";
+        }
+
+        // Section Map Builder code - TODO: Migrate to sectionMapBuilder.js
 
         function htmlEncode(value) {
             return $("<div/>").text(value).html().replace(/&/g, "%26");
@@ -1249,51 +1346,25 @@
         }
 
         const PropDefType = {
-            CHECKBOX: "0",
-            NUMERIC: "1",
-            FLOAT: "2",
-            HEADER: "3",
-            TEXT: "4",
-            DATE: "5",
-            TIME: "6",
-            SELECT: "8",
+            CHECKBOX:      "0",
+            NUMERIC:       "1",
+            FLOAT:         "2",
+            HEADER:        "3",
+            TEXT:          "4",
+            DATE:          "5",
+            TIME:          "6",
+            SELECT:        "8",
             DATETIMERANGE: "11",
-            PASSWORD: "12",
+            PASSWORD:      "12",
             MULTILINETEXT: "13"
         }
 
         const maxAliasParams = 5;
         const unmapped = 0;
 
-        let normalizeThresholdState = Cookies.get("normalizeThresholds") || "1";
-
-        function normalizeThresholds() {
-            return parseInt(normalizeThresholdState, 10) > 0;
-        } 
-
-        function normalizeThresholdStateUpdated() {
-            Cookies.set("normalizeThresholds", normalizeThresholdState, { expires: 365 });
-            reloadTabSections('RMSVariations', 'Power', 'Harmonics');
-            showInfoMessage(`Changed to ${normalizeThresholds() ? 'normalized' : 'raw'} thresholds`);
-        }
-
-        function reloadTabSections() {
-            const currentSectionKeys = sectionKeys[viewModel.currentAnalyzerType()];
-            const targetSectionKeys = arguments.length === 0 ? currentSectionKeys : Array.from(arguments);
-            const promises = [];
-
-            for (let i = 0; i < targetSectionKeys.length; i++) {
-                const sectionKey = targetSectionKeys[i];
-
-                if (currentSectionKeys.indexOf(sectionKey) !== -1)
-                    promises.push(viewModel.loadTabSection(sectionKey));
-            }
-
-            $(promises).whenAll().then(viewModel.refreshTabSections);
-        }
-
         function configMatches() {
-            const keyValue = getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase();
+            // key value DOM lookup: getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase()
+            const keyValue = viewModel.currentWiringConfig().type.toUpperCase();
             const args = arguments.length === 1 && Array.isArray(arguments[0]) ? arguments[0] : Array.from(arguments);
 
             for (let i = 0; i < args.length; i++) {
@@ -1412,9 +1483,10 @@
             const postReadExpr = propDef["@@POSTREAD"] ? ` ${applySubstitutions(propDef["@@POSTREAD"])};` : "";
             const preWriteExpr = propDef["@@PREWRITE"] ? `${applySubstitutions(propDef["@@PREWRITE"])}; ` : "";
             const postWriteExpr = propDef["@@POSTWRITE"] ? ` ${applySubstitutions(propDef["@@POSTWRITE"])};` : "";
+            const updatesConfigExpr = parseInt(propDef["@@UPDATESCONFIG"] || "1", 10) !== 0 ? " viewModel.configChanged();" : "";
 
             const updateFunction = `const update_{0} = new Function("${readOnly ? "" : `${preReadExpr}{1};${postReadExpr}`}");`;
-            const changedFunction = `const {0}_changed = new Function("${preWriteExpr}{1};${postWriteExpr} viewModel.configChanged();");`;
+            const changedFunction = `const {0}_changed = new Function("${preWriteExpr}{1};${postWriteExpr}${updatesConfigExpr}");`;
 
             const defaultVal = propDef["@@DEFAULT"];
             const placeHolderText = propDef["@@PLACEHOLDER"] ? ` placeholder="${propDef["@@PLACEHOLDER"]}"` : "";
