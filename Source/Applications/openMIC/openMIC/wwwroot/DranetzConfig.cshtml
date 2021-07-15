@@ -1281,10 +1281,10 @@
             showInfoMessage(`Generic channel name updated...`);
         }
 
-        function getChannelName(index) {
+        function getChannelName(index, neutralName) {
             return configMatches("Generic") ?
                 genericChannelNames[index] :
-                index < 3 ? String.fromCharCode(65 + index) : "N";
+                index < 3 ? String.fromCharCode(65 + index) : neutralName || "N";
         }
 
         // Section Map Builder code - TODO: Migrate to sectionMapBuilder.js
@@ -1382,19 +1382,29 @@
 
         function configMatches() {
             // key value DOM lookup: getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase()
-            const keyValue = viewModel.currentWiringConfig().type.toUpperCase();
             const args = arguments.length === 1 && Array.isArray(arguments[0]) ? arguments[0] : Array.from(arguments);
 
+            if (args.length === 0)
+                return false;
+
+            for (let i = 0; i < args.length; i++)
+                args[i] = args[i].trim().toUpperCase();
+
+            const keyValue = viewModel.currentWiringConfig().type.toUpperCase();
+
+            if (args.every(arg => arg.startsWith("!")))
+                return args.every(arg => arg.substr(1) !== keyValue);
+
             for (let i = 0; i < args.length; i++) {
-                let target = args[i].trim().toUpperCase();
+                let arg = args[i];
                 let opEquals = true;
 
-                if (target.startsWith("!")) {
-                    target = target.substr(1);
+                if (arg.startsWith("!")) {
+                    arg = arg.substr(1);
                     opEquals = false;
                 }
 
-                if (opEquals ? target === keyValue : target !== keyValue)
+                if (opEquals ? arg === keyValue : arg !== keyValue)
                     return true;
             }
 
