@@ -398,7 +398,17 @@
         "use strict";
 
         var viewModel = null;
-        var deviceID = @deviceID;
+        const deviceID = @deviceID;
+
+        let shiftIsDown = false;
+
+        $(document).keydown(function (e) {
+            shiftIsDown = e.keyCode === 16;
+        });
+
+        $(document).keyup(function (e) {
+            shiftIsDown = false;
+        });
 
         const analyzerTypes = {
             PQDataNode:            { index: 0, name: "61000 PQ DataNode" },
@@ -819,7 +829,7 @@
                         const name = section.name;
                         const index = section.index;
 
-                        tabList.push(`<li><a href="#tab${key}">${name}</a></li>`);
+                        tabList.push(`<li><a href="#tab${key}" onclick="viewModel.reloadTabSection('${key}', true)">${name}</a></li>`);
 
                         tabSections.push(`<div id="tab${key}" ${index === 0 ? `class="ui-tabs-active tab-section"` : `class="tab-section" style="display: none"`} tab-section>`);
                         tabSections.push(`    <table width="75%" class="table-center">`);
@@ -843,11 +853,10 @@
                 $("#tabs").html(tabList.join("\r\n") + tabSections.join("\r\n"));
 
                 $("#tabs").tabs({
-                    active: 0
-                    //activate: function(event, ui) {
-                    //    if (self.canSave() && confirm("Do you want to keep the changes?"))
-                    //        self.saveAnalyzerConfig();
-                    //}
+                    active: 0,
+                    activate: function (event, ui) {
+                        self.reloadTabSection(ui.newPanel.attr("id").substr(3), true);
+                    }
                 });
             }
 
@@ -893,6 +902,29 @@
                         appendToBody: true
                     })
                     .hover(showToolTip, hideToolTip);
+            }
+
+            self.reloadTabSection = function (sectionKey, whenShiftIsDown) {
+                if (whenShiftIsDown && !shiftIsDown)
+                    return;
+
+                self.reloadTabSections(sectionKey);
+                showInfoMessage(`Reloaded "${sectionKey}" tab section...`);
+            }
+
+            self.reloadTabSections = function() {
+                const currentSectionKeys = sectionKeys[self.currentAnalyzerType()];
+                const targetSectionKeys = arguments.length === 0 ? currentSectionKeys : Array.from(arguments);
+                const promises = [];
+
+                for (let i = 0; i < targetSectionKeys.length; i++) {
+                    const sectionKey = targetSectionKeys[i];
+
+                    if (currentSectionKeys.indexOf(sectionKey) !== -1)
+                        promises.push(self.loadTabSection(sectionKey));
+                }
+
+                return $(promises).whenAll().then(self.refreshTabSections);
             }
 
             self._loadAnalyzerConfig = function (configID, analyzerType, analyzerConfig) {
@@ -1185,16 +1217,6 @@
                 $("#noDeviceDataMessage").show();
         });
 
-        let shiftIsDown = false;
-
-        $(document).keydown(function (e) {
-            shiftIsDown = e.keyCode === 16;
-        });
-
-        $(document).keyup(function (e) {
-            shiftIsDown = false;
-        });
-
         function showToolTip() {
             if (shiftIsDown) {
                 const mapRootLen = "viewModel.currentAnalyzerConfig().".length;
@@ -1209,26 +1231,11 @@
             $(this).tooltip("hide");
         }
 
-        function reloadTabSections() {
-            const currentSectionKeys = sectionKeys[viewModel.currentAnalyzerType()];
-            const targetSectionKeys = arguments.length === 0 ? currentSectionKeys : Array.from(arguments);
-            const promises = [];
-
-            for (let i = 0; i < targetSectionKeys.length; i++) {
-                const sectionKey = targetSectionKeys[i];
-
-                if (currentSectionKeys.indexOf(sectionKey) !== -1)
-                    promises.push(viewModel.loadTabSection(sectionKey));
-            }
-
-            $(promises).whenAll().then(viewModel.refreshTabSections);
-        }
-
         // Non-config related UI control variables
 
         function updateWiringConfig(value) {
             viewModel.setWiringConfigValue(value);
-            reloadTabSections(); // Reload all tabs
+            viewModel.reloadTabSections(); // Reload all tabs
             showInfoMessage(`Selected "${viewModel.currentWiringConfig().name}" circuit type...`);
         }
 
@@ -1240,7 +1247,13 @@
 
         function normalizeThresholdStateUpdated() {
             Cookies.set("normalizeThresholds", normalizeThresholdState, { expires: 365 });
-            reloadTabSections('RMSVariations', 'Power', 'Harmonics');
+
+            const selectedInput = ($("#inputSection_bankInput").val() || [0])[0];
+
+            viewModel.reloadTabSections('RMSVariations', 'Transients', 'Power', 'Harmonics').then(function () {
+                $("#inputSection_bankInput").val([selectedInput]).trigger("change");
+            });
+
             showInfoMessage(`Switched to ${normalizeThresholds() ? 'normalized' : 'raw'} thresholds...`);
         }
 
@@ -1258,9 +1271,14 @@
 
         function genericChannelNameUpdated() {
             Cookies.set("genericChannelNames", genericChannelNames.join("|"), { expires: 365 });
-            reloadTabSections('RMSVariations', 'Transients', 'WaveformCapture', 'Power', 'EnergyAndDemand', 'Harmonics');
+
+            const selectedInput = ($("#inputSection_bankInput").val() || [0])[0];
+
+            viewModel.reloadTabSections('RMSVariations', 'Transients', 'WaveformCapture', 'Power', 'EnergyAndDemand', 'Harmonics').then(function () {
+                $("#inputSection_bankInput").val([selectedInput]).trigger("change");
+            });;
+
             showInfoMessage(`Generic channel name updated...`);
-            $("#inputSection_bankInput").val([0]);
         }
 
         function getChannelName(index) {
