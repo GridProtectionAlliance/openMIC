@@ -1395,20 +1395,7 @@
             if (args.every(arg => arg.startsWith("!")))
                 return args.every(arg => arg.substr(1) !== keyValue);
 
-            for (let i = 0; i < args.length; i++) {
-                let arg = args[i];
-                let opEquals = true;
-
-                if (arg.startsWith("!")) {
-                    arg = arg.substr(1);
-                    opEquals = false;
-                }
-
-                if (opEquals ? arg === keyValue : arg !== keyValue)
-                    return true;
-            }
-
-            return false;
+            return args.some(arg => arg.startsWith("!") ? arg.substr(1) !== keyValue : arg === keyValue);
         }
 
         function elementTargetsInputConfig(definition) {
