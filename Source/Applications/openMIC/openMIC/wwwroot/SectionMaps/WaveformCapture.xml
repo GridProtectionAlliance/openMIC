@@ -17,25 +17,25 @@
   </PROPDEF>
   <BANK ORDER="1" NAME="bankNWFCapture" ALIAS="Waveform Capture Enables (Select the trigger channel(s) to enable or disable)" ROWS="11">
     <LIST>
-      <ITEM NAME="wfc0" ALIAS="Voltage A" ANALYZER="1" VALUE="0"/>
-      <ITEM NAME="wfc1" ALIAS="Voltage B" ANALYZER="1" VALUE="1"/>
-      <ITEM NAME="wfc2" ALIAS="Voltage C" ANALYZER="1" VALUE="2"/>
-      <ITEM NAME="wfc3" ALIAS="Voltage N" ANALYZER="1" VALUE="3"/>
-      <ITEM NAME="wfc8" ALIAS="Voltage AB" ANALYZER="1" VALUE="8"/>
-      <ITEM NAME="wfc9" ALIAS="Voltage BC" ANALYZER="1" VALUE="9"/>
-      <ITEM NAME="wfc10" ALIAS="Voltage CA" ANALYZER="1" VALUE="10"/>
-      <ITEM NAME="wfc4" ALIAS="Current A" ANALYZER="2" VALUE="4"/>
-      <ITEM NAME="wfc5" ALIAS="Current B" ANALYZER="2" VALUE="5"/>
-      <ITEM NAME="wfc6" ALIAS="Current C" ANALYZER="2" VALUE="6"/>
-      <ITEM NAME="wfc7" ALIAS="Current N" ANALYZER="2" VALUE="7"/>
+      <ITEM NAME="wfc0" ALIAS="Voltage {0}" VALUE="0" ANALYZER="1" CONFIG="Wye,Single,Split,Generic" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="wfc1" ALIAS="Voltage {0}" VALUE="1" ANALYZER="1" CONFIG="Wye,Split,Generic" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="wfc2" ALIAS="Voltage {0}" VALUE="2" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="wfc3" ALIAS="Voltage {0}" VALUE="3" ANALYZER="1" CONFIG="Wye,Single,Split,Generic" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="wfc8" ALIAS="Voltage AB" VALUE="8" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="wfc9" ALIAS="Voltage BC" VALUE="9" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="wfc10" ALIAS="Voltage CA" VALUE="10" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="wfc4" ALIAS="Current {0}" VALUE="4" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="wfc5" ALIAS="Current {0}" VALUE="5" ANALYZER="2" CONFIG="Wye,Delta,Split,Generic" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="wfc6" ALIAS="Current {0}" VALUE="6" ANALYZER="2" CONFIG="Wye,Delta,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="wfc7" ALIAS="Current {0}" VALUE="7" ANALYZER="2" CONFIG="Wye,Single,Split,Generic" ALIAS0="getChannelName(3)"/>
     </LIST>
-    <PROPDEF NAME="i0" ALIAS="Voltage A" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 1) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 1 : parseInt({mapExpr}, 10) &amp; ~1).toString()"/>
-    <PROPDEF NAME="i1" ALIAS="Voltage B" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 2) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 2 : parseInt({mapExpr}, 10) &amp; ~2).toString()"/>
-    <PROPDEF NAME="i2" ALIAS="Voltage C" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 4) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 4 : parseInt({mapExpr}, 10) &amp; ~4).toString()"/>
-    <PROPDEF NAME="i3" ALIAS="Voltage N" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 8) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 8 : parseInt({mapExpr}, 10) &amp; ~8).toString()"/>
-    <PROPDEF NAME="i4" ALIAS="Current A" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 16) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 16 : parseInt({mapExpr}, 10) &amp; ~16).toString()"/>
-    <PROPDEF NAME="i5" ALIAS="Current B" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 32) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 32 : parseInt({mapExpr}, 10) &amp; ~32).toString()"/>
-    <PROPDEF NAME="i6" ALIAS="Current C" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 64) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 64 : parseInt({mapExpr}, 10) &amp; ~64).toString()"/>
-    <PROPDEF NAME="i7" ALIAS="Current N" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 128) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 128 : parseInt({mapExpr}, 10) &amp; ~128).toString()"/>
+    <PROPDEF NAME="i0" ALIAS="Voltage {0}" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 1) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 1 : parseInt({mapExpr}, 10) &amp; ~1).toString()" ALIAS0="getChannelName(0)"/>
+    <PROPDEF NAME="i1" ALIAS="Voltage {0}" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 2) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 2 : parseInt({mapExpr}, 10) &amp; ~2).toString()" ALIAS0="getChannelName(1)"/>
+    <PROPDEF NAME="i2" ALIAS="Voltage {0}" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 4) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 4 : parseInt({mapExpr}, 10) &amp; ~4).toString()" ALIAS0="getChannelName(2)"/>
+    <PROPDEF NAME="i3" ALIAS="Voltage {0}" TYPE="0" RO="0" ANALYZER="1" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 8) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 8 : parseInt({mapExpr}, 10) &amp; ~8).toString()" ALIAS0="getChannelName(3)"/>
+    <PROPDEF NAME="i4" ALIAS="Current {0}" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 16) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 16 : parseInt({mapExpr}, 10) &amp; ~16).toString()" ALIAS0="getChannelName(0)"/>
+    <PROPDEF NAME="i5" ALIAS="Current {0}" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 32) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 32 : parseInt({mapExpr}, 10) &amp; ~32).toString()" ALIAS0="getChannelName(1)"/>
+    <PROPDEF NAME="i6" ALIAS="Current {0}" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 64) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 64 : parseInt({mapExpr}, 10) &amp; ~64).toString()" ALIAS0="getChannelName(2)"/>
+    <PROPDEF NAME="i7" ALIAS="Current {0}" TYPE="0" RO="0" ANALYZER="2" MAP=".trig_resp.masks.list.item[getVal('{0}')]['@value']" READ="(parseInt({0}, 10) &amp; 128) != 0" WRITE="({0} ? parseInt({mapExpr}, 10) | 128 : parseInt({mapExpr}, 10) &amp; ~128).toString()" ALIAS0="getChannelName(3)"/>
   </BANK>
 </SECTION>
