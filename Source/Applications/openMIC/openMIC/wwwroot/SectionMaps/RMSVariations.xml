@@ -24,10 +24,20 @@
   <PROPDEF NAME="Rapid Voltage Change Limits" TYPE="3" ANALYZER="1" CONFIG="!Generic"/>
   <PROPDEF NAME="rmsRVCLimit" ALIAS="RMS magnitude change (%)" TYPE="4" RO="0" ANALYZER="1" CONFIG="!Generic" MAP=".thresholds.list.item[0].tconfig1.hi_lims.list.item[5]['@value']" POSTWRITE="{mapRoot}.thresholds.list.item[1].tconfig1.hi_lims.list.item[5]['@value'] = {value}; {mapRoot}.thresholds.list.item[2].tconfig1.hi_lims.list.item[5]['@value'] = {value}"/>
   <PROPDEF NAME="RMS Summary" TYPE="3"/>
-  <PROPDEF NAME="rmsPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.summary_pretrig_cycles['@value']"/>
-  <PROPDEF NAME="rmsInOutPost" ALIAS="In-out post trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.summary_in_out_posttrig_cycles['@value']"/>
-  <PROPDEF NAME="rmsOutInPost" ALIAS="Out-in post trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.summary_out_in_posttrig_cycles['@value']"/>
+  <PROPDEF NAME="rmsPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="1" RO="0" MAP=".trig_resp.summary_pretrig_cycles['@value']" POSTWRITE="rmsSection_rmsWFPretrigger_changed()">
+    <PARAM MIN="1" MAX="30"/>
+  </PROPDEF>
+  <PROPDEF NAME="rmsInOutPost" ALIAS="In-out post trigger (Cycles)" TYPE="1" RO="0" MAP=".trig_resp.summary_in_out_posttrig_cycles['@value']" POSTWRITE="rmsSection_rmsWFPosttrigger_changed()">
+    <PARAM MIN="1" MAX="10000"/>
+  </PROPDEF>
+  <PROPDEF NAME="rmsOutInPost" ALIAS="Out-in post trigger (Cycles)" TYPE="1" RO="0" MAP=".trig_resp.summary_out_in_posttrig_cycles['@value']" POSTWRITE="rmsSection_rmsWFPosttrigger_changed()">
+    <PARAM MIN="1" MAX="10000"/>
+  </PROPDEF>
   <PROPDEF NAME="Waveform Capture" TYPE="3"/>
-  <PROPDEF NAME="rmsWFPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.wave_picture_pretrig_cycles['@value']"/>
-  <PROPDEF NAME="rmsWFPosttrigger" ALIAS="Post-trigger (Cycles)" TYPE="4" RO="0" MAP=".trig_resp.wave_picture_posttrig_cycles['@value']"/>
+  <PROPDEF NAME="rmsWFPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="1" RO="0" MAP=".trig_resp.wave_picture_pretrig_cycles['@value']" POSTWRITE="const maxPre = getVal('rmsSection_rmsPretrigger'); if (getVal('{name}') > maxPre) { {mapExpr} = maxPre; update_{name}(); }">
+    <PARAM MIN="1" MAX="30"/>
+  </PROPDEF>
+  <PROPDEF NAME="rmsWFPosttrigger" ALIAS="Post-trigger (Cycles)" TYPE="1" RO="0" MAP=".trig_resp.wave_picture_posttrig_cycles['@value']" POSTWRITE="const maxPost = Math.max(getVal('rmsSection_rmsInOutPost'), getVal('rmsSection_rmsOutInPost')); if (getVal('{name}') > maxPost) { {mapExpr} = maxPost; update_{name}(); }">
+    <PARAM MIN="1" MAX="120"/>
+  </PROPDEF>
 </SECTION>
