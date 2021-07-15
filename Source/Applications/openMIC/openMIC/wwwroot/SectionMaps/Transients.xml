@@ -1,14 +1,17 @@
 <SECTION NAME="transients" ALIAS="Transients" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
   <BANK NAME="bankTransientLimits" ALIAS="Transient Limits (select the channel(s) to change)" ROWS="8">
     <LIST>
-      <ITEM NAME="ci1" ALIAS="Instantaneous Voltage {0}" ANALYZER="1" ALIAS0="getChannelName(0)"/>
-      <ITEM NAME="ci6" ALIAS="Instantaneous Voltage {0}" ANALYZER="1" ALIAS0="getChannelName(1)"/>
-      <ITEM NAME="ci11" ALIAS="Instantaneous Voltage {0}" ANALYZER="1" ALIAS0="getChannelName(2)"/>
-      <ITEM NAME="ci17" ALIAS="Instantaneous Voltage {0}" ANALYZER="1" ALIAS0="getChannelName(3)"/>
-      <ITEM NAME="ci27" ALIAS="Instantaneous Current {0}" ANALYZER="2" ALIAS0="getChannelName(0)"/>
-      <ITEM NAME="ci32" ALIAS="Instantaneous Current {0}" ANALYZER="2" ALIAS0="getChannelName(1)"/>
-      <ITEM NAME="ci37" ALIAS="Instantaneous Current {0}" ANALYZER="2" ALIAS0="getChannelName(2)"/>
-      <ITEM NAME="ci42" ALIAS="Instantaneous Current {0}" ANALYZER="2" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="ci1" ALIAS="Instantaneous Voltage {0}" VALUE="0" ANALYZER="1" CONFIG="Wye,Single,Split,Generic" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="ci6" ALIAS="Instantaneous Voltage {0}" VALUE="1" ANALYZER="1" CONFIG="Wye,Split,Generic" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="ci11" ALIAS="Instantaneous Voltage {0}" VALUE="2" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="ci17" ALIAS="Instantaneous Voltage {0}" VALUE="3" ANALYZER="1" CONFIG="Wye,Single,Split,Generic" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="ci21" ALIAS="Instantaneous Voltage AB" VALUE="8" ANALYZER="1" CONFIG="Delta"/>
+      <ITEM NAME="ci23" ALIAS="Instantaneous Voltage BC" VALUE="9" ANALYZER="1" CONFIG="Delta"/>
+      <ITEM NAME="ci25" ALIAS="Instantaneous Voltage CA" VALUE="10" ANALYZER="1" CONFIG="Delta"/>
+      <ITEM NAME="ci27" ALIAS="Instantaneous Current {0}" VALUE="4" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="ci32" ALIAS="Instantaneous Current {0}" VALUE="5" ANALYZER="2" CONFIG="Wye,Delta,Split,Generic" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="ci37" ALIAS="Instantaneous Current {0}" VALUE="6" ANALYZER="2" CONFIG="Wye,Delta,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="ci42" ALIAS="Instantaneous Current {0}" VALUE="7" ANALYZER="2" CONFIG="Wye,Single,Split,Generic" ALIAS0="getChannelName(3)"/>
     </LIST>
     <PROPDEF NAME="TransIPTThreshold" ALIAS="Absolute instantaneous peak ({0})" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig1.hi_lims.list.item[1]['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / (getVal('inputSection_nominalV') * Math.sqrt(2)) * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * (getVal('inputSection_nominalV') * Math.sqrt(2)) : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
     <PROPDEF NAME="transCCWSThreshold" ALIAS="Cycle-to-cycle waveshape threshold ({0})" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig1.hi_lims.list.item[6]['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / (getVal('inputSection_nominalV') * Math.sqrt(2)) * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * (getVal('inputSection_nominalV') * Math.sqrt(2)) : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
