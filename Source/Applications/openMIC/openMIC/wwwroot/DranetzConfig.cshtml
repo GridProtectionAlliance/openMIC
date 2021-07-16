@@ -853,10 +853,10 @@
                 $("#tabs").html(tabList.join("\r\n") + tabSections.join("\r\n"));
 
                 $("#tabs").tabs({
-                    active: 0,
-                    activate: function (event, ui) {
-                        self.reloadTabSection(ui.newPanel.attr("id").substr(3), true);
-                    }
+                    active: 0
+                    //activate: function (event, ui) {
+                    //    self.reloadTabSection(ui.newPanel.attr("id").substr(3), true);
+                    //}
                 });
             }
 
@@ -970,6 +970,20 @@
             }
         }
 
+        function resizePageElements() {
+            let height = $("#contentWell").height() -
+                $("#headerArea").outerHeight(true) - 55;
+
+            if ($("#tablist").length)
+                height -= $("#tablist").outerHeight(true);
+
+            if ($("#busyDataBlock").is(":visible"))
+                height -= $("#busyDataBlock").outerHeight(true);
+
+            if (height > 75)
+                $("[tab-section]").height(height);
+        }
+
         function showSavingMessage() {
             $("#busyDataLabel").text("Saving");
             $("#busyDataBlock").show();
@@ -1073,18 +1087,18 @@
             setActiveTabIndex(section.index);
         }
 
-        function resizePageElements() {
-            let height = $("#contentWell").height() -
-                $("#headerArea").outerHeight(true) - 55;
+        function showToolTip() {
+            if (shiftIsDown) {
+                const mapRootLen = "viewModel.currentAnalyzerConfig().".length;
+                const mapExpr = $(this).attr("map-expr");
+                $(this).attr("data-original-title", `<p class="text-left">map: ${mapExpr.substr(mapRootLen)}<br/>value: ${eval(mapExpr)}</p>`)
+                    .tooltip("fixTitle")
+                    .tooltip("show");
+            }
+        }
 
-            if ($("#tablist").length)
-                height -= $("#tablist").outerHeight(true);
-
-            if ($("#busyDataBlock").is(":visible"))
-                height -= $("#busyDataBlock").outerHeight(true);
-
-            if (height > 75)
-                $("[tab-section]").height(height);
+        function hideToolTip() {
+            $(this).tooltip("hide");
         }
 
         // Page initialization function
@@ -1217,20 +1231,6 @@
                 $("#noDeviceDataMessage").show();
         });
 
-        function showToolTip() {
-            if (shiftIsDown) {
-                const mapRootLen = "viewModel.currentAnalyzerConfig().".length;
-                const mapExpr = $(this).attr("map-expr");
-                $(this).attr("data-original-title", `<p class="text-left">map: ${mapExpr.substr(mapRootLen)}<br/>value: ${eval(mapExpr)}</p>`)
-                    .tooltip("fixTitle")
-                    .tooltip("show");
-            }
-        }
-
-        function hideToolTip() {
-            $(this).tooltip("hide");
-        }
-
         // Non-config related UI control variables
 
         function updateWiringConfig(value) {
@@ -1287,7 +1287,7 @@
                 index < 3 ? String.fromCharCode(65 + index) : neutralName || "N";
         }
 
-        // Section Map Builder code - TODO: Migrate to sectionMapBuilder.js
+        // Section Map Builder code - consider migrating to independent file
 
         function htmlEncode(value) {
             return $("<div/>").text(value).html().replace(/&/g, "%26");
@@ -1381,8 +1381,9 @@
         const unmapped = 0;
 
         function configMatches() {
-            // key value DOM lookup: getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase()
-            const args = arguments.length === 1 && Array.isArray(arguments[0]) ? arguments[0] : Array.from(arguments);
+            const args = arguments.length === 1 && Array.isArray(arguments[0]) ?
+                arguments[0] :
+                Array.from(arguments);
 
             if (args.length === 0)
                 return false;
@@ -1390,12 +1391,12 @@
             for (let i = 0; i < args.length; i++)
                 args[i] = args[i].trim().toUpperCase();
 
+            // key value DOM lookup: getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase()
             const keyValue = viewModel.currentWiringConfig().type.toUpperCase();
 
-            if (args.every(arg => arg.startsWith("!")))
-                return args.every(arg => arg.substr(1) !== keyValue);
-
-            return args.some(arg => arg.startsWith("!") ? arg.substr(1) !== keyValue : arg === keyValue);
+            return args.every(arg => arg.startsWith("!")) ?
+                /* AND logic: */ args.every(arg => arg.substr(1) !== keyValue) :
+                /*  OR logic: */ args.some(arg => arg.startsWith("!") ? arg.substr(1) !== keyValue : arg === keyValue);
         }
 
         function elementTargetsInputConfig(definition) {
