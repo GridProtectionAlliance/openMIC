@@ -1,48 +1,57 @@
 <SECTION NAME="flicker" ALIAS="Flicker" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
-	<PROPDEF ORDER="0" NAME="flickerPstInterval" ALIAS="Pst (short term) interval" TYPE="8" DEFAULT="0" RO="0">
-		<PARAM TYPE="1">
-			<LIST>
-				<ITEM NAME="Off"/>
-				<ITEM NAME="30 seconds"/>
-				<ITEM NAME="1 minute"/>
-				<ITEM NAME="2 minutes"/>
-				<ITEM NAME="3 minutes"/>
-				<ITEM NAME="5 minutes"/>
-				<ITEM NAME="10 minutes"/>
-				<ITEM NAME="15 minutes"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<PROPDEF ORDER="1" NAME="flickerPltPeriod" ALIAS="Plt (long term) interval" TYPE="8" DEFAULT="0" RO="0">
-		<PARAM TYPE="1">
-			<LIST>
-				<ITEM NAME="Off"/>
-				<ITEM NAME="1 hour"/>
-				<ITEM NAME="2 hours"/>
-				<ITEM NAME="3 hours"/>
-				<ITEM NAME="4 hours"/>
-				<ITEM NAME="8 hours"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<BANK ORDER="2" NAME="bankJournal" ALIAS="Journal Channels (select the channel(s) to change)" ROWS="8">
-		<LIST>
-			<ITEM NAME="j467" ALIAS="Short Term Flicker A"/>
-			<ITEM NAME="j470" ALIAS="Short Term Flicker B"/>
-			<ITEM NAME="j473" ALIAS="Short Term Flicker C"/>
-			<ITEM NAME="j476" ALIAS="Long Term Flicker A"/>
-			<ITEM NAME="j479" ALIAS="Long Term Flicker B"/>
-			<ITEM NAME="j482" ALIAS="Long Term Flicker C"/>
-			<ITEM NAME="j485" ALIAS="Sliding PLT A"/>
-			<ITEM NAME="j488" ALIAS="Sliding PLT B"/>
-			<ITEM NAME="j491" ALIAS="Sliding PLT C"/>
-		</LIST>
-		<PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0" RO="0"/>
-		<PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
-		<PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4" RO="0"/>
-		<PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
-		<PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
-		<PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
-		<PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4" RO="0"/>
-	</BANK>
+  <PROPDEF ORDER="0" NAME="flickerPstInterval" ALIAS="Pst (short term) interval" TYPE="8" DEFAULT="0" RO="0">
+    <PARAM TYPE="1">
+      <LIST>
+        <ITEM NAME="Off"/>
+        <ITEM NAME="30 seconds"/>
+        <ITEM NAME="1 minute"/>
+        <ITEM NAME="2 minutes"/>
+        <ITEM NAME="3 minutes"/>
+        <ITEM NAME="5 minutes"/>
+        <ITEM NAME="10 minutes"/>
+        <ITEM NAME="15 minutes"/>
+      </LIST>
+    </PARAM>
+  </PROPDEF>
+  <PROPDEF ORDER="1" NAME="flickerPltPeriod" ALIAS="Plt (long term) interval" TYPE="8" DEFAULT="0" RO="0">
+    <PARAM TYPE="1">
+      <LIST>
+        <ITEM NAME="Off"/>
+        <ITEM NAME="1 hour"/>
+        <ITEM NAME="2 hours"/>
+        <ITEM NAME="3 hours"/>
+        <ITEM NAME="4 hours"/>
+        <ITEM NAME="8 hours"/>
+      </LIST>
+    </PARAM>
+  </PROPDEF>
+  <BANK ORDER="2" NAME="bankJournal" ALIAS="Journal Channels (select the channel(s) to change)" ROWS="8">
+    <LIST>
+      <ITEM NAME="j467" ALIAS="Short Term Flicker {0}" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j468" ALIAS="Short Term Flicker AB" CONFIG="Delta"/>
+      <ITEM NAME="j470" ALIAS="Short Term Flicker {0}" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j471" ALIAS="Short Term Flicker BC" CONFIG="Delta"/>
+      <ITEM NAME="j473" ALIAS="Short Term Flicker {0}" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j474" ALIAS="Short Term Flicker CA" CONFIG="Delta"/>
+      <ITEM NAME="j476" ALIAS="Long Term Flicker {0}" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j477" ALIAS="Long Term Flicker AB" CONFIG="Delta"/>
+      <ITEM NAME="j479" ALIAS="Long Term Flicker {0}" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j480" ALIAS="Long Term Flicker BC" CONFIG="Delta"/>
+      <ITEM NAME="j482" ALIAS="Long Term Flicker {0}" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j483" ALIAS="Long Term Flicker CA" CONFIG="Delta"/>
+      <ITEM NAME="j485" ALIAS="Sliding PLT {0}" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j486" ALIAS="Sliding PLT AB" CONFIG="Delta"/>
+      <ITEM NAME="j488" ALIAS="Sliding PLT {0}" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j489" ALIAS="Sliding PLT BC" CONFIG="Delta"/>
+      <ITEM NAME="j491" ALIAS="Sliding PLT {0}" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j492" ALIAS="Sliding PLT CA" CONFIG="Delta"/>
+    </LIST>
+    <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0" RO="0"/>
+    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
+    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4" RO="0"/>
+    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
+    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
+    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
+    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4" RO="0"/>
+  </BANK>
 </SECTION>
