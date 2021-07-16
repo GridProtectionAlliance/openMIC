@@ -18,108 +18,139 @@
   <PROPDEF ORDER="2" NAME="maxDemandCurrent" ALIAS="Maximum demand load current" TYPE="2" RO="0"/>
   <BANK ORDER="3" NAME="bankJournal" ALIAS="Journal Channels (select the channel(s) to change)" ROWS="8">
     <LIST>
-      <ITEM NAME="j160" ALIAS="Positive Sequence Voltage Total" ANALYZER="1"/>
-      <ITEM NAME="j161" ALIAS="Negative Sequence Voltage Total" ANALYZER="1"/>
-      <ITEM NAME="j162" ALIAS="Zero Sequence Voltage Total" ANALYZER="1"/>
-      <ITEM NAME="j163" ALIAS="Positive Sequence Current Total" ANALYZER="2"/>
-      <ITEM NAME="j164" ALIAS="Negative Sequence Current Total" ANALYZER="2"/>
-      <ITEM NAME="j165" ALIAS="Zero Sequence Current Total" ANALYZER="2"/>
-      <ITEM NAME="j174" ALIAS="V Unbalance (S2/S1) Total" ANALYZER="1"/>
-      <ITEM NAME="j175" ALIAS="V Unbalance (S0/S1) Total" ANALYZER="1"/>
-      <ITEM NAME="j180" ALIAS="I Unbalance (S2/S1) Total" ANALYZER="2"/>
-      <ITEM NAME="j181" ALIAS="I Unbalance (S0/S1) Total" ANALYZER="2"/>
-      <ITEM NAME="j182" ALIAS="Voltage THD A" ANALYZER="1"/>
-      <ITEM NAME="j184" ALIAS="Voltage THD B" ANALYZER="1"/>
-      <ITEM NAME="j186" ALIAS="Voltage THD C" ANALYZER="1"/>
-      <ITEM NAME="j188" ALIAS="Voltage THD N" ANALYZER="1"/>
-      <ITEM NAME="j190" ALIAS="Even THD Voltage A" ANALYZER="1"/>
-      <ITEM NAME="j193" ALIAS="Even THD Voltage B" ANALYZER="1"/>
-      <ITEM NAME="j196" ALIAS="Even THD Voltage C" ANALYZER="1"/>
-      <ITEM NAME="j199" ALIAS="Even THD Voltage N" ANALYZER="1"/>
-      <ITEM NAME="j201" ALIAS="Odd THD Voltage A" ANALYZER="1"/>
-      <ITEM NAME="j204" ALIAS="Odd THD Voltage B" ANALYZER="1"/>
-      <ITEM NAME="j207" ALIAS="Odd THD Voltage C" ANALYZER="1"/>
-      <ITEM NAME="j210" ALIAS="Odd THD Voltage N" ANALYZER="1"/>
-      <ITEM NAME="j212" ALIAS="Voltage TID A" ANALYZER="1"/>
-      <ITEM NAME="j214" ALIAS="Voltage TID B" ANALYZER="1"/>
-      <ITEM NAME="j216" ALIAS="Voltage TID C" ANALYZER="1"/>
-      <ITEM NAME="j218" ALIAS="Voltage TID N" ANALYZER="1"/>
-      <ITEM NAME="j220" ALIAS="Harmonic Rms Voltage A" ANALYZER="1"/>
-      <ITEM NAME="j222" ALIAS="Harmonic Rms Voltage B" ANALYZER="1"/>
-      <ITEM NAME="j224" ALIAS="Harmonic Rms Voltage C" ANALYZER="1"/>
-      <ITEM NAME="j226" ALIAS="Harmonic Rms Voltage N" ANALYZER="1"/>
-      <ITEM NAME="j228" ALIAS="Interharmonic Rms Voltage A" ANALYZER="1"/>
-      <ITEM NAME="j230" ALIAS="Interharmonic Rms Voltage B" ANALYZER="1"/>
-      <ITEM NAME="j232" ALIAS="Interharmonic Rms Voltage C" ANALYZER="1"/>
-      <ITEM NAME="j234" ALIAS="Interharmonic Rms Voltage N" ANALYZER="1"/>
-      <ITEM NAME="j236" ALIAS="Voltage TIF A" ANALYZER="1"/>
-      <ITEM NAME="j238" ALIAS="Voltage TIF B" ANALYZER="1"/>
-      <ITEM NAME="j240" ALIAS="Voltage TIF C" ANALYZER="1"/>
-      <ITEM NAME="j242" ALIAS="Voltage TIF N" ANALYZER="1"/>
-      <ITEM NAME="j244" ALIAS="Voltage TIF (Rms) A" ANALYZER="1"/>
-      <ITEM NAME="j246" ALIAS="Voltage TIF (Rms) B" ANALYZER="1"/>
-      <ITEM NAME="j248" ALIAS="Voltage TIF (Rms) C" ANALYZER="1"/>
-      <ITEM NAME="j250" ALIAS="Voltage TIF (Rms) N" ANALYZER="1"/>
-      <ITEM NAME="j252" ALIAS="Voltage Crest Factor A" ANALYZER="1"/>
-      <ITEM NAME="j254" ALIAS="Voltage Crest Factor B" ANALYZER="1"/>
-      <ITEM NAME="j256" ALIAS="Voltage Crest Factor C" ANALYZER="1"/>
-      <ITEM NAME="j258" ALIAS="Voltage Crest Factor N" ANALYZER="1"/>
-      <ITEM NAME="j281" ALIAS="Current THD A" ANALYZER="2"/>
-      <ITEM NAME="j283" ALIAS="Current THD B" ANALYZER="2"/>
-      <ITEM NAME="j285" ALIAS="Current THD C" ANALYZER="2"/>
-      <ITEM NAME="j287" ALIAS="Current THD N" ANALYZER="2"/>
-      <ITEM NAME="j289" ALIAS="Even THD Current A" ANALYZER="2"/>
-      <ITEM NAME="j291" ALIAS="Even THD Current B" ANALYZER="2"/>
-      <ITEM NAME="j293" ALIAS="Even THD Current C" ANALYZER="2"/>
-      <ITEM NAME="j295" ALIAS="Even THD Current N" ANALYZER="2"/>
-      <ITEM NAME="j297" ALIAS="Odd THD Current A" ANALYZER="2"/>
-      <ITEM NAME="j299" ALIAS="Odd THD Current B" ANALYZER="2"/>
-      <ITEM NAME="j301" ALIAS="Odd THD Current C" ANALYZER="2"/>
-      <ITEM NAME="j303" ALIAS="Odd THD Current N" ANALYZER="2"/>
-      <ITEM NAME="j305" ALIAS="Current TID A" ANALYZER="2"/>
-      <ITEM NAME="j307" ALIAS="Current TID B" ANALYZER="2"/>
-      <ITEM NAME="j309" ALIAS="Current TID C" ANALYZER="2"/>
-      <ITEM NAME="j311" ALIAS="Current TID N" ANALYZER="2"/>
-      <ITEM NAME="j313" ALIAS="Harmonic Rms Current A" ANALYZER="2"/>
-      <ITEM NAME="j315" ALIAS="Harmonic Rms Current B" ANALYZER="2"/>
-      <ITEM NAME="j317" ALIAS="Harmonic Rms Current C" ANALYZER="2"/>
-      <ITEM NAME="j319" ALIAS="Harmonic Rms Current N" ANALYZER="2"/>
-      <ITEM NAME="j321" ALIAS="Interharmonic Rms Current A" ANALYZER="2"/>
-      <ITEM NAME="j323" ALIAS="Interharmonic Rms Current B" ANALYZER="2"/>
-      <ITEM NAME="j325" ALIAS="Interharmonic Rms Current C" ANALYZER="2"/>
-      <ITEM NAME="j327" ALIAS="Interharmonic Rms Current N" ANALYZER="2"/>
-      <ITEM NAME="j329" ALIAS="IT Product A" ANALYZER="2"/>
-      <ITEM NAME="j331" ALIAS="IT Product B" ANALYZER="2"/>
-      <ITEM NAME="j333" ALIAS="IT Product C" ANALYZER="2"/>
-      <ITEM NAME="j335" ALIAS="IT Product N" ANALYZER="2"/>
-      <ITEM NAME="j337" ALIAS="Current Crest Factor A" ANALYZER="2"/>
-      <ITEM NAME="j339" ALIAS="Current Crest Factor B" ANALYZER="2"/>
-      <ITEM NAME="j341" ALIAS="Current Crest Factor C" ANALYZER="2"/>
-      <ITEM NAME="j343" ALIAS="Current Crest Factor N" ANALYZER="2"/>
-      <ITEM NAME="j345" ALIAS="IEEE 519 Current TDD A" ANALYZER="2"/>
-      <ITEM NAME="j347" ALIAS="IEEE 519 Current TDD B" ANALYZER="2"/>
-      <ITEM NAME="j349" ALIAS="IEEE 519 Current TDD C" ANALYZER="2"/>
-      <ITEM NAME="j352" ALIAS="Transformer K Factor A" ANALYZER="2"/>
-      <ITEM NAME="j354" ALIAS="Transformer K Factor B" ANALYZER="2"/>
-      <ITEM NAME="j356" ALIAS="Transformer K Factor C" ANALYZER="2"/>
-      <ITEM NAME="j359" ALIAS="ANSI Transformer Derating Factor A" ANALYZER="2"/>
-      <ITEM NAME="j361" ALIAS="ANSI Transformer Derating Factor B" ANALYZER="2"/>
-      <ITEM NAME="j363" ALIAS="ANSI Transformer Derating Factor C" ANALYZER="2"/>
-      <ITEM NAME="j366" ALIAS="Harmonic Power A" ANALYZER="0!"/>
-      <ITEM NAME="j368" ALIAS="Harmonic Power B" ANALYZER="0!"/>
-      <ITEM NAME="j370" ALIAS="Harmonic Power C" ANALYZER="0!"/>
-      <ITEM NAME="j564" ALIAS="Rms Underdeviation Voltage A" ANALYZER="1"/>
-      <ITEM NAME="j565" ALIAS="Rms Underdeviation Voltage B" ANALYZER="1"/>
-      <ITEM NAME="j566" ALIAS="Rms Underdeviation Voltage C" ANALYZER="1"/>
-      <ITEM NAME="j567" ALIAS="Rms Underdeviation Voltage AB" ANALYZER="1"/>
-      <ITEM NAME="j568" ALIAS="Rms Underdeviation Voltage BC" ANALYZER="1"/>
-      <ITEM NAME="j569" ALIAS="Rms Underdeviation Voltage CA" ANALYZER="1"/>
-      <ITEM NAME="j570" ALIAS="Rms Overdeviation Voltage A" ANALYZER="1"/>
-      <ITEM NAME="j571" ALIAS="Rms Overdeviation Voltage B" ANALYZER="1"/>
-      <ITEM NAME="j572" ALIAS="Rms Overdeviation Voltage C" ANALYZER="1"/>
-      <ITEM NAME="j573" ALIAS="Rms Overdeviation Voltage AB" ANALYZER="1"/>
-      <ITEM NAME="j574" ALIAS="Rms Overdeviation Voltage BC" ANALYZER="1"/>
-      <ITEM NAME="j575" ALIAS="Rms Overdeviation Voltage CA" ANALYZER="1"/>
+      <ITEM NAME="j160" ALIAS="Positive Sequence Voltage Total" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j161" ALIAS="Negative Sequence Voltage Total" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j162" ALIAS="Zero Sequence Voltage Total" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j163" ALIAS="Positive Sequence Current Total" ANALYZER="2" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j164" ALIAS="Negative Sequence Current Total" ANALYZER="2" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j165" ALIAS="Zero Sequence Current Total" ANALYZER="2" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j174" ALIAS="V Unbalance (S2/S1) Total" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j175" ALIAS="V Unbalance (S0/S1) Total" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j180" ALIAS="I Unbalance (S2/S1) Total" ANALYZER="2" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j181" ALIAS="I Unbalance (S0/S1) Total" ANALYZER="2" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j182" ALIAS="Voltage THD {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j184" ALIAS="Voltage THD {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j186" ALIAS="Voltage THD {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j188" ALIAS="Voltage THD {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j190" ALIAS="Even THD Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j191" ALIAS="Even THD Voltage AB" CONFIG="Delta"/>
+      <ITEM NAME="j193" ALIAS="Even THD Voltage {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j194" ALIAS="Even THD Voltage BC" CONFIG="Delta"/>
+      <ITEM NAME="j196" ALIAS="Even THD Voltage {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j197" ALIAS="Even THD Voltage CA" CONFIG="Delta"/>
+      <ITEM NAME="j199" ALIAS="Even THD Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j201" ALIAS="Odd THD Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j202" ALIAS="Odd THD Voltage AB" CONFIG="Delta"/>
+      <ITEM NAME="j204" ALIAS="Odd THD Voltage {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j205" ALIAS="Odd THD Voltage BC" CONFIG="Delta"/>
+      <ITEM NAME="j207" ALIAS="Odd THD Voltage {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j208" ALIAS="Odd THD Voltage CA" CONFIG="Delta"/>
+      <ITEM NAME="j210" ALIAS="Odd THD Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j212" ALIAS="Voltage TID {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j214" ALIAS="Voltage TID {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j216" ALIAS="Voltage TID {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j218" ALIAS="Voltage TID {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j220" ALIAS="Harmonic Rms Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j222" ALIAS="Harmonic Rms Voltage {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j224" ALIAS="Harmonic Rms Voltage {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j226" ALIAS="Harmonic Rms Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j228" ALIAS="Interharmonic Rms Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j230" ALIAS="Interharmonic Rms Voltage {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j232" ALIAS="Interharmonic Rms Voltage {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j234" ALIAS="Interharmonic Rms Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j236" ALIAS="Voltage TIF {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j238" ALIAS="Voltage TIF {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j240" ALIAS="Voltage TIF {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j242" ALIAS="Voltage TIF {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j244" ALIAS="Voltage TIF (Rms) {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j246" ALIAS="Voltage TIF (Rms) {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j248" ALIAS="Voltage TIF (Rms) {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j250" ALIAS="Voltage TIF (Rms) {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j252" ALIAS="Voltage Crest Factor {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j254" ALIAS="Voltage Crest Factor {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j256" ALIAS="Voltage Crest Factor {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j258" ALIAS="Voltage Crest Factor {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j260" ALIAS="Voltage THD AB" CONFIG="Delta"/>
+      <ITEM NAME="j261" ALIAS="Voltage THD BC" CONFIG="Delta"/>
+      <ITEM NAME="j262" ALIAS="Voltage THD CA" CONFIG="Delta"/>
+      <ITEM NAME="j263" ALIAS="Voltage TID AB" CONFIG="Delta"/>
+      <ITEM NAME="j264" ALIAS="Voltage TID BC" CONFIG="Delta"/>
+      <ITEM NAME="j265" ALIAS="Voltage TID CA" CONFIG="Delta"/>
+      <ITEM NAME="j266" ALIAS="Harmonic Rms Voltage AB" CONFIG="Delta"/>
+      <ITEM NAME="j267" ALIAS="Harmonic Rms Voltage BC" CONFIG="Delta"/>
+      <ITEM NAME="j268" ALIAS="Harmonic Rms Voltage CA" CONFIG="Delta"/>
+      <ITEM NAME="j269" ALIAS="Interharmonic Rms Voltage AB" CONFIG="Delta"/>
+      <ITEM NAME="j270" ALIAS="Interharmonic Rms Voltage BC" CONFIG="Delta"/>
+      <ITEM NAME="j271" ALIAS="Interharmonic Rms Voltage CA" CONFIG="Delta"/>
+      <ITEM NAME="j272" ALIAS="Voltage TIF AB" CONFIG="Delta"/>
+      <ITEM NAME="j273" ALIAS="Voltage TIF BC" CONFIG="Delta"/>
+      <ITEM NAME="j274" ALIAS="Voltage TIF CA" CONFIG="Delta"/>
+      <ITEM NAME="j275" ALIAS="Voltage TIF (Rms) AB" CONFIG="Delta"/>
+      <ITEM NAME="j276" ALIAS="Voltage TIF (Rms) BC" CONFIG="Delta"/>
+      <ITEM NAME="j277" ALIAS="Voltage TIF (Rms) CA" CONFIG="Delta"/>
+      <ITEM NAME="j278" ALIAS="Voltage Crest Factor AB" CONFIG="Delta"/>
+      <ITEM NAME="j279" ALIAS="Voltage Crest Factor BC" CONFIG="Delta"/>
+      <ITEM NAME="j280" ALIAS="Voltage Crest Factor CA" CONFIG="Delta"/>
+      <ITEM NAME="j281" ALIAS="Current THD {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j283" ALIAS="Current THD {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j285" ALIAS="Current THD {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j287" ALIAS="Current THD {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j289" ALIAS="Even THD Current {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j291" ALIAS="Even THD Current {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j293" ALIAS="Even THD Current {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j295" ALIAS="Even THD Current {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j297" ALIAS="Odd THD Current {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j299" ALIAS="Odd THD Current {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j301" ALIAS="Odd THD Current {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j303" ALIAS="Odd THD Current {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j305" ALIAS="Current TID {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j307" ALIAS="Current TID {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j309" ALIAS="Current TID {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j311" ALIAS="Current TID {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j313" ALIAS="Harmonic Rms Current {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j315" ALIAS="Harmonic Rms Current {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j317" ALIAS="Harmonic Rms Current {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j319" ALIAS="Harmonic Rms Current {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j321" ALIAS="Interharmonic Rms Current {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j323" ALIAS="Interharmonic Rms Current {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j325" ALIAS="Interharmonic Rms Current {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j327" ALIAS="Interharmonic Rms Current {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j329" ALIAS="IT Product {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j331" ALIAS="IT Product {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j333" ALIAS="IT Product {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j335" ALIAS="IT Product {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j337" ALIAS="Current Crest Factor {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j339" ALIAS="Current Crest Factor {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j341" ALIAS="Current Crest Factor {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j343" ALIAS="Current Crest Factor {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j345" ALIAS="IEEE 519 Current TDD {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j347" ALIAS="IEEE 519 Current TDD {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j349" ALIAS="IEEE 519 Current TDD {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j351" ALIAS="IEEE 519 Current TDD {0}" ANALYZER="2" CONFIG="Generic" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j352" ALIAS="Transformer K Factor {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j354" ALIAS="Transformer K Factor {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j356" ALIAS="Transformer K Factor {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j358" ALIAS="Transformer K Factor {0}" ANALYZER="2" CONFIG="Generic" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j359" ALIAS="ANSI Transformer Derating Factor {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j361" ALIAS="ANSI Transformer Derating Factor {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j363" ALIAS="ANSI Transformer Derating Factor {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j365" ALIAS="ANSI Transformer Derating Factor {0}" ANALYZER="2" CONFIG="Generic" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j366" ALIAS="Harmonic Power {0}" ANALYZER="0!" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="j368" ALIAS="Harmonic Power {0}" ANALYZER="0!" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="j370" ALIAS="Harmonic Power {0}" ANALYZER="0!" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="j372" ALIAS="Harmonic Power {0}" ANALYZER="0!" CONFIG="Generic" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="j564" ALIAS="Rms Underdeviation Voltage A" ANALYZER="1" CONFIG="!Delta,!Generic"/>
+      <ITEM NAME="j565" ALIAS="Rms Underdeviation Voltage B" ANALYZER="1" CONFIG="Wye,Split"/>
+      <ITEM NAME="j566" ALIAS="Rms Underdeviation Voltage C" ANALYZER="1" CONFIG="Wye"/>
+      <ITEM NAME="j567" ALIAS="Rms Underdeviation Voltage AB" ANALYZER="1" CONFIG="!Single,!Generic"/>
+      <ITEM NAME="j568" ALIAS="Rms Underdeviation Voltage BC" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j569" ALIAS="Rms Underdeviation Voltage CA" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j570" ALIAS="Rms Overdeviation Voltage A" ANALYZER="1" CONFIG="!Delta,!Generic"/>
+      <ITEM NAME="j571" ALIAS="Rms Overdeviation Voltage B" ANALYZER="1" CONFIG="Wye,Split"/>
+      <ITEM NAME="j572" ALIAS="Rms Overdeviation Voltage C" ANALYZER="1" CONFIG="Wye"/>
+      <ITEM NAME="j573" ALIAS="Rms Overdeviation Voltage AB" ANALYZER="1" CONFIG="!Single,!Generic"/>
+      <ITEM NAME="j574" ALIAS="Rms Overdeviation Voltage BC" ANALYZER="1" CONFIG="Wye,Delta"/>
+      <ITEM NAME="j575" ALIAS="Rms Overdeviation Voltage CA" ANALYZER="1" CONFIG="Wye,Delta"/>
     </LIST>
     <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0" RO="0"/>
     <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
@@ -131,67 +162,88 @@
   </BANK>
   <BANK NAME="bankHarmonicTrending" ALIAS="Individual Harmonic Trending (select the channel(s) to change)" ROWS="8">
     <LIST>
-      <ITEM NAME="he576" ALIAS="Harmonic Voltage A" ANALYZER="1"/>
-      <ITEM NAME="he579" ALIAS="Harmonic Voltage B" ANALYZER="1"/>
-      <ITEM NAME="he582" ALIAS="Harmonic Voltage C" ANALYZER="1"/>
-      <ITEM NAME="he585" ALIAS="Harmonic Voltage N" ANALYZER="1"/>
-      <ITEM NAME="he587" ALIAS="Interharmonic Voltage A" ANALYZER="1"/>
-      <ITEM NAME="he590" ALIAS="Interharmonic Voltage B" ANALYZER="1"/>
-      <ITEM NAME="he593" ALIAS="Interharmonic Voltage C" ANALYZER="1"/>
-      <ITEM NAME="he596" ALIAS="Interharmonic Voltage N" ANALYZER="1"/>
-      <ITEM NAME="he598" ALIAS="Harmonic Current A" ANALYZER="2"/>
-      <ITEM NAME="he600" ALIAS="Harmonic Current B" ANALYZER="2"/>
-      <ITEM NAME="he602" ALIAS="Harmonic Current C" ANALYZER="2"/>
-      <ITEM NAME="he604" ALIAS="Harmonic Current N" ANALYZER="2"/>
-      <ITEM NAME="he606" ALIAS="Interharmonic Current A" ANALYZER="2"/>
-      <ITEM NAME="he608" ALIAS="Interharmonic Current B" ANALYZER="2"/>
-      <ITEM NAME="he610" ALIAS="Interharmonic Current C" ANALYZER="2"/>
-      <ITEM NAME="he612" ALIAS="Interharmonic Current N" ANALYZER="2"/>
+      <ITEM NAME="he576" ALIAS="Harmonic Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="he577" ALIAS="Harmonic Voltage AB" CONFIG="Delta"/>
+      <ITEM NAME="he579" ALIAS="Harmonic Voltage {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="he580" ALIAS="Harmonic Voltage BC" CONFIG="Delta"/>
+      <ITEM NAME="he582" ALIAS="Harmonic Voltage {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="he583" ALIAS="Harmonic Voltage CA" CONFIG="Delta"/>
+      <ITEM NAME="he585" ALIAS="Harmonic Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="he587" ALIAS="Interharmonic Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="he588" ALIAS="Interharmonic Voltage AB" CONFIG="Delta"/>
+      <ITEM NAME="he590" ALIAS="Interharmonic Voltage {0}" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="he591" ALIAS="Interharmonic Voltage BC" CONFIG="Delta"/>
+      <ITEM NAME="he593" ALIAS="Interharmonic Voltage {0}" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="he594" ALIAS="Interharmonic Voltage CA" CONFIG="Delta"/>
+      <ITEM NAME="he596" ALIAS="Interharmonic Voltage {0}" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="he598" ALIAS="Harmonic Current {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="he600" ALIAS="Harmonic Current {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="he602" ALIAS="Harmonic Current {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="he604" ALIAS="Harmonic Current {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="he606" ALIAS="Interharmonic Current {0}" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="he608" ALIAS="Interharmonic Current {0}" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="he610" ALIAS="Interharmonic Current {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="he612" ALIAS="Interharmonic Current {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
     </LIST>
     <PROPDEF NAME="harmTrendingEnable" ALIAS="Harmonics to trend" TYPE="4" RO="0"/>
   </BANK>
   <BANK NAME="bankHarmonicLimits" ALIAS="Individual Harmonic Limits (select the channel(s) to change)" ROWS="8">
     <LIST>
-      <ITEM NAME="hl614_0" ALIAS="Voltage Spectra A #1" ANALYZER="1"/>
-      <ITEM NAME="hl614_1" ALIAS="Voltage Spectra A #2" ANALYZER="1"/>
-      <ITEM NAME="hl614_2" ALIAS="Voltage Spectra A #3" ANALYZER="1"/>
-      <ITEM NAME="hl614_3" ALIAS="Voltage Spectra A #4" ANALYZER="1"/>
-      <ITEM NAME="hl614_4" ALIAS="Voltage Spectra A #5" ANALYZER="1"/>
-      <ITEM NAME="hl617_0" ALIAS="Voltage Spectra B #1" ANALYZER="1"/>
-      <ITEM NAME="hl617_1" ALIAS="Voltage Spectra B #2" ANALYZER="1"/>
-      <ITEM NAME="hl617_2" ALIAS="Voltage Spectra B #3" ANALYZER="1"/>
-      <ITEM NAME="hl617_3" ALIAS="Voltage Spectra B #4" ANALYZER="1"/>
-      <ITEM NAME="hl617_4" ALIAS="Voltage Spectra B #5" ANALYZER="1"/>
-      <ITEM NAME="hl620_0" ALIAS="Voltage Spectra C #1" ANALYZER="1"/>
-      <ITEM NAME="hl620_1" ALIAS="Voltage Spectra C #2" ANALYZER="1"/>
-      <ITEM NAME="hl620_2" ALIAS="Voltage Spectra C #3" ANALYZER="1"/>
-      <ITEM NAME="hl620_3" ALIAS="Voltage Spectra C #4" ANALYZER="1"/>
-      <ITEM NAME="hl620_4" ALIAS="Voltage Spectra C #5" ANALYZER="1"/>
-      <ITEM NAME="hl623_0" ALIAS="Voltage Spectra N #1" ANALYZER="1"/>
-      <ITEM NAME="hl623_1" ALIAS="Voltage Spectra N #2" ANALYZER="1"/>
-      <ITEM NAME="hl623_2" ALIAS="Voltage Spectra N #3" ANALYZER="1"/>
-      <ITEM NAME="hl623_3" ALIAS="Voltage Spectra N #4" ANALYZER="1"/>
-      <ITEM NAME="hl623_4" ALIAS="Voltage Spectra N #5" ANALYZER="1"/>
-      <ITEM NAME="hl625_0" ALIAS="Current Spectra A #1" ANALYZER="2"/>
-      <ITEM NAME="hl625_1" ALIAS="Current Spectra A #2" ANALYZER="2"/>
-      <ITEM NAME="hl625_2" ALIAS="Current Spectra A #3" ANALYZER="2"/>
-      <ITEM NAME="hl625_3" ALIAS="Current Spectra A #4" ANALYZER="2"/>
-      <ITEM NAME="hl625_4" ALIAS="Current Spectra A #5" ANALYZER="2"/>
-      <ITEM NAME="hl627_0" ALIAS="Current Spectra B #1" ANALYZER="2"/>
-      <ITEM NAME="hl627_1" ALIAS="Current Spectra B #2" ANALYZER="2"/>
-      <ITEM NAME="hl627_2" ALIAS="Current Spectra B #3" ANALYZER="2"/>
-      <ITEM NAME="hl627_3" ALIAS="Current Spectra B #4" ANALYZER="2"/>
-      <ITEM NAME="hl627_4" ALIAS="Current Spectra B #5" ANALYZER="2"/>
-      <ITEM NAME="hl629_0" ALIAS="Current Spectra C #1" ANALYZER="2"/>
-      <ITEM NAME="hl629_1" ALIAS="Current Spectra C #2" ANALYZER="2"/>
-      <ITEM NAME="hl629_2" ALIAS="Current Spectra C #3" ANALYZER="2"/>
-      <ITEM NAME="hl629_3" ALIAS="Current Spectra C #4" ANALYZER="2"/>
-      <ITEM NAME="hl629_4" ALIAS="Current Spectra C #5" ANALYZER="2"/>
-      <ITEM NAME="hl631_0" ALIAS="Current Spectra N #1" ANALYZER="2"/>
-      <ITEM NAME="hl631_1" ALIAS="Current Spectra N #2" ANALYZER="2"/>
-      <ITEM NAME="hl631_2" ALIAS="Current Spectra N #3" ANALYZER="2"/>
-      <ITEM NAME="hl631_3" ALIAS="Current Spectra N #4" ANALYZER="2"/>
-      <ITEM NAME="hl631_4" ALIAS="Current Spectra N #5" ANALYZER="2"/>
+      <ITEM NAME="hl614_0" ALIAS="Voltage Spectra {0} #1" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl614_1" ALIAS="Voltage Spectra {0} #2" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl614_2" ALIAS="Voltage Spectra {0} #3" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl614_3" ALIAS="Voltage Spectra {0} #4" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl614_4" ALIAS="Voltage Spectra {0} #5" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl615_0" ALIAS="Voltage Spectra AB #1" CONFIG="Delta"/>
+      <ITEM NAME="hl615_1" ALIAS="Voltage Spectra AB #2" CONFIG="Delta"/>
+      <ITEM NAME="hl615_2" ALIAS="Voltage Spectra AB #3" CONFIG="Delta"/>
+      <ITEM NAME="hl615_3" ALIAS="Voltage Spectra AB #4" CONFIG="Delta"/>
+      <ITEM NAME="hl615_4" ALIAS="Voltage Spectra AB #5" CONFIG="Delta"/>
+      <ITEM NAME="hl617_0" ALIAS="Voltage Spectra {0} #1" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl617_1" ALIAS="Voltage Spectra {0} #2" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl617_2" ALIAS="Voltage Spectra {0} #3" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl617_3" ALIAS="Voltage Spectra {0} #4" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl617_4" ALIAS="Voltage Spectra {0} #5" ANALYZER="1" CONFIG="!Delta,!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl618_0" ALIAS="Voltage Spectra BC #1" CONFIG="Delta"/>
+      <ITEM NAME="hl618_1" ALIAS="Voltage Spectra BC #2" CONFIG="Delta"/>
+      <ITEM NAME="hl618_2" ALIAS="Voltage Spectra BC #3" CONFIG="Delta"/>
+      <ITEM NAME="hl618_3" ALIAS="Voltage Spectra BC #4" CONFIG="Delta"/>
+      <ITEM NAME="hl618_4" ALIAS="Voltage Spectra BC #5" CONFIG="Delta"/>
+      <ITEM NAME="hl620_0" ALIAS="Voltage Spectra {0} #1" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl620_1" ALIAS="Voltage Spectra {0} #2" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl620_2" ALIAS="Voltage Spectra {0} #3" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl620_3" ALIAS="Voltage Spectra {0} #4" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl620_4" ALIAS="Voltage Spectra {0} #5" ANALYZER="1" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl621_0" ALIAS="Voltage Spectra CA #1" CONFIG="Delta"/>
+      <ITEM NAME="hl621_1" ALIAS="Voltage Spectra CA #2" CONFIG="Delta"/>
+      <ITEM NAME="hl621_2" ALIAS="Voltage Spectra CA #3" CONFIG="Delta"/>
+      <ITEM NAME="hl621_3" ALIAS="Voltage Spectra CA #4" CONFIG="Delta"/>
+      <ITEM NAME="hl621_4" ALIAS="Voltage Spectra CA #5" CONFIG="Delta"/>
+      <ITEM NAME="hl623_0" ALIAS="Voltage Spectra {0} #1" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="hl623_1" ALIAS="Voltage Spectra {0} #2" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="hl623_2" ALIAS="Voltage Spectra {0} #3" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="hl623_3" ALIAS="Voltage Spectra {0} #4" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="hl623_4" ALIAS="Voltage Spectra {0} #5" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="hl625_0" ALIAS="Current Spectra {0} #1" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl625_1" ALIAS="Current Spectra {0} #2" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl625_2" ALIAS="Current Spectra {0} #3" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl625_3" ALIAS="Current Spectra {0} #4" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl625_4" ALIAS="Current Spectra {0} #5" ANALYZER="2" CONFIG="*" ALIAS0="getChannelName(0)"/>
+      <ITEM NAME="hl627_0" ALIAS="Current Spectra {0} #1" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl627_1" ALIAS="Current Spectra {0} #2" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl627_2" ALIAS="Current Spectra {0} #3" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl627_3" ALIAS="Current Spectra {0} #4" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl627_4" ALIAS="Current Spectra {0} #5" ANALYZER="2" CONFIG="!Single" ALIAS0="getChannelName(1)"/>
+      <ITEM NAME="hl629_0" ALIAS="Current Spectra {0} #1" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl629_1" ALIAS="Current Spectra {0} #2" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl629_2" ALIAS="Current Spectra {0} #3" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl629_3" ALIAS="Current Spectra {0} #4" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl629_4" ALIAS="Current Spectra {0} #5" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
+      <ITEM NAME="hl631_0" ALIAS="Current Spectra {0} #1" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="hl631_1" ALIAS="Current Spectra {0} #2" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="hl631_2" ALIAS="Current Spectra {0} #3" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="hl631_3" ALIAS="Current Spectra {0} #4" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
+      <ITEM NAME="hl631_4" ALIAS="Current Spectra {0} #5" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
     </LIST>
     <PROPDEF NAME="harmonicFreq" ALIAS="Frequency (5Hz bin)" TYPE="1" RO="0"/>
     <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
