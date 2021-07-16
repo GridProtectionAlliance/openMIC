@@ -85,9 +85,9 @@
     </PARAM>
   </PROPDEF>
   <PROPDEF NAME="Nominal Values" TYPE="3"/>
-  <PROPDEF NAME="nominalV" ALIAS="Nominal voltage" TYPE="2" RO="0" MAP=".nominal_volts['@value']"/>
-  <PROPDEF NAME="nomnalI" ALIAS="Nominal current" TYPE="2" RO="0" MAP=".nominal_amps['@value']"/>
-  <PROPDEF NAME="nominalF" ALIAS="Nominal frequency" TYPE="2" RO="0" MAP=".nominal_freq['@value']"/>
+  <PROPDEF NAME="nominalV" ALIAS="Nominal voltage (Volts)" TYPE="2" RO="0" MAP=".nominal_volts['@value']"/>
+  <PROPDEF NAME="nomnalI" ALIAS="Nominal current (Amps)" TYPE="2" RO="0" MAP=".nominal_amps['@value']"/>
+  <PROPDEF NAME="nominalF" ALIAS="Nominal frequency (Hz)" TYPE="2" RO="0" MAP=".nominal_freq['@value']"/>
   <PROPDEF NAME="normalize" ALIAS="Normalize thresholds" TYPE="0" DEFAULT="1" RO="0" MAP="normalizeThresholdState" POSTWRITE="normalizeThresholdStateUpdated()" UPDATESCONFIG="0"/>
   <PROPDEF NAME="Frequency Tracking" TYPE="3"/>
   <PROPDEF NAME="freqTrackMode" ALIAS="Tracking mode" TYPE="8" DEFAULT="0" RO="0" MAP=".pll_sync_style['@value']">
