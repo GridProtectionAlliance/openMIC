@@ -1,0 +1,281 @@
+﻿@*******************************************************************************************************
+//  DranetzGraph.cshtml - Gbtc
+//
+//  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
+//  not use this file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  07/18/2021 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System.Net.Http
+@using GSF.Web
+@using GSF.Web.Model
+@using GSF.Web.Shared
+@using openMIC.Model
+@inherits ExtendedTemplateBase<AppModel>
+@section StyleSheets {
+    <link href="Content/Popup.css" rel="stylesheet">
+    <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
+    <style>
+        .ui-tabs .ui-tabs-nav li a {
+            font-size: 10pt !important;
+        }
+    </style>
+}
+@{
+    DataContext dataContext = ViewBag.DataContext;
+    HttpRequestMessage request = ViewBag.Request;
+    Dictionary<string, string> parameters = request.QueryParameters();
+    string parameter;
+    int deviceID, configID;
+    string deviceName, deviceType;
+
+    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
+        deviceID = 0;
+    }
+
+    if (!parameters.TryGetValue("ConfigID", out parameter) || !int.TryParse(parameter, out configID)) {
+        configID = 0;
+    }
+
+    if (!parameters.TryGetValue("Name", out deviceName) || string.IsNullOrWhiteSpace(deviceName)) {
+        deviceName = "DeviceNameUndefined";
+    }
+    
+    if (!parameters.TryGetValue("Type", out deviceType) || string.IsNullOrWhiteSpace(deviceType)) {
+        deviceType = "DeviceTypeUndefined";
+    }
+
+    Layout = "Layout.cshtml";
+    ViewBag.ShowMenu = false;
+    ViewBag.HidePageTitle = true;
+    ViewBag.Title = deviceName + " " + deviceType;
+}
+<div id="headerArea">
+    <h3 style="margin-top: -10px;">@ViewBag.Title <img class="page-logo pull-right" alt="Dranetz" src="Images/Dranetz.png" /></h3>
+    <hr class="quarter-break" />
+</div>
+<div id="tabs">
+    <div class="form-inline pull-right" style="margin: 0 -16px 0 0; padding: 10px 0 0 0; transform: scale(0.85); max-width: 325px; display: flex">
+        <div class="checkbox-inline" margin-top="1px"><label class="nowrap"><input id="autoRefresh" type="checkbox" data-bind="checked: autoRefresh">Auto-refresh every</label></div>&nbsp;
+        <div class="input-group" style="margin: -8px 0 4px 0">
+            <input id="refreshRate" class="form-control pull-right" type="number" min="1" style="width: 75px; margin-top: 0" data-bind="textInput: refreshRate" />
+            <span class="input-group-addon">Seconds</span>
+        </div>
+    </div>
+    <ul id="tablist">
+        <li><a href="#tabDataTable">Data Table</a></li>
+        <li><a href="#tabDataGraph">Data Graph</a></li>
+        <li><a href="#tabDataPolarChart">Polar Chart</a></li>
+    </ul>
+    <div id="tabDataTable" style="overflow: auto; margin-top: 5px" tab-section></div>
+    <div id="tabDataGraph"></div>
+    <div id="tabDataPolarChart"></div>
+</div>
+@section Scripts {
+    <script src="@Resources.Root/Shared/Scripts/knockout.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.mapping.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/gsf.web.knockout.js"></script>
+
+    <script>
+        "use strict";
+
+        var viewModel = null;
+        const deviceID = @deviceID;
+        const configID = @configID;
+        const deviceName = "@deviceName.JavaScriptEncode()";
+        const deviceType = "@deviceType.JavaScriptEncode()";
+
+        function GraphDataViewModel() {
+            const self = this;
+
+            self.registers = [];
+
+            self._dataHubIsConnected = ko.observable(false);
+            self._autoRefresh = ko.observable(undefined);
+            self._refreshRate = ko.observable(undefined);
+
+            // Properties
+            self.dataHubIsConnected = ko.pureComputed({
+                read: self._dataHubIsConnected,
+                write: function (value) {
+                    if (value === undefined)
+                        value = false;
+
+                    self._dataHubIsConnected(value);
+                },
+                owner: self
+            });
+
+            self.autoRefresh = ko.pureComputed({
+                read: function () {
+                    if (self._autoRefresh() === undefined)
+                        self._autoRefresh((Cookies.get("autoRefresh") || "true") === "true");
+
+                    return self._autoRefresh();
+                },
+                write: function (value) {
+                    if (value === self._autoRefresh())
+                        return;
+
+                    self._autoRefresh(value);
+                    Cookies.set("autoRefresh", value.toString(), { expires: 365 });
+
+                    if (value)
+                        self.queryData();
+                },
+                owner: self
+            });
+
+            self.refreshRate = ko.pureComputed({
+                read: function () {
+                    if (self._refreshRate() === undefined)
+                        self._refreshRate(parseFloat(Cookies.get("refreshRate") || "5.0"));
+
+                    return self._refreshRate();
+                },
+                write: function (value) {
+                    if (value === self._refreshRate())
+                        return;
+
+                    self._refreshRate(value);
+                    Cookies.set("refreshRate", value.toString(), { expires: 365 });
+                },
+                owner: self
+            });
+
+            // Methods
+            self.queryData = function () {
+                if (!self.dataHubIsConnected())
+                    return $.Deferred().resolve().promise();
+
+                return dataHub.getValuesLongList(deviceID, configID).done(function (result) {
+                    const records = JSON.parse(result);
+
+                    if ($("#dataValues").length === 0) {
+                        records.commandresult.list.item.forEach(function (record) {
+                            record.value = ko.observable(parseFloat(record["@@value"]));
+
+                            record.valueWithUnits = ko.pureComputed({
+                                read: () => `${record.value().toFixed(6)} ${record["@@units"]}`,
+                                owner: self
+                            });
+
+                            self.registers[parseInt(record["@@reg"], 10)] = record;
+                        });
+
+                        const html = [];
+
+                        html.push(`<table id="dataValues" class="table table-condensed table-striped table-hover" style="width: 100%">`);
+                        html.push(`<thead>`);
+                        html.push(`    <tr>`);
+                        html.push(`        <th class="text-center">Value</th>`);
+                        html.push(`        <th class="text-center">Description</th>`);
+                        html.push(`        <th class="text-center">Register</th>`);
+                        html.push(`    </tr>`);
+                        html.push(`</thead>`);
+                        html.push(`<tbody>`);
+
+                        self.registers.forEach(function (record, index) {
+                            html.push(`    <tr>`);
+                            html.push(`        <td width="10%" class="text-center valign-middle truncate" style="max-width: 150px" data-bind="text: registers[${index}].valueWithUnits, attr: {title: registers[${index}].valueWithUnits}" />`);
+                            html.push(`        <td width="85%" class="text-center valign-middle nowrap" style="text-overflow: initial">${record['@@desc']}</td>`);
+                            html.push(`        <td width="5%" class="text-center valign-middle nowrap"">${record['@@reg']}</td>`);
+                            html.push(`    </tr>`);
+                        });
+
+                        html.push(`</tbody>`);
+                        html.push(`</table>`);
+
+                        $("#tabDataTable").html(html.join("\r\n"));
+                    }
+                    else {
+                        records.commandresult.list.item.forEach(function (record) {
+                            self.registers[parseInt(record["@@reg"], 10)].value(parseFloat(record["@@value"]));
+                        });
+                    }
+
+                    if (viewModel.autoRefresh())
+                        setTimeout(self.queryData, self.refreshRate() * 1000);
+                });
+            }
+        }
+
+        function resizePageElements() {
+            let height = calculateRemainingBodyHeight() - $("#headerArea").outerHeight(true);
+
+            $("#contentWell").height(height);
+
+            if ($("#tablist").length)
+                height -= $("#tablist").outerHeight(true);
+
+            $("[tab-section]").height(height - 55);
+        }
+
+        // Page initialization function
+        $(function () {
+            // Enable deferred updates for better performance
+            ko.options.deferUpdates = true;
+
+            // Create the primary view model
+            viewModel = new GraphDataViewModel();
+
+            // Let view model know about hub connectivity changes
+            $(window).on("hubConnected", function() {
+                viewModel.dataHubIsConnected(true);
+
+                if (deviceID <= 0 || viewModel.registers.length > 0)
+                    return;
+
+                // Handle initial page load
+                showInfoMessage("Loading current device data, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
+
+                viewModel.queryData().done(function () {
+                    showInfoMessage("Data Load complete.");
+                    hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
+
+                    // Initialize primary view model
+                    ko.applyBindings(viewModel, document.getElementsByTagName("body")[0]);
+                })
+                .fail(function (error) {
+                    hideInfoMessage();
+                    showErrorMessage(`Data Load ${error}`, null, true);
+                });
+            });
+
+            $("#tabs").tabs({
+                active: 0,
+                activate: function (event, ui) {
+                    ui.newPanel.find(":input:not([type=hidden]):first").focus();
+                }
+            });
+
+            $(window).on("hubDisconnected", function() {
+                viewModel.dataHubIsConnected(false);
+            });
+
+            $(window).on("messageVisibiltyChanged", function () {
+                resizePageElements();
+            });
+
+            $(window).resize(function () {
+                resizePageElements();
+            });
+
+            resizePageElements();
+        });
+    </script>
+}

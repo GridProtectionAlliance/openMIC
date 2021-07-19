@@ -181,9 +181,24 @@
             margin-bottom: 8px;
         }
 
+        input[type="checkbox"]:focus {
+            outline-offset: 2px;
+            outline-style: solid;
+            outline-color: #66afe9;
+            outline-width: thin;
+            box-shadow: -1px 0 2px 2px #9ecaed;
+        }
+
         input:out-of-range {
             background-color: #ff0000;
             background-color: rgba(255, 0, 0, 0.25);
+        }
+
+        .graph-data-img {
+            width: 18px;
+            height: 14px;
+            margin-top: -5px;
+            margin-left: 5px;
         }
 
         @@media screen {
@@ -223,7 +238,7 @@
     }
 }
 <div style="display: none" search-header></div>
-<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" alt="Dranetz" src="Images/DranetzConfigEditor.png" /></h3>
+<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" alt="Dranetz" src="Images/Dranetz.png" /></h3>
 <hr class="quarter-break" />
 <div id="contentWell" class="well well-dynamic-content" content-fill-height>
     <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">
@@ -323,13 +338,13 @@
                                         <tr>
                                             <th class="text-center">Name</th>
                                             <th class="text-center">Type</th>
-                                            <th class="text-center">Monitoring&nbsp;Status</th>
+                                            <th class="text-center">Monitoring</th>
                                         </tr>
                                     </thead>
                                     <tbody data-bind="foreach: analyzers">
                                         <tr id="analyzerRow" style="visibility: hidden" data-bind="css: { selected: isSelected }">
                                             <td width="80%" class="text-center valign-middle nowrap"><btn type="button" class="btn btn-link" style="padding: 0" data-bind="text: $data['@@name'], click: loadAnalyzerConfig.bind($data)" /></td>
-                                            <td width="10%" class="text-center valign-middle align-left nowrap" style="text-align: left" data-bind="text: analyzerTypeName" />
+                                            <td width="10%" class="text-center valign-middle align-left nowrap" style="text-align: left"><span data-bind="text: analyzerTypeName"></span><btn type="button" class="btn btn-link" style="padding: 0" data-bind="click: openGraphDataWindow.bind($data), attr: {title: 'Show ' + $data['@@name']() + ' real-time values'}" show-data-button><img src="Images/GraphData.png" class="graph-data-img" alt="Graph Data" /></btn></td>
                                             <td width="10%" class="text-center valign-middle"><span data-bind="text: montitoringStatus"></span></td>
                                         </tr>
                                     </tbody>
@@ -385,6 +400,19 @@
     </div>
     <div class="panel-body collapse" style="padding: 2px; margin-bottom: -10px" id="analyzerConfiguration">
         <pre data-bind="text: JSON.stringify(currentAnalyzerConfig(), null, 4)"></pre>
+    </div>
+</div>
+<div id="graphDataWindow" class="modal modal-wide fade" role="dialog">
+    <div class="modal-vertical-align-container">
+        <div class="modal-dialog modal-md modal-vertical-align-center">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <iframe style="border: none" id="graphDataFrame" ></iframe>
+                    <button type="button" class="btn btn-default pull-right popup-ok-button" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @section Scripts {
@@ -713,6 +741,19 @@
                 });
             }
 
+            self.getAnalyzer = function (configID) {
+                const analyzers = self.analyzers();
+
+                for (let i = 0; i < analyzers.length; i++) {
+                    const analyzer = analyzers[i];
+
+                    if (analyzer.configID() === configID)
+                        return analyzer;
+                }
+
+                return undefined;
+            }
+
             self.configChanged = function () {
                 self.currentAnalyzerConfig.valueHasMutated();
                 self.isDirty(true);
@@ -829,7 +870,7 @@
                         const name = section.name;
                         const index = section.index;
 
-                        tabList.push(`<li><a href="#tab${key}" onclick="viewModel.reloadTabSection('${key}', true)">${name}</a></li>`);
+                        tabList.push(`<li><a href="#tab${key}" onclick="viewModel.reloadTabSection('${key}', true)" tab-section-link>${name}</a></li>`);
 
                         tabSections.push(`<div id="tab${key}" ${index === 0 ? `class="ui-tabs-active tab-section"` : `class="tab-section" style="display: none"`} tab-section>`);
                         tabSections.push(`    <table width="75%" class="table-center">`);
@@ -853,11 +894,14 @@
                 $("#tabs").html(tabList.join("\r\n") + tabSections.join("\r\n"));
 
                 $("#tabs").tabs({
-                    active: 0
-                    //activate: function (event, ui) {
-                    //    self.reloadTabSection(ui.newPanel.attr("id").substr(3), true);
-                    //}
+                    active: 0,
+                    activate: function (event, ui) {
+                        ui.newPanel.find(":input:not([type=hidden]):first").focus();
+                        $("[tab-section-link]").tooltip("hide");
+                    }
                 });
+
+                $("[tab-section-link]").tooltip({ title: "Shift+click to reload tab", placement: "top", delay: 1000 });
             }
 
             self.loadTabSection = function (sectionKey) {
@@ -891,7 +935,7 @@
                     }
                 });
 
-                $("[data-toggle='tooltip']")
+                $("[data-toggle='tooltip'][map-expr]")
                     .tooltip({
                         html: true,
                         trigger: "manual",
@@ -1101,6 +1145,25 @@
             $(this).tooltip("hide");
         }
 
+        function clearGraphDataWindow() {
+            $("#graphDataFrame").attr({ "src": "about:blank" });
+        }
+
+        function openGraphDataWindow(record) {
+            const analyzer = viewModel.getAnalyzer(parseInt(record["@@id"](), 10));
+
+            if (!analyzer)
+                return;
+
+            $("#graphDataFrame").attr({
+                "src": `DranetzGraph.cshtml?DeviceID=@deviceID&ConfigID=${analyzer.configID()}&Name=${analyzer['@@name']()}&Type=${analyzer.analyzerTypeName()}`,
+                "height": $("#contentWell").outerHeight(true) + "px",
+                "width": "100%"
+            });
+
+            $("#graphDataWindow").modal("show");
+        }
+
         // Page initialization function
         $(function() {
             $("#bodyContainer").addClass("fill-height");
@@ -1174,6 +1237,7 @@
 
                         setTimeout(function () {
                             loadAnalyzerConfig(viewModel.analyzers()[viewModel.currentAnalyzerType()]);
+                            $("[show-data-button]").tooltip({placement: "top", delay: { "show": 500, "hide": 100 }});
                         }, 500);
                     })
                     .fail(function (error) {
@@ -1229,6 +1293,12 @@
 
             if (deviceID === 0)
                 $("#noDeviceDataMessage").show();
+
+            $("#graphDataWindow").modal({ show: false, backdrop: "static", keyboard: false });
+
+            $(document).on("hidden.bs.modal", "#graphDataWindow", function () {
+                clearGraphDataWindow();
+            });
         });
 
         // Non-config related UI control variables

@@ -21,6 +21,9 @@
   <Component Id="DranetzConfig_cshtml">
     <File Id="DranetzConfig.cshtml" Name="DranetzConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\DranetzConfig.cshtml" />
   </Component>
+  <Component Id="DranetzGraph_cshtml">
+    <File Id="DranetzGraph.cshtml" Name="DranetzGraph.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\DranetzGraph.cshtml" />
+  </Component>
   <Component Id="GraphMeasurements_cshtml">
     <File Id="GraphMeasurements.cshtml" Name="GraphMeasurements.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\GraphMeasurements.cshtml" />
   </Component>
@@ -33,8 +36,8 @@
   <Component Id="IGridConfig_cshtml">
     <File Id="IGridConfig.cshtml" Name="IGridConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\IGridConfig.cshtml" />
   </Component>
-  <Component Id="index_cshtml">
-    <File Id="index.cshtml" Name="index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\index.cshtml" />
+  <Component Id="Index_cshtml">
+    <File Id="Index.cshtml" Name="Index.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Index.cshtml" />
   </Component>
   <Component Id="Layout_cshtml">
     <File Id="Layout.cshtml" Name="Layout.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Layout.cshtml" />
@@ -135,8 +138,11 @@
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_Components" Directory="IMAGESFOLDER">
-  <Component Id="Images_DranetzConfigEditor_png">
-    <File Id="Images_DranetzConfigEditor.png" Name="DranetzConfigEditor.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\DranetzConfigEditor.png" />
+  <Component Id="Images_Dranetz_png">
+    <File Id="Images_Dranetz.png" Name="Dranetz.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Dranetz.png" />
+  </Component>
+  <Component Id="Images_GraphData_png">
+    <File Id="Images_GraphData.png" Name="GraphData.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\GraphData.png" />
   </Component>
   <Component Id="Images_iGridConfigEditor_png">
     <File Id="Images_iGridConfigEditor.png" Name="iGridConfigEditor.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\iGridConfigEditor.png" />
@@ -173,6 +179,12 @@
 <ComponentGroup Id="wwwroot_SectionMaps_Components" Directory="SECTIONMAPSFOLDER">
   <Component Id="SectionMaps_CrossTriggering_xml">
     <File Id="SectionMaps_CrossTriggering.xml" Name="CrossTriggering.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\CrossTriggering.xml" />
+  </Component>
+  <Component Id="SectionMaps_DigitalCrossTriggering_xml">
+    <File Id="SectionMaps_DigitalCrossTriggering.xml" Name="DigitalCrossTriggering.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\DigitalCrossTriggering.xml" />
+  </Component>
+  <Component Id="SectionMaps_DigitalInputConfiguration_xml">
+    <File Id="SectionMaps_DigitalInputConfiguration.xml" Name="DigitalInputConfiguration.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\DigitalInputConfiguration.xml" />
   </Component>
   <Component Id="SectionMaps_EnergyAndDemand_xml">
     <File Id="SectionMaps_EnergyAndDemand.xml" Name="EnergyAndDemand.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\EnergyAndDemand.xml" />

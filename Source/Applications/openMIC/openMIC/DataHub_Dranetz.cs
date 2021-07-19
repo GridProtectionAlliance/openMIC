@@ -214,6 +214,15 @@ namespace openMIC
         public Task RestartDevice(int deviceID, bool hard) =>
             GetCommand(deviceID, $"restart&hard={(hard ? "yes" : "no")}");
 
+        public Task<string> GetValuesShortList(int deviceID, int configID) =>
+            GetValues(deviceID, configID, 0, 54);
+
+        public Task<string> GetValuesLongList(int deviceID, int configID) =>
+            GetValues(deviceID, configID, 0, 3234);
+
+        public Task<string> GetValues(int deviceID, int configID, int lowRegister, int highRegister) =>
+            GetCommand(deviceID, $"getvalues&id={configID}&registers={lowRegister}-{highRegister}&verbose=1");
+
         private async Task<string> GetCommand(int deviceID, string cmdParam, bool clearCookies = false)
         {
             if (string.IsNullOrWhiteSpace(cmdParam))
