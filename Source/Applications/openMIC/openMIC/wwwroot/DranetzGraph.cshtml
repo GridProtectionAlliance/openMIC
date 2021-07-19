@@ -89,7 +89,24 @@
         <li><a href="#tabDataGraph">Data Graph</a></li>
         <li><a href="#tabPolarChart">Polar Chart</a></li>
     </ul>
-    <div id="tabDataTable" style="overflow: auto; margin-top: 5px" tab-section></div>
+    <div id="tabDataTable" style="overflow: auto; margin-top: 5px" tab-section>
+        <table class="table table-condensed table-striped table-hover" style="width: 100%">
+            <thead>
+                <tr>
+                    <th class="text-center">Value</th>
+                    <th class="text-center">Description</th>
+                    <th class="text-center">Register</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: records">
+                <tr>
+                    <td width="10%" class="text-center valign-middle truncate" style="max-width: 150px" data-bind="text: valueWithUnits, attr: {title: valueWithUnits}"/>
+                    <td width="85%" class="text-center valign-middle nowrap" style="text-overflow: initial" data-bind="text: $data['@@desc']"/>
+                    <td width="5%" class="text-center valign-middle nowrap" data-bind="text: $data['@@reg']"/>
+                </tr>
+            </tbody>
+        </table>
+    </div>
     <div id="tabDataGraph"></div>
     <div id="tabPolarChart"></div>
 </div>
@@ -110,7 +127,8 @@
         function GraphDataViewModel() {
             const self = this;
 
-            self.registers = [];
+            self.registers = []; // Register dictionary (sparse array)
+            self.records = [];   // All records (simple array, foreach-able)
 
             self._dataHubIsConnected = ko.observable(false);
             self._autoRefresh = ko.observable(undefined);
@@ -173,7 +191,7 @@
                 return dataHub.getValuesLongList(deviceID, configID).done(function (result) {
                     const records = JSON.parse(result);
 
-                    if ($("#dataValues").length === 0) {
+                    if (self.registers.length === 0) {
                         records.commandresult.list.item.forEach(function (record) {
                             record.value = ko.observable(parseFloat(record["@@value"]));
 
@@ -183,32 +201,8 @@
                             });
 
                             self.registers[parseInt(record["@@reg"], 10)] = record;
+                            self.records.push(record);
                         });
-
-                        const html = [];
-
-                        html.push(`<table id="dataValues" class="table table-condensed table-striped table-hover" style="width: 100%">`);
-                        html.push(`<thead>`);
-                        html.push(`    <tr>`);
-                        html.push(`        <th class="text-center">Value</th>`);
-                        html.push(`        <th class="text-center">Description</th>`);
-                        html.push(`        <th class="text-center">Register</th>`);
-                        html.push(`    </tr>`);
-                        html.push(`</thead>`);
-                        html.push(`<tbody>`);
-
-                        self.registers.forEach(function (record, index) {
-                            html.push(`    <tr>`);
-                            html.push(`        <td width="10%" class="text-center valign-middle truncate" style="max-width: 150px" data-bind="text: registers[${index}].valueWithUnits, attr: {title: registers[${index}].valueWithUnits}" />`);
-                            html.push(`        <td width="85%" class="text-center valign-middle nowrap" style="text-overflow: initial">${record['@@desc']}</td>`);
-                            html.push(`        <td width="5%" class="text-center valign-middle nowrap"">${record['@@reg']}</td>`);
-                            html.push(`    </tr>`);
-                        });
-
-                        html.push(`</tbody>`);
-                        html.push(`</table>`);
-
-                        $("#tabDataTable").html(html.join("\r\n"));
                     }
                     else {
                         records.commandresult.list.item.forEach(function (record) {
