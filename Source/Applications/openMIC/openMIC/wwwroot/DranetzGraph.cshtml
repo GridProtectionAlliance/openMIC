@@ -34,17 +34,29 @@
             font-size: 10pt !important;
         }
 
-        #autoRefreshPanel {
+        #autoRefreshDataPanel {
             margin: 8px -18px -4px 0;
             padding: 0;
             transform: scale(0.85);
             max-width: 325px;
             display: flex;
         }
+
+        #autoRefreshGroup {
+            margin-top: 1px;
+        }
+
+        #refreshRateGroup {
+            margin: -8px 0 4px 0;
+        }
+
+        #refreshRate {
+            width: 75px;
+            margin-top: 0;
+        }
     </style>
 }
 @{
-    DataContext dataContext = ViewBag.DataContext;
     HttpRequestMessage request = ViewBag.Request;
     Dictionary<string, string> parameters = request.QueryParameters();
     string parameter;
@@ -77,10 +89,10 @@
     <hr class="quarter-break" />
 </div>
 <div id="tabs">
-    <div id="autoRefreshPanel" class="form-inline pull-right">
-        <div class="checkbox-inline" style="margin-top: 1px"><label class="nowrap"><input id="autoRefresh" type="checkbox" data-bind="checked: autoRefresh">Auto-refresh every</label></div>&nbsp;
-        <div class="input-group" style="margin: -8px 0 4px 0">
-            <input id="refreshRate" class="form-control pull-right" type="number" min="1" style="width: 75px; margin-top: 0" data-bind="textInput: refreshRate" />
+    <div id="autoRefreshDataPanel" class="form-inline pull-right">
+        <div id="autoRefreshGroup" class="checkbox-inline"><label class="nowrap"><input id="autoRefresh" type="checkbox" data-bind="checked: autoRefresh">Auto-refresh every</label></div>&nbsp;
+        <div id="refreshRateGroup" class="input-group">
+            <input id="refreshRate" class="form-control pull-right" type="number" min="1" data-bind="textInput: refreshRate" />
             <span class="input-group-addon">Seconds</span>
         </div>
     </div>
@@ -243,10 +255,10 @@
                     return;
 
                 // Handle initial page load
-                showInfoMessage("Loading current device data, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
+                showInfoMessage(`Loading latest "${deviceName}" real-time data, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1, true);
 
                 viewModel.queryData().done(function () {
-                    showInfoMessage("Data Load complete.");
+                    showInfoMessage("Data load complete.");
                     hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
 
                     // Initialize primary view model
