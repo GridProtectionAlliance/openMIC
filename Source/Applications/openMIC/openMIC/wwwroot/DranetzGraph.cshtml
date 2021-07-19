@@ -33,6 +33,14 @@
         .ui-tabs .ui-tabs-nav li a {
             font-size: 10pt !important;
         }
+
+        #autoRefreshPanel {
+            margin: 8px -18px -4px 0;
+            padding: 0;
+            transform: scale(0.85);
+            max-width: 325px;
+            display: flex;
+        }
     </style>
 }
 @{
@@ -69,8 +77,8 @@
     <hr class="quarter-break" />
 </div>
 <div id="tabs">
-    <div class="form-inline pull-right" style="margin: 0 -16px 0 0; padding: 10px 0 0 0; transform: scale(0.85); max-width: 325px; display: flex">
-        <div class="checkbox-inline" margin-top="1px"><label class="nowrap"><input id="autoRefresh" type="checkbox" data-bind="checked: autoRefresh">Auto-refresh every</label></div>&nbsp;
+    <div id="autoRefreshPanel" class="form-inline pull-right">
+        <div class="checkbox-inline" style="margin-top: 1px"><label class="nowrap"><input id="autoRefresh" type="checkbox" data-bind="checked: autoRefresh">Auto-refresh every</label></div>&nbsp;
         <div class="input-group" style="margin: -8px 0 4px 0">
             <input id="refreshRate" class="form-control pull-right" type="number" min="1" style="width: 75px; margin-top: 0" data-bind="textInput: refreshRate" />
             <span class="input-group-addon">Seconds</span>
@@ -79,11 +87,11 @@
     <ul id="tablist">
         <li><a href="#tabDataTable">Data Table</a></li>
         <li><a href="#tabDataGraph">Data Graph</a></li>
-        <li><a href="#tabDataPolarChart">Polar Chart</a></li>
+        <li><a href="#tabPolarChart">Polar Chart</a></li>
     </ul>
     <div id="tabDataTable" style="overflow: auto; margin-top: 5px" tab-section></div>
     <div id="tabDataGraph"></div>
-    <div id="tabDataPolarChart"></div>
+    <div id="tabPolarChart"></div>
 </div>
 @section Scripts {
     <script src="@Resources.Root/Shared/Scripts/knockout.js"></script>
