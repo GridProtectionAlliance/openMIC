@@ -402,7 +402,7 @@
         <pre data-bind="text: JSON.stringify(currentAnalyzerConfig(), null, 4)"></pre>
     </div>
 </div>
-<div id="graphDataWindow" class="modal modal-wide fade" role="dialog">
+<div id="graphDataWindow" class="modal modal-wide fade" role="dialog" style="max-width: 945px; margin: 0 auto">
     <div class="modal-vertical-align-container">
         <div class="modal-dialog modal-md modal-vertical-align-center">
             <div class="modal-content">
@@ -555,6 +555,10 @@
             self.currentConfigID = ko.observable(-1);
             self.currentAnalyzerConfig = ko.observable("");
             self.errors = ko.validation.group(self);
+
+            // Standard fields
+            self.vNom = undefined;
+            self.iNom = undefined;
 
             // Internal fields
             self._dataHubIsConnected = ko.observable(false);
@@ -982,8 +986,16 @@
                 self.currentAnalyzerType(analyzerType);     // Integer analyzer type (see analyzerTypes)
                 self.currentAnalyzerConfig(analyzerConfig); // Dranetz XML config serialized as JSON
 
+                const power = analyzerConfig.commandresult.characteristics.anyalyzer.VA_power;
+
                 // Set circuit type, i.e., wiring config value, early as this is a key config parameter
-                self.setWiringConfigValue(analyzerConfig.commandresult.characteristics.anyalyzer.VA_power.config['@@value']);
+                self.setWiringConfigValue(power.config['@@value']);
+
+                if (self.vNom === undefined)
+                    self.vNom = power.nominal_volts["@@value"];
+
+                if (self.iNom === undefined)
+                    self.iNom = power.nominal_amps["@@value"];
 
                 if (!$("#stubTabSections").length)
                     self.createSectionTabs();
@@ -1026,6 +1038,10 @@
 
             if (height > 75)
                 $("[tab-section]").height(height);
+
+            $("#graphDataFrame").attr({
+                "height": $("#contentWell").outerHeight(true) + "px"
+            });
         }
 
         function showSavingMessage() {
@@ -1156,7 +1172,7 @@
                 return;
 
             $("#graphDataFrame").attr({
-                "src": `DranetzGraph.cshtml?DeviceID=@deviceID&ConfigID=${analyzer.configID()}&Name=${analyzer['@@name']()}&Type=${analyzer.analyzerTypeName()}`,
+                "src": `DranetzGraph.cshtml?DeviceID=@deviceID&ConfigID=${analyzer.configID()}&AnalyzerName=${analyzer['@@name']()}&AnalyzerType=${analyzer.analyzerType()}&AnalyzerTypeName=${analyzer.analyzerTypeName()}&vNom=${viewModel.vNom}&iNom=${viewModel.iNom}`,
                 "height": $("#contentWell").outerHeight(true) + "px",
                 "width": "100%"
             });

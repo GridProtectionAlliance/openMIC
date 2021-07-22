@@ -26,6 +26,9 @@
 @using GSF.Web.Shared
 @using openMIC.Model
 @inherits ExtendedTemplateBase<AppModel>
+@* ReSharper disable UnknownCssClass *@
+@* ReSharper disable HexColorValueWithAlpha *@
+@* ReSharper disable SyntaxIsNotAllowed *@
 @section StyleSheets {
     <link href="Content/Popup.css" rel="stylesheet">
     <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
@@ -54,14 +57,20 @@
             width: 75px;
             margin-top: 0;
         }
+
+        .value-legend {
+            font-weight: bold;
+            text-shadow: 1px 1px #7777771f;
+        }
     </style>
 }
 @{
     HttpRequestMessage request = ViewBag.Request;
     Dictionary<string, string> parameters = request.QueryParameters();
     string parameter;
-    int deviceID, configID;
-    string deviceName, deviceType;
+    int deviceID, configID, analyzerType;
+    string analyzerName, analyzerTypeName;
+    double vNom, iNom;
 
     if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
         deviceID = 0;
@@ -71,18 +80,30 @@
         configID = 0;
     }
 
-    if (!parameters.TryGetValue("Name", out deviceName) || string.IsNullOrWhiteSpace(deviceName)) {
-        deviceName = "DeviceNameUndefined";
+    if (!parameters.TryGetValue("AnalyzerType", out parameter) || !int.TryParse(parameter, out analyzerType)) {
+        analyzerType = 0;
     }
-    
-    if (!parameters.TryGetValue("Type", out deviceType) || string.IsNullOrWhiteSpace(deviceType)) {
-        deviceType = "DeviceTypeUndefined";
+
+    if (!parameters.TryGetValue("AnalyzerName", out analyzerName) || string.IsNullOrWhiteSpace(analyzerName)) {
+        analyzerName = "AnalyzerNameUndefined";
+    }
+
+    if (!parameters.TryGetValue("AnalyzerTypeName", out analyzerTypeName) || string.IsNullOrWhiteSpace(analyzerTypeName)) {
+        analyzerTypeName = "AnalyzerTypeUndefined";
+    }
+
+    if (!parameters.TryGetValue("vNom", out parameter) || !double.TryParse(parameter, out vNom)) {
+        vNom = 1.0;
+    }
+
+    if (!parameters.TryGetValue("iNnom", out parameter) || !double.TryParse(parameter, out iNom)) {
+        iNom = 1.0;
     }
 
     Layout = "Layout.cshtml";
     ViewBag.ShowMenu = false;
     ViewBag.HidePageTitle = true;
-    ViewBag.Title = deviceName + " " + deviceType;
+    ViewBag.Title = analyzerName + " " + analyzerTypeName;
 }
 <div id="headerArea">
     <h3 style="margin-top: -10px;">@ViewBag.Title <img class="page-logo pull-right" alt="Dranetz" src="Images/Dranetz.png" /></h3>
@@ -98,7 +119,6 @@
     </div>
     <ul id="tablist">
         <li><a href="#tabDataTable">Data Table</a></li>
-        <li><a href="#tabDataGraph">Data Graph</a></li>
         <li><a href="#tabPolarChart">Polar Chart</a></li>
     </ul>
     <div id="tabDataTable" style="overflow: auto; margin-top: 5px" tab-section>
@@ -112,15 +132,48 @@
             </thead>
             <tbody data-bind="foreach: records">
                 <tr>
-                    <td width="10%" class="text-center valign-middle truncate" style="max-width: 150px" data-bind="text: valueWithUnits, attr: {title: valueWithUnits}"/>
-                    <td width="85%" class="text-center valign-middle nowrap" style="text-overflow: initial" data-bind="text: $data['@@desc']"/>
-                    <td width="5%" class="text-center valign-middle nowrap" data-bind="text: $data['@@reg']"/>
+                    <td width="10%" class="text-center valign-middle truncate" style="max-width: 150px" data-bind="text: valueWithUnits, attr: { title: valueWithUnits }" />
+                    <td width="85%" class="text-center valign-middle nowrap" style="text-overflow: initial" data-bind="text: $data['@@desc']" />
+                    <td width="5%" class="text-center valign-middle nowrap" data-bind="text: $data['@@reg']" />
                 </tr>
             </tbody>
         </table>
     </div>
-    <div id="tabDataGraph"></div>
-    <div id="tabPolarChart"></div>
+    <div id="tabPolarChart" style="overflow: auto; margin-top: 5px" tab-section>
+        <div id="phasor" class="col-sm-6 ui-widget-content">
+            <div style="height: 300px">
+                <svg id="phasorChart" width="300" height="300">
+                    <defs data-bind="foreach: phasorValues">
+                        <marker orient="auto" markerWidth="3" markerHeight="4" refX="0.1" refY="2" data-bind="attr: { id: `arrowhead-${key}` }">
+                            <path d="M0,0 V4 L2,2 Z" fill="black" data-bind="attr: { fill: color }" />
+                        </marker>
+                    </defs>
+                    <circle cx="150" cy="150" r="130" stroke="lightgrey" strokeWidth="1" fill="white" fillOpacity="0" />
+                    <line x1="150" y1="0" x2="150" y2="300" stroke="lightgrey" strokeWidth="2" />
+                    <line x1="0" y1="150" x2="300" y2="150" stroke="lightgrey" strokeWidth="2" />
+
+                    <g data-bind="foreach: phasorValues" stroke-width="5">
+                        <line x1="150" y1="150" data-bind="visible: visible, attr: { id: `line-${key}`, stroke: color, 'marker-end': `url(#arrowhead-${key})`, x2: x2, y2: y2 }" />
+                    </g>
+                </svg>
+            </div>
+            <table style="border-spacing: 10px; border-collapse: separate; margin-left: auto; margin-right: auto">
+                <tr data-bind="foreach: phasorValues">
+                    <td><input type="checkbox" data-bind="checked: visible" />&nbsp;<span class="value-legend" data-bind="text: key, style: { color: color }"></span></td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-sm-6" style="overflow: auto">
+            <table class="table table-condensed table-striped table-hover">
+                <tbody data-bind="foreach: phasorRecords">
+                    <tr data-bind="visible: visible">
+                        <td width="40%" class="text-right valign-middle nowrap value-legend" style="min-width: 140px" data-bind="text: description, attr: { title: $data['@@desc'] }, style: { color: color }" />
+                        <td width="60%" class="text-left valign-middle truncate" style="max-width: 140px" data-bind="text: valueWithUnits, attr: { title: valueWithUnits }" />
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 @section Scripts {
     <script src="@Resources.Root/Shared/Scripts/knockout.js"></script>
@@ -133,14 +186,52 @@
         var viewModel = null;
         const deviceID = @deviceID;
         const configID = @configID;
-        const deviceName = "@deviceName.JavaScriptEncode()";
-        const deviceType = "@deviceType.JavaScriptEncode()";
+        const analyzerType = @analyzerType;
+        const analyzerName = "@analyzerName.JavaScriptEncode()";
+        const vNom = @vNom;
+        const iNom = @iNom;
+
+        const phasorRegisters = {
+            VAM: 0,     // Voltage A Magnitude
+            VAA: 3200,  // VOltage A Angle
+            VBM: 2,     // Voltage B Magnitude
+            VBA: 3202,  // Voltage B Angle
+            VCM: 4,     // Voltage C Magnitude
+            VCA: 3204,  // Voltage C Angle
+            IAM: 14,    // Current A Magnitude
+            IAA: 3214,  // Current A Angle
+            IBM: 16,    // Current B Magnitude
+            IBA: 3216,  // Current B Angle
+            ICM: 18,    // Current C Magnitude
+            ICA: 3218   // Current C Angle
+        };
+
+        const angle = 0;
+        const magnitude = 1;
+
+        const phasorType = {
+            voltage: 1,
+            current: 2
+        }
+
+        const phasors = {
+            VA: { registers: [ phasorRegisters.VAA, phasorRegisters.VAM ], type: phasorType.voltage, color: "Black" },
+            VB: { registers: [ phasorRegisters.VBA, phasorRegisters.VBM ], type: phasorType.voltage, color: "Red" },
+            VC: { registers: [ phasorRegisters.VCA, phasorRegisters.VCM ], type: phasorType.voltage, color: "Blue" },
+            IA: { registers: [ phasorRegisters.IAA, phasorRegisters.IAM ], type: phasorType.current, color: "LightSlateGray" },
+            IB: { registers: [ phasorRegisters.IBA, phasorRegisters.IBM ], type: phasorType.current, color: "LightCoral" },
+            IC: { registers: [ phasorRegisters.ICA, phasorRegisters.ICM ], type: phasorType.current, color: "LightBlue" }
+        }
 
         function GraphDataViewModel() {
             const self = this;
 
-            self.registers = []; // Register dictionary (sparse array)
-            self.records = [];   // All records (simple array, foreach-able)
+            self.registerMap = [];          // Register dictionary (sparse array)
+            self.records = [];              // All records (simple array, foreach-able)
+
+            self.phasorRegisterMap = {};    // Register dictionary for phasor values (key = phasors, e.g., "VA")
+            self.phasorValues = [];         // All phasor values, one per phasor (simple array, foreach-able)
+            self.phasorRecords = [];        // All angle and magnitude records per phasor (simple array, foreach-able)
 
             self._dataHubIsConnected = ko.observable(false);
             self._autoRefresh = ko.observable(undefined);
@@ -203,7 +294,7 @@
                 return dataHub.getValuesLongList(deviceID, configID).done(function (result) {
                     const records = JSON.parse(result);
 
-                    if (self.registers.length === 0) {
+                    if (self.registerMap.length === 0) {
                         records.commandresult.list.item.forEach(function (record) {
                             record.value = ko.observable(parseFloat(record["@@value"]));
 
@@ -212,13 +303,76 @@
                                 owner: self
                             });
 
-                            self.registers[parseInt(record["@@reg"], 10)] = record;
+                            self.registerMap[parseInt(record["@@reg"], 10)] = record;
                             self.records.push(record);
                         });
+
+                        // Create dictionary of registers for phasor values
+                        for (let key in phasors) {
+                            if (phasors.hasOwnProperty(key)) {
+                                const phasor = phasors[key];
+
+                                if (analyzerType > 0 && phasor.type !== analyzerType)
+                                    continue;
+
+                                const registers = phasor.registers;
+                                const visible = () => self.phasorValues.find(value => value.key === key).visible();
+
+                                const angleValue = self.registerMap[registers[angle]];
+                                angleValue.description = `${key} Angle (${angleValue["@@reg"]}):`;
+                                angleValue.color = phasor.color;
+                                angleValue.visible = ko.pureComputed({ read: visible });
+
+                                const magnitudeValue = self.registerMap[registers[magnitude]];
+                                magnitudeValue.description = `${key} Magnitude (${magnitudeValue["@@reg"]}):`;
+                                magnitudeValue.color = phasor.color;
+                                magnitudeValue.visible = ko.pureComputed({ read: visible });
+
+                                self.phasorRegisterMap = { ...self.phasorRegisterMap, [key]: [angleValue, magnitudeValue] };
+                            }
+                        }
+
+                        // Create array of phasor values for polar graph
+                        for (let key in phasors) {
+                            if (phasors.hasOwnProperty(key)) {
+                                const phasor = phasors[key];
+
+                                if (analyzerType > 0 && phasor.type !== analyzerType)
+                                    continue;
+
+                                const width = $("#phasorChart").width() / 2;
+                                const height = $("#phasorChart").height() / 2;
+                                const isVoltage = phasor.type === phasorType.voltage;
+                                const voltageTolerance = 0.9;  // 10% (NEMA)
+                                const currentTolerance = 0.85; // 15%
+                                const extent = width * (isVoltage ? voltageTolerance : currentTolerance);
+                                const aPhaseValues = self.phasorRegisterMap[isVoltage ? "VA" : "IA"];
+                                const phaseValues = self.phasorRegisterMap[key];
+                                const scale = isVoltage ? vNom : iNom;
+
+                                phasor.key = key;
+                                phasor.angle = ko.pureComputed({ read: () => (aPhaseValues[angle].value() - phaseValues[angle].value()) * Math.PI / 180.0 });
+                                phasor.magnitude = ko.pureComputed({ read: () => extent * (phaseValues[magnitude].value() / scale) });
+                                phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()) });
+                                phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()) });
+                                phasor.visible = ko.observable(true);
+
+                                self.phasorValues.push(phasor);
+                            }
+                        }
+
+                        // Create array of phasor angle and magnitude records for value table
+                        for (let key in self.phasorRegisterMap) {
+                            if (self.phasorRegisterMap.hasOwnProperty(key)) {
+                                const phaseValues = self.phasorRegisterMap[key];
+                                self.phasorRecords.push(phaseValues[magnitude]);
+                                self.phasorRecords.push(phaseValues[angle]);
+                            }
+                        }
                     }
                     else {
                         records.commandresult.list.item.forEach(function (record) {
-                            self.registers[parseInt(record["@@reg"], 10)].value(parseFloat(record["@@value"]));
+                            self.registerMap[parseInt(record["@@reg"], 10)].value(parseFloat(record["@@value"]));
                         });
                     }
 
@@ -248,14 +402,14 @@
             viewModel = new GraphDataViewModel();
 
             // Let view model know about hub connectivity changes
-            $(window).on("hubConnected", function() {
+            $(window).on("hubConnected", function () {
                 viewModel.dataHubIsConnected(true);
 
-                if (deviceID <= 0 || viewModel.registers.length > 0)
+                if (deviceID <= 0 || viewModel.registerMap.length > 0)
                     return;
 
                 // Handle initial page load
-                showInfoMessage(`Loading latest "${deviceName}" real-time data, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1, true);
+                showInfoMessage(`Loading latest "${analyzerName}" real-time data, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1, true);
 
                 viewModel.queryData().done(function () {
                     showInfoMessage("Data load complete.");
@@ -277,7 +431,7 @@
                 }
             });
 
-            $(window).on("hubDisconnected", function() {
+            $(window).on("hubDisconnected", function () {
                 viewModel.dataHubIsConnected(false);
             });
 
