@@ -321,12 +321,12 @@
                                 const angleValue = self.registerMap[registers[angle]];
                                 angleValue.description = `${key} Angle (${angleValue["@@reg"]}):`;
                                 angleValue.color = phasor.color;
-                                angleValue.visible = ko.pureComputed({ read: visible });
+                                angleValue.visible = ko.pureComputed({ read: visible, owner: self });
 
                                 const magnitudeValue = self.registerMap[registers[magnitude]];
                                 magnitudeValue.description = `${key} Magnitude (${magnitudeValue["@@reg"]}):`;
                                 magnitudeValue.color = phasor.color;
-                                magnitudeValue.visible = ko.pureComputed({ read: visible });
+                                magnitudeValue.visible = ko.pureComputed({ read: visible, owner: self });
 
                                 self.phasorRegisterMap = { ...self.phasorRegisterMap, [key]: [angleValue, magnitudeValue] };
                             }
@@ -351,10 +351,10 @@
                                 const scale = isVoltage ? vNom : iNom;
 
                                 phasor.key = key;
-                                phasor.angle = ko.pureComputed({ read: () => (aPhaseValues[angle].value() - phaseValues[angle].value()) * Math.PI / 180.0 });
-                                phasor.magnitude = ko.pureComputed({ read: () => extent * (phaseValues[magnitude].value() / scale) });
-                                phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()) });
-                                phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()) });
+                                phasor.angle = ko.pureComputed({ read: () => (aPhaseValues[angle].value() - phaseValues[angle].value()) * Math.PI / 180.0, owner: self });
+                                phasor.magnitude = ko.pureComputed({ read: () => extent * (phaseValues[magnitude].value() / scale), owner: self });
+                                phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()), owner: self });
+                                phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()), owner: self });
                                 phasor.visible = ko.observable(true);
 
                                 self.phasorValues.push(phasor);
@@ -371,6 +371,7 @@
                         }
                     }
                     else {
+                        // Update pre-defined observable values
                         records.commandresult.list.item.forEach(function (record) {
                             self.registerMap[parseInt(record["@@reg"], 10)].value(parseFloat(record["@@value"]));
                         });
