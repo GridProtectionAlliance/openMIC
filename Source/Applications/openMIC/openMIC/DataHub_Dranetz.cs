@@ -52,20 +52,11 @@ namespace openMIC
             private readonly SecureString m_password;
             private bool m_disposed;
 
-            public DranetzCredential(int deviceID, string rootUri, string userName, string password)
+            public DranetzCredential(string rootUri, string userName, string password)
             {
                 m_rootUri = rootUri.ToSecureString();
                 m_userName = userName.ToSecureString();
                 m_password = password.ToSecureString();
-
-                s_dranetzCredentialCache.Add(deviceID.ToString(), this, new CacheItemPolicy
-                {
-                    SlidingExpiration = TimeSpan.FromSeconds(300.0D),
-                    RemovedCallback = args =>
-                    {
-                        (args.CacheItem.Value as IDisposable)?.Dispose();
-                    }
-                });
             }
 
             public CookieContainer Cookies { get; private set; } = new CookieContainer();
@@ -100,16 +91,15 @@ namespace openMIC
                     DefaultRequestHeaders =
                     {
                         Authorization = new AuthenticationHeaderValue("Basic", 
-                            Convert.ToBase64String(Encoding.UTF8.GetBytes($"{m_userName.ToUnsecureString()}:{m_password.ToUnsecureString()}"))),
+                            Convert.ToBase64String(Encoding.UTF8.GetBytes(
+                            $"{m_userName.ToUnsecureString()}:{m_password.ToUnsecureString()}")))
                     }
                 };
 
-                List<string> cookies = new List<string>();
+                string[] cookies = Cookies.GetCookies(RootUri).Cast<Cookie>()
+                    .Select(cookie => $"{cookie.Name}={cookie.Value}").ToArray();
 
-                foreach (Cookie cookie in Cookies.GetCookies(RootUri))
-                    cookies.Add($"{cookie.Name}={cookie.Value}");
-
-                if (cookies.Count > 0)
+                if (cookies.Length > 0)
                     client.DefaultRequestHeaders.Add("Cookie", string.Join(",", cookies));
 
                 return client;
@@ -153,7 +143,18 @@ namespace openMIC
                 if (!rootUri.StartsWith("http"))
                     rootUri = $"http://{rootUri}";
 
-                return new DranetzCredential(deviceID, rootUri, userName, password);
+                DranetzCredential credential = new DranetzCredential(rootUri, userName, password);
+
+                s_dranetzCredentialCache.Add(deviceID.ToString(), credential, new CacheItemPolicy
+                {
+                    SlidingExpiration = TimeSpan.FromSeconds(300.0D),
+                    RemovedCallback = args =>
+                    {
+                        (args.CacheItem.Value as IDisposable)?.Dispose();
+                    }
+                });
+                
+                return credential;
             }
         }
 
@@ -163,8 +164,13 @@ namespace openMIC
                 s_dranetzCredentialCache.Remove(deviceID.ToString());
         }
 
+        [AuthorizeHubRole("Administrator, Editor")]
         public string GetSectionMap(string mapName)
         {
+            // Prevent file access leakage
+            if (!string.IsNullOrEmpty(Path.GetDirectoryName(mapName)))
+                throw new SecurityException("Path access error");
+
             string mapFileName = Path.Combine(WebRootPath, "SectionMaps", mapName);
 
             if (!File.Exists(mapFileName))
@@ -222,6 +228,9 @@ namespace openMIC
 
         public Task<string> GetValues(int deviceID, int configID, int lowRegister, int highRegister) =>
             GetCommand(deviceID, $"getvalues&id={configID}&registers={lowRegister}-{highRegister}&verbose=1");
+
+        public Task<string> GetWaveform(int deviceID, int configID) =>
+            GetCommand(deviceID, $"getwaveform&id={configID}&format=0");
 
         private async Task<string> GetCommand(int deviceID, string cmdParam, bool clearCookies = false)
         {
