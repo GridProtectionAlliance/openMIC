@@ -338,7 +338,7 @@
                 </tr>
                 <tr>
                     <th class="reading-label">Apparent Power (VA)</th>
-                    <td class="reading" register="38" />
+                    <td class="reading" register="38" />l
                     <td class="reading" register="40" />
                     <td class="reading" register="42" />
                     <td class="reading" register="44" />
@@ -743,8 +743,8 @@
                     digits = 2;
 
                 // scale-test:
-                return 999999.99.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
-                //return value.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+                //return 999999.99.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+                return value.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
             }
 
             self.queryData = function () {
