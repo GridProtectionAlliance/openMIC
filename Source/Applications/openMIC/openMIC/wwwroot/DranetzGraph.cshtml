@@ -21,6 +21,7 @@
 //
 //*****************************************************************************************************@
 @using System.Net.Http
+@using RazorEngine.Text
 @using GSF.Web
 @using GSF.Web.Model
 @using GSF.Web.Shared
@@ -37,10 +38,69 @@
             font-size: 10pt !important;
         }
 
+        .container {
+            width: 915px;
+        }
+
+        h4 {
+            font-size: 20px;
+            font-weight: bolder;
+        }
+
+        table.table-reading {
+            width: auto;
+        }
+
+        td.reading {
+            text-align: center;
+            width: 80px;
+        }
+
+        th.reading {
+            text-align: center;
+            width: 80px;
+            font-size: 14.8px;
+        }
+
+        td.no-reading {
+            background: black;
+            border: 0;
+        }
+
+        th.reading-label {
+            text-align: right;
+            width: 180px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+
+        th.reading-description {
+            text-align: right;
+            width: 180px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            font-size: 14.8px;
+        }
+
+        th.phasor-reading-label {
+            text-align: right;
+            width: 70px;
+            text-align: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+
+        td.phasor-reading {
+            text-align: center;
+            width: 100px;
+        }
+
         #autoRefreshDataPanel {
+            transform: scale(0.85);
             margin: 8px -18px -4px 0;
             padding: 0;
-            transform: scale(0.85);
             max-width: 325px;
             display: flex;
         }
@@ -69,7 +129,7 @@
     Dictionary<string, string> parameters = request.QueryParameters();
     string parameter;
     int deviceID, configID, analyzerType;
-    string analyzerName, analyzerTypeName;
+    string analyzerName, analyzerTypeName, referenceAngle;
     double vNom, iNom;
 
     if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
@@ -100,10 +160,57 @@
         iNom = 1.0;
     }
 
+    if (!parameters.TryGetValue("ReferenceAngle", out referenceAngle) || string.IsNullOrWhiteSpace(referenceAngle)) {
+        referenceAngle = "VANA";
+    }
+
     Layout = "Layout.cshtml";
     ViewBag.ShowMenu = false;
     ViewBag.HidePageTitle = true;
     ViewBag.Title = analyzerName + " " + analyzerTypeName;
+
+    AnalyzerType = analyzerType;
+}
+@functions {
+    public int AnalyzerType { get; set; }
+
+    public bool IsPQAnalyzer {
+        get { return AnalyzerType == 0; }
+    }
+
+    public bool IsVoltageAnalyzer {
+        get { return IsPQAnalyzer || AnalyzerType == 1; }
+    }
+
+    public bool IsCurrentAnalyzer {
+        get { return IsPQAnalyzer || AnalyzerType == 2; }
+    }
+
+    public IEncodedString PQDisplay {
+        get { return new RawString(IsPQAnalyzer ? "" : "style='display: none'"); }
+    }
+
+    public IEncodedString VoltageDisplay {
+        get { return new RawString(IsVoltageAnalyzer ? "" : "style='display: none'"); }
+    }
+
+    public IEncodedString CurrentDisplay {
+        get { return new RawString(IsCurrentAnalyzer ? "" : "style='display: none'"); }
+    }
+
+    public IEncodedString ReadingsPanelScale {
+        get {
+            // Show all values as 999,999.99 to adjust scaling, see viewModel.localeValue function
+            switch (AnalyzerType) {
+                case 1:
+                    return new RawString("style='transform: scale(.84); margin: -83px -80px'");
+                case 2:
+                    return new RawString("style='transform: scale(.86); margin: -68px -35px'");
+                default:
+                    return new RawString("style='transform: scale(.84); margin: -130px -85px'");
+            }
+        }
+    }
 }
 <div id="headerArea">
     <h3 style="margin-top: -10px;">@ViewBag.Title <img class="page-logo pull-right" alt="Dranetz" src="Images/Dranetz.png" /></h3>
@@ -118,28 +225,316 @@
         </div>
     </div>
     <ul id="tablist">
+        <li><a href="#tabReadings">Readings</a></li>
+        <li><a href="#tabPhasorPlot">Phasor Plot</a></li>
         <li><a href="#tabDataTable">Data Table</a></li>
-        <li><a href="#tabPolarChart">Polar Chart</a></li>
     </ul>
-    <div id="tabDataTable" style="overflow: auto; margin-top: 5px" tab-section>
-        <table class="table table-condensed table-striped table-hover" style="width: 100%">
-            <thead>
+    <div id="tabReadings" style="overflow: auto; margin-top: 5px" tab-section>
+        <div id="readingsPanel" @ReadingsPanelScale>
+            <h4 @VoltageDisplay>Voltage Readings</h4>
+            <table class="table table-condensed table-bordered table-striped table-hover table-reading" @VoltageDisplay>
                 <tr>
-                    <th class="text-center">Value</th>
-                    <th class="text-center">Description</th>
-                    <th class="text-center">Register</th>
+                    <th class="reading-description">Description</th>
+                    <th class="reading">AN</th>
+                    <th class="reading">BN</th>
+                    <th class="reading">CN</th>
+                    <th class="reading">NG</th>
+                    <th class="reading">AB</th>
+                    <th class="reading">BC</th>
+                    <th class="reading">CA</th>
+                    <th class="reading">S1</th>
+                    <th class="reading">S2</th>
+                    <th class="reading">S0</th>
                 </tr>
-            </thead>
-            <tbody data-bind="foreach: records">
                 <tr>
-                    <td width="10%" class="text-center valign-middle truncate" style="max-width: 150px" data-bind="text: valueWithUnits, attr: { title: valueWithUnits }" />
-                    <td width="85%" class="text-center valign-middle nowrap" style="text-overflow: initial" data-bind="text: $data['@@desc']" />
-                    <td width="5%" class="text-center valign-middle nowrap" data-bind="text: $data['@@reg']" />
+                    <th class="reading-label">Voltage Magnitude (Volts)</th>
+                    <td class="reading" register="0" />
+                    <td class="reading" register="2" />
+                    <td class="reading" register="4" />
+                    <td class="reading" register="6" />
+                    <td class="reading" register="8" />
+                    <td class="reading" register="10" />
+                    <td class="reading" register="12" />
+                    <td class="reading" register="96" />
+                    <td class="reading" register="98" />
+                    <td class="reading" register="100" />
                 </tr>
-            </tbody>
-        </table>
+                <tr>
+                    <th class="reading-label">Voltage Angle (Degrees)</th>
+                    <td class="reading" register="3200" />
+                    <td class="reading" register="3202" />
+                    <td class="reading" register="3204" />
+                    <td class="reading" register="3206" />
+                    <td class="reading" register="3208" />
+                    <td class="reading" register="3210" />
+                    <td class="reading" register="3212" />
+                    <td class="no-reading" colspan="3" />
+                </tr>
+            </table>
+            <h4 @CurrentDisplay>Current Readings</h4>
+            <table class="table table-condensed table-bordered table-striped table-hover table-reading" @CurrentDisplay>
+                <tr>
+                    <th class="reading-description">Description</th>
+                    <th class="reading">AN</th>
+                    <th class="reading">BN</th>
+                    <th class="reading">CN</th>
+                    <th class="reading">NG</th>
+                    <th class="reading">Res</th>
+                    <th class="reading">Net</th>
+                    <th class="reading">S1</th>
+                    <th class="reading">S2</th>
+                    <th class="reading">S0</th>
+                </tr>
+                <tr>
+                    <th class="reading-label">Current Magnitude (Volts)</th>
+                    <td class="reading" register="14" />
+                    <td class="reading" register="16" />
+                    <td class="reading" register="18" />
+                    <td class="reading" register="20" />
+                    <td class="reading" register="92" />
+                    <td class="reading" register="94" />
+                    <td class="reading" register="102" />
+                    <td class="reading" register="104" />
+                    <td class="reading" register="106" />
+                </tr>
+                <tr>
+                    <th class="reading-label">Current Angle (Degrees)</th>
+                    <td class="reading" register="3214" />
+                    <td class="reading" register="3216" />
+                    <td class="reading" register="3218" />
+                    <td class="reading" register="3220" />
+                    <td class="no-reading" colspan="5" />
+                </tr>
+            </table>
+            <h4>Frequency Reading</h4>
+            <table class="table table-condensed table-bordered table-striped table-hover table-reading">
+                <tr>
+                    <th class="reading-label">Frequency (Hz)</th>
+                    <td class="reading" register="54" />
+                </tr>
+            </table>
+            <h4 @PQDisplay>Power Readings</h4>
+            <table class="table table-condensed table-bordered table-striped table-hover table-reading" @PQDisplay>
+                <tr>
+                    <th class="reading-description">Description</th>
+                    <th class="reading">AN</th>
+                    <th class="reading">BN</th>
+                    <th class="reading">CN</th>
+                    <th class="reading">Total</th>
+                </tr>
+                <tr>
+                    <th class="reading-label">Active Power (Watts)</th>
+                    <td class="reading" register="22" />
+                    <td class="reading" register="24" />
+                    <td class="reading" register="26" />
+                    <td class="reading" register="28" />
+                </tr>
+                <tr>
+                    <th class="reading-label">Reactive Power (VAR)</th>
+                    <td class="reading" register="30" />
+                    <td class="reading" register="32" />
+                    <td class="reading" register="34" />
+                    <td class="reading" register="36" />
+                </tr>
+                <tr>
+                    <th class="reading-label">Apparent Power (VA)</th>
+                    <td class="reading" register="38" />
+                    <td class="reading" register="40" />
+                    <td class="reading" register="42" />
+                    <td class="reading" register="44" />
+                </tr>
+                <tr>
+                    <th class="reading-label">True Power Factor (%)</th>
+                    <td class="reading" register="64" />
+                    <td class="reading" register="66" />
+                    <td class="reading" register="68" />
+                    <td class="reading" register="76" />
+                </tr>
+                <tr>
+                    <th class="reading-label">Displacement PF (%)</th>
+                    <td class="reading" register="78" />
+                    <td class="reading" register="80" />
+                    <td class="reading" register="82" />
+                    <td class="reading" register="90" />
+                </tr>
+            </table>
+            <h4>Unbalance Readings</h4>
+            <table class="table table-condensed table-bordered table-striped table-hover table-reading">
+                <tr>
+                    <th class="reading-description">Description</th>
+                    <th class="reading">LNmax</th>
+                    <th class="reading">LLmax</th>
+                    <th class="reading">S2/S1</th>
+                    <th class="reading">S0/S1</th>
+                </tr>
+                <tr @VoltageDisplay>
+                    <th class="reading-label">Voltage Unbalance (%)</th>
+                    <td class="reading" register="120" />
+                    <td class="reading" register="122" />
+                    <td class="reading" register="124" />
+                    <td class="reading" register="126" />
+                </tr>
+                <tr @CurrentDisplay>
+                    <th class="reading-label">Current Unbalance (%)</th>
+                    <td class="reading" register="134" />
+                    <td class="no-reading" />
+                    <td class="reading" register="136" />
+                    <td class="reading" register="138" />
+                </tr>
+            </table>
+            <h4>Flicker Readings</h4>
+            <table class="table table-condensed table-bordered table-striped table-hover table-reading">
+                <tr>
+                    <th class="reading-description">Description</th>
+                    <th class="reading">AN</th>
+                    <th class="reading">BN</th>
+                    <th class="reading">CN</th>
+                </tr>
+                <tr>
+                    <th class="reading-label">Pst (p.u.)</th>
+                    <td class="reading" register="1600" />
+                    <td class="reading" register="1602" />
+                    <td class="reading" register="1604" />
+                </tr>
+                <tr>
+                    <th class="reading-label">Plt (p.u.)</th>
+                    <td class="reading" register="1612" />
+                    <td class="reading" register="1614" />
+                    <td class="reading" register="1616" />
+                </tr>
+            </table>
+            <h4>Harmonics Readings</h4>
+            <table class="table table-condensed table-bordered table-striped table-hover table-reading">
+                <tr>
+                    <th class="reading-description">Description</th>
+                    <th class="reading">AN</th>
+                    <th class="reading">BN</th>
+                    <th class="reading">CN</th>
+                    <th class="reading">NG</th>
+                </tr>
+                <tr @VoltageDisplay>
+                    <th class="reading-label">Voltage THD (% Fund)</th>
+                    <td class="reading" register="140" />
+                    <td class="reading" register="142" />
+                    <td class="reading" register="144" />
+                    <td class="reading" register="146" />
+                </tr>
+                <tr @VoltageDisplay>
+                    <th class="reading-label">Voltage TID (% Fund)</th>
+                    <td class="reading" register="156" />
+                    <td class="reading" register="158" />
+                    <td class="reading" register="160" />
+                    <td class="reading" register="162" />
+                </tr>
+                <tr @VoltageDisplay>
+                    <th class="reading-label">Voltage Harmonic RMS (Volts)</th>
+                    <td class="reading" register="172" />
+                    <td class="reading" register="174" />
+                    <td class="reading" register="176" />
+                    <td class="reading" register="178" />
+                </tr>
+                <tr @VoltageDisplay>
+                    <th class="reading-label">Voltage Interharmonic RMS (Volts)</th>
+                    <td class="reading" register="180" />
+                    <td class="reading" register="182" />
+                    <td class="reading" register="184" />
+                    <td class="reading" register="186" />
+                </tr>
+                <tr @VoltageDisplay>
+                    <th class="reading-label">Voltage TIF (% Fund)</th>
+                    <td class="reading" register="248" />
+                    <td class="reading" register="250" />
+                    <td class="reading" register="252" />
+                    <td class="no-reading" />
+                </tr>
+                <tr @VoltageDisplay>
+                    <th class="reading-label">Voltage TIF (% RMS)</th>
+                    <td class="reading" register="254" />
+                    <td class="reading" register="256" />
+                    <td class="reading" register="258" />
+                    <td class="no-reading" />
+                </tr>
+                <tr @VoltageDisplay>
+                    <th class="reading-label">Voltage Crest Factor (%)</th>
+                    <td class="reading" register="260" />
+                    <td class="reading" register="262" />
+                    <td class="reading" register="264" />
+                    <td class="no-reading" />
+                </tr>
+                <tr @CurrentDisplay>
+                    <th class="reading-label">Current THD (% Fund)</th>
+                    <td class="reading" register="266" />
+                    <td class="reading" register="268" />
+                    <td class="reading" register="270" />
+                    <td class="reading" register="272" />
+                </tr>
+                <tr @CurrentDisplay>
+                    <th class="reading-label">Current TID (% Fund)</th>
+                    <td class="reading" register="282" />
+                    <td class="reading" register="284" />
+                    <td class="reading" register="286" />
+                    <td class="reading" register="288" />
+                </tr>
+                <tr @CurrentDisplay>
+                    <th class="reading-label">Current Harmonic RMS (Amps)</th>
+                    <td class="reading" register="298" />
+                    <td class="reading" register="300" />
+                    <td class="reading" register="302" />
+                    <td class="reading" register="304" />
+                </tr>
+                <tr @CurrentDisplay>
+                    <th class="reading-label">Current Interharmonic RMS (Amps)</th>
+                    <td class="reading" register="306" />
+                    <td class="reading" register="308" />
+                    <td class="reading" register="310" />
+                    <td class="reading" register="312" />
+                </tr>
+                <tr @CurrentDisplay>
+                    <th class="reading-label">Current IT Product (%)</th>
+                    <td class="reading" register="314" />
+                    <td class="reading" register="316" />
+                    <td class="reading" register="318" />
+                    <td class="reading" register="320" />
+                </tr>
+                <tr @CurrentDisplay>
+                    <th class="reading-label">Current Crest Factor (%)</th>
+                    <td class="reading" register="322" />
+                    <td class="reading" register="324" />
+                    <td class="reading" register="326" />
+                    <td class="reading" register="328" />
+                </tr>
+                <tr>
+                    <th class="reading-label">K Factor (%)</th>
+                    <td class="reading" register="336" />
+                    <td class="reading" register="338" />
+                    <td class="reading" register="340" />
+                    <td class="no-reading" />
+                </tr>
+                <tr>
+                    <th class="reading-label">Transformer Derating Factor (%)</th>
+                    <td class="reading" register="342" />
+                    <td class="reading" register="344" />
+                    <td class="reading" register="346" />
+                    <td class="no-reading" />
+                </tr>
+                <tr @PQDisplay>
+                    <th class="reading-label">Unsigned Harmonic Power (Watts)</th>
+                    <td class="reading" register="348" />
+                    <td class="reading" register="350" />
+                    <td class="reading" register="352" />
+                    <td class="no-reading" />
+                </tr>
+                <tr @PQDisplay>
+                    <th class="reading-label">Signed Harmonic Power (Watts)</th>
+                    <td class="reading" register="354" />
+                    <td class="reading" register="356" />
+                    <td class="reading" register="358" />
+                    <td class="no-reading" />
+                </tr>
+            </table>
+        </div>
     </div>
-    <div id="tabPolarChart" style="overflow: auto; margin-top: 5px" tab-section>
+    <div id="tabPhasorPlot" style="overflow: auto; margin-top: 5px" tab-section>
         <div id="phasor" class="col-sm-6 ui-widget-content">
             <div style="height: 300px">
                 <svg id="phasorChart" width="300" height="300">
@@ -157,22 +552,50 @@
                     </g>
                 </svg>
             </div>
-            <table style="border-spacing: 10px; border-collapse: separate; margin-left: auto; margin-right: auto">
-                <tr data-bind="foreach: phasorValues">
-                    <td><input type="checkbox" data-bind="checked: visible" />&nbsp;<span class="value-legend" data-bind="text: key, style: { color: color }"></span></td>
-                </tr>
-            </table>
-        </div>
-        <div class="col-sm-6" style="overflow: auto">
-            <table class="table table-condensed table-striped table-hover">
-                <tbody data-bind="foreach: phasorRecords">
-                    <tr data-bind="visible: visible">
-                        <td width="40%" class="text-right valign-middle nowrap value-legend" style="min-width: 140px" data-bind="text: description, attr: { title: $data['@@desc'] }, style: { color: color }" />
-                        <td width="60%" class="text-left valign-middle truncate" style="max-width: 140px" data-bind="text: valueWithUnits, attr: { title: valueWithUnits }" />
+            <table style="border-spacing: 10px 0; border-collapse: separate; margin-top: 20px; margin-left: 40px">
+                <tbody data-bind="foreach: phasorValueGroups">
+                    <tr data-bind="foreach: $data">
+                        <td><input type="checkbox" data-bind="checked: visible" />&nbsp;<span class="value-legend" data-bind="text: key, style: { color: color }"></span></td>
                     </tr>
                 </tbody>
             </table>
         </div>
+        <div class="col-sm-6" style="overflow: auto">
+            <table class="table table-condensed table-bordered table-striped table-hover table-reading">
+                <thead>
+                    <tr>
+                        <th />
+                        <th style="width: 100px" class="reading">Magnitude<br />(Volts)</th>
+                        <th style="width: 100px" class="reading">Angle<br />(Degrees)</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: phasorValues">
+                    <tr data-bind="visible: visible">
+                        <th class="phasor-reading-label" data-bind="text: key, style: { color: color }, attr: { title: title }" />
+                        <td class="phasor-reading" data-toggle="tooltip" data-bind="text: $root.localeValue(magnitude()), attr: { title: magnitudeRegister.title }" />
+                        <td class="phasor-reading" data-toggle="tooltip" data-bind="text:  $root.localeValue(angle()), attr: { title: angleRegister.title }" />
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="tabDataTable" style="overflow: auto; margin-top: 5px" tab-section>
+        <table class="table table-condensed table-striped table-hover table-center" style="width: 725px">
+            <thead>
+                <tr>
+                    <th class="text-center valign-middle">Register</th>
+                    <th class="text-center valign-middle">Value</th>
+                    <th class="text-left valign-middle">Description</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: records">
+                <tr>
+                    <td width="5%" class="text-center valign-middle nowrap" data-bind="text: $data['@@reg']" />
+                    <td width="15%" class="text-center valign-middle truncate" style="max-width: 200px" data-bind="text: valueWithUnits, attr: { title: valueWithUnits }" />
+                    <td width="80%" class="text-left valign-middle nowrap" style="text-overflow: initial" data-bind="text: $data['@@desc']" />
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 @section Scripts {
@@ -186,24 +609,45 @@
         var viewModel = null;
         const deviceID = @deviceID;
         const configID = @configID;
-        const analyzerType = @analyzerType;
+        const analyzerType = @AnalyzerType;
         const analyzerName = "@analyzerName.JavaScriptEncode()";
         const vNom = @vNom;
         const iNom = @iNom;
+        const referenceAngle = "@referenceAngle.JavaScriptEncode()";
+
+        let shiftIsDown = false;
+
+        $(document).keydown(function (e) {
+            shiftIsDown = e.keyCode === 16;
+        });
+
+        $(document).keyup(function (e) {
+            shiftIsDown = false;
+        });
 
         const phasorRegisters = {
-            VAM: 0,     // Voltage A Magnitude
-            VAA: 3200,  // VOltage A Angle
-            VBM: 2,     // Voltage B Magnitude
-            VBA: 3202,  // Voltage B Angle
-            VCM: 4,     // Voltage C Magnitude
-            VCA: 3204,  // Voltage C Angle
+            VANM: 0,    // Voltage A to Neutral Magnitude
+            VANA: 3200, // Voltage A to Neutral Angle
+            VBNM: 2,    // Voltage B to Neutral Magnitude
+            VBNA: 3202, // Voltage B to Neutral Angle
+            VCNM: 4,    // Voltage C to Neutral Magnitude
+            VCNA: 3204, // Voltage C to Neutral Angle
+            VNGM: 6,    // Voltage Neutral to Ground Magnitude
+            VNGA: 3206, // Voltage Neutral to Ground Angle
+            VABM: 8,    // Voltage A to B Magnitude
+            VABA: 3208, // Voltage A to B Angle
+            VBCM: 10,   // Voltage B to C Magnitude
+            VBCA: 3210, // Voltage B to C Angle
+            VCAM: 12,   // Voltage C to A Magnitude
+            VCAA: 3212, // Voltage C to A Angle
             IAM: 14,    // Current A Magnitude
             IAA: 3214,  // Current A Angle
             IBM: 16,    // Current B Magnitude
             IBA: 3216,  // Current B Angle
             ICM: 18,    // Current C Magnitude
-            ICA: 3218   // Current C Angle
+            ICA: 3218,  // Current C Angle
+            INM: 20,    // Current Neutral Magnitude
+            INA: 3220   // Current Neutral Angle
         };
 
         const angle = 0;
@@ -214,13 +658,20 @@
             current: 2
         }
 
+        // Color scheme: A-phase = Red, B-phase = Green, C-phase = Blue, Neutral = Gray
+        // Shading: line-to-line = darker, line-to-neutral = normal shade, current = lighter
         const phasors = {
-            VA: { registers: [ phasorRegisters.VAA, phasorRegisters.VAM ], type: phasorType.voltage, color: "Black" },
-            VB: { registers: [ phasorRegisters.VBA, phasorRegisters.VBM ], type: phasorType.voltage, color: "Red" },
-            VC: { registers: [ phasorRegisters.VCA, phasorRegisters.VCM ], type: phasorType.voltage, color: "Blue" },
-            IA: { registers: [ phasorRegisters.IAA, phasorRegisters.IAM ], type: phasorType.current, color: "LightSlateGray" },
-            IB: { registers: [ phasorRegisters.IBA, phasorRegisters.IBM ], type: phasorType.current, color: "LightCoral" },
-            IC: { registers: [ phasorRegisters.ICA, phasorRegisters.ICM ], type: phasorType.current, color: "LightBlue" }
+            VAN: { registers: [phasorRegisters.VANA, phasorRegisters.VANM], type: phasorType.voltage, group: 0, color: "#8B0000" },
+            VBN: { registers: [phasorRegisters.VBNA, phasorRegisters.VBNM], type: phasorType.voltage, group: 0, color: "#339900" },
+            VCN: { registers: [phasorRegisters.VCNA, phasorRegisters.VCNM], type: phasorType.voltage, group: 0, color: "#0000FF" },
+            VNG: { registers: [phasorRegisters.VNGA, phasorRegisters.VNGM], type: phasorType.voltage, group: 0, color: "#000000" },
+            VAB: { registers: [phasorRegisters.VABA, phasorRegisters.VABM], type: phasorType.voltage, group: 1, color: "#FF0000" },
+            VBC: { registers: [phasorRegisters.VBCA, phasorRegisters.VBCM], type: phasorType.voltage, group: 1, color: "#00D000" },
+            VCA: { registers: [phasorRegisters.VCAA, phasorRegisters.VCAM], type: phasorType.voltage, group: 1, color: "#008BFF" },
+            IA: { registers: [phasorRegisters.IAA, phasorRegisters.IAM], type: phasorType.current, group: 2, color: "#FF0099" },
+            IB: { registers: [phasorRegisters.IBA, phasorRegisters.IBM], type: phasorType.current, group: 2, color: "#04FF00" },
+            IC: { registers: [phasorRegisters.ICA, phasorRegisters.ICM], type: phasorType.current, group: 2, color: "#42D4F4" },
+            IN: { registers: [phasorRegisters.INA, phasorRegisters.INM], type: phasorType.current, group: 2, color: "#A9A9A9"}
         }
 
         function GraphDataViewModel() {
@@ -231,7 +682,7 @@
 
             self.phasorRegisterMap = {};    // Register dictionary for phasor values (key = phasors, e.g., "VA")
             self.phasorValues = [];         // All phasor values, one per phasor (simple array, foreach-able)
-            self.phasorRecords = [];        // All angle and magnitude records per phasor (simple array, foreach-able)
+            self.phasorValueGroups = [];    // Grouped array of phasor values (simple array, foreach-able)
 
             self._dataHubIsConnected = ko.observable(false);
             self._autoRefresh = ko.observable(undefined);
@@ -287,6 +738,15 @@
             });
 
             // Methods
+            self.localeValue = function (value, digits) {
+                if (digits === undefined)
+                    digits = 2;
+
+                // scale-test:
+                return 999999.99.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+                //return value.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+            }
+
             self.queryData = function () {
                 if (!self.dataHubIsConnected())
                     return $.Deferred().resolve().promise();
@@ -295,11 +755,23 @@
                     const records = JSON.parse(result);
 
                     if (self.registerMap.length === 0) {
+                        // Set initial register bindings
+                        $("[register]").each(function (_, element) {
+                            const target = $(element);
+                            const register = target.attr("register");
+                            target.attr("data-bind", `text: registerMap[${register}].localeValue(), attr: { title: 'Register ${register}' }`);
+                            target.attr("data-toggle", "tooltip");
+                        });
+
                         records.commandresult.list.item.forEach(function (record) {
                             record.value = ko.observable(parseFloat(record["@@value"]));
 
+                            record.localeValue = function (digits) {
+                                return self.localeValue(record.value(), digits);
+                            }
+
                             record.valueWithUnits = ko.pureComputed({
-                                read: () => `${record.value().toFixed(6)} ${record["@@units"]}`,
+                                read: () => `${record.localeValue(6)} ${record["@@units"]}`,
                                 owner: self
                             });
 
@@ -319,18 +791,21 @@
                                 const visible = () => self.phasorValues.find(value => value.key === key).visible();
 
                                 const angleValue = self.registerMap[registers[angle]];
-                                angleValue.description = `${key} Angle (${angleValue["@@reg"]}):`;
+                                angleValue.title = `Register ${angleValue["@@reg"]}`;
                                 angleValue.color = phasor.color;
                                 angleValue.visible = ko.pureComputed({ read: visible, owner: self });
 
                                 const magnitudeValue = self.registerMap[registers[magnitude]];
-                                magnitudeValue.description = `${key} Magnitude (${magnitudeValue["@@reg"]}):`;
+                                magnitudeValue.title = `Register ${magnitudeValue["@@reg"]}`;
                                 magnitudeValue.color = phasor.color;
                                 magnitudeValue.visible = ko.pureComputed({ read: visible, owner: self });
 
                                 self.phasorRegisterMap = { ...self.phasorRegisterMap, [key]: [angleValue, magnitudeValue] };
                             }
                         }
+
+                        const referenceAngleValue = self.registerMap[phasorRegisters[referenceAngle]].value();
+                        let group = -1;
 
                         // Create array of phasor values for polar graph
                         for (let key in phasors) {
@@ -346,27 +821,27 @@
                                 const voltageTolerance = 0.9;  // 10% (NEMA)
                                 const currentTolerance = 0.85; // 15%
                                 const extent = width * (isVoltage ? voltageTolerance : currentTolerance);
-                                const aPhaseValues = self.phasorRegisterMap[isVoltage ? "VA" : "IA"];
                                 const phaseValues = self.phasorRegisterMap[key];
                                 const scale = isVoltage ? vNom : iNom;
 
                                 phasor.key = key;
-                                phasor.angle = ko.pureComputed({ read: () => (aPhaseValues[angle].value() - phaseValues[angle].value()) * Math.PI / 180.0, owner: self });
-                                phasor.magnitude = ko.pureComputed({ read: () => extent * (phaseValues[magnitude].value() / scale), owner: self });
+                                phasor.angleRegister = phaseValues[angle];
+                                phasor.magnitudeRegister = phaseValues[magnitude];
+                                phasor.title = `${phasor.magnitudeRegister["@@desc"]}`;
+                                phasor.angle = ko.pureComputed({ read: () => (phasor.angleRegister.value() - referenceAngleValue) * Math.PI / 180.0, owner: self });
+                                phasor.magnitude = ko.pureComputed({ read: () => extent * (phasor.magnitudeRegister.value() / scale), owner: self });
                                 phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()), owner: self });
                                 phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()), owner: self });
                                 phasor.visible = ko.observable(true);
 
                                 self.phasorValues.push(phasor);
-                            }
-                        }
 
-                        // Create array of phasor angle and magnitude records for value table
-                        for (let key in self.phasorRegisterMap) {
-                            if (self.phasorRegisterMap.hasOwnProperty(key)) {
-                                const phaseValues = self.phasorRegisterMap[key];
-                                self.phasorRecords.push(phaseValues[magnitude]);
-                                self.phasorRecords.push(phaseValues[angle]);
+                                if (group !== phasor.group) {
+                                    group = phasor.group;
+                                    self.phasorValueGroups[group] = [];
+                                }
+
+                                self.phasorValueGroups[group].push(phasor);
                             }
                         }
                     }
@@ -377,10 +852,19 @@
                         });
                     }
 
-                    if (viewModel.autoRefresh())
+                    if (self.autoRefresh())
                         setTimeout(self.queryData, self.refreshRate() * 1000);
                 });
             }
+        }
+
+        function showToolTip() {
+            if (shiftIsDown)
+                $(this).tooltip("show");
+        }
+
+        function hideToolTip() {
+            $(this).tooltip("hide");
         }
 
         function resizePageElements() {
@@ -391,7 +875,7 @@
             if ($("#tablist").length)
                 height -= $("#tablist").outerHeight(true);
 
-            $("[tab-section]").height(height - 55);
+            $("[tab-section]").height(height - 65);
         }
 
         // Page initialization function
@@ -418,7 +902,16 @@
 
                     // Initialize primary view model
                     ko.applyBindings(viewModel, document.getElementsByTagName("body")[0]);
-                })
+
+                    $("[data-toggle]").tooltip({
+                        trigger: "manual",
+                        boundary: "viewport",
+                        placement: "top",
+                        container: "body",
+                        appendToBody: true
+                    })
+                    .hover(showToolTip, hideToolTip);
+                 })
                 .fail(function (error) {
                     hideInfoMessage();
                     showErrorMessage(`Data Load ${error}`, null, true);

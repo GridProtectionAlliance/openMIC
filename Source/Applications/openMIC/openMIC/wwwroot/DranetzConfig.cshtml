@@ -344,7 +344,7 @@
                                     <tbody data-bind="foreach: analyzers">
                                         <tr id="analyzerRow" style="visibility: hidden" data-bind="css: { selected: isSelected }">
                                             <td width="80%" class="text-center valign-middle nowrap"><btn type="button" class="btn btn-link" style="padding: 0" data-bind="text: $data['@@name'], click: loadAnalyzerConfig.bind($data)" /></td>
-                                            <td width="10%" class="text-center valign-middle align-left nowrap" style="text-align: left"><span data-bind="text: analyzerTypeName"></span><btn type="button" class="btn btn-link" style="padding: 0" data-bind="click: openGraphDataWindow.bind($data), attr: {title: 'Show ' + $data['@@name']() + ' real-time values'}" show-data-button><img src="Images/GraphData.png" class="graph-data-img" alt="Graph Data" /></btn></td>
+                                            <td width="10%" class="text-center valign-middle align-left nowrap" style="text-align: left"><span data-bind="text: analyzerTypeName"></span><btn type="button" class="btn btn-link" style="padding: 0" data-bind="click: openGraphDataWindow.bind($data), visible: analyzerType() < 3, attr: {title: 'Show ' + $data['@@name']() + ' real-time values'}" show-data-button><img src="Images/GraphData.png" class="graph-data-img" alt="Graph Data" /></btn></td>
                                             <td width="10%" class="text-center valign-middle"><span data-bind="text: montitoringStatus"></span></td>
                                         </tr>
                                     </tbody>
@@ -402,7 +402,7 @@
         <pre data-bind="text: JSON.stringify(currentAnalyzerConfig(), null, 4)"></pre>
     </div>
 </div>
-<div id="graphDataWindow" class="modal modal-wide fade" role="dialog" style="max-width: 945px; margin: 0 auto">
+<div id="graphDataWindow" class="modal modal-wide fade" role="dialog" style="max-width: 1000px; margin: 0 auto">
     <div class="modal-vertical-align-container">
         <div class="modal-dialog modal-md modal-vertical-align-center">
             <div class="modal-content">
@@ -1040,7 +1040,7 @@
                 $("[tab-section]").height(height);
 
             $("#graphDataFrame").attr({
-                "height": $("#contentWell").outerHeight(true) + "px"
+                "height": `${$("#contentWell").outerHeight(true)}px`
             });
         }
 
@@ -1171,9 +1171,14 @@
             if (!analyzer)
                 return;
 
+            // Delta wiring configurations do not include neutral values, defaulting to line-to-line voltage angle in this case
+            const referenceAngle = viewModel.currentWiringConfig().type.toUpperCase() === "DELTA" ?
+                "VABA" /* Voltage A to B Angle */ :
+                "VANA" /* Voltage A to Neutral Angle */;
+
             $("#graphDataFrame").attr({
-                "src": `DranetzGraph.cshtml?DeviceID=@deviceID&ConfigID=${analyzer.configID()}&AnalyzerName=${analyzer['@@name']()}&AnalyzerType=${analyzer.analyzerType()}&AnalyzerTypeName=${analyzer.analyzerTypeName()}&vNom=${viewModel.vNom}&iNom=${viewModel.iNom}`,
-                "height": $("#contentWell").outerHeight(true) + "px",
+                "src": `DranetzGraph.cshtml?DeviceID=@deviceID&ConfigID=${analyzer.configID()}&AnalyzerName=${analyzer['@@name']()}&AnalyzerType=${analyzer.analyzerType()}&AnalyzerTypeName=${analyzer.analyzerTypeName()}&vNom=${viewModel.vNom}&iNom=${viewModel.iNom}&ReferenceAngle=${referenceAngle}`,
+                "height": `${$("#contentWell").outerHeight(true)}px`,
                 "width": "100%"
             });
 
