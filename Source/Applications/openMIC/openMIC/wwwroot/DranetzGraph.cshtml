@@ -122,6 +122,12 @@
             font-weight: bold;
             text-shadow: 1px 1px #7777771f;
         }
+
+        #scopePlot {
+            user-select: none;
+            width: 100%;
+            height: calc(100% - 15px);
+        }
     </style>
 }
 @{
@@ -199,14 +205,16 @@
     }
 
     public IEncodedString ReadingsPanelScale {
-        get {
+        get
+        {
             // Show all values as 999,999.99 to adjust scaling, see viewModel.localeValue function
-            switch (AnalyzerType) {
-                case 1:
+            switch (AnalyzerType)
+            {
+                case 1:  // Voltage Analyzer
                     return new RawString("style='transform: scale(.84); margin: -83px -80px'");
-                case 2:
+                case 2:  // Current Analyzer
                     return new RawString("style='transform: scale(.86); margin: -68px -35px'");
-                default:
+                default: // PQ Analyzer
                     return new RawString("style='transform: scale(.84); margin: -130px -85px'");
             }
         }
@@ -535,7 +543,14 @@
             </table>
         </div>
     </div>
-    <div id="tabScopeView"></div>
+    <div id="tabScopeView" tab-section>
+        <div id="scopePlot"></div>
+        <table style="border-spacing: 10px 0; border-collapse: separate; margin-top: 5px">
+            <tr data-bind="foreach: plotLegend">
+                <td><input type="checkbox" data-bind="checked: visible" />&nbsp;<span class="value-legend" data-bind="text: label, style: { color: color }"></span></td>
+            </tr>
+        </table>
+    </div>
     <div id="tabPhasorPlot" style="overflow: auto; margin-top: 5px" tab-section>
         <div id="phasor" class="col-sm-6 ui-widget-content">
             <div style="height: 300px">
@@ -604,6 +619,12 @@
     <script src="@Resources.Root/Shared/Scripts/knockout.js"></script>
     <script src="@Resources.Root/Shared/Scripts/knockout.mapping.js"></script>
     <script src="@Resources.Root/Shared/Scripts/gsf.web.knockout.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/flot/jquery.flot.min.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/flot/jquery.flot.crosshair.min.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/flot/jquery.flot.navigate.min.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/flot/jquery.flot.resize.min.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/flot/jquery.flot.selection.min.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/flot/jquery.flot.axislabels.min.js"></script>
 
     <script>
         "use strict";
@@ -633,6 +654,8 @@
             phasorPlot: 2,
             dataTable: 3
         }
+
+        const tabKeys = Object.keys(tab);
 
         const phasorRegisters = {
             VANM: 0,    // Voltage A to Neutral Magnitude
@@ -683,6 +706,30 @@
             IN: { registers: [phasorRegisters.INA, phasorRegisters.INM], type: phasorType.current, group: 2, color: "#A9A9A9"}
         }
 
+        function PlotSeriesViewModel(index, label, yaxis, data, color, isVoltage, scale, enabled, redrawPlotData) {
+            const self = this;
+
+            self.index = index;
+            self.label = label;
+            self.yaxis = yaxis;
+            self.data = data;
+            self.color = color;
+            self.isVoltage = isVoltage;
+            self.scale = scale;
+            self.enabled = enabled;
+
+            self._visible = ko.observable(enabled);
+
+            self.visible = ko.pureComputed({
+                read: self._visible,
+                write: function (value) {
+                    self._visible(value);
+                    redrawPlotData();
+                },
+                owner: self
+            });
+        }
+
         function GraphDataViewModel() {
             const self = this;
 
@@ -692,6 +739,10 @@
             self.phasorRegisterMap = {};    // Register dictionary for phasor values (key = phasors, e.g., "VAN")
             self.phasorValues = [];         // All phasor values, one per phasor (simple array, foreach-able)
             self.phasorValueGroups = [];    // Grouped array of phasor values (simple array, foreach-able)
+
+            self.plot = undefined;          // Flot chart object
+            self.plotData = [];             // Plot data data (simple array, foreach-able)
+            self.plotLegend = ko.observableArray();
 
             self._dataHubIsConnected = ko.observable(false);
             self._autoRefresh = ko.observable(undefined);
@@ -756,19 +807,258 @@
                 return value.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
             }
 
+            self.initializeRegisters = function (records) {
+                // Set initial register bindings
+                $("[register]").each(function (_, element) {
+                    const target = $(element);
+                    const register = target.attr("register");
+                    target.attr("data-bind", `text: registerMap[${register}].localeValue(), attr: { title: 'Register ${register}' }`);
+                    target.attr("data-toggle", "tooltip");
+                });
+
+                records.commandresult.list.item.forEach(function (record) {
+                    record.value = ko.observable(parseFloat(record["@@value"]));
+
+                    record.localeValue = function (digits) {
+                        return self.localeValue(record.value(), digits);
+                    }
+
+                    record.valueWithUnits = ko.pureComputed({
+                        read: () => `${record.localeValue(6)} ${record["@@units"]}`,
+                        owner: self
+                    });
+
+                    self.registerMap[parseInt(record["@@reg"], 10)] = record;
+                    self.records.push(record);
+                });
+
+                // Create dictionary of registers for phasor values
+                for (let key in phasors) {
+                    if (phasors.hasOwnProperty(key)) {
+                        const phasor = phasors[key];
+
+                        if (analyzerType > 0 && phasor.type !== analyzerType)
+                            continue;
+
+                        const registers = phasor.registers;
+                        const visible = () => self.phasorValues.find(value => value.key === key).visible();
+
+                        const angleValue = self.registerMap[registers[angle]];
+                        angleValue.title = `Register ${angleValue["@@reg"]}`;
+                        angleValue.color = phasor.color;
+                        angleValue.visible = ko.pureComputed({ read: visible, owner: self });
+
+                        const magnitudeValue = self.registerMap[registers[magnitude]];
+                        magnitudeValue.title = `Register ${magnitudeValue["@@reg"]}`;
+                        magnitudeValue.color = phasor.color;
+                        magnitudeValue.visible = ko.pureComputed({ read: visible, owner: self });
+
+                        self.phasorRegisterMap = { ...self.phasorRegisterMap, [key]: [angleValue, magnitudeValue] };
+                    }
+                }
+
+                const referenceAngleValue = self.registerMap[phasorRegisters[referenceAngle]].value();
+                let group = -1;
+
+                // Create array of phasor values for polar graph
+                for (let key in phasors) {
+                    if (phasors.hasOwnProperty(key)) {
+                        const phasor = phasors[key];
+
+                        if (analyzerType > 0 && phasor.type !== analyzerType)
+                            continue;
+
+                        const width = $("#phasorChart").width() / 2;
+                        const height = $("#phasorChart").height() / 2;
+                        const isVoltage = phasor.type === phasorType.voltage;
+                        const voltageTolerance = 0.9;  // 10% (NEMA)
+                        const currentTolerance = 0.85; // 15%
+                        const extent = width * (isVoltage ? voltageTolerance : currentTolerance);
+                        const phaseValues = self.phasorRegisterMap[key];
+                        const scale = isVoltage ? vNom : iNom;
+
+                        phasor.key = key;
+                        phasor.angleRegister = phaseValues[angle];
+                        phasor.magnitudeRegister = phaseValues[magnitude];
+                        phasor.title = `${phasor.magnitudeRegister["@@desc"]}`;
+                        phasor.angle = ko.pureComputed({ read: () => (phasor.angleRegister.value() - referenceAngleValue) * Math.PI / 180.0, owner: self });
+                        phasor.magnitude = ko.pureComputed({ read: () => extent * (phasor.magnitudeRegister.value() / scale), owner: self });
+                        phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()), owner: self });
+                        phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()), owner: self });
+                        phasor.visible = ko.observable(true);
+
+                        self.phasorValues.push(phasor);
+
+                        if (group !== phasor.group) {
+                            group = phasor.group;
+                            self.phasorValueGroups[group] = [];
+                        }
+
+                        self.phasorValueGroups[group].push(phasor);
+                    }
+                }
+            }
+
+            self.buildPlot = function (items) {
+                $.each(items, function (index, item) {
+                    const values = item["#text"].trim().split(",");
+                    const data = [];
+
+                    $.each(values, function (x, value) {
+                        value = value.trim();
+
+                        if (value.length > 0) {
+                            const y = parseFloat(value);
+
+                            if (!isNaN(y))
+                                data.push([x, y]);
+                        }
+                    });
+
+                    if (self.plotData.length <= index) {
+                        // 1: Voltage axis (left)
+                        // 2: Current axis (right)
+                        const isVoltage = index < 4;
+                        const label = isVoltage ? `V${String.fromCharCode(65 + index)}` : `I${String.fromCharCode(65 + (index - 4))}`;
+                        const yaxis = isVoltage ? phasorType.voltage : phasorType.current;
+                        const scale = parseFloat(item["@@scale"]);
+                        const enabled = analyzerType === 0 || analyzerType === (isVoltage ? phasorType.voltage : phasorType.current);
+
+                        self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, index, isVoltage, scale, enabled, self.drawPlotData));
+                    }
+                    else {
+                        self.plotData[index].data = data;
+                    }
+                });
+
+                const initialized = self.plot !== undefined;
+
+                self.drawPlotData();
+
+                if (!initialized) {
+                    const scopePlot = $("#scopePlot");
+
+                    scopePlot.bind("plothover", function (_, pos, item) {
+                        if (item) {
+                            const toolTipText = String.format("{0} [{1}] = {2}", item.series.label, item.datapoint[0], self.localeValue(item.datapoint[1]));
+                            $("#plotToolTip").html(toolTipText).css({ top: pos.pageY + 20, left: pos.pageX + 10 }).fadeIn(200);
+                        } else {
+                            $("#plotToolTip").hide();
+                        }
+                    });
+
+                    scopePlot.mouseleave(function() {
+                        $("#plotToolTip").hide();
+                    });
+
+                    $.each(self.plot.getData(), function (_, series) {
+                        if (series.enabled)
+                            self.plotLegend.push(series);
+                    });
+                }
+            }
+
+            self.drawPlotData = function () {
+                if (getActiveTabIndex() !== tab.scopeView)
+                    return;
+
+                const scopePlot = $("#scopePlot");
+                const plotData = [];
+
+                $.each(self.plotData, function (_, series) {
+                    if (series.visible())
+                        plotData.push(series);
+                });
+
+                let yaxisMin = undefined;
+                let yaxisMax = undefined;
+                let y2axisMin = undefined;
+                let y2axisMax = undefined;
+
+                if (self.plot !== undefined) {
+                    const axes = self.plot.getAxes();
+                    const yaxis = axes.yaxis;
+                    const y2axis = axes.y2axis;
+
+                    yaxisMin = yaxis.min;
+                    yaxisMax = yaxis.max;
+                    y2axisMin = y2axis.min;
+                    y2axisMax = y2axis.max;
+                }
+
+                self.plot = $.plot(scopePlot, plotData, {
+                    series: {
+                        shadowSize: 1,
+                        lines: {
+                            show: true
+                        },
+                        points: {
+                            show: false
+                        }
+                    },
+                    grid: {
+                        hoverable: true,
+                        clickable: true
+                    },
+                    xaxis: {
+                        zoomRange: false,
+                        panRange: false
+                    },
+                    yaxis: {
+                        axisZoom: true,
+                        plotZoom: true,
+                        axisPan: true,
+                        plotPan: true
+                    },
+                    yaxes: [
+                        {
+                            position: "left",
+                            axisLabel: "Voltage",
+                            min: yaxisMin,
+                            max: yaxisMax
+                        }, {
+                            position: "right",
+                            axisLabel: "Current",
+                            min: y2axisMin,
+                            max: y2axisMax
+                        }
+                    ],
+                    legend: {
+                        show: false
+                    },
+                    zoom: {
+                        interactive: true
+                    },
+                    pan: {
+                        interactive: true
+                    }
+                });
+            }
+
+            self.setQueryTimeout = function () {
+                if (!self.autoRefresh())
+                    return;
+
+                setTimeout(function () {
+                    if (self.autoRefresh())
+                        self.queryData();
+                }, self.refreshRate() * 1000);
+            }
+
             self.queryData = function () {
-                if (!self.dataHubIsConnected())
+                if (!self.dataHubIsConnected()) {
+                    self.setQueryTimeout();
                     return $.Deferred().resolve().promise();
+                }
 
                 if (getActiveTabIndex() === tab.scopeView) {
                     // Scope view tab depends on wave form data, only query this data when this tab is active
                     return dataHub.getWaveform(deviceID, configID).done(function (result) {
                         const records = JSON.parse(result);
 
-                        console.log(`Loaded ${records.characteristics.list.item.length} waveform records...`);
+                        self.buildPlot(records.characteristics.list.item);
 
-                        if (self.autoRefresh())
-                            setTimeout(self.queryData, self.refreshRate() * 1000);
+                        self.setQueryTimeout();
                     });
                 }
                 else {
@@ -777,95 +1067,7 @@
                         const records = JSON.parse(result);
 
                         if (self.registerMap.length === 0) {
-                            // Set initial register bindings
-                            $("[register]").each(function (_, element) {
-                                const target = $(element);
-                                const register = target.attr("register");
-                                target.attr("data-bind", `text: registerMap[${register}].localeValue(), attr: { title: 'Register ${register}' }`);
-                                target.attr("data-toggle", "tooltip");
-                            });
-
-                            records.commandresult.list.item.forEach(function (record) {
-                                record.value = ko.observable(parseFloat(record["@@value"]));
-
-                                record.localeValue = function (digits) {
-                                    return self.localeValue(record.value(), digits);
-                                }
-
-                                record.valueWithUnits = ko.pureComputed({
-                                    read: () => `${record.localeValue(6)} ${record["@@units"]}`,
-                                    owner: self
-                                });
-
-                                self.registerMap[parseInt(record["@@reg"], 10)] = record;
-                                self.records.push(record);
-                            });
-
-                            // Create dictionary of registers for phasor values
-                            for (let key in phasors) {
-                                if (phasors.hasOwnProperty(key)) {
-                                    const phasor = phasors[key];
-
-                                    if (analyzerType > 0 && phasor.type !== analyzerType)
-                                        continue;
-
-                                    const registers = phasor.registers;
-                                    const visible = () => self.phasorValues.find(value => value.key === key).visible();
-
-                                    const angleValue = self.registerMap[registers[angle]];
-                                    angleValue.title = `Register ${angleValue["@@reg"]}`;
-                                    angleValue.color = phasor.color;
-                                    angleValue.visible = ko.pureComputed({ read: visible, owner: self });
-
-                                    const magnitudeValue = self.registerMap[registers[magnitude]];
-                                    magnitudeValue.title = `Register ${magnitudeValue["@@reg"]}`;
-                                    magnitudeValue.color = phasor.color;
-                                    magnitudeValue.visible = ko.pureComputed({ read: visible, owner: self });
-
-                                    self.phasorRegisterMap = { ...self.phasorRegisterMap, [key]: [angleValue, magnitudeValue] };
-                                }
-                            }
-
-                            const referenceAngleValue = self.registerMap[phasorRegisters[referenceAngle]].value();
-                            let group = -1;
-
-                            // Create array of phasor values for polar graph
-                            for (let key in phasors) {
-                                if (phasors.hasOwnProperty(key)) {
-                                    const phasor = phasors[key];
-
-                                    if (analyzerType > 0 && phasor.type !== analyzerType)
-                                        continue;
-
-                                    const width = $("#phasorChart").width() / 2;
-                                    const height = $("#phasorChart").height() / 2;
-                                    const isVoltage = phasor.type === phasorType.voltage;
-                                    const voltageTolerance = 0.9;  // 10% (NEMA)
-                                    const currentTolerance = 0.85; // 15%
-                                    const extent = width * (isVoltage ? voltageTolerance : currentTolerance);
-                                    const phaseValues = self.phasorRegisterMap[key];
-                                    const scale = isVoltage ? vNom : iNom;
-
-                                    phasor.key = key;
-                                    phasor.angleRegister = phaseValues[angle];
-                                    phasor.magnitudeRegister = phaseValues[magnitude];
-                                    phasor.title = `${phasor.magnitudeRegister["@@desc"]}`;
-                                    phasor.angle = ko.pureComputed({ read: () => (phasor.angleRegister.value() - referenceAngleValue) * Math.PI / 180.0, owner: self });
-                                    phasor.magnitude = ko.pureComputed({ read: () => extent * (phasor.magnitudeRegister.value() / scale), owner: self });
-                                    phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()), owner: self });
-                                    phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()), owner: self });
-                                    phasor.visible = ko.observable(true);
-
-                                    self.phasorValues.push(phasor);
-
-                                    if (group !== phasor.group) {
-                                        group = phasor.group;
-                                        self.phasorValueGroups[group] = [];
-                                    }
-
-                                    self.phasorValueGroups[group].push(phasor);
-                                }
-                            }
+                            self.initializeRegisters(records);
                         }
                         else {
                             // Update pre-defined observable values
@@ -874,8 +1076,7 @@
                             });
                         }
 
-                        if (self.autoRefresh())
-                            setTimeout(self.queryData, self.refreshRate() * 1000);
+                        self.setQueryTimeout();
                     });
                 }
             }
@@ -907,7 +1108,7 @@
 
         function setActiveTabIndex(index) {
             $("#tabs").tabs({ active: index });
-            $(`a[href='#tab${sectionKeys[viewModel.currentAnalyzerType()][index]}']`).parent().focus();
+            $(`a[href='#tab${tabKeys[index]}']`).parent().focus();
         }
 
         // Page initialization function
@@ -954,8 +1155,34 @@
                 active: 0,
                 activate: function (event, ui) {
                     ui.newPanel.find(":input:not([type=hidden]):first").focus();
+
+                    if (getActiveTabIndex() === tab.scopeView) {
+                        if (viewModel.plot === undefined) {
+                            showInfoMessage(`Loading waveform data, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1);
+
+                            viewModel.queryData().done(function () {
+                                ui.newPanel.initialized = true;
+                                hideInfoMessage();
+                            })
+                            .fail(function (error) {
+                                hideInfoMessage();
+                                showErrorMessage(`Waveform Data Load ${error}`, null, true);
+                            });
+                        }
+                    } else {
+                        $("#plotToolTip").hide();
+                    }
                 }
             });
+
+            $("<div id='plotToolTip'></div>").css({
+                position: "absolute",
+                display: "none",
+                border: "1px solid #fdd",
+                padding: "2px",
+                "background-color": "#fee",
+                opacity: 0.80
+            }).appendTo("body");
 
             $(window).on("hubDisconnected", function () {
                 viewModel.dataHubIsConnected(false);
