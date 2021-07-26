@@ -933,7 +933,8 @@
 
                 const initialized = self.plot !== undefined;
 
-                self.drawPlotData();
+                if (!self.drawPlotData())
+                    return;
 
                 if (!initialized) {
                     const scopePlot = $("#scopePlot");
@@ -960,79 +961,86 @@
 
             self.drawPlotData = function () {
                 if (getActiveTabIndex() !== tab.scopeView)
-                    return;
+                    return false;
 
-                const scopePlot = $("#scopePlot");
-                const plotData = [];
+                try {
+                    const scopePlot = $("#scopePlot");
+                    const plotData = [];
 
-                $.each(self.plotData, function (_, series) {
-                    if (series.visible())
-                        plotData.push(series);
-                });
+                    $.each(self.plotData, function (_, series) {
+                        if (series.visible())
+                            plotData.push(series);
+                    });
 
-                let yaxisMin = undefined;
-                let yaxisMax = undefined;
-                let y2axisMin = undefined;
-                let y2axisMax = undefined;
+                    let yaxisMin = undefined;
+                    let yaxisMax = undefined;
+                    let y2axisMin = undefined;
+                    let y2axisMax = undefined;
 
-                if (self.plot !== undefined) {
-                    const axes = self.plot.getAxes();
-                    const yaxis = axes.yaxis;
-                    const y2axis = axes.y2axis;
+                    if (self.plot !== undefined) {
+                        const axes = self.plot.getAxes();
+                        const yaxis = axes.yaxis;
+                        const y2axis = axes.y2axis;
 
-                    yaxisMin = yaxis.min;
-                    yaxisMax = yaxis.max;
-                    y2axisMin = y2axis.min;
-                    y2axisMax = y2axis.max;
-                }
-
-                self.plot = $.plot(scopePlot, plotData, {
-                    series: {
-                        shadowSize: 1,
-                        lines: {
-                            show: true
-                        },
-                        points: {
-                            show: false
-                        }
-                    },
-                    grid: {
-                        hoverable: true,
-                        clickable: true
-                    },
-                    xaxis: {
-                        zoomRange: false,
-                        panRange: false
-                    },
-                    yaxis: {
-                        axisZoom: true,
-                        plotZoom: true,
-                        axisPan: true,
-                        plotPan: true
-                    },
-                    yaxes: [
-                        {
-                            position: "left",
-                            axisLabel: "Voltage",
-                            min: yaxisMin,
-                            max: yaxisMax
-                        }, {
-                            position: "right",
-                            axisLabel: "Current",
-                            min: y2axisMin,
-                            max: y2axisMax
-                        }
-                    ],
-                    legend: {
-                        show: false
-                    },
-                    zoom: {
-                        interactive: true
-                    },
-                    pan: {
-                        interactive: true
+                        yaxisMin = yaxis.min;
+                        yaxisMax = yaxis.max;
+                        y2axisMin = y2axis.min;
+                        y2axisMax = y2axis.max;
                     }
-                });
+
+                    self.plot = $.plot(scopePlot, plotData, {
+                        series: {
+                            shadowSize: 1,
+                            lines: {
+                                show: true
+                            },
+                            points: {
+                                show: false
+                            }
+                        },
+                        grid: {
+                            hoverable: true,
+                            clickable: true
+                        },
+                        xaxis: {
+                            zoomRange: false,
+                            panRange: false
+                        },
+                        yaxis: {
+                            axisZoom: true,
+                            plotZoom: true,
+                            axisPan: true,
+                            plotPan: true
+                        },
+                        yaxes: [
+                            {
+                                position: "left",
+                                axisLabel: "Voltage",
+                                min: yaxisMin,
+                                max: yaxisMax
+                            }, {
+                                position: "right",
+                                axisLabel: "Current",
+                                min: y2axisMin,
+                                max: y2axisMax
+                            }
+                        ],
+                        legend: {
+                            show: false
+                        },
+                        zoom: {
+                            interactive: true
+                        },
+                        pan: {
+                            interactive: true
+                        }
+                    });
+
+                    return true;
+                } catch (e) {
+                    console.error(e);
+                    return false;
+                }
             }
 
             self.setQueryTimeout = function () {
@@ -1161,7 +1169,6 @@
                             showInfoMessage(`Loading waveform data, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1);
 
                             viewModel.queryData().done(function () {
-                                ui.newPanel.initialized = true;
                                 hideInfoMessage();
                             })
                             .fail(function (error) {
