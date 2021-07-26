@@ -226,6 +226,7 @@
     </div>
     <ul id="tablist">
         <li><a href="#tabReadings">Readings</a></li>
+        <li><a href="#tabScopeView">Scope View</a></li>
         <li><a href="#tabPhasorPlot">Phasor Plot</a></li>
         <li><a href="#tabDataTable">Data Table</a></li>
     </ul>
@@ -534,6 +535,7 @@
             </table>
         </div>
     </div>
+    <div id="tabScopeView"></div>
     <div id="tabPhasorPlot" style="overflow: auto; margin-top: 5px" tab-section>
         <div id="phasor" class="col-sm-6 ui-widget-content">
             <div style="height: 300px">
@@ -625,6 +627,13 @@
             shiftIsDown = false;
         });
 
+        const tab = {
+            readings: 0,
+            scopeView: 1,
+            phasorPlot: 2,
+            dataTable: 3
+        }
+
         const phasorRegisters = {
             VANM: 0,    // Voltage A to Neutral Magnitude
             VANA: 3200, // Voltage A to Neutral Angle
@@ -680,7 +689,7 @@
             self.registerMap = [];          // Register dictionary (sparse array)
             self.records = [];              // All records (simple array, foreach-able)
 
-            self.phasorRegisterMap = {};    // Register dictionary for phasor values (key = phasors, e.g., "VA")
+            self.phasorRegisterMap = {};    // Register dictionary for phasor values (key = phasors, e.g., "VAN")
             self.phasorValues = [];         // All phasor values, one per phasor (simple array, foreach-able)
             self.phasorValueGroups = [];    // Grouped array of phasor values (simple array, foreach-able)
 
@@ -751,110 +760,124 @@
                 if (!self.dataHubIsConnected())
                     return $.Deferred().resolve().promise();
 
-                return dataHub.getValuesLongList(deviceID, configID).done(function (result) {
-                    const records = JSON.parse(result);
+                if (getActiveTabIndex() === tab.scopeView) {
+                    // Scope view tab depends on wave form data, only query this data when this tab is active
+                    return dataHub.getWaveform(deviceID, configID).done(function (result) {
+                        const records = JSON.parse(result);
 
-                    if (self.registerMap.length === 0) {
-                        // Set initial register bindings
-                        $("[register]").each(function (_, element) {
-                            const target = $(element);
-                            const register = target.attr("register");
-                            target.attr("data-bind", `text: registerMap[${register}].localeValue(), attr: { title: 'Register ${register}' }`);
-                            target.attr("data-toggle", "tooltip");
-                        });
+                        console.log(`Loaded ${records.characteristics.list.item.length} waveform records...`);
 
-                        records.commandresult.list.item.forEach(function (record) {
-                            record.value = ko.observable(parseFloat(record["@@value"]));
+                        if (self.autoRefresh())
+                            setTimeout(self.queryData, self.refreshRate() * 1000);
+                    });
+                }
+                else {
+                    // All other tabs depend on register values
+                    return dataHub.getValuesLongList(deviceID, configID).done(function (result) {
+                        const records = JSON.parse(result);
 
-                            record.localeValue = function (digits) {
-                                return self.localeValue(record.value(), digits);
-                            }
-
-                            record.valueWithUnits = ko.pureComputed({
-                                read: () => `${record.localeValue(6)} ${record["@@units"]}`,
-                                owner: self
+                        if (self.registerMap.length === 0) {
+                            // Set initial register bindings
+                            $("[register]").each(function (_, element) {
+                                const target = $(element);
+                                const register = target.attr("register");
+                                target.attr("data-bind", `text: registerMap[${register}].localeValue(), attr: { title: 'Register ${register}' }`);
+                                target.attr("data-toggle", "tooltip");
                             });
 
-                            self.registerMap[parseInt(record["@@reg"], 10)] = record;
-                            self.records.push(record);
-                        });
+                            records.commandresult.list.item.forEach(function (record) {
+                                record.value = ko.observable(parseFloat(record["@@value"]));
 
-                        // Create dictionary of registers for phasor values
-                        for (let key in phasors) {
-                            if (phasors.hasOwnProperty(key)) {
-                                const phasor = phasors[key];
-
-                                if (analyzerType > 0 && phasor.type !== analyzerType)
-                                    continue;
-
-                                const registers = phasor.registers;
-                                const visible = () => self.phasorValues.find(value => value.key === key).visible();
-
-                                const angleValue = self.registerMap[registers[angle]];
-                                angleValue.title = `Register ${angleValue["@@reg"]}`;
-                                angleValue.color = phasor.color;
-                                angleValue.visible = ko.pureComputed({ read: visible, owner: self });
-
-                                const magnitudeValue = self.registerMap[registers[magnitude]];
-                                magnitudeValue.title = `Register ${magnitudeValue["@@reg"]}`;
-                                magnitudeValue.color = phasor.color;
-                                magnitudeValue.visible = ko.pureComputed({ read: visible, owner: self });
-
-                                self.phasorRegisterMap = { ...self.phasorRegisterMap, [key]: [angleValue, magnitudeValue] };
-                            }
-                        }
-
-                        const referenceAngleValue = self.registerMap[phasorRegisters[referenceAngle]].value();
-                        let group = -1;
-
-                        // Create array of phasor values for polar graph
-                        for (let key in phasors) {
-                            if (phasors.hasOwnProperty(key)) {
-                                const phasor = phasors[key];
-
-                                if (analyzerType > 0 && phasor.type !== analyzerType)
-                                    continue;
-
-                                const width = $("#phasorChart").width() / 2;
-                                const height = $("#phasorChart").height() / 2;
-                                const isVoltage = phasor.type === phasorType.voltage;
-                                const voltageTolerance = 0.9;  // 10% (NEMA)
-                                const currentTolerance = 0.85; // 15%
-                                const extent = width * (isVoltage ? voltageTolerance : currentTolerance);
-                                const phaseValues = self.phasorRegisterMap[key];
-                                const scale = isVoltage ? vNom : iNom;
-
-                                phasor.key = key;
-                                phasor.angleRegister = phaseValues[angle];
-                                phasor.magnitudeRegister = phaseValues[magnitude];
-                                phasor.title = `${phasor.magnitudeRegister["@@desc"]}`;
-                                phasor.angle = ko.pureComputed({ read: () => (phasor.angleRegister.value() - referenceAngleValue) * Math.PI / 180.0, owner: self });
-                                phasor.magnitude = ko.pureComputed({ read: () => extent * (phasor.magnitudeRegister.value() / scale), owner: self });
-                                phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()), owner: self });
-                                phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()), owner: self });
-                                phasor.visible = ko.observable(true);
-
-                                self.phasorValues.push(phasor);
-
-                                if (group !== phasor.group) {
-                                    group = phasor.group;
-                                    self.phasorValueGroups[group] = [];
+                                record.localeValue = function (digits) {
+                                    return self.localeValue(record.value(), digits);
                                 }
 
-                                self.phasorValueGroups[group].push(phasor);
+                                record.valueWithUnits = ko.pureComputed({
+                                    read: () => `${record.localeValue(6)} ${record["@@units"]}`,
+                                    owner: self
+                                });
+
+                                self.registerMap[parseInt(record["@@reg"], 10)] = record;
+                                self.records.push(record);
+                            });
+
+                            // Create dictionary of registers for phasor values
+                            for (let key in phasors) {
+                                if (phasors.hasOwnProperty(key)) {
+                                    const phasor = phasors[key];
+
+                                    if (analyzerType > 0 && phasor.type !== analyzerType)
+                                        continue;
+
+                                    const registers = phasor.registers;
+                                    const visible = () => self.phasorValues.find(value => value.key === key).visible();
+
+                                    const angleValue = self.registerMap[registers[angle]];
+                                    angleValue.title = `Register ${angleValue["@@reg"]}`;
+                                    angleValue.color = phasor.color;
+                                    angleValue.visible = ko.pureComputed({ read: visible, owner: self });
+
+                                    const magnitudeValue = self.registerMap[registers[magnitude]];
+                                    magnitudeValue.title = `Register ${magnitudeValue["@@reg"]}`;
+                                    magnitudeValue.color = phasor.color;
+                                    magnitudeValue.visible = ko.pureComputed({ read: visible, owner: self });
+
+                                    self.phasorRegisterMap = { ...self.phasorRegisterMap, [key]: [angleValue, magnitudeValue] };
+                                }
+                            }
+
+                            const referenceAngleValue = self.registerMap[phasorRegisters[referenceAngle]].value();
+                            let group = -1;
+
+                            // Create array of phasor values for polar graph
+                            for (let key in phasors) {
+                                if (phasors.hasOwnProperty(key)) {
+                                    const phasor = phasors[key];
+
+                                    if (analyzerType > 0 && phasor.type !== analyzerType)
+                                        continue;
+
+                                    const width = $("#phasorChart").width() / 2;
+                                    const height = $("#phasorChart").height() / 2;
+                                    const isVoltage = phasor.type === phasorType.voltage;
+                                    const voltageTolerance = 0.9;  // 10% (NEMA)
+                                    const currentTolerance = 0.85; // 15%
+                                    const extent = width * (isVoltage ? voltageTolerance : currentTolerance);
+                                    const phaseValues = self.phasorRegisterMap[key];
+                                    const scale = isVoltage ? vNom : iNom;
+
+                                    phasor.key = key;
+                                    phasor.angleRegister = phaseValues[angle];
+                                    phasor.magnitudeRegister = phaseValues[magnitude];
+                                    phasor.title = `${phasor.magnitudeRegister["@@desc"]}`;
+                                    phasor.angle = ko.pureComputed({ read: () => (phasor.angleRegister.value() - referenceAngleValue) * Math.PI / 180.0, owner: self });
+                                    phasor.magnitude = ko.pureComputed({ read: () => extent * (phasor.magnitudeRegister.value() / scale), owner: self });
+                                    phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()), owner: self });
+                                    phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()), owner: self });
+                                    phasor.visible = ko.observable(true);
+
+                                    self.phasorValues.push(phasor);
+
+                                    if (group !== phasor.group) {
+                                        group = phasor.group;
+                                        self.phasorValueGroups[group] = [];
+                                    }
+
+                                    self.phasorValueGroups[group].push(phasor);
+                                }
                             }
                         }
-                    }
-                    else {
-                        // Update pre-defined observable values
-                        records.commandresult.list.item.forEach(function (record) {
-                            self.registerMap[parseInt(record["@@reg"], 10)].value(parseFloat(record["@@value"]));
-                        });
-                    }
+                        else {
+                            // Update pre-defined observable values
+                            records.commandresult.list.item.forEach(function (record) {
+                                self.registerMap[parseInt(record["@@reg"], 10)].value(parseFloat(record["@@value"]));
+                            });
+                        }
 
-                    if (self.autoRefresh())
-                        setTimeout(self.queryData, self.refreshRate() * 1000);
-                });
+                        if (self.autoRefresh())
+                            setTimeout(self.queryData, self.refreshRate() * 1000);
+                    });
+                }
             }
         }
 
@@ -876,6 +899,15 @@
                 height -= $("#tablist").outerHeight(true);
 
             $("[tab-section]").height(height - 65);
+        }
+
+        function getActiveTabIndex() {
+            return $("#tabs").tabs("option", "active");
+        }
+
+        function setActiveTabIndex(index) {
+            $("#tabs").tabs({ active: index });
+            $(`a[href='#tab${sectionKeys[viewModel.currentAnalyzerType()][index]}']`).parent().focus();
         }
 
         // Page initialization function
