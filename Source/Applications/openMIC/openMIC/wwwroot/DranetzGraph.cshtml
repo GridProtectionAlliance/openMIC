@@ -126,7 +126,14 @@
         #scopePlot {
             user-select: none;
             width: 100%;
-            height: calc(100% - 15px);
+            height: calc(100% - 20px);
+            margin-bottom: 5px;
+        }
+
+        #plotLegend {
+            border-spacing: 10px 0;
+            border-collapse: separate;
+            margin: 1px auto 0 auto;
         }
     </style>
 }
@@ -200,8 +207,16 @@
         get { return new RawString(IsVoltageAnalyzer ? "" : "style='display: none'"); }
     }
 
+    public IEncodedString VoltageVisibility {
+        get { return new RawString(IsVoltageAnalyzer ? "" : "visibility: hidden"); }
+    }
+
     public IEncodedString CurrentDisplay {
         get { return new RawString(IsCurrentAnalyzer ? "" : "style='display: none'"); }
+    }
+
+    public IEncodedString CurrentVisibility {
+        get { return new RawString(IsCurrentAnalyzer ? "" : "visibility: hidden"); }
     }
 
     public IEncodedString ReadingsPanelScale {
@@ -545,9 +560,27 @@
     </div>
     <div id="tabScopeView" tab-section>
         <div id="scopePlot"></div>
-        <table style="border-spacing: 10px 0; border-collapse: separate; margin-top: 5px">
-            <tr data-bind="foreach: plotLegend">
-                <td><input type="checkbox" data-bind="checked: visible" />&nbsp;<span class="value-legend" data-bind="text: label, style: { color: color }"></span></td>
+        <table class="table-center" style="width: 100%">
+            <tr>
+                <td style="text-align: left">
+                    <label class="nowrap" style="font-weight: normal;@VoltageVisibility">
+                        <input type="checkbox" data-bind="checked: adjustVoltageScale" @PQDisplay />
+                        Voltage scale: <input type="number" step="1000" style="width: 75px" data-bind="value: voltageScale" />
+                    </label>
+                </td>
+                <td style="text-align: center; vertical-align: top">
+                    <table id="plotLegend">
+                        <tr data-bind="foreach: plotLegend">
+                            <td><input type="checkbox" data-bind="checked: visible" />&nbsp;<span class="value-legend" data-bind="text: label, style: { color: color }"></span></td>
+                        </tr>
+                    </table>
+                </td>
+                <td style="text-align: right">
+                    <label class="nowrap" style="font-weight: normal;@CurrentVisibility">
+                        <input type="checkbox" data-bind="checked: adjustCurrentScale" @PQDisplay />
+                        Current scale: <input type="number" step="5" style="width: 75px" data-bind="value: currentScale" />
+                    </label>
+                </td>
             </tr>
         </table>
     </div>
@@ -741,12 +774,18 @@
             self.phasorValueGroups = [];    // Grouped array of phasor values (simple array, foreach-able)
 
             self.plot = undefined;          // Flot chart object
-            self.plotData = [];             // Plot data data (simple array, foreach-able)
+            self.plotData = [];             // Plot data (simple array, foreach-able)
             self.plotLegend = ko.observableArray();
+
+            self.adjustVoltageScale = ko.observable(@IsVoltageAnalyzer.ToString().ToLower());
+            self.adjustCurrentScale = ko.observable(@IsCurrentAnalyzer.ToString().ToLower());
 
             self._dataHubIsConnected = ko.observable(false);
             self._autoRefresh = ko.observable(undefined);
             self._refreshRate = ko.observable(undefined);
+            self._voltageScale = ko.observable(undefined);
+            self._currentScale = ko.observable(undefined);
+            self._adjustingScales = false;
 
             // Properties
             self.dataHubIsConnected = ko.pureComputed({
@@ -793,6 +832,62 @@
 
                     self._refreshRate(value);
                     Cookies.set("refreshRate", value.toString(), { expires: 365 });
+                },
+                owner: self
+            });
+
+            self.voltageScale = ko.pureComputed({
+                read: function () {
+                    if (self._voltageScale() === undefined)
+                        self._voltageScale(parseInt(Cookies.get("voltageScale")));
+
+                    return self._voltageScale() || "";
+                },
+                write: function (value) {
+                    if (value === undefined)
+                        return;
+
+                    value = Math.round(value);
+
+                    if (value < 1)
+                        value = 1;
+
+                    if (value === self._voltageScale())
+                        return;
+
+                    self._voltageScale(value);
+                    Cookies.set("voltageScale", value.toString(), { expires: 365 });
+
+                    if (!self._adjustingScales)
+                        self.applyScales();
+                },
+                owner: self
+            });
+
+            self.currentScale = ko.pureComputed({
+                read: function () {
+                    if (self._currentScale() === undefined)
+                        self._currentScale(parseInt(Cookies.get("currentScale")));
+
+                    return self._currentScale() || "";
+                },
+                write: function (value) {
+                    if (value === undefined)
+                        return;
+
+                    value = Math.round(value);
+
+                    if (value < 1)
+                        value = 1;
+
+                    if (value === self._currentScale())
+                        return;
+
+                    self._currentScale(value);
+                    Cookies.set("currentScale", value.toString(), { expires: 365 });
+
+                    if (!self._adjustingScales)
+                        self.applyScales();
                 },
                 owner: self
             });
@@ -899,6 +994,63 @@
                 }
             }
 
+            self.readScales = function () {
+                try {
+                    self._adjustingScales = true;
+
+                    const axes = self.plot.getAxes();
+
+                    if (self.adjustVoltageScale()) {
+                        const yaxis = axes.yaxis;
+                        self.voltageScale(Math.abs(yaxis.min - yaxis.max));
+                    }
+
+                    if (self.adjustCurrentScale()) {
+                        const y2axis = axes.y2axis;
+                        self.currentScale(Math.abs(y2axis.min - y2axis.max));
+                    }
+
+                    self.drawPlotData(true);
+                }
+                finally {
+                    self._adjustingScales = false;
+                }
+            }
+
+            self.applyScales = function () {
+                let adjusted = false;
+
+                try {
+                    self._adjustingScales = true;
+
+                    const axes = self.plot.getAxes();
+
+                    if (self.voltageScale() && self.adjustVoltageScale()) {
+                        const voltageScale = self.voltageScale() / 2;
+                        const yaxis = axes.yaxis;
+
+                        yaxis.min = -voltageScale;
+                        yaxis.max = voltageScale;
+                        adjusted = true;
+                    }
+
+                    if (self.currentScale() && self.adjustCurrentScale()) {
+                        const currentScale = self.currentScale() / 2;
+                        const y2axis = axes.y2axis;
+
+                        y2axis.min = -currentScale;
+                        y2axis.max = currentScale;
+                        adjusted = true;
+                    }
+                }
+                finally {
+                    self._adjustingScales = false;
+                } 
+
+                if (adjusted)
+                    self.drawPlotData();
+            }
+
             self.buildPlot = function (items) {
                 $.each(items, function (index, item) {
                     const values = item["#text"].trim().split(",");
@@ -924,7 +1076,7 @@
                         const scale = parseFloat(item["@@scale"]);
                         const enabled = analyzerType === 0 || analyzerType === (isVoltage ? phasorType.voltage : phasorType.current);
 
-                        self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, index, isVoltage, scale, enabled, self.drawPlotData));
+                        self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, index, isVoltage, scale, enabled, () => self.drawPlotData(true)));
                     }
                     else {
                         self.plotData[index].data = data;
@@ -933,33 +1085,33 @@
 
                 const initialized = self.plot !== undefined;
 
-                if (!self.drawPlotData())
+                if (!self.drawPlotData() || initialized)
                     return;
 
-                if (!initialized) {
-                    const scopePlot = $("#scopePlot");
+                const scopePlot = $("#scopePlot");
 
-                    scopePlot.bind("plothover", function (_, pos, item) {
-                        if (item) {
-                            const toolTipText = String.format("{0} [{1}] = {2}", item.series.label, item.datapoint[0], self.localeValue(item.datapoint[1]));
-                            $("#plotToolTip").html(toolTipText).css({ top: pos.pageY + 20, left: pos.pageX + 10 }).fadeIn(200);
-                        } else {
-                            $("#plotToolTip").hide();
-                        }
-                    });
-
-                    scopePlot.mouseleave(function() {
+                scopePlot.bind("plothover", function (_, pos, item) {
+                    if (item) {
+                        const toolTipText = String.format("{0} [{1}] = {2}", item.series.label, item.datapoint[0], self.localeValue(item.datapoint[1]));
+                        $("#plotToolTip").html(toolTipText).css({ top: pos.pageY + 20, left: pos.pageX + 10 }).fadeIn(200);
+                    } else {
                         $("#plotToolTip").hide();
-                    });
+                    }
+                });
 
-                    $.each(self.plot.getData(), function (_, series) {
-                        if (series.enabled)
-                            self.plotLegend.push(series);
-                    });
-                }
+                scopePlot.on("plotzoom", self.readScales);
+
+                scopePlot.mouseleave(function() {
+                    $("#plotToolTip").hide();
+                });
+
+                $.each(self.plot.getData(), function (_, series) {
+                    if (series.enabled)
+                        self.plotLegend.push(series);
+                });
             }
 
-            self.drawPlotData = function () {
+            self.drawPlotData = function (adjustingScales) {
                 if (getActiveTabIndex() !== tab.scopeView)
                     return false;
 
@@ -977,15 +1129,32 @@
                     let y2axisMin = undefined;
                     let y2axisMax = undefined;
 
-                    if (self.plot !== undefined) {
-                        const axes = self.plot.getAxes();
-                        const yaxis = axes.yaxis;
-                        const y2axis = axes.y2axis;
+                    if (self.plot === undefined || adjustingScales) {
+                        if (self.voltageScale() && (self.adjustVoltageScale() || adjustingScales)) {
+                            const voltageScale = self.voltageScale() / 2;
+                            yaxisMin = -voltageScale;
+                            yaxisMax = voltageScale;
+                        }
 
-                        yaxisMin = yaxis.min;
-                        yaxisMax = yaxis.max;
-                        y2axisMin = y2axis.min;
-                        y2axisMax = y2axis.max;
+                        if (self.currentScale() && (self.adjustCurrentScale() || adjustingScales)) {
+                            const currentScale = self.currentScale() / 2;
+                            y2axisMin = -currentScale;
+                            y2axisMax = currentScale;
+                        }
+                    } else {
+                        const axes = self.plot.getAxes();
+
+                        if (self.adjustVoltageScale()) {
+                            const yaxis = axes.yaxis;
+                            yaxisMin = yaxis.min;
+                            yaxisMax = yaxis.max;
+                        }
+
+                        if (self.adjustCurrentScale()) {
+                            const y2axis = axes.y2axis;
+                            y2axisMin = y2axis.min;
+                            y2axisMax = y2axis.max;
+                        }
                     }
 
                     self.plot = $.plot(scopePlot, plotData, {
@@ -1035,6 +1204,9 @@
                             interactive: true
                         }
                     });
+
+                    if (self.voltageScale() === "" || self.currentScale() === "")
+                        self.readScales();
 
                     return true;
                 } catch (e) {
