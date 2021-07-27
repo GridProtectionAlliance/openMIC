@@ -952,7 +952,7 @@
                     }
                 }
 
-                const referenceAngleValue = self.registerMap[phasorRegisters[referenceAngle]].value();
+                const referenceAngleRegister = self.registerMap[phasorRegisters[referenceAngle]];
                 let group = -1;
 
                 // Create array of phasor values for polar graph
@@ -976,7 +976,7 @@
                         phasor.angleRegister = phaseValues[angle];
                         phasor.magnitudeRegister = phaseValues[magnitude];
                         phasor.title = `${phasor.magnitudeRegister["@@desc"]}`;
-                        phasor.angle = ko.pureComputed({ read: () => (phasor.angleRegister.value() - referenceAngleValue) * Math.PI / 180.0, owner: self });
+                        phasor.angle = ko.pureComputed({ read: () => (phasor.angleRegister.value() - referenceAngleRegister.value()) * Math.PI / 180.0, owner: self });
                         phasor.magnitude = ko.pureComputed({ read: () => extent * (phasor.magnitudeRegister.value() / scale), owner: self });
                         phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()), owner: self });
                         phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()), owner: self });
