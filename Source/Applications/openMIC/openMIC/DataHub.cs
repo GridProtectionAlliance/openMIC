@@ -111,9 +111,9 @@ namespace openMIC
         private static bool? s_useRemoteScheduler;
         private static string s_remoteSchedulerUri;
 
-        private static string SystemName => s_systemName ?? (s_systemName = Program.Host.Model.Global.SystemName ?? "");
+        private static string SystemName => s_systemName ??= Program.Host.Model.Global.SystemName ?? "";
 
-        private static string WebRootPath => s_webRootPath ?? (s_webRootPath = Program.Host.Model.Global.WebRootPath ?? FilePath.GetAbsolutePath("wwwroot"));
+        private static string WebRootPath => s_webRootPath ??= Program.Host.Model.Global.WebRootPath ?? FilePath.GetAbsolutePath("wwwroot");
 
         private static bool UseRemoteScheduler => s_useRemoteScheduler ?? (s_useRemoteScheduler = Program.Host.Model.Global.UseRemoteScheduler).GetValueOrDefault();
         
