@@ -1025,7 +1025,7 @@
 
                     const axes = self.plot.getAxes();
 
-                    if (self.voltageScale() && self.adjustVoltageScale()) {
+                    if (self.voltageScale() !== "" && self.adjustVoltageScale()) {
                         const voltageScale = self.voltageScale() / 2;
                         const yaxis = axes.yaxis;
 
@@ -1034,7 +1034,7 @@
                         adjusted = true;
                     }
 
-                    if (self.currentScale() && self.adjustCurrentScale()) {
+                    if (self.currentScale() !== "" && self.adjustCurrentScale()) {
                         const currentScale = self.currentScale() / 2;
                         const y2axis = axes.y2axis;
 
