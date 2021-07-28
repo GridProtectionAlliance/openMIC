@@ -201,6 +201,13 @@
             margin-left: 5px;
         }
 
+        #hardRestartLabel {
+            font-weight: normal;
+            font-size: 12px;
+            margin-left: 25px;
+            margin-top: -4px;
+        }
+
         @@media screen {
             .page-logo {
                 margin-bottom: -25px;
@@ -258,40 +265,36 @@
                             <th class="text-center" style="padding-top: 2px; padding-bottom: 5px" colspan="2" data-bind="text: versionInfo" />
                         </tr>
                         <tr>
+                            <th class="text-right pad-right">Site Name:</th>
+                            <td class="text-left" data-bind="text: siteName" />
+                        </tr>
+                        <tr>
                             <th class="text-right pad-right">Serial Number:</th>
                             <td class="text-left" data-bind="text: serialNumber" />
                         </tr>
                         <tr>
+                            <th class="text-right pad-right">Module Firmware:</th>
+                            <td class="text-left nowrap" data-bind="text: `Comm. ${commFirmware()} / Host ${hostFirmware()}`" />
+                        </tr>
+                        <tr>
                             <th class="text-right pad-right">System Health:</th>
-                            <td class="text-left" data-bind="text: systemHealth" />
-                        </tr>
-                        <tr>
-                            <th class="text-right pad-right">Database Health:</th>
-                            <td class="text-left" data-bind="text: databaseHealth" />
-                        </tr>
-                        <tr>
-                            <th class="text-right pad-right">Comm. Module Firmware:</th>
-                            <td class="text-left" data-bind="text: commFirmware" />
-                        </tr>
-                        <tr>
-                            <th class="text-right pad-right">Host Module Firmware:</th>
-                            <td class="text-left" data-bind="text: hostFirmware" />
-                        </tr>
-                        <tr>
-                            <th class="text-right pad-right">GPS Installed:</th>
-                            <td class="text-left" data-bind="text: gpsInstalled" />
-                        </tr>
-                        <tr>
-                            <th class="text-right pad-right">GPS Satellites:</th>
-                            <td class="text-left" data-bind="text: gpsSatellites" />
+                            <td class="text-left nowrap" data-bind="text: `${systemHealth()} / DB ${databaseHealth()}`" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">IP Address:</th>
                             <td class="text-left" data-bind="text: ipAddress" />
                         </tr>
                         <tr>
-                            <th class="text-right pad-right">Site Name:</th>
-                            <td class="text-left" data-bind="text: siteName" />
+                            <th class="text-right pad-right">GPS:</th>
+                            <td class="text-left nowrap" data-bind="text: `${gpsInstalled() ? '' : 'not '} installed / ${gpsSatellites()} satellites`" />
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Device Time:</th>
+                            <td class="text-left nowrap" data-bind="text: time" />
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Time Error:</th>
+                            <td class="text-left" data-bind="text: timeError" />
                         </tr>
                     </table>
                 </td>
@@ -359,8 +362,16 @@
         <div id="busyDataBlock" style="display: none">
             <span id="busyDataLabel">Loading</span>&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
         </div>
+        <div class="btn-group-vertical pull-left" role="group" style="margin-top: -100px; width: 130px">
+            <button id="restartDeviceButton" type="button" class="btn btn-sm btn-default pull-left" hub-dependent>
+                <span class="glyphicon glyphicon-off"></span>&nbsp;&nbsp;Restart&nbsp;Device&nbsp;
+            </button>
+            <div class="pull-left">
+                <label id="hardRestartLabel"><input id="hardRestart" type="checkbox">&nbsp;Hard restart</label>
+            </div>
+        </div>
         <div class="btn-group-vertical pull-right" role="group" style="margin-top: -100px; width: 130px">
-            <button type="button" class="btn btn-sm btn-primary pull-right" id="saveChangesButton" data-bind="enable: canSave">
+            <button type="button" class="btn btn-sm btn-primary pull-right" id="saveChangesButton" data-bind="enable: canSave" hub-dependent>
                 <span class="glyphicon glyphicon-floppy-save"></span>&nbsp;&nbsp;Save&nbsp;Changes
             </button>
             <button type="button" class="btn btn-sm btn-default pull-right" id="exportConfigButton" data-bind="enable: canExport" onclick="showExportConfigFileNameDialog()">
@@ -542,15 +553,17 @@
 
             // Observable fields
             self.versionInfo = ko.observable("Encore Series Dranetz-BMI");
+            self.siteName = ko.observable("querying...");
             self.serialNumber = ko.observable("");
-            self.systemHealth = ko.observable("querying...");
+            self.systemHealth = ko.observable("");
             self.databaseHealth = ko.observable("");
             self.hostFirmware = ko.observable("");
             self.commFirmware = ko.observable("");
             self.gpsInstalled = ko.observable(false);
             self.gpsSatellites = ko.observable(0);
             self.ipAddress = ko.observable("");
-            self.siteName = ko.observable("");
+            self.time = ko.observable("");
+            self.timeError = ko.observable("");
             self.modules = ko.observableArray();
             self.analyzers = ko.observableArray();
             self.currentConfigID = ko.observable(-1);
@@ -739,6 +752,13 @@
 
                         $("[id=moduleRow]").css("visibility", "visible");
                         $("[id=analyzerRow]").css("visibility", "visible");
+
+                        return dataHub.getDeviceTime(deviceID).done(function (timeResult) {
+                            const time = JSON.parse(timeResult).commandresult.characteristics["@@current_time"];
+                            const error = (`${time}Z`.toDate() - new Date().getTime()) / 1000;
+                            self.time(`${time} UTC`);
+                            self.timeError(`${error.toFixed(2)} seconds`);
+                        });
                     });
                 })
                 .fail(function (error) {
@@ -780,7 +800,7 @@
                 }
 
                 showInfoMessage("Saving configuration, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
-                showSavingMessage();
+                showWorkingMessage("Saving");
                 self._isSaving(true);
 
                 const configID = self.currentConfigID();
@@ -790,18 +810,18 @@
                         self.isDirty(false);
                         showInfoMessage("Save complete.", 5000);
                         hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
-                        hideSavingMessage();
+                        hideWorkingMessage();
                     })
                     .fail(function (error) {
                         hideInfoMessage();
                         showErrorMessage(`Save Configuration ${error}`, null, true);
-                        hideSavingMessage();
+                        hideWorkingMessage();
                     });
                 })
                 .fail(function (error) {
                     hideInfoMessage();
                     showErrorMessage(`Begin Transaction ${error}`, null, true);
-                    hideSavingMessage();
+                    hideWorkingMessage();
                 })
                 .always(function () {
                     dataHub.endTransaction(deviceID).fail(function (error) {
@@ -1045,14 +1065,14 @@
             });
         }
 
-        function showSavingMessage() {
-            $("#busyDataLabel").text("Saving");
+        function showWorkingMessage(message) {
+            $("#busyDataLabel").text(message);
             $("#busyDataBlock").show();
             $("body").addClass("wait");
             resizePageElements();
         }
 
-        function hideSavingMessage() {
+        function hideWorkingMessage() {
             $("#busyDataBlock").hide();
             $("body").removeClass("wait");
             resizePageElements();
@@ -1060,16 +1080,11 @@
 
         function showLoadingMessage() {
             $("#responsiveTableDiv").show();
-            $("#busyDataLabel").text("Loading");
-            $("#busyDataBlock").show();
-            $("body").addClass("wait");
-            resizePageElements();
+            showWorkingMessage("Loading");
         }
 
         function hideLoadingMessage() {
-            $("#busyDataBlock").hide();
-            $("body").removeClass("wait");
-            resizePageElements();
+            hideWorkingMessage();
         }
 
         function loadAnalyzerConfig(record) {
@@ -1282,6 +1297,27 @@
             $("#saveChangesButton").click(function (e) {
                 e.preventDefault();
                 viewModel.saveAnalyzerConfig();
+            });
+
+            $("#restartDeviceButton").click(function (e) {
+                e.preventDefault();
+
+                const hardRestart = $("#hardRestart").is(":checked");
+
+                if (confirm(`Are you sure you want to ${hardRestart ? "hard " : ""}restart device?`)) {
+                    showInfoMessage("Attempting to restart device...", -1, true);
+                    showWorkingMessage("Restarting");
+
+                    dataHub.restartDevice(deviceID, hardRestart).done(function () {
+                        showInfoMessage("Device restart request sent successfully.", null, true);
+                        hideWorkingMessage();
+                    })
+                    .fail(function (error) {
+                        hideInfoMessage();
+                        showErrorMessage(`Device Restart ${error}`, null, true);
+                        hideWorkingMessage();
+                    });
+                }
             });
 
             $(window).bind("beforeunload", function () {
