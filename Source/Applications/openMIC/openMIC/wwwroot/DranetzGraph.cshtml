@@ -1085,7 +1085,7 @@
 
                 const initialized = self.plot !== undefined;
 
-                if (!self.drawPlotData() || initialized)
+                if (!self.drawPlotData(true) || initialized)
                     return;
 
                 const scopePlot = $("#scopePlot");
