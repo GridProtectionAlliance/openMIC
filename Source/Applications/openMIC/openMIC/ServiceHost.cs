@@ -215,6 +215,13 @@ namespace openMIC
 
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
+            // Correct config error from older installations
+            if (systemSettings["TimeFormat"].Value.Contains("HH:mm.ss.fff"))
+            {
+                systemSettings["TimeFormat"].Value = "HH:mm:ss.fff";
+                ConfigurationFile.Current.Save();
+            }
+
             Model = new AppModel();
             Model.Global.CompanyName = systemSettings["CompanyName"].Value;
             Model.Global.CompanyAcronym = systemSettings["CompanyAcronym"].Value;
