@@ -1010,7 +1010,7 @@
                         self.currentScale(Math.abs(y2axis.min - y2axis.max));
                     }
 
-                    self.drawPlotData(true);
+                    self.drawPlotData();
                 }
                 finally {
                     self._adjustingScales = false;
@@ -1048,7 +1048,7 @@
                 } 
 
                 if (adjusted)
-                    self.drawPlotData();
+                    self.drawPlotData(true);
             }
 
             self.buildPlot = function (items) {
@@ -1076,7 +1076,7 @@
                         const scale = parseFloat(item["@@scale"]);
                         const enabled = analyzerType === 0 || analyzerType === (isVoltage ? phasorType.voltage : phasorType.current);
 
-                        self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, index, isVoltage, scale, enabled, () => self.drawPlotData(true)));
+                        self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, index, isVoltage, scale, enabled, self.drawPlotData));
                     }
                     else {
                         self.plotData[index].data = data;
@@ -1085,7 +1085,7 @@
 
                 const initialized = self.plot !== undefined;
 
-                if (!self.drawPlotData(true) || initialized)
+                if (!self.drawPlotData() || initialized)
                     return;
 
                 const scopePlot = $("#scopePlot");
@@ -1111,7 +1111,7 @@
                 });
             }
 
-            self.drawPlotData = function (adjustingScales) {
+            self.drawPlotData = function (applyingScales) {
                 if (getActiveTabIndex() !== tab.scopeView)
                     return false;
 
@@ -1129,19 +1129,7 @@
                     let y2axisMin = undefined;
                     let y2axisMax = undefined;
 
-                    if (self.plot === undefined || adjustingScales) {
-                        if (self.voltageScale() && (self.adjustVoltageScale() || adjustingScales)) {
-                            const voltageScale = self.voltageScale() / 2;
-                            yaxisMin = -voltageScale;
-                            yaxisMax = voltageScale;
-                        }
-
-                        if (self.currentScale() && (self.adjustCurrentScale() || adjustingScales)) {
-                            const currentScale = self.currentScale() / 2;
-                            y2axisMin = -currentScale;
-                            y2axisMax = currentScale;
-                        }
-                    } else {
+                    if (applyingScales) {
                         const axes = self.plot.getAxes();
 
                         if (self.adjustVoltageScale()) {
@@ -1154,6 +1142,18 @@
                             const y2axis = axes.y2axis;
                             y2axisMin = y2axis.min;
                             y2axisMax = y2axis.max;
+                        }
+                    } else {
+                        if (self.voltageScale() !== "") {
+                            const voltageScale = self.voltageScale() / 2;
+                            yaxisMin = -voltageScale;
+                            yaxisMax = voltageScale;
+                        }
+
+                        if (self.currentScale() !== "") {
+                            const currentScale = self.currentScale() / 2;
+                            y2axisMin = -currentScale;
+                            y2axisMax = currentScale;
                         }
                     }
 
