@@ -1,25 +1,25 @@
 ﻿@*******************************************************************************************************
-//  DranetzConfig.cshtml - Gbtc
-//
-//  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
-//
-//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
-//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
-//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
-//  file except in compliance with the License. You may obtain a copy of the License at:
-//
-//      http://opensource.org/licenses/MIT
-//
-//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
-//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
-//  License for the specific language governing permissions and limitations.
-//
-//  Code Modification History:
-//  ----------------------------------------------------------------------------------------------------
-//  05/19/2021 - Ritchie Carroll
-//       Generated original version of source code.
-//
-//*****************************************************************************************************@
+    //  DranetzConfig.cshtml - Gbtc
+    //
+    //  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
+    //
+    //  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+    //  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+    //  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+    //  file except in compliance with the License. You may obtain a copy of the License at:
+    //
+    //      http://opensource.org/licenses/MIT
+    //
+    //  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+    //  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+    //  License for the specific language governing permissions and limitations.
+    //
+    //  Code Modification History:
+    //  ----------------------------------------------------------------------------------------------------
+    //  05/19/2021 - Ritchie Carroll
+    //       Generated original version of source code.
+    //
+    //*****************************************************************************************************@
 @using System.Net.Http
 @using System.Threading
 @using GSF.Identity
@@ -35,14 +35,15 @@
 @{
     Layout = "Layout.cshtml";
     ViewBag.HidePageTitle = true;
-    ViewBag.Title = "Manage Dranetz Configuration";
+    ViewBag.Title = "Manage Configuration";
 
     HttpRequestMessage request = ViewBag.Request;
     Dictionary<string, string> parameters = request.QueryParameters();
     string parameter;
     int deviceID;
 
-    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
+    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID))
+    {
         deviceID = 0;
     }
 
@@ -53,11 +54,12 @@
     <style>
         html, body {
             height: 100%;
+            min-width: 800px;
         }
 
-        body.wait, body.wait * {
-            cursor: wait !important;
-        }
+            body.wait, body.wait * {
+                cursor: wait !important;
+            }
 
         .tooltip-inner {
             white-space: pre;
@@ -91,7 +93,7 @@
             padding-top: 10px;
             width: 100%;
         }
-        
+
         tr.selected {
             background-color: #FFCF8B
         }
@@ -155,15 +157,15 @@
             float: right !important;
         }
 
-        /* Collapsable button icon when content is shown - arrow down */
-        .btn-collapsable.btn:after {
-            content: "\e114";
-        }
+            /* Collapsable button icon when content is shown - arrow down */
+            .btn-collapsable.btn:after {
+                content: "\e114";
+            }
 
-        /* Collapsable button icon when content is hidden - arrow right */
-        .btn-collapsable.btn.collapsed:after {
-            content: "\e080";
-        }
+            /* Collapsable button icon when content is hidden - arrow right */
+            .btn-collapsable.btn.collapsed:after {
+                content: "\e080";
+            }
 
         #header-collapse {
             left: 0;
@@ -173,7 +175,7 @@
         }
 
         .ui-tabs .ui-tabs-nav li a {
-            font-size: 10pt !important;
+            font-size: 9.6pt !important;
         }
 
         input[type=checkbox] {
@@ -208,17 +210,55 @@
             margin-top: -4px;
         }
 
-        @@media screen {
-            .page-logo {
-                margin-bottom: -25px;
-                margin-top: 8px;
+        .page-logo {
+            margin-bottom: -25px;
+            margin-top: 1px;
+        }
+
+        /*
+            The following micro-adjustments for the Bootstrap container class
+            allow the tab sections to remain at maximum widths for longer
+            periods to reduce tab row wrapping
+        */
+        @@media screen and (min-width: 768px) {
+            .container {
+                width: 800px;
             }
         }
 
-        @@media screen and (min-width: 992px) {
-            .page-logo {
-                margin-bottom: -25px;
-                margin-top: 3px;
+        @@media screen and (min-width: 900px) {
+            .container {
+                width: 885px;
+            }
+        }
+
+        @@media screen and (min-width: 975px) {
+            .container {
+                width: 950px;
+            }
+        }
+
+        @@media screen and (min-width: 1000px) {
+            .container {
+                width: 975px;
+            }
+        }
+
+        @@media screen and (min-width: 1100px) {
+            .container {
+                width: 1075px;
+            }
+        }
+
+        @@media screen and (min-width: 1150px) {
+            .container {
+                width: 1125px;
+            }
+        }
+
+        @@media screen and (min-width: 1200px) {
+            .container {
+                width: 1170px;
             }
         }
     </style>
@@ -256,13 +296,13 @@
                 </td>
             </tr>
             <tr id="topRow" aria-expanded="true" class="collapse in">
-                <td width="50%" style="vertical-align: top">
+                <td width="50%" style="vertical-align: top; padding-right: 15px; min-width: 400px">
                     <table width="95%">
                         <tr>
                             <th class="header" colspan="2"><div class="header">System</div></th>
                         </tr>
                         <tr>
-                            <th class="text-center" style="padding-top: 2px; padding-bottom: 5px" colspan="2" data-bind="text: versionInfo" />
+                            <th class="text-center nowrap" style="padding-top: 2px; padding-bottom: 5px" colspan="2" data-bind="text: versionInfo" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right">Site Name:</th>
@@ -289,12 +329,12 @@
                             <td class="text-left nowrap" data-bind="text: `${gpsInstalled() ? '' : 'not '} installed / ${gpsSatellites()} satellites`" />
                         </tr>
                         <tr>
-                            <th class="text-right pad-right">Device Time:</th>
-                            <td class="text-left nowrap" data-bind="text: time" />
+                            <th class="text-right pad-right" style="vertical-align: top">Device Time:</th>
+                            <td class="text-left nowrap" data-bind="html: time" />
                         </tr>
                         <tr>
-                            <th class="text-right pad-right">Time Error:</th>
-                            <td class="text-left" data-bind="text: timeError" />
+                            <th class="text-right pad-right" style="vertical-align: top">Time Error:</th>
+                            <td class="text-left nowrap" data-bind="html: timeErrorText, attr: { title: `Total error: ${timeError().toFixed(2)} seconds` }" />
                         </tr>
                     </table>
                 </td>
@@ -403,7 +443,7 @@
         No device data could be loaded for device with <code>ID=@deviceID</code>
     </h3>
 </div>
-<hr id="view-spacer" class="thick-spacer" style="margin-top: -10px; margin-bottom: 8px"/>
+<hr id="view-spacer" class="thick-spacer" style="margin-top: -10px; margin-bottom: 8px" />
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 30px; padding-top: 5px">
         <label>Analyzer&nbsp;Configuration</label>
@@ -419,7 +459,7 @@
             <div class="modal-content">
                 <div class="modal-body">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <iframe style="border: none" id="graphDataFrame" ></iframe>
+                    <iframe style="border: none" id="graphDataFrame"></iframe>
                     <button type="button" class="btn btn-default pull-right popup-ok-button" data-dismiss="modal">OK</button>
                 </div>
             </div>
@@ -563,7 +603,8 @@
             self.gpsSatellites = ko.observable(0);
             self.ipAddress = ko.observable("");
             self.time = ko.observable("");
-            self.timeError = ko.observable("");
+            self.timeError = ko.observable(0.0);
+            self.timeErrorText = ko.observable("");
             self.modules = ko.observableArray();
             self.analyzers = ko.observableArray();
             self.currentConfigID = ko.observable(-1);
@@ -737,28 +778,36 @@
 
                     self.analyzers(observableAnalyzers);
 
-                    return dataHub.getInstanceConfig(deviceID).then(function (configResult) {
+                    const promises = [];
+
+                    promises.push(dataHub.getInstanceConfig(deviceID).done(function (configResult) {
                         const config = JSON.parse(configResult);
 
                         self.versionInfo(config.commandresult.characteristics.psz_version_string["@@value"]);
                         self.ipAddress(config.commandresult.communications.tcp_ip["@@ip_address"]);
                         self.siteName(config.commandresult.characteristics.psz_sitename["@@value"]);
 
+                        $("[id=moduleRow]").css("visibility", "visible");
+                        $("[id=analyzerRow]").css("visibility", "visible");
+                    }));
+
+                    promises.push(dataHub.getDeviceTimeWithError(deviceID).done(function (timeResult) {
+                        const utcTimeText = `${timeResult.time} UTC`;
+                        const localTime = utcTimeText.toDate();
+                        const timeZone = localTime.toLocaleTimeString("en-us", { timeZoneName: "short" }).split(' ')[2];
+                        const localTimeText = `${localTime.formatDate(ShortDateTimeFormat, false)} ${timeZone}`;
+
+                        self.time(`${utcTimeText}<br/>${localTimeText}`);
+                        self.timeError(timeResult.error);
+                        self.timeErrorText(`${timeResult.errorText}<br/>${timeResult.error < 0 ? "behind" : "ahead of"} server time`);
+                    }));
+
+                    return $(promises).whenAll().then(function () {
+                        self.isDirty(false);
+
                         // Make sure table is refreshed
                         if (ko.options.deferUpdates)
                             ko.tasks.runEarly();
-
-                        self.isDirty(false);
-
-                        $("[id=moduleRow]").css("visibility", "visible");
-                        $("[id=analyzerRow]").css("visibility", "visible");
-
-                        return dataHub.getDeviceTime(deviceID).done(function (timeResult) {
-                            const time = JSON.parse(timeResult).commandresult.characteristics["@@current_time"];
-                            const error = (`${time}Z`.toDate() - new Date().getTime()) / 1000;
-                            self.time(`${time} UTC`);
-                            self.timeError(`${error.toFixed(2)} seconds`);
-                        });
                     });
                 })
                 .fail(function (error) {
@@ -1266,7 +1315,7 @@
                 showLoadingMessage();
 
                 dataHub.queryDeviceByID(deviceID).done(function (device) {
-                    $("#editDeviceName").html(`Editing&nbsp;${device.Acronym}&nbsp;Configuration`);
+                    $("#editDeviceName").html(`Editing&nbsp;${device.Acronym}`);
 
                     viewModel.queryModules().done(function () {
                         // Create initial section tabs
