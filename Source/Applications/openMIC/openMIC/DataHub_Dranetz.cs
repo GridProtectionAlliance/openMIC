@@ -30,12 +30,14 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Caching;
+using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Newtonsoft.Json;
 using GSF;
+using GSF.Units;
 using GSF.Web.Security;
 using openMIC.Model;
 
@@ -44,6 +46,9 @@ namespace openMIC
     public partial class DataHub
     {
         private static readonly MemoryCache s_dranetzCredentialCache = new MemoryCache($"{nameof(DataHub)}-DranetzCredentialCache");
+        private static string s_shortDateTimeFormat;
+
+        private static string ShortDateTimeFormat => s_shortDateTimeFormat ??= Program.Host.Model.Global.DateTimeFormat.Replace(".fff", "");
 
         private sealed class DranetzCredential : IDisposable
         {
@@ -183,42 +188,56 @@ namespace openMIC
         }
 
         public Task<string> GetInstanceStatus(int deviceID) => 
-            GetCommand(deviceID, "getinststatus");
+            GetCommandJson(deviceID, "getinststatus");
 
         public Task<string> GetInstanceConfig(int deviceID) =>
-            GetCommand(deviceID, "getinstconfig");
+            GetCommandJson(deviceID, "getinstconfig");
 
         public Task<string> GetAnalyzerConfig(int deviceID, int configID) =>
-            GetCommand(deviceID, $"getanalyzerconfig&id={configID}");
+            GetCommandJson(deviceID, $"getanalyzerconfig&id={configID}");
 
         // Sets TransactionID cookie
         [AuthorizeHubRole("Administrator, Editor")]
         public Task BeginTransaction(int deviceID) =>
-            GetCommand(deviceID, "begintransaction");
+            GetCommandJson(deviceID, "begintransaction");
 
         [AuthorizeHubRole("Administrator, Editor")]
         public Task SetInstanceConfig(int deviceID, string value) =>
-            SendCommand(deviceID, "setinstconfig", value);
+            PostCommandJson(deviceID, "setinstconfig", value);
 
         [AuthorizeHubRole("Administrator, Editor")]
         public Task SetAnalyzerConfig(int deviceID, int configID, string value) =>
-            SendCommand(deviceID, $"setanalyzerconfig&id={configID}", value);
+            PostCommandJson(deviceID, $"setanalyzerconfig&id={configID}", value);
 
         // Clears TransactionID cookie
         [AuthorizeHubRole("Administrator, Editor")]
         public Task EndTransaction(int deviceID) =>
-            GetCommand(deviceID, "endtransaction", true);
+            GetCommandJson(deviceID, "endtransaction", true);
 
         public Task<string> GetDeviceTime(int deviceID) =>
-            GetCommand(deviceID, "gettime");
+            GetCommandJson(deviceID, "gettime");
+        
+        public async Task<dynamic> GetDeviceTimeWithError(int deviceID)
+        {
+            XmlDocument result = await GetCommandXml(deviceID, "gettime");
+            string receivedTime = result.SelectSingleNode("commandresult/characteristics/@current_time")?.Value ?? throw new NullReferenceException("Failed to get device time");
+            DateTime parsedTime = DateTime.ParseExact(receivedTime, "yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
+            double totalError = (parsedTime - DateTime.UtcNow).TotalSeconds;
+            return new
+            {
+                time = parsedTime.ToString(ShortDateTimeFormat),
+                error = totalError,
+                errorText = Time.ToElapsedTimeString(Math.Abs(totalError), 2)
+            };
+        }
 
         [AuthorizeHubRole("Administrator, Editor")]
         public Task SetDeviceTime(int deviceID, string time) =>
-            GetCommand(deviceID, $"puttime&time={DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal):MM/dd/yyyy HH:mm:ss}");
+            GetCommandJson(deviceID, $"puttime&time={DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal):MM/dd/yyyy HH:mm:ss}");
 
         [AuthorizeHubRole("Administrator, Editor")]
         public Task RestartDevice(int deviceID, bool hard) =>
-            GetCommand(deviceID, $"restart&hard={(hard ? "yes" : "no")}");
+            GetCommandJson(deviceID, $"restart&hard={(hard ? "yes" : "no")}");
 
         public Task<string> GetValuesShortList(int deviceID, int configID) =>
             GetValues(deviceID, configID, 0, 54);
@@ -227,12 +246,13 @@ namespace openMIC
             GetValues(deviceID, configID, 0, 3234);
 
         public Task<string> GetValues(int deviceID, int configID, int lowRegister, int highRegister) =>
-            GetCommand(deviceID, $"getvalues&id={configID}&registers={lowRegister}-{highRegister}&verbose=1");
+            GetCommandJson(deviceID, $"getvalues&id={configID}&registers={lowRegister}-{highRegister}&verbose=1");
 
         public Task<string> GetWaveform(int deviceID, int configID) =>
-            GetCommand(deviceID, $"getwaveform&id={configID}&format=0");
+            GetCommandJson(deviceID, $"getwaveform&id={configID}&format=0");
 
-        private async Task<string> GetCommand(int deviceID, string cmdParam, bool clearCookies = false)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private async Task<XmlDocument> GetCommandXml(int deviceID, string cmdParam, bool clearCookies = false)
         {
             if (string.IsNullOrWhiteSpace(cmdParam))
                 throw new ArgumentNullException(nameof(cmdParam));
@@ -256,7 +276,7 @@ namespace openMIC
                 else
                 {
                     Uri rootUri = credential.RootUri;
-                    string[] cookies = result.Headers.SingleOrDefault(header => 
+                    string[] cookies = result.Headers.SingleOrDefault(header =>
                         header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase)).Value?
                         .ToArray() ?? Array.Empty<string>();
 
@@ -268,21 +288,25 @@ namespace openMIC
                             credential.Cookies.SetCookies(rootUri, cookie);
                     }
                 }
-                    
-                return JsonConvert.SerializeXmlNode(commandResult);
+
+                return commandResult;
             }
         }
 
-        private async Task SendCommand(int deviceID, string cmdParam, string value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private async Task<string> GetCommandJson(int deviceID, string cmdParam, bool clearCookies = false) => 
+            JsonConvert.SerializeXmlNode(await GetCommandXml(deviceID, cmdParam, clearCookies));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private async Task PostCommandXml(int deviceID, string cmdParam, XmlDocument commandResult)
         {
             if (string.IsNullOrWhiteSpace(cmdParam))
                 throw new ArgumentNullException(nameof(cmdParam));
 
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentNullException(nameof(value));
+            if (commandResult is null)
+                throw new ArgumentNullException(nameof(commandResult));
 
             DranetzCredential credential = GetCredential(deviceID);
-            XmlDocument commandResult = JsonConvert.DeserializeXmlNode(value) ?? throw new ArgumentException("Failed to deserialize XML Node", nameof(value));
 
             if (commandResult.FirstChild is XmlDeclaration declaration)
             {
@@ -303,6 +327,17 @@ namespace openMIC
                 if (!result.IsSuccessStatusCode)
                     throw new HttpRequestException($"Failed to send command, result = {result.StatusCode}: {result.ReasonPhrase}");
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Task PostCommandJson(int deviceID, string cmdParam, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentNullException(nameof(value));
+
+            XmlDocument commandResult = JsonConvert.DeserializeXmlNode(value) ?? throw new ArgumentException("Failed to deserialize XML Node", nameof(value));
+
+            return PostCommandXml(deviceID, cmdParam, commandResult);
         }
     }
 }
