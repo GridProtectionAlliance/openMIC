@@ -567,14 +567,14 @@
         ];
 
         const wiringConfig = {
-            Config1: { name: "Single phase", type: "Single" },
-            Config2: { name: "Split phase", type: "Split" },
-            Config3: { name: "Delta", type: "Delta" },
-            Config4: { name: "Wye", type: "Wye" },
-            Config5: { name: "Generic", type: "Generic" },
-            Config6: { name: "Delta 2 Watt Mete", type: "Delta" },
-            Config7: { name: "Wye 2.5 element, no B", type: "Wye"},
-            Config8: { name: "Wye 2.5 element, no C", type: "Wye" }
+            Config0: { name: "Single phase", type: "Single" },
+            Config1: { name: "Split phase", type: "Split" },
+            Config2: { name: "Delta", type: "Delta" },
+            Config3: { name: "Wye", type: "Wye" },
+            Config4: { name: "Generic", type: "Generic" },
+            Config5: { name: "Delta 2 Watt Mete", type: "Delta" },
+            Config6: { name: "Wye 2.5 element, no B", type: "Wye"},
+            Config7: { name: "Wye 2.5 element, no C", type: "Wye" }
         };
 
         function getWiringConfig(index) {
@@ -944,7 +944,7 @@
 
                         tabList.push(`<li><a href="#tab${key}" onclick="viewModel.reloadTabSection('${key}', true)" tab-section-link>${name}</a></li>`);
 
-                        tabSections.push(`<div id="tab${key}" ${index === 0 ? `class="ui-tabs-active tab-section"` : `class="tab-section" style="display: none"`} tab-section>`);
+                        tabSections.push(`<div id="tab${key}" class="tab-section" style="display: none" tab-section>`);
                         tabSections.push(`    <table width="75%" class="table-center">`);
                         tabSections.push(`        <tr>`);
                         tabSections.push(`            <th class="header"><div class="header">${name}</div></th>`);
@@ -966,7 +966,6 @@
                 $("#tabs").html(tabList.join("\r\n") + tabSections.join("\r\n"));
 
                 $("#tabs").tabs({
-                    active: 0,
                     activate: function (event, ui) {
                         ui.newPanel.find(":input:not([type=hidden]):first").focus();
                         $("[tab-section-link]").tooltip("hide");
@@ -1197,8 +1196,9 @@
         }
 
         function setActiveTabIndex(index) {
+            const analyzerType = viewModel.currentAnalyzerType();
             $("#tabs").tabs({ active: index });
-            $(`a[href='#tab${sectionKeys[viewModel.currentAnalyzerType()][index]}']`).parent().focus();
+            $(`#tab${sectionKeys[analyzerType][index]}`).find(":input:not([type=hidden]):first").focus();
         }
 
         function getActiveTabSection() {
@@ -1687,6 +1687,7 @@
                 if (elementTargetsInputConfig(value)) {
                     const optVal = value["@@VALUE"] || index;
                     const keyVal = value["@@KEYVALUE"] ? ` key-value="${htmlEncode(value["@@KEYVALUE"])}"` : "";
+                    const selected = optVal === defaultVal || !defaultVal && totalOptions === 0 ? " selected" : "";
                     let alias = value["@@ALIAS"];
 
                     if (alias) {
@@ -1700,7 +1701,7 @@
                         }
                     }
 
-                    html.push(`<option value="${optVal}"${keyVal}${optVal === defaultVal ? " selected" : ""}>${htmlEncode(alias || value["@@NAME"])}</option>`);
+                    html.push(`<option value="${optVal}"${keyVal}${selected}>${htmlEncode(alias || value["@@NAME"])}</option>`);
                     totalOptions++;
                 }
 
@@ -1863,11 +1864,9 @@
                         case "LIST":
                         {
                             closePropDefs();
+                            html.push(`<select multiple class="form-control list-bank" id="${bankName}"${sizeToken} onchange="selectBankItem('${bankName}')" update-expr="selectBankItem('${bankName}')" bank-list>`);
 
-                            script.push(`const update_${bankName} = new Function("$('#${bankName} option').removeAttr('selected'); $('#${bankName} option[value=0]').prop('selected', true); $('#${bankName}').focus();");`);
-                            html.push(`<select multiple class="form-control list-bank" id="${bankName}"${sizeToken} onchange="selectBankItem('${bankName}')" update-expr="update_${bankName}()" bank-list>`);
-
-                            const [ listHtml, totalOptions ] = buildListElements(value, null);
+                            const [ listHtml, totalOptions ] = buildListElements(value);
                             html.push(listHtml);
 
                             if (rows) {
