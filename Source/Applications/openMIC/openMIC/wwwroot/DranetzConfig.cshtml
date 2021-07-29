@@ -1,25 +1,25 @@
 ﻿@*******************************************************************************************************
-    //  DranetzConfig.cshtml - Gbtc
-    //
-    //  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
-    //
-    //  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
-    //  the NOTICE file distributed with this work for additional information regarding copyright ownership.
-    //  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
-    //  file except in compliance with the License. You may obtain a copy of the License at:
-    //
-    //      http://opensource.org/licenses/MIT
-    //
-    //  Unless agreed to in writing, the subject software distributed under the License is distributed on an
-    //  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
-    //  License for the specific language governing permissions and limitations.
-    //
-    //  Code Modification History:
-    //  ----------------------------------------------------------------------------------------------------
-    //  05/19/2021 - Ritchie Carroll
-    //       Generated original version of source code.
-    //
-    //*****************************************************************************************************@
+//  DranetzConfig.cshtml - Gbtc
+//
+//  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  05/19/2021 - Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
 @using System.Net.Http
 @using System.Threading
 @using GSF.Identity
@@ -42,8 +42,7 @@
     string parameter;
     int deviceID;
 
-    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID))
-    {
+    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
         deviceID = 0;
     }
 
@@ -57,9 +56,9 @@
             min-width: 800px;
         }
 
-            body.wait, body.wait * {
-                cursor: wait !important;
-            }
+        body.wait, body.wait * {
+            cursor: wait !important;
+        }
 
         .tooltip-inner {
             white-space: pre;
@@ -157,15 +156,15 @@
             float: right !important;
         }
 
-            /* Collapsable button icon when content is shown - arrow down */
-            .btn-collapsable.btn:after {
-                content: "\e114";
-            }
+        /* Collapsable button icon when content is shown - arrow down */
+        .btn-collapsable.btn:after {
+            content: "\e114";
+        }
 
-            /* Collapsable button icon when content is hidden - arrow right */
-            .btn-collapsable.btn.collapsed:after {
-                content: "\e080";
-            }
+        /* Collapsable button icon when content is hidden - arrow right */
+        .btn-collapsable.btn.collapsed:after {
+            content: "\e080";
+        }
 
         #header-collapse {
             left: 0;
@@ -395,7 +394,6 @@
                             </td>
                         </tr>
                     </table>
-
                 </td>
             </tr>
         </table>
@@ -1470,16 +1468,90 @@
             return $("<div/>").text(value).html().replace(/&/g, "%26");
         }
 
+        let bankIndex = undefined;
+
+        function execOperationAtBankIndex(index, operation) {
+            try {
+                bankIndex = index;
+                operation();
+            }
+            finally {
+                bankIndex = undefined;
+            }
+        }
+
+        function readValue(element, readOperation, isCheckBox) {
+            const target = $(element);
+            const bank = target.attr("bank");
+
+            // Handle multi-select bank list read operation
+            if (bank && bank.length) {
+                const selections = getVal(bank);
+
+                if (Array.isArray(selections) && selections.length > 1) {
+                    const values = [];
+
+                    selections.forEach(selection => {
+                        execOperationAtBankIndex(parseInt(selection, 10), readOperation);
+                        values.push(isCheckBox ? target.prop("checked") : target.val());
+                    });
+
+                    // If any selected items have different values, clear target
+                    if (values.some(value => value !== values[0])) {
+                        if (isCheckBox)
+                            target.prop("checked", false);
+                        else
+                            target.val("");
+                    }
+                }
+                else {
+                    readOperation();
+                }
+            }
+            else {
+                readOperation();
+            }
+        }
+
+        function writeValue(element, writeOperation) {
+            const target = $(element);
+            const bank = target.attr("bank");
+
+            // Handle multi-select bank list write operation
+            if (bank && bank.length) {
+                const selections = getVal(bank);
+
+                if (Array.isArray(selections) && selections.length > 1) {
+                    // Assign changed value to all selected items
+                    selections.forEach(selection => {
+                        execOperationAtBankIndex(parseInt(selection, 10), writeOperation);
+                    });
+                }
+                else {
+                    writeOperation();
+                }
+            }
+            else {
+                writeOperation();
+            }
+        }
+
         function getVal(targetID, targetType) {
             const target = $(`#${targetID}`);
 
+            // Check if target is a bank list
             if (target[0].hasAttribute("bank-list")) {
-                const values = target.val() || [];
+                if (bankIndex === undefined) {
+                    const values = target.val() || [];
 
-                if (values.length > 0)
-                    return parseInt(values[0], 10);
+                    if (values.length > 0)
+                        return values.length === 1 ? parseInt(values[0], 10) : values;
 
-                return 0;
+                    return 0;
+                }
+                else {
+                    return bankIndex;
+                }
             }
             else {
                 const value = target.val();
@@ -1702,28 +1774,28 @@
                 case PropDefType.CHECKBOX:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) !== 0`}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? String.format(writeExpr, getPropVal) : `${getPropVal} ? '1' : '0'`}`));
-                    html.push(`<input type="checkbox" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="checkbox" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, true)" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.NUMERIC:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name})" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                 break;
                 case PropDefType.FLOAT:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? `(${String.format(readExpr, mapExpr)})` : `parseFloat(${mapExpr})`}.toFixed(4)`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name})" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.TEXT:
                 case PropDefType.PASSWORD:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name})" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
                     break;
                 case PropDefType.SELECT:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<select class="form-control" id="${name}" onchange="${name}_changed()" update-expr="update_${name}()" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}">`);
+                    html.push(`<select class="form-control" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name})" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}">`);
                     html.push(buildListElements(propDef.PARAM.LIST, defaultVal)[0]);
                     html.push(`</select>`);
                     break;
