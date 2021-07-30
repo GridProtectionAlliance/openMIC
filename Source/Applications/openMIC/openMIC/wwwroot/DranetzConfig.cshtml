@@ -401,7 +401,7 @@
             <span id="busyDataLabel">Loading</span>&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
         </div>
         <div class="btn-group-vertical pull-left" role="group" style="margin-top: -100px; width: 130px">
-            <button id="restartDeviceButton" type="button" class="btn btn-sm btn-default pull-left" hub-dependent>
+            <button id="restartDeviceButton" type="button" class="btn btn-sm btn-default pull-left" data-bind="enable: canRestart" hub-dependent>
                 <span class="glyphicon glyphicon-off"></span>&nbsp;&nbsp;Restart&nbsp;Device&nbsp;
             </button>
             <div class="pull-left">
@@ -409,10 +409,10 @@
             </div>
         </div>
         <div class="btn-group-vertical pull-right" role="group" style="margin-top: -100px; width: 130px">
-            <button type="button" class="btn btn-sm btn-primary pull-right" id="saveChangesButton" data-bind="enable: canSave" hub-dependent>
+            <button id="saveChangesButton" type="button" class="btn btn-sm btn-primary pull-right" data-bind="enable: canSave" hub-dependent>
                 <span class="glyphicon glyphicon-floppy-save"></span>&nbsp;&nbsp;Save&nbsp;Changes
             </button>
-            <button type="button" class="btn btn-sm btn-default pull-right" id="exportConfigButton" data-bind="enable: canExport" onclick="showExportConfigFileNameDialog()">
+            <button id="exportConfigButton" type="button" class="btn btn-sm btn-default pull-right" data-bind="enable: canExport" onclick="showExportConfigFileNameDialog()">
                 <span class="glyphicon glyphicon-save-file"></span>&nbsp;&nbsp;Export&nbsp;Config
             </button>
             <div class="well well-sm floating-form" id="exportConfigFileNameDialog" style="z-index: 1000; margin-left: -100px; margin-top: 65px; border: 1px solid black">
@@ -423,14 +423,14 @@
                         <div class="input-group">
                             <input type="text" class="form-control" id="exportConfigFileName" placeholder="File name..." />
                             <span class="input-group-btn">
-                                <button type="button" class="btn btn-default btn-sm" id="exportConfigFile" style="margin-right: -3px; font-weight: bold">Save</button>
+                                <button id="exportConfigFile" type="button" class="btn btn-default btn-sm" style="margin-right: -3px; font-weight: bold">Save</button>
                             </span>
                         </div>
                     </div>
                 </form>
             </div>
             <a href="#" id="exportConfigFileLink" target="_blank" style="display: none"></a>
-            <button type="button" class="btn btn-sm btn-default pull-right" id="importConfigButton" data-bind="enable: canImport" onclick="showImportConfigFileNameDialog()">
+            <button id="importConfigButton" type="button" class="btn btn-sm btn-default pull-right" data-bind="enable: canImport" onclick="showImportConfigFileNameDialog()">
                 <span class="glyphicon glyphicon-open-file"></span>&nbsp;&nbsp;Import&nbsp;Config
             </button>
             <input id="importConfigFileName" type="file" accept="text/json" style="position: fixed; top: -100em" onchange="importConfigFile(event)">
@@ -571,6 +571,7 @@
             Config1: { index: 1, name: "Split phase", type: "Split" },
             Config2: { index: 2, name: "Delta", type: "Delta" },
             Config3: { index: 3, name: "Wye", type: "Wye" },
+            // Misorder intentional, Generic appears before Delta 2 Watt Meter
             Config5: { index: 4, name: "Generic", type: "Generic" },
             Config4: { index: 5, name: "Delta 2 Watt Meter", type: "Delta" },
             Config6: { index: 6, name: "Wye 2.5 element, no B", type: "Wye"},
@@ -675,6 +676,15 @@
             self.canImport = ko.pureComputed({
                 read: function () {
                     return !self.isSaving() &&
+                        self.dataHubIsConnected();
+                },
+                owner: self
+            });
+
+            self.canRestart = ko.pureComputed({
+                read: function () {
+                    return @(userIsEditor.ToString().ToLower()) &&
+                        !self.isSaving() &&
                         self.dataHubIsConnected();
                 },
                 owner: self
@@ -1348,6 +1358,11 @@
 
             $("#restartDeviceButton").click(function (e) {
                 e.preventDefault();
+
+                if (!viewModel.canRestart()) {
+                    showErrorMessage("Cannot restart at this time.");
+                    return;
+                }
 
                 const hardRestart = $("#hardRestart").is(":checked");
 
