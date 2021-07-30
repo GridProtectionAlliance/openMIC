@@ -445,7 +445,7 @@
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 30px; padding-top: 5px">
         <label style="margin-top: 1px">Analyzer&nbsp;Configuration&nbsp;&nbsp;&nbsp;
-            <label style="font-size: x-small; font-weight: 500">
+            <label id="configTypeSelectionBlock" style="font-size: x-small; font-weight: 500; visibility: hidden">
                 &nbsp;view as:
                 &nbsp;&nbsp;<input type="radio" style="vertical-align: middle; margin-bottom: 8px" value="xml" data-bind="checked: viewConfigType">&nbsp;XML
                 &nbsp;&nbsp;<input type="radio" style="vertical-align: middle; margin-bottom: 8px" value="json" data-bind="checked: viewConfigType">&nbsp;JSON
@@ -453,7 +453,7 @@
         </label>
         <button type="button" class="btn btn-xs btn-collapsable collapsed" style="top: 0; right: -10px" data-toggle="collapse" data-target="#analyzerConfiguration"></button>
     </div>
-    <div class="panel-body collapse" style="padding: 2px; margin-bottom: -10px" id="analyzerConfiguration">
+    <div id="analyzerConfiguration" class="panel-body collapse" style="padding: 2px; margin-bottom: -10px">
         <pre data-bind="text: viewConfigAsXml() ? currentAnalyzerConfigXml() : currentAnalyzerConfigJson()"></pre>
     </div>
 </div>
@@ -714,7 +714,7 @@
 
             self.currentAnalyzerConfigJson = ko.pureComputed({
                 read: function () {
-                    return JSON.stringify(self.currentAnalyzerConfig(), null, 4);
+                    return JSON.stringify(self.currentAnalyzerConfig(), null, 2);
                 },
                 owner: self
             });
@@ -1448,6 +1448,15 @@
 
             $("#headerArea").on("hidden.bs.collapse", function() {
                 resizePageElements();
+            });
+
+            $("#analyzerConfiguration").on("shown.bs.collapse", function () {
+                $("#configTypeSelectionBlock").visible();
+                $("#view-spacer")[0].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+            });
+
+            $("#analyzerConfiguration").on("hidden.bs.collapse", function () {
+                $("#configTypeSelectionBlock").invisible();
             });
 
             $(window).on("messageVisibiltyChanged", function () {
