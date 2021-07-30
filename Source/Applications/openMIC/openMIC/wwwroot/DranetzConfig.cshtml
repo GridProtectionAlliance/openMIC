@@ -214,6 +214,17 @@
             margin-top: 1px;
         }
 
+        #configTypeSelectionBlock {
+            font-size: x-small;
+            font-weight: 500;
+            visibility: hidden;
+        }
+
+        input[type="radio"].view-config-type {
+            vertical-align: middle;
+            margin-bottom: 8px;
+        }
+
         /*
             The following micro-adjustments for the Bootstrap container class
             allow the tab sections to remain at maximum widths for longer
@@ -445,10 +456,10 @@
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 30px; padding-top: 5px">
         <label style="margin-top: 1px">Analyzer&nbsp;Configuration&nbsp;&nbsp;&nbsp;
-            <label id="configTypeSelectionBlock" style="font-size: x-small; font-weight: 500; visibility: hidden">
+            <label id="configTypeSelectionBlock">
                 &nbsp;view as:
-                &nbsp;&nbsp;<input type="radio" style="vertical-align: middle; margin-bottom: 8px" value="xml" data-bind="checked: viewConfigType">&nbsp;XML
-                &nbsp;&nbsp;<input type="radio" style="vertical-align: middle; margin-bottom: 8px" value="json" data-bind="checked: viewConfigType">&nbsp;JSON
+                &nbsp;&nbsp;<input id="xmlConfigType" type="radio" class="view-config-type" value="xml" data-bind="checked: viewConfigType"><label for="xmlConfigType">&nbsp;XML</label>
+                &nbsp;&nbsp;<input id="jsonConfigType" type="radio" class="view-config-type" value="json" data-bind="checked: viewConfigType"><label for="jsonConfigType">&nbsp;JSON</label>
             </label>
         </label>
         <button type="button" class="btn btn-xs btn-collapsable collapsed" style="top: 0; right: -10px" data-toggle="collapse" data-target="#analyzerConfiguration"></button>
