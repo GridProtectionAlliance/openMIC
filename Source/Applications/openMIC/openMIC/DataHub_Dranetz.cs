@@ -251,6 +251,31 @@ namespace openMIC
         public Task<string> GetWaveforms(int deviceID, int configID) =>
             GetCommandJson(deviceID, $"getwaveforms&id={configID}&format=0");
 
+        public string GetXmlAsJson(string value, bool indented)
+        {
+            XmlDocument document = new();
+            document.LoadXml(value);
+            return JsonConvert.SerializeXmlNode(document, indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None);
+        }
+
+        public string GetJsonAsXml(string value, bool indented)
+        {
+            XmlDocument document = JsonConvert.DeserializeXmlNode(value);
+
+            if (document is null)
+                return "";
+
+            if (indented)
+            {
+                StringWriter textWriter = new();
+                XmlTextWriter xmlWriter = new(textWriter) { Formatting = System.Xml.Formatting.Indented };
+                document.WriteTo(xmlWriter);
+                return textWriter.ToString();
+            }
+
+            return document.InnerXml;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task<XmlDocument> GetCommandXml(int deviceID, string cmdParam, bool clearCookies = false)
         {

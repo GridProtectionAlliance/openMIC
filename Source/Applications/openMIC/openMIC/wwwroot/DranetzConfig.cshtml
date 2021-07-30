@@ -444,11 +444,17 @@
 <hr id="view-spacer" class="thick-spacer" style="margin-top: -10px; margin-bottom: 8px" />
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 30px; padding-top: 5px">
-        <label>Analyzer&nbsp;Configuration</label>
+        <label style="margin-top: 1px">Analyzer&nbsp;Configuration&nbsp;&nbsp;&nbsp;
+            <label style="font-size: x-small; font-weight: 500">
+                &nbsp;view as:
+                &nbsp;&nbsp;<input type="radio" style="vertical-align: middle; margin-bottom: 8px" value="xml" data-bind="checked: viewConfigType">&nbsp;XML
+                &nbsp;&nbsp;<input type="radio" style="vertical-align: middle; margin-bottom: 8px" value="json" data-bind="checked: viewConfigType">&nbsp;JSON
+            </label>
+        </label>
         <button type="button" class="btn btn-xs btn-collapsable collapsed" style="top: 0; right: -10px" data-toggle="collapse" data-target="#analyzerConfiguration"></button>
     </div>
     <div class="panel-body collapse" style="padding: 2px; margin-bottom: -10px" id="analyzerConfiguration">
-        <pre data-bind="text: JSON.stringify(currentAnalyzerConfig(), null, 4)"></pre>
+        <pre data-bind="text: viewConfigAsXml() ? currentAnalyzerConfigXml() : currentAnalyzerConfigJson()"></pre>
     </div>
 </div>
 <div id="graphDataWindow" class="modal modal-wide fade" role="dialog" style="max-width: 1000px; margin: 0 auto">
@@ -608,6 +614,7 @@
             self.analyzers = ko.observableArray();
             self.currentConfigID = ko.observable(-1);
             self.currentAnalyzerConfig = ko.observable("");
+            self.viewConfigAsXml = ko.observable(true);
             self.errors = ko.validation.group(self);
 
             // Standard fields
@@ -618,6 +625,7 @@
             self._dataHubIsConnected = ko.observable(false);
             self._isDirty = ko.observable(false);
             self._isSaving = ko.observable(false);
+            self._currentAnalyzerConfigXml = ko.observable("");
             self._currentAnalyzerType = ko.observable(analyzerTypes.PQDataNode.index);
             self._currentWiringConfig = ko.observable(0);
 
@@ -675,7 +683,8 @@
 
             self.canImport = ko.pureComputed({
                 read: function () {
-                    return !self.isSaving() &&
+                    return  @(userIsEditor.ToString().ToLower()) &&
+                        !self.isSaving() &&
                         self.dataHubIsConnected();
                 },
                 owner: self
@@ -703,6 +712,36 @@
                 owner: self
             });
 
+            self.currentAnalyzerConfigJson = ko.pureComputed({
+                read: function () {
+                    return JSON.stringify(self.currentAnalyzerConfig(), null, 4);
+                },
+                owner: self
+            });
+
+            self.currentAnalyzerConfigXml = ko.pureComputed({
+                read: function () {
+                    const configJson = self.currentAnalyzerConfigJson();
+
+                    if (configJson && configJson.length > 2) {
+                        if (self.dataHubIsConnected()) {
+                            dataHub.getJsonAsXml(configJson, true)
+                                .done(self._currentAnalyzerConfigXml)
+                                .fail(e => self._currentAnalyzerConfigXml(`Failed to convert JSON to XML: ${e}\r\n\r\nJSON:\r\n${configJson}`));
+                        }
+                        else {
+                            self._currentAnalyzerConfigXml(`Waiting for hub connection to convert JSON to XML.\r\n\r\nJSON:\r\n${configJson}`);
+                        }
+                    }
+                    else {
+                        self._currentAnalyzerConfigXml("");
+                    }
+
+                    return self._currentAnalyzerConfigXml();
+                },
+                owner: self
+            });
+
             self.currentAnalyzerType = ko.pureComputed({
                 read: self._currentAnalyzerType,
                 write: function (value) {
@@ -715,6 +754,16 @@
             self.currentWiringConfig = ko.pureComputed({
                 read: function () {
                     return getWiringConfig(self._currentWiringConfig());
+                },
+                owner: self
+            });
+
+            self.viewConfigType = ko.pureComputed({
+                read: function () {
+                    return self.viewConfigAsXml() ? "xml" : "json";
+                },
+                write: function (value) {
+                    self.viewConfigAsXml(value.trim().toLowerCase() === "xml");
                 },
                 owner: self
             });
@@ -924,7 +973,7 @@
             }
 
             self.exportAnalyzerConfig = function (fileName) {
-                const data = JSON.stringify(self.currentAnalyzerConfig(), null, 4);
+                const data = self.currentAnalyzerConfigJson();
                 const anchor = $("#exportConfigFileLink");
 
                 if (typeof anchor[0].download != "undefined") {
