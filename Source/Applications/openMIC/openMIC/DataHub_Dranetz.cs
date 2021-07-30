@@ -248,8 +248,8 @@ namespace openMIC
         public Task<string> GetValues(int deviceID, int configID, int lowRegister, int highRegister) =>
             GetCommandJson(deviceID, $"getvalues&id={configID}&registers={lowRegister}-{highRegister}&verbose=1");
 
-        public Task<string> GetWaveform(int deviceID, int configID) =>
-            GetCommandJson(deviceID, $"getwaveform&id={configID}&format=0");
+        public Task<string> GetWaveforms(int deviceID, int configID) =>
+            GetCommandJson(deviceID, $"getwaveforms&id={configID}&format=0");
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task<XmlDocument> GetCommandXml(int deviceID, string cmdParam, bool clearCookies = false)
