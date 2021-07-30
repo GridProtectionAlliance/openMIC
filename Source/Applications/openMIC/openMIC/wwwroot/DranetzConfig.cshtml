@@ -567,18 +567,18 @@
         ];
 
         const wiringConfig = {
-            Config0: { name: "Single phase", type: "Single" },
-            Config1: { name: "Split phase", type: "Split" },
-            Config2: { name: "Delta", type: "Delta" },
-            Config3: { name: "Wye", type: "Wye" },
-            Config4: { name: "Generic", type: "Generic" },
-            Config5: { name: "Delta 2 Watt Mete", type: "Delta" },
-            Config6: { name: "Wye 2.5 element, no B", type: "Wye"},
-            Config7: { name: "Wye 2.5 element, no C", type: "Wye" }
+            Config0: { index: 0, name: "Single phase", type: "Single" },
+            Config1: { index: 1, name: "Split phase", type: "Split" },
+            Config2: { index: 2, name: "Delta", type: "Delta" },
+            Config3: { index: 3, name: "Wye", type: "Wye" },
+            Config5: { index: 4, name: "Generic", type: "Generic" },
+            Config4: { index: 5, name: "Delta 2 Watt Meter", type: "Delta" },
+            Config6: { index: 6, name: "Wye 2.5 element, no B", type: "Wye"},
+            Config7: { index: 7, name: "Wye 2.5 element, no C", type: "Wye" }
         };
 
-        function getWiringConfig(index) {
-            const key = `Config${index}`;
+        function getWiringConfig(value) {
+            const key = `Config${value}`;
 
             if (wiringConfig.hasOwnProperty(key))
                 return wiringConfig[key];

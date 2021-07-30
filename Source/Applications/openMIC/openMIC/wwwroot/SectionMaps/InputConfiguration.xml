@@ -73,14 +73,14 @@
   <PROPDEF NAME="wiringConfig" ALIAS="Circuit type" TYPE="8" DEFAULT="0" RO="0" MAP=".config['@value']" POSTWRITE="updateWiringConfig({mapExpr})">
     <PARAM TYPE="1">
       <LIST>
-        <ITEM NAME="Single phase" VALUE="1" KEYVALUE="Single"/>
-        <ITEM NAME="Split phase" VALUE="2" KEYVALUE="Split"/>
-        <ITEM NAME="Delta" VALUE="3" KEYVALUE="Delta"/>
-        <ITEM NAME="Wye" VALUE="4" KEYVALUE="Wye"/>
+        <ITEM NAME="Single phase" VALUE="0" KEYVALUE="Single"/>
+        <ITEM NAME="Split phase" VALUE="1" KEYVALUE="Split"/>
+        <ITEM NAME="Delta" VALUE="2" KEYVALUE="Delta"/>
+        <ITEM NAME="Wye" VALUE="3" KEYVALUE="Wye"/>
         <ITEM NAME="Generic" VALUE="5" KEYVALUE="Generic"/>
-        <ITEM NAME="Delta 2 Watt Meter" VALUE="6" ANALYZER="0!" KEYVALUE="Delta"/>
-        <ITEM NAME="Wye 2.5 element, no B" VALUE="7" ANALYZER="0!" KEYVALUE="Wye"/>
-        <ITEM NAME="Wye 2.5 element, no C" VALUE="8" ANALYZER="0!" KEYVALUE="Wye"/>
+        <ITEM NAME="Delta 2 Watt Meter" VALUE="4" ANALYZER="0!" KEYVALUE="Delta"/>
+        <ITEM NAME="Wye 2.5 element, no B" VALUE="6" ANALYZER="0!" KEYVALUE="Wye"/>
+        <ITEM NAME="Wye 2.5 element, no C" VALUE="7" ANALYZER="0!" KEYVALUE="Wye"/>
       </LIST>
     </PARAM>
   </PROPDEF>
