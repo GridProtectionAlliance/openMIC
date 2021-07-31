@@ -50,23 +50,26 @@
 
     // Verify specified device vendor is Dranetz
     bool deviceFound = false;
-    Device device = QueryRecord<Device>("ID = {0}", deviceID);
+    Device device = QueryRecordByID<Device>(deviceID);
     string invalidDeviceMessage = "";
 
     if (device == null) {
         invalidDeviceMessage = string.Format("No device record could not be found for <code>ID={0}</code>", deviceID);
     }
     else {
-        VendorDevice vendorDevice = QueryRecord<VendorDevice>("ID = {0}", device.VendorDeviceID);
+        VendorDevice vendorDevice = QueryRecordByID<VendorDevice>(device.VendorDeviceID);
 
-        if (vendorDevice != null) {
-            Vendor vendor = QueryRecord<Vendor>("ID = {0}", vendorDevice.VendorID);
+        if (vendorDevice == null) {
+            invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Dranetz meter - no vendor device is assigned", device.Acronym, deviceID);
+        }
+        else { 
+            Vendor vendor = QueryRecordByID<Vendor>(vendorDevice.VendorID);
 
             if (vendor != null) {
                 deviceFound = string.Equals(vendor.Acronym.Trim().ToUpper(), "DRANETZ");
 
                 if (!deviceFound) {
-                    invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Dranetz meter - check vendor configuration", device.Acronym, deviceID);
+                    invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Dranetz meter.<br/><br/>Configured as: \"{2}\" / \"{3}\"", device.Acronym, deviceID, vendor.Acronym, vendorDevice.Name);
                 }
             }
         }
@@ -322,8 +325,8 @@
         return securityPrincipal.IsInRole("Administrator") || securityPrincipal.IsInRole("Editor");
     }
 
-    public T QueryRecord<T>(string query, params object[] parameters) where T : class, new() {
-        return DataContext.Table<T>().QueryRecordWhere(query, parameters);
+    public T QueryRecordByID<T>(object parameter) where T : class, new() {
+        return DataContext.Table<T>().QueryRecordWhere("ID = {0}", parameter);
     }
 }
 <div style="display: none" search-header></div>
