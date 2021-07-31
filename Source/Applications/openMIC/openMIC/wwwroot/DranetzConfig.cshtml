@@ -488,7 +488,7 @@
 <hr id="view-spacer" class="thick-spacer" style="margin-top: -10px; margin-bottom: 8px" />
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 30px; padding-top: 5px">
-        <label style="margin-top: 1px">Analyzer&nbsp;Configuration&nbsp;&nbsp;&nbsp;
+        <label style="margin-top: 1px"><span data-bind="text: selectedAnalyzerName"></span>&nbsp;Configuration&nbsp;&nbsp;&nbsp;
             <label id="configTypeSelectionBlock">
                 &nbsp;view as:
                 &nbsp;&nbsp;<input id="xmlConfigType" type="radio" class="view-config-type" value="xml" data-bind="checked: viewConfigType"><label for="xmlConfigType">&nbsp;XML</label>
@@ -700,6 +700,18 @@
                     });
 
                     return selectedAnalyzer;
+                },
+                owner: self
+            });
+
+            self.selectedAnalyzerName = ko.pureComputed({
+                read: function () {
+                    const selectedAnalyzer = self.selectedAnalyzer();
+
+                    if (selectedAnalyzer === undefined)
+                        return "Analyzer";
+
+                    return selectedAnalyzer["@@name"]();
                 },
                 owner: self
             });
@@ -1246,7 +1258,7 @@
 
             viewModel.currentConfigID(configID);
 
-            showInfoMessage(`Loading \"${viewModel.selectedAnalyzer()["@@name"]()}\" configuration, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1, true);
+            showInfoMessage(`Loading \"${viewModel.selectedAnalyzerName()}\" configuration, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1, true);
             hideInfoMessage({ closeHeaderPanel: false, closeFloatingPanels: true });
             hideErrorMessage();
             showLoadingMessage();
@@ -1284,13 +1296,7 @@
             $("#exportConfigFileNameDialog").toggle();
 
             if ($("#exportConfigFileNameDialog").is(":visible")) {
-                const selectedAnalyzer = viewModel.selectedAnalyzer();
-
-                if (selectedAnalyzer)
-                    $("#exportConfigFileName").val(`${selectedAnalyzer["@@name"]()}.json`);
-                else
-                    $("#exportConfigFileName").val("");
-
+                $("#exportConfigFileName").val(`${viewModel.selectedAnalyzerName()}.json`);
                 $("#exportConfigFileName").focus();
             }
         }
