@@ -498,7 +498,7 @@
         <button type="button" class="btn btn-xs btn-collapsable collapsed" style="top: 0; right: -10px" data-toggle="collapse" data-target="#analyzerConfiguration"></button>
     </div>
     <div id="analyzerConfiguration" class="panel-body collapse" style="padding: 2px; margin-bottom: -10px">
-        <pre data-bind="text: viewConfigAsXml() ? currentAnalyzerConfigXml() : currentAnalyzerConfigJson()"></pre>
+        <pre data-bind="text: viewConfigAsXml() ? selectedAnalyzerConfigXml() : selectedAnalyzerConfigJson()"></pre>
     </div>
 </div>
 <div id="graphDataWindow" class="modal modal-wide fade" role="dialog" style="max-width: 1000px; margin: 0 auto">
@@ -657,8 +657,8 @@
             self.timeErrorText = ko.observable("");
             self.modules = ko.observableArray();
             self.analyzers = ko.observableArray();
-            self.currentConfigID = ko.observable(-1);
-            self.currentAnalyzerConfig = ko.observable("");
+            self.selectedAnalyzerConfigID = ko.observable(-1);
+            self.selectedAnalyzerConfig = ko.observable("");
             self.viewConfigAsXml = ko.observable(true);
             self.errors = ko.validation.group(self);
 
@@ -670,9 +670,9 @@
             self._dataHubIsConnected = ko.observable(false);
             self._isDirty = ko.observable(false);
             self._isSaving = ko.observable(false);
-            self._currentAnalyzerConfigXml = ko.observable("");
-            self._currentAnalyzerType = ko.observable(analyzerTypes.PQDataNode.index);
-            self._currentWiringConfig = ko.observable(0);
+            self._selectedAnalyzerConfigXml = ko.observable("");
+            self._selectedAnalyzerType = ko.observable(analyzerTypes.PQDataNode.index);
+            self._selectedWiringConfig = ko.observable(0);
 
             // Properties
             self.dataHubIsConnected = ko.pureComputed({
@@ -719,8 +719,8 @@
             self.canSave = ko.pureComputed({
                 read: function () {
                     return @(userIsEditor.ToString().ToLower()) &&
-                        self.currentConfigID() > -1 &&
-                        self.currentAnalyzerConfig().commandresult &&
+                        self.selectedAnalyzerConfigID() > -1 &&
+                        self.selectedAnalyzerConfig().commandresult &&
                         self.isDirty() &&
                         !self.isSaving() &&
                         self.dataHubIsConnected();
@@ -730,8 +730,8 @@
 
             self.canExport = ko.pureComputed({
                 read: function () {
-                    return self.currentConfigID() > -1 &&
-                        self.currentAnalyzerConfig().commandresult &&
+                    return self.selectedAnalyzerConfigID() > -1 &&
+                        self.selectedAnalyzerConfig().commandresult &&
                         !self.isSaving() &&
                         self.dataHubIsConnected();
                 },
@@ -769,48 +769,48 @@
                 owner: self
             });
 
-            self.currentAnalyzerConfigJson = ko.pureComputed({
+            self.selectedAnalyzerConfigJson = ko.pureComputed({
                 read: function () {
-                    return JSON.stringify(self.currentAnalyzerConfig(), null, 2);
+                    return JSON.stringify(self.selectedAnalyzerConfig(), null, 2);
                 },
                 owner: self
             });
 
-            self.currentAnalyzerConfigXml = ko.pureComputed({
+            self.selectedAnalyzerConfigXml = ko.pureComputed({
                 read: function () {
-                    const configJson = self.currentAnalyzerConfigJson();
+                    const configJson = self.selectedAnalyzerConfigJson();
 
                     if (configJson && configJson.length > 2) {
                         if (self.dataHubIsConnected()) {
                             dataHub.getJsonAsXml(configJson, true)
-                                .done(self._currentAnalyzerConfigXml)
-                                .fail(e => self._currentAnalyzerConfigXml(`Failed to convert JSON to XML: ${e}\r\n\r\nJSON:\r\n${configJson}`));
+                                .done(self._selectedAnalyzerConfigXml)
+                                .fail(e => self._selectedAnalyzerConfigXml(`Failed to convert JSON to XML: ${e}\r\n\r\nJSON:\r\n${configJson}`));
                         }
                         else {
-                            self._currentAnalyzerConfigXml(`Waiting for hub connection to convert JSON to XML.\r\n\r\nJSON:\r\n${configJson}`);
+                            self._selectedAnalyzerConfigXml(`Waiting for hub connection to convert JSON to XML.\r\n\r\nJSON:\r\n${configJson}`);
                         }
                     }
                     else {
-                        self._currentAnalyzerConfigXml("");
+                        self._selectedAnalyzerConfigXml("");
                     }
 
-                    return self._currentAnalyzerConfigXml();
+                    return self._selectedAnalyzerConfigXml();
                 },
                 owner: self
             });
 
-            self.currentAnalyzerType = ko.pureComputed({
-                read: self._currentAnalyzerType,
+            self.selectedAnalyzerType = ko.pureComputed({
+                read: self._selectedAnalyzerType,
                 write: function (value) {
-                    self._currentAnalyzerType(value);
+                    self._selectedAnalyzerType(value);
                     self.analyzers.valueHasMutated();
                 },
                 owner: self
             });
 
-            self.currentWiringConfig = ko.pureComputed({
+            self.selectedWiringConfig = ko.pureComputed({
                 read: function () {
-                    return getWiringConfig(self._currentWiringConfig());
+                    return getWiringConfig(self._selectedWiringConfig());
                 },
                 owner: self
             });
@@ -828,7 +828,7 @@
             // Methods
 
             self.setWiringConfigValue = function (value) {
-                self._currentWiringConfig(parseInt(value, 10));
+                self._selectedWiringConfig(parseInt(value, 10));
             }
 
             self.queryModules = function () {
@@ -877,7 +877,7 @@
                         });
 
                         observerableAnalyzer.isSelected = ko.pureComputed({
-                            read: () => observerableAnalyzer.configID() === viewModel.currentConfigID()
+                            read: () => observerableAnalyzer.configID() === viewModel.selectedAnalyzerConfigID()
                         });
 
                         observerableAnalyzer.montitoringStatus = ko.pureComputed({
@@ -943,7 +943,7 @@
             }
 
             self.configChanged = function () {
-                self.currentAnalyzerConfig.valueHasMutated();
+                self.selectedAnalyzerConfig.valueHasMutated();
                 self.isDirty(true);
             }
 
@@ -966,10 +966,10 @@
                 showWorkingMessage("Saving");
                 self._isSaving(true);
 
-                const configID = self.currentConfigID();
+                const configID = self.selectedAnalyzerConfigID();
 
                 return dataHub.beginTransaction(deviceID).then(function () {
-                    return dataHub.setAnalyzerConfig(deviceID, configID, JSON.stringify(self.currentAnalyzerConfig())).done(function () {
+                    return dataHub.setAnalyzerConfig(deviceID, configID, JSON.stringify(self.selectedAnalyzerConfig())).done(function () {
                         self.isDirty(false);
                         showInfoMessage("Save complete.", 5000);
                         hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
@@ -999,7 +999,7 @@
                 const reader = new FileReader();
 
                 reader.onload = function () {
-                    const configID = self.currentConfigID();
+                    const configID = self.selectedAnalyzerConfigID();
                     const config = JSON.parse(reader.result);
 
                     if (!config.commandresult || !config.commandresult.characteristics || !config.commandresult.characteristics.anyalyzer) {
@@ -1030,7 +1030,7 @@
             }
 
             self.exportAnalyzerConfig = function (fileName) {
-                const data = self.currentAnalyzerConfigJson();
+                const data = self.selectedAnalyzerConfigJson();
                 const anchor = $("#exportConfigFileLink");
 
                 if (typeof anchor[0].download != "undefined") {
@@ -1046,7 +1046,7 @@
             };
 
             self.createSectionTabs = function (firstCall) {
-                const activeSections = sections[self.currentAnalyzerType()];
+                const activeSections = sections[self.selectedAnalyzerType()];
                 const tabList = [];
                 const tabSections = [];
 
@@ -1144,14 +1144,14 @@
             }
 
             self.reloadTabSections = function() {
-                const currentSectionKeys = sectionKeys[self.currentAnalyzerType()];
-                const targetSectionKeys = arguments.length === 0 ? currentSectionKeys : Array.from(arguments);
+                const activeSectionKeys = sectionKeys[self.selectedAnalyzerType()];
+                const targetSectionKeys = arguments.length === 0 ? activeSectionKeys : Array.from(arguments);
                 const promises = [];
 
                 for (let i = 0; i < targetSectionKeys.length; i++) {
                     const sectionKey = targetSectionKeys[i];
 
-                    if (currentSectionKeys.indexOf(sectionKey) !== -1)
+                    if (activeSectionKeys.indexOf(sectionKey) !== -1)
                         promises.push(self.loadTabSection(sectionKey));
                 }
 
@@ -1165,9 +1165,9 @@
                 }
 
                 self.isDirty(false);
-                self.currentConfigID(configID);             // Integer analyzer configuration ID
-                self.currentAnalyzerType(analyzerType);     // Integer analyzer type (see analyzerTypes)
-                self.currentAnalyzerConfig(analyzerConfig); // Dranetz XML config serialized as JSON
+                self.selectedAnalyzerConfigID(configID);     // Integer analyzer configuration ID
+                self.selectedAnalyzerType(analyzerType);     // Integer analyzer type (see analyzerTypes)
+                self.selectedAnalyzerConfig(analyzerConfig); // Dranetz XML config serialized as JSON
 
                 const power = analyzerConfig.commandresult.characteristics.anyalyzer.VA_power;
 
@@ -1250,13 +1250,13 @@
         }
 
         function loadAnalyzerConfig(record) {
-            if (viewModel.canSave() && !confirm("WARNING: Configuration changes to current analyzer are not saved. Are you sure you want to lose current changes and load new analyzer?"))
+            if (viewModel.canSave() && !confirm("WARNING: Configuration changes to selected analyzer are not saved. Are you sure you want to lose current changes and load new analyzer?"))
                 return $.Deferred().resolve().promise();
 
             const configID = parseInt(record["@@id"](), 10);
             const analyzerType = parseInt(record["@@analyzer_type"](), 10);
 
-            viewModel.currentConfigID(configID);
+            viewModel.selectedAnalyzerConfigID(configID);
 
             showInfoMessage(`Loading \"${viewModel.selectedAnalyzerName()}\" configuration, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1, true);
             hideInfoMessage({ closeHeaderPanel: false, closeFloatingPanels: true });
@@ -1306,13 +1306,13 @@
         }
 
         function setActiveTabIndex(index) {
-            const analyzerType = viewModel.currentAnalyzerType();
+            const analyzerType = viewModel.selectedAnalyzerType();
             $("#tabs").tabs({ active: index });
             $(`#tab${sectionKeys[analyzerType][index]}`).find(":input:not([type=hidden]):first").focus();
         }
 
         function getActiveTabSection() {
-            const analyzerType = viewModel.currentAnalyzerType();
+            const analyzerType = viewModel.selectedAnalyzerType();
             return sections[analyzerType][sectionKeys[analyzerType][getActiveTabIndex()]];
         }
 
@@ -1322,7 +1322,7 @@
 
         function showToolTip() {
             if (shiftIsDown) {
-                const mapRootLen = "viewModel.currentAnalyzerConfig().".length;
+                const mapRootLen = "viewModel.selectedAnalyzerConfig().".length;
                 const mapExpr = $(this).attr("map-expr");
                 $(this).attr("data-original-title", `<p class="text-left">map: ${mapExpr.substr(mapRootLen)}<br/>value: ${eval(mapExpr)}</p>`)
                     .tooltip("fixTitle")
@@ -1345,7 +1345,7 @@
                 return;
 
             // Delta wiring configurations do not include neutral values, defaulting to line-to-line voltage angle in this case
-            const referenceAngle = viewModel.currentWiringConfig().type.toUpperCase() === "DELTA" ?
+            const referenceAngle = viewModel.selectedWiringConfig().type.toUpperCase() === "DELTA" ?
                 "VABA" /* Voltage A to B Angle */ :
                 "VANA" /* Voltage A to Neutral Angle */;
 
@@ -1415,7 +1415,7 @@
             $(window).on("hubConnected", function() {
                 viewModel.dataHubIsConnected(true);
 
-                if (!deviceFound || viewModel.currentAnalyzerConfig().commandresult)
+                if (!deviceFound || viewModel.selectedAnalyzerConfig().commandresult)
                     return;
 
                 // Handle initial page load
@@ -1430,7 +1430,7 @@
                         viewModel.createSectionTabs(true);
 
                         setTimeout(function () {
-                            loadAnalyzerConfig(viewModel.analyzers()[viewModel.currentAnalyzerType()]);
+                            loadAnalyzerConfig(viewModel.analyzers()[viewModel.selectedAnalyzerType()]);
                             $("[show-data-button]").tooltip({placement: "top", delay: { "show": 500, "hide": 100 }});
                         }, 500);
                     })
@@ -1535,7 +1535,7 @@
         function updateWiringConfig(value) {
             viewModel.setWiringConfigValue(value);
             viewModel.reloadTabSections(); // Reload all tabs
-            showInfoMessage(`Selected "${viewModel.currentWiringConfig().name}" circuit type...`);
+            showInfoMessage(`Selected "${viewModel.selectedWiringConfig().name}" circuit type...`);
         }
 
         let normalizeThresholdState = Cookies.get("normalizeThresholds") || "1";
@@ -1765,7 +1765,7 @@
                 args[i] = args[i].trim().toUpperCase();
 
             // key value DOM lookup: getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase()
-            const keyValue = viewModel.currentWiringConfig().type.toUpperCase();
+            const keyValue = viewModel.selectedWiringConfig().type.toUpperCase();
 
             return args.every(arg => arg.startsWith("!")) ?
                 /* AND logic: */ args.every(arg => arg.substr(1) !== keyValue) :
@@ -1780,7 +1780,7 @@
                     return false;
             }
 
-            const currentAnalyzer = viewModel.currentAnalyzerType();
+            const selectedAnalyzer = viewModel.selectedAnalyzerType();
             let targetAnalyzer = 0;
 
             if (definition.hasOwnProperty("@@ANALYZER")) {
@@ -1789,14 +1789,14 @@
                 // Check for exact match
                 if (analyzer.endsWith("!")) {
                     analyzer = analyzer.substring(0, analyzer.length - 1);
-                    return parseInt(analyzer, 10) === currentAnalyzer;
+                    return parseInt(analyzer, 10) === selectedAnalyzer;
                 }
 
                 targetAnalyzer = parseInt(analyzer, 10);
             }
 
             // [0] PQ Data Node analyzer considered to apply to all
-            return targetAnalyzer === 0 || currentAnalyzer === 0 || targetAnalyzer === currentAnalyzer;
+            return targetAnalyzer === 0 || selectedAnalyzer === 0 || targetAnalyzer === selectedAnalyzer;
         }
 
         function buildListElements(list, defaultVal) {
@@ -1807,27 +1807,28 @@
 
             for (let i = 0; i < list.ITEM.length; i++) {
                 const value = list.ITEM[i];
+                const optVal = value["@@VALUE"] || index;
+                const keyVal = value["@@KEYVALUE"] ? ` key-value="${htmlEncode(value["@@KEYVALUE"])}"` : "";
+                const enabled = elementTargetsInputConfig(value);
+                const selected = optVal === defaultVal || !defaultVal && enabled && totalOptions === 0 ? " selected" : "";
+                const hidden = enabled ? "" : " hidden";
+                let alias = value["@@ALIAS"];
 
-                if (elementTargetsInputConfig(value)) {
-                    const optVal = value["@@VALUE"] || index;
-                    const keyVal = value["@@KEYVALUE"] ? ` key-value="${htmlEncode(value["@@KEYVALUE"])}"` : "";
-                    const selected = optVal === defaultVal || !defaultVal && totalOptions === 0 ? " selected" : "";
-                    let alias = value["@@ALIAS"];
+                if (alias) {
+                    for (let j = 0; j < maxAliasParams; j++) {
+                        const aliasParam = value[`@@ALIAS${j}`];
 
-                    if (alias) {
-                        for (let j = 0; j < maxAliasParams; j++) {
-                            const aliasParam = value[`@@ALIAS${j}`];
-
-                            if (aliasParam)
-                                alias = alias.replaceAll(`{${j}}`, eval(aliasParam));
-                            else
-                                break;
-                        }
+                        if (aliasParam)
+                            alias = alias.replaceAll(`{${j}}`, eval(aliasParam));
+                        else
+                            break;
                     }
-
-                    html.push(`<option value="${optVal}"${keyVal}${selected}>${htmlEncode(alias || value["@@NAME"])}</option>`);
-                    totalOptions++;
                 }
+
+                html.push(`<option value="${optVal}"${keyVal}${selected}${hidden}>${htmlEncode(alias || value["@@NAME"])}</option>`);
+
+                if (enabled)
+                    totalOptions++;
 
                 index++;
             }
@@ -2031,7 +2032,7 @@
         }
 
         function buildSection(section) {
-            const mapRoot = `viewModel.currentAnalyzerConfig().${section["@@MAPROOT"]}`;
+            const mapRoot = `viewModel.selectedAnalyzerConfig().${section["@@MAPROOT"]}`;
             const sectionName = section["@@NAME"];
             const html = [];
             const script = [];
