@@ -27,12 +27,14 @@
 @using GSF.Web
 @using GSF.Web.Model
 @using GSF.Web.Shared
+@using GSF.Web.Shared.Model
 @using openMIC.Model
 @* ReSharper disable Html.PathError *@
 @* ReSharper disable UnknownCssClass *@
 @* ReSharper disable CssBrowserCompatibility *@
 @inherits ExtendedTemplateBase<AppModel>
 @{
+    DataContext = ViewBag.DataContext;
     Layout = "Layout.cshtml";
     ViewBag.HidePageTitle = true;
     ViewBag.Title = "Manage Configuration";
@@ -44,6 +46,30 @@
 
     if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
         deviceID = 0;
+    }
+
+    // Verify specified device vendor is Dranetz
+    bool deviceFound = false;
+    Device device = QueryRecord<Device>("ID = {0}", deviceID);
+    string invalidDeviceMessage = "";
+
+    if (device == null) {
+        invalidDeviceMessage = string.Format("No device record could not be found for <code>ID={0}</code>", deviceID);
+    }
+    else {
+        VendorDevice vendorDevice = QueryRecord<VendorDevice>("ID = {0}", device.VendorDeviceID);
+
+        if (vendorDevice != null) {
+            Vendor vendor = QueryRecord<Vendor>("ID = {0}", vendorDevice.VendorID);
+
+            if (vendor != null) {
+                deviceFound = string.Equals(vendor.Acronym.Trim().ToUpper(), "DRANETZ");
+
+                if (!deviceFound) {
+                    invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Dranetz meter - check vendor configuration", device.Acronym, deviceID);
+                }
+            }
+        }
     }
 
     bool userIsEditor = UserIsEditor();
@@ -274,6 +300,8 @@
     </style>
 }
 @functions {
+    public DataContext DataContext { get; set; }
+
     public string GetCurrentUserID()
     {
         if (Thread.CurrentPrincipal.Identity == null)
@@ -292,6 +320,10 @@
             return false;
 
         return securityPrincipal.IsInRole("Administrator") || securityPrincipal.IsInRole("Editor");
+    }
+
+    public T QueryRecord<T>(string query, params object[] parameters) where T : class, new() {
+        return DataContext.Table<T>().QueryRecordWhere(query, parameters);
     }
 }
 <div style="display: none" search-header></div>
@@ -448,9 +480,7 @@
         </div>
         <div id="tabs"></div>
     </div>
-    <h3 id="noDeviceDataMessage" style="display: none; color: red">
-        No device data could be loaded for device with <code>ID=@deviceID</code>
-    </h3>
+    <h3 id="invalidDeviceMessage" style="display: none; color: red">@Raw(invalidDeviceMessage)</h3>
 </div>
 <hr id="view-spacer" class="thick-spacer" style="margin-top: -10px; margin-bottom: 8px" />
 <div class="panel panel-default">
@@ -493,6 +523,7 @@
 
         var viewModel = null;
         const deviceID = @deviceID;
+        const deviceFound = @deviceFound.ToString().ToLower();
 
         let shiftIsDown = false;
 
@@ -1375,7 +1406,7 @@
             $(window).on("hubConnected", function() {
                 viewModel.dataHubIsConnected(true);
 
-                if (deviceID <= 0 || viewModel.currentAnalyzerConfig().commandresult)
+                if (!deviceFound || viewModel.currentAnalyzerConfig().commandresult)
                     return;
 
                 // Handle initial page load
@@ -1480,14 +1511,14 @@
 
             resizePageElements();
 
-            if (deviceID === 0)
-                $("#noDeviceDataMessage").show();
-
             $("#graphDataWindow").modal({ show: false, backdrop: "static", keyboard: false });
 
             $(document).on("hidden.bs.modal", "#graphDataWindow", function () {
                 clearGraphDataWindow();
             });
+
+            if (!deviceFound)
+                $("#invalidDeviceMessage").show();
         });
 
         // Non-config related UI control variables
