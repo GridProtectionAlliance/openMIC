@@ -6,7 +6,7 @@
       <ITEM NAME="C"/>
       <ITEM NAME="D"/>
     </LIST>
-    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="4" RO="0" CONFIG="Generic" MAP="genericChannelNames[getVal('{0}')]" POSTWRITE="genericChannelNameUpdated()" UPDATESCONFIG="0"/>
+    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="4" RO="0" CONFIG="Generic" MAP="genericChannelNames[getVal('{0}')]" WRITE="viewModel.selectedWiringConfig().type.toUpperCase() === 'GENERIC' ? {0} : genericChannelNames[getVal('{bankTarget}')]" POSTWRITE="genericChannelNameUpdated()" UPDATESCONFIG="0"/>
     <PROPDEF NAME="inputVTPrimary" ALIAS="Voltage transducer primary" TYPE="1" RO="0" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2].psratio.list.item[0]['@value']"/>
     <PROPDEF NAME="inputVTSecondary" ALIAS="Voltage transducer secondary" TYPE="1" RO="0" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[getVal('{0}') * 2].psratio.list.item[1]['@value']"/>
     <PROPDEF NAME="inputVInverted" ALIAS="Voltage input inverted" TYPE="0" RO="0" ANALYZER="1" MAP=".invert_inputs.list.item[getVal('{0}') * 2]['@value']"/>

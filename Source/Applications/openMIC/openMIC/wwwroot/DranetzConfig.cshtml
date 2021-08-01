@@ -330,7 +330,7 @@
     }
 }
 <div style="display: none" search-header></div>
-<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" alt="Dranetz" src="Images/Dranetz.png" /></h3>
+<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" alt="Dranetz" src="Images/Dranetz.png"/></h3>
 <hr class="quarter-break" />
 <div id="contentWell" class="well well-dynamic-content" content-fill-height>
     <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">
@@ -371,7 +371,7 @@
                         </tr>
                         <tr>
                             <th class="text-right pad-right">GPS:</th>
-                            <td class="text-left nowrap" data-bind="text: `${gpsInstalled() ? '' : 'not '} installed / ${gpsSatellites()} satellites`" />
+                            <td class="text-left nowrap" data-bind="text: `${gpsInstalled() ? '' : 'not '}installed / ${gpsSatellites()} satellites`" />
                         </tr>
                         <tr>
                             <th class="text-right pad-right" style="vertical-align: top">Device Time:</th>
@@ -1569,13 +1569,16 @@
         }
 
         function genericChannelNameUpdated() {
+            if (viewModel.selectedWiringConfig().type.toUpperCase() !== "GENERIC")
+                return;
+
             Cookies.set("genericChannelNames", genericChannelNames.join("|"), { expires: 365 });
 
             const selectedInput = ($("#inputSection_bankInput").val() || [0])[0];
 
             viewModel.reloadTabSections("RMSVariations", "Transients", "WaveformCapture", "Power", "EnergyAndDemand", "Harmonics").then(function () {
                 $("#inputSection_bankInput").val([selectedInput]).trigger("change");
-            });;
+            });
 
             showInfoMessage(`Generic channel name updated...`);
         }
@@ -1604,7 +1607,19 @@
             }
         }
 
-        function readValue(element, readOperation, isCheckBox) {
+        function clearValue(target, isCheckBox, clearConfig) {
+            if (isCheckBox)
+                target.prop("checked", false);
+            else
+                target.val("");
+
+            if (clearConfig && target.attr("config-cleared") === undefined) {
+                target.attr("config-cleared", "");
+                target.trigger("change");
+            }
+        }
+
+        function readValue(element, readOperation, enabled, isCheckBox) {
             const target = $(element);
             const bank = target.attr("bank");
 
@@ -1621,19 +1636,21 @@
                     });
 
                     // If any selected items have different values, clear target
-                    if (values.some(value => value !== values[0])) {
-                        if (isCheckBox)
-                            target.prop("checked", false);
-                        else
-                            target.val("");
-                    }
+                    if (values.some(value => value !== values[0]))
+                        clearValue(target, isCheckBox);
                 }
                 else {
-                    readOperation();
+                    if (enabled)
+                        readOperation();
+                    else
+                        clearValue(target, isCheckBox, true);
                 }
             }
             else {
-                readOperation();
+                if (enabled)
+                    readOperation();
+                else
+                    clearValue(target, isCheckBox, true);
             }
         }
 
@@ -1810,8 +1827,8 @@
                 const optVal = value["@@VALUE"] || index;
                 const keyVal = value["@@KEYVALUE"] ? ` key-value="${htmlEncode(value["@@KEYVALUE"])}"` : "";
                 const enabled = elementTargetsInputConfig(value);
-                const selected = optVal === defaultVal || !defaultVal && enabled && totalOptions === 0 ? " selected" : "";
                 const hidden = enabled ? "" : " hidden";
+                const selected = optVal === defaultVal || !defaultVal && enabled && totalOptions === 0 ? " selected" : "";
                 let alias = value["@@ALIAS"];
 
                 if (alias) {
@@ -1855,6 +1872,9 @@
                 }
             }
 
+            const enabled = elementTargetsInputConfig(propDef);
+            const hidden = enabled ? "" : " hidden";
+            const bank = bankTarget && bankTarget.length ? ` bank="${bankTarget}"` : "";
             const getPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked')` : `$('#${name}').val()`;
             const setPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked', {0})` : `$('#${name}').val({0})`;
             const readOnly = parseInt(propDef["@@RO"] || "1", 10) > 0;
@@ -1874,7 +1894,7 @@
             const postReadExpr = propDef["@@POSTREAD"] ? ` ${applySubstitutions(propDef["@@POSTREAD"])};` : "";
             const preWriteExpr = propDef["@@PREWRITE"] ? `${applySubstitutions(propDef["@@PREWRITE"])}; ` : "";
             const postWriteExpr = propDef["@@POSTWRITE"] ? ` ${applySubstitutions(propDef["@@POSTWRITE"])};` : "";
-            const updatesConfigExpr = parseInt(propDef["@@UPDATESCONFIG"] || "1", 10) !== 0 ? " viewModel.configChanged();" : "";
+            const updatesConfigExpr = enabled && parseInt(propDef["@@UPDATESCONFIG"] || "1", 10) !== 0 ? " viewModel.configChanged();" : "";
 
             const updateFunction = `const update_{0} = new Function("${readOnly ? "" : `${preReadExpr}{1};${postReadExpr}`}");`;
             const changedFunction = `const {0}_changed = new Function("${preWriteExpr}{1};${postWriteExpr}${updatesConfigExpr}");`;
@@ -1891,37 +1911,34 @@
             const html = [];
             const script = [];
 
-            if (!bankTarget)
-                bankTarget = "";
-
-            html.push(`<tr><th class="text-right pad-right" width="30%">${alias || name}:</th><td>`);
+            html.push(`<tr${hidden}><th class="text-right pad-right" width="30%">${alias || name}:</th><td>`);
 
             switch (type) {
                 case PropDefType.CHECKBOX:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) !== 0`}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? String.format(writeExpr, getPropVal) : `${getPropVal} ? '1' : '0'`}`));
-                    html.push(`<input type="checkbox" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, true)" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="checkbox" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, true)" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
                     break;
                 case PropDefType.NUMERIC:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name})" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
                 break;
                 case PropDefType.FLOAT:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? `(${String.format(readExpr, mapExpr)})` : `parseFloat(${mapExpr})`}.toFixed(4)`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name})" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
                     break;
                 case PropDefType.TEXT:
                 case PropDefType.PASSWORD:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name})" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}"/>`);
+                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
                     break;
                 case PropDefType.SELECT:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<select class="form-control" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name})" data-toggle="tooltip" map-expr="${mapExpr}" bank="${bankTarget}">`);
+                    html.push(`<select class="form-control" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}>`);
                     html.push(buildListElements(propDef.PARAM.LIST, defaultVal)[0]);
                     html.push(`</select>`);
                     break;
@@ -1929,12 +1946,14 @@
 
             html.push(`</td></tr>`);
 
-            return [ elementTargetsInputConfig(propDef) ? html.join("") : "", script.join("\r\n") ];
+            return [ html.join(""), script.join("\r\n") ];
         }
 
         function buildBankElement(definition, mapRoot, sectionName) {
             const bankName = definition["@@NAME"];
             const bankAlias = definition["@@ALIAS"];
+            const enabled = elementTargetsInputConfig(definition);
+            const hidden = enabled ? "" : " hidden";
             const rows = definition["@@ROWS"];
 
             const sizeToken = "[_SIZE-TOKEN_]";
@@ -1943,8 +1962,8 @@
             const html = [];
             const script = [];
 
-            html.push(`<tr><th class="header${definition.order > 0 ? "-section-row" : ""} bank-header"><div class="header">${bankAlias}</div></th></tr>`);
-            html.push(`<tr class="bank-group"><td class="bank-group">`);
+            html.push(`<tr${hidden}><th class="header${definition.order > 0 ? "-section-row" : ""} bank-header"><div class="header">${bankAlias}</div></th></tr>`);
+            html.push(`<tr class="bank-group"${hidden}><td class="bank-group">`);
 
             var propDefsStarted = false;
 
@@ -2026,9 +2045,9 @@
             closePropDefs();
 
             html.push(`</td></tr>`);
-            html.push(`<tr><th class="header-section-row bank-footer"><div class="header"></div></th></tr>`);
+            html.push(`<tr${hidden}><th class="header-section-row bank-footer"><div class="header"></div></th></tr>`);
 
-            return [ elementTargetsInputConfig(definition) ? html.join("").replace(sizeToken, sizeAttribute) : "", script.join("\r\n") ];
+            return [ html.join("").replace(sizeToken, sizeAttribute), script.join("\r\n") ];
         }
 
         function buildSection(section) {
