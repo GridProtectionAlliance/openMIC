@@ -1613,7 +1613,7 @@
             else
                 target.val("");
 
-            if (clearConfig && target.attr("config-cleared") === undefined) {
+            if (clearConfig && !target[0].hasAttribute("config-cleared")) {
                 target.attr("config-cleared", "");
                 target.trigger("change");
             }
@@ -1625,7 +1625,7 @@
 
             // Handle multi-select bank list read operation
             if (bank && bank.length) {
-                const selections = getVal(bank);
+                const selections = getValue(bank);
 
                 if (Array.isArray(selections) && selections.length > 1) {
                     const values = [];
@@ -1660,7 +1660,7 @@
 
             // Handle multi-select bank list write operation
             if (bank && bank.length) {
-                const selections = getVal(bank);
+                const selections = getValue(bank);
 
                 if (Array.isArray(selections) && selections.length > 1) {
                     // Assign changed value to all selected items
@@ -1677,7 +1677,7 @@
             }
         }
 
-        function getVal(targetID, targetType) {
+        function getValue(targetID, targetType) {
             const target = $(`#${targetID}`);
 
             // Check if target is a bank list

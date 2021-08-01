@@ -1,8 +1,8 @@
 <SECTION NAME="rms" ALIAS="Rms Variations" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
   <PROPDEF ORDER="0" NAME="Sliding Voltage Reference for High and Low Limits" TYPE="3" ANALYZER="1"/>
   <PROPDEF ORDER="1" NAME="rmsUSREnable" ALIAS="Enable threshold adjustment" TYPE="0" RO="0" ANALYZER="1" MAP=".usr.bEnabled['@value']"/>
-  <PROPDEF ORDER="2" NAME="rmsUSRMax" ALIAS="Sliding reference maximum value ({0})" TYPE="4" RO="0" ANALYZER="1" MAP=".usr.fHighLimit['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getVal('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getVal('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
-  <PROPDEF ORDER="3" NAME="rmsUSRMin" ALIAS="Sliding reference mimimum value ({0})" TYPE="4" RO="0" ANALYZER="1" MAP=".usr.fLowLimit['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getVal('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getVal('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
+  <PROPDEF ORDER="2" NAME="rmsUSRMax" ALIAS="Sliding reference maximum value ({0})" TYPE="4" RO="0" ANALYZER="1" MAP=".usr.fHighLimit['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getValue('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getValue('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
+  <PROPDEF ORDER="3" NAME="rmsUSRMin" ALIAS="Sliding reference mimimum value ({0})" TYPE="4" RO="0" ANALYZER="1" MAP=".usr.fLowLimit['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getValue('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getValue('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
   <BANK ORDER="4" NAME="bankRMSLimits" ALIAS="RMS Magnitude Limits (select the channel(s) to change)" ROWS="11">
     <LIST>
       <ITEM NAME="ci46" ALIAS="Rms Voltage {0}" VALUE="0" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
@@ -17,9 +17,9 @@
       <ITEM NAME="ci61" ALIAS="Rms Current {0}" VALUE="6" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
       <ITEM NAME="ci63" ALIAS="Rms Current {0}" VALUE="7" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
     </LIST>
-    <PROPDEF NAME="limitHigh" ALIAS="High ({0})" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig1.hi_lims.list.item[0]['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getVal('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getVal('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
-    <PROPDEF NAME="limitLow" ALIAS="Low ({0})" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig2.rms_lo_very_lo_lims.list.item[0]['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getVal('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getVal('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
-    <PROPDEF NAME="limitlLowLow" ALIAS="Very low ({0})" TYPE="4" RO="0" MAP=".thresholds.list.item[getVal('{0}')].tconfig2.rms_lo_very_lo_lims.list.item[1]['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getVal('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getVal('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
+    <PROPDEF NAME="limitHigh" ALIAS="High ({0})" TYPE="4" RO="0" MAP=".thresholds.list.item[getValue('{0}')].tconfig1.hi_lims.list.item[0]['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getValue('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getValue('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
+    <PROPDEF NAME="limitLow" ALIAS="Low ({0})" TYPE="4" RO="0" MAP=".thresholds.list.item[getValue('{0}')].tconfig2.rms_lo_very_lo_lims.list.item[0]['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getValue('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getValue('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
+    <PROPDEF NAME="limitlLowLow" ALIAS="Very low ({0})" TYPE="4" RO="0" MAP=".thresholds.list.item[getValue('{0}')].tconfig2.rms_lo_very_lo_lims.list.item[1]['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / getValue('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * getValue('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
   </BANK>
   <PROPDEF NAME="Rapid Voltage Change Limits" TYPE="3" ANALYZER="1" CONFIG="!Generic"/>
   <PROPDEF NAME="rmsRVCLimit" ALIAS="RMS magnitude change (%)" TYPE="4" RO="0" ANALYZER="1" CONFIG="!Generic" MAP=".thresholds.list.item[0].tconfig1.hi_lims.list.item[5]['@value']" POSTWRITE="{mapRoot}.thresholds.list.item[1].tconfig1.hi_lims.list.item[5]['@value'] = {value}; {mapRoot}.thresholds.list.item[2].tconfig1.hi_lims.list.item[5]['@value'] = {value}"/>
@@ -34,10 +34,10 @@
     <PARAM MIN="1" MAX="10000"/>
   </PROPDEF>
   <PROPDEF NAME="Waveform Capture" TYPE="3"/>
-  <PROPDEF NAME="rmsWFPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="1" RO="0" MAP=".trig_resp.wave_picture_pretrig_cycles['@value']" POSTWRITE="const maxPre = getVal('rmsSection_rmsPretrigger'); if (getVal('{name}') > maxPre) { {mapExpr} = maxPre; update_{name}(); }">
+  <PROPDEF NAME="rmsWFPretrigger" ALIAS="Pre-trigger (Cycles)" TYPE="1" RO="0" MAP=".trig_resp.wave_picture_pretrig_cycles['@value']" POSTWRITE="const maxPre = getValue('rmsSection_rmsPretrigger'); if (getValue('{name}') > maxPre) { {mapExpr} = maxPre; update_{name}(); }">
     <PARAM MIN="1" MAX="30"/>
   </PROPDEF>
-  <PROPDEF NAME="rmsWFPosttrigger" ALIAS="Post-trigger (Cycles)" TYPE="1" RO="0" MAP=".trig_resp.wave_picture_posttrig_cycles['@value']" POSTWRITE="const maxPost = Math.max(getVal('rmsSection_rmsInOutPost'), getVal('rmsSection_rmsOutInPost')); if (getVal('{name}') > maxPost) { {mapExpr} = maxPost; update_{name}(); }">
+  <PROPDEF NAME="rmsWFPosttrigger" ALIAS="Post-trigger (Cycles)" TYPE="1" RO="0" MAP=".trig_resp.wave_picture_posttrig_cycles['@value']" POSTWRITE="const maxPost = Math.max(getValue('rmsSection_rmsInOutPost'), getValue('rmsSection_rmsOutInPost')); if (getValue('{name}') > maxPost) { {mapExpr} = maxPost; update_{name}(); }">
     <PARAM MIN="1" MAX="120"/>
   </PROPDEF>
 </SECTION>
