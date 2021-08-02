@@ -1559,13 +1559,61 @@
                 $("#invalidDeviceMessage").show();
         });
 
-        // Non-config related UI control variables
+        // Section map operations
+
+        function setWaveformCaptureSelections(values) {
+            const waveformMasks = viewModel.selectedAnalyzerConfig().commandresult.characteristics.anyalyzer.VA_power.trig_resp.masks.list.item;
+
+            for (let i = 0; i < values.length; i++)
+                waveformMasks[i]['@@value'] = values[i];
+        }
 
         function updateWiringConfig(value) {
             viewModel.setWiringConfigValue(value);
+
+            // Set any needed circuit selection defaults
+            switch (viewModel.selectedWiringConfig().type.toUpperCase()) {
+                case "SINGLE":
+                    setWaveformCaptureSelections([17, 0, 0, 8, 16, 0, 0, 128, 0, 0, 0, 0, 0]);
+                    break;
+                case "SPLIT":
+                    setWaveformCaptureSelections([51, 51, 0, 8, 16, 32, 0, 128, 0, 0, 0, 0, 0]);
+                    break;
+                case "DELTA":
+                    setWaveformCaptureSelections([0, 0, 0, 0, 16, 32, 64, 0, 1904, 1904, 1904, 0, 0]);
+                    break;
+                case "GENERIC":
+                    setWaveformCaptureSelections([119, 119, 119, 119, 16, 32, 64, 128, 0, 0, 0, 0, 0]);
+                    break;
+                default: // WYE
+                    setWaveformCaptureSelections([119, 119, 119, 8, 16, 32, 64, 128, 119, 119, 119, 0, 0]);
+                    break;
+            }
+
             viewModel.reloadTabSections(); // Reload all tabs
             showInfoMessage(`Selected "${viewModel.selectedWiringConfig().name}" circuit type...`);
         }
+
+        function configMatches() {
+            const args = arguments.length === 1 && Array.isArray(arguments[0]) ?
+                arguments[0] :
+                Array.from(arguments);
+
+            if (args.length === 0)
+                return false;
+
+            for (let i = 0; i < args.length; i++)
+                args[i] = args[i].trim().toUpperCase();
+
+            // key value DOM lookup: getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase()
+            const keyValue = viewModel.selectedWiringConfig().type.toUpperCase();
+
+            return args.every(arg => arg.startsWith("!")) ?
+                /* AND logic: */ args.every(arg => arg.substr(1) !== keyValue) :
+                /*  OR logic: */ args.some(arg => arg.startsWith("!") ? arg.substr(1) !== keyValue : arg === keyValue);
+        }
+
+        // Non-config related UI control variables
 
         let normalizeThresholdState = Cookies.get("normalizeThresholds") || "1";
 
@@ -1620,10 +1668,22 @@
 
         // Section Map Builder code - consider migrating to independent file
 
-        function htmlEncode(value) {
-            return $("<div/>").text(value).html().replace(/&/g, "%26");
+        const PropDefType = {
+            CHECKBOX: "0",
+            NUMERIC: "1",
+            FLOAT: "2",
+            HEADER: "3",
+            TEXT: "4",
+            DATE: "5",
+            TIME: "6",
+            SELECT: "8",
+            DATETIMERANGE: "11",
+            PASSWORD: "12",
+            MULTILINETEXT: "13"
         }
 
+        const maxAliasParams = 5;
+        const unmapped = 0;
         let bankIndex = undefined;
 
         function execOperationAtBankIndex(index, operation) {
@@ -1782,42 +1842,6 @@
             });
         }
 
-        const PropDefType = {
-            CHECKBOX:      "0",
-            NUMERIC:       "1",
-            FLOAT:         "2",
-            HEADER:        "3",
-            TEXT:          "4",
-            DATE:          "5",
-            TIME:          "6",
-            SELECT:        "8",
-            DATETIMERANGE: "11",
-            PASSWORD:      "12",
-            MULTILINETEXT: "13"
-        }
-
-        const maxAliasParams = 5;
-        const unmapped = 0;
-
-        function configMatches() {
-            const args = arguments.length === 1 && Array.isArray(arguments[0]) ?
-                arguments[0] :
-                Array.from(arguments);
-
-            if (args.length === 0)
-                return false;
-
-            for (let i = 0; i < args.length; i++)
-                args[i] = args[i].trim().toUpperCase();
-
-            // key value DOM lookup: getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase()
-            const keyValue = viewModel.selectedWiringConfig().type.toUpperCase();
-
-            return args.every(arg => arg.startsWith("!")) ?
-                /* AND logic: */ args.every(arg => arg.substr(1) !== keyValue) :
-                /*  OR logic: */ args.some(arg => arg.startsWith("!") ? arg.substr(1) !== keyValue : arg === keyValue);
-        }
-
         function elementTargetsInputConfig(definition) {
             if (definition.hasOwnProperty("@@CONFIG")) {
                 const config = definition["@@CONFIG"].trim();
@@ -1854,7 +1878,7 @@
             for (let i = 0; i < list.ITEM.length; i++) {
                 const value = list.ITEM[i];
                 const optVal = value["@@VALUE"] || index;
-                const keyVal = value["@@KEYVALUE"] ? ` key-value="${htmlEncode(value["@@KEYVALUE"])}"` : "";
+                const keyVal = value["@@KEYVALUE"] ? ` key-value="${value["@@KEYVALUE"]}"` : "";
                 const enabled = elementTargetsInputConfig(value);
                 const hidden = enabled ? "" : " hidden";
                 const selected = optVal === defaultVal || !defaultVal && enabled && totalOptions === 0 ? " selected" : "";
@@ -1871,7 +1895,7 @@
                     }
                 }
 
-                html.push(`<option value="${optVal}"${keyVal}${selected}${hidden}>${htmlEncode(alias || value["@@NAME"])}</option>`);
+                html.push(`<option value="${optVal}"${keyVal}${selected}${hidden}>${alias || value["@@NAME"]}</option>`);
 
                 if (enabled)
                     totalOptions++;
