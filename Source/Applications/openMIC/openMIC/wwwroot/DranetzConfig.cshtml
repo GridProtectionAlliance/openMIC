@@ -51,25 +51,27 @@
     // Verify specified device vendor is Dranetz
     bool deviceFound = false;
     Device device = QueryRecordByID<Device>(deviceID);
+    string deviceAcronym = "";
     string invalidDeviceMessage = "";
 
     if (device == null) {
         invalidDeviceMessage = string.Format("No device record could not be found for <code>ID={0}</code>", deviceID);
     }
     else {
+        deviceAcronym = device.Acronym;
         VendorDevice vendorDevice = QueryRecordByID<VendorDevice>(device.VendorDeviceID);
 
         if (vendorDevice == null) {
-            invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Dranetz meter - no vendor device is assigned", device.Acronym, deviceID);
+            invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Dranetz meter - no vendor device is assigned", deviceAcronym, deviceID);
         }
-        else { 
+        else {
             Vendor vendor = QueryRecordByID<Vendor>(vendorDevice.VendorID);
 
             if (vendor != null) {
                 deviceFound = string.Equals(vendor.Acronym.Trim().ToUpper(), "DRANETZ");
 
                 if (!deviceFound) {
-                    invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Dranetz meter.<br/><br/>Configured as: \"{2}\" / \"{3}\"", device.Acronym, deviceID, vendor.Acronym, vendorDevice.Name);
+                    invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Dranetz meter.<br/><br/>Configured as: \"{2}\" / \"{3}\"", deviceAcronym, deviceID, vendor.Acronym, vendorDevice.Name);
                 }
             }
         }
@@ -526,6 +528,7 @@
 
         var viewModel = null;
         const deviceID = @deviceID;
+        const deviceAcronym = "@deviceAcronym";
         const deviceFound = @deviceFound.ToString().ToLower();
 
         let shiftIsDown = false;
@@ -784,7 +787,7 @@
                         if (self.dataHubIsConnected()) {
                             dataHub.getJsonAsXml(configJson, true)
                                 .done(self._selectedAnalyzerConfigXml)
-                                .fail(e => self._selectedAnalyzerConfigXml(`Failed to convert JSON to XML: ${e}\r\n\r\nJSON:\r\n${configJson}`));
+                                .fail(error => self._selectedAnalyzerConfigXml(`Failed to convert JSON to XML: ${error}\r\n\r\nJSON:\r\n${configJson}`));
                         }
                         else {
                             self._selectedAnalyzerConfigXml(`Waiting for hub connection to convert JSON to XML.\r\n\r\nJSON:\r\n${configJson}`);
@@ -995,35 +998,68 @@
                 });
             }
 
+            self.loadImportedAnalyzerConfig = function (configID, result) {
+                const config = JSON.parse(result);
+
+                if (!config.commandresult || !config.commandresult.characteristics || !config.commandresult.characteristics.anyalyzer) {
+                    showErrorMessage("Unexpected config file format", null, true);
+                    return;
+                }
+
+                const analyzerType = parseInt(config.commandresult.characteristics.anyalyzer.analyzer_type["@@value"], 10);
+
+                self._loadAnalyzerConfig(configID, analyzerType, config).done(function () {
+                    const selectedAnalyzer = self.selectedAnalyzer();
+
+                    if (selectedAnalyzer) {
+                        selectedAnalyzer["@@name"](config.commandresult.characteristics.anyalyzer.tag["@@value"]);
+                        selectedAnalyzer["@@analyzer_type"](analyzerType.toString());
+                    }
+
+                    self.isDirty(true);
+                    showInfoMessage(`Successfully imported "${selectedAnalyzer["@@name"]()}" analyzer config.`, null, true);
+                });
+            }
+
             self.importAnalyzerConfig = function (fileData) {
                 const reader = new FileReader();
 
                 reader.onload = function () {
                     const configID = self.selectedAnalyzerConfigID();
-                    const config = JSON.parse(reader.result);
+                    const result = reader.result;
 
-                    if (!config.commandresult || !config.commandresult.characteristics || !config.commandresult.characteristics.anyalyzer) {
-                        showErrorMessage("Unexpected config file format", null, true);
-                        return;
-                    }
+                    if (result) {
+                        hideErrorMessage();
 
-                    const analyzerType = parseInt(config.commandresult.characteristics.anyalyzer.analyzer_type["@@value"], 10);
-
-                    self._loadAnalyzerConfig(configID, analyzerType, config).done(function () {
-                        const selectedAnalyzer = self.selectedAnalyzer();
-
-                        if (selectedAnalyzer) {
-                            selectedAnalyzer["@@name"](config.commandresult.characteristics.anyalyzer.tag["@@value"]);
-                            selectedAnalyzer["@@analyzer_type"](analyzerType.toString());
+                        if (result.startsWith("<")) {
+                            if (self.dataHubIsConnected()) {
+                                // User selected an XML-based configuration to import, convert to JSON
+                                dataHub.getXmlAsJson(result, false).done(function (convertResult) {
+                                    self.loadImportedAnalyzerConfig(configID, convertResult);
+                                })
+                                .fail(function (error) {
+                                    showErrorMessage(`Failed to import config file: Convert XML to JSON ${error}`, null, true);
+                                });
+                            }
+                            else {
+                                showErrorMessage("Failed to import config file: cannot convert XML config to JSON at this time, hub is not connected", null, true);
+                            }
                         }
-
-                        self.isDirty(true);
-                    });
+                        else if (result.startsWith("{")) {
+                            self.loadImportedAnalyzerConfig(configID, result);
+                        }
+                        else {
+                            showErrorMessage("Unexpected config file format: source file should start with \"{\" character for JSON or \"<\" character for XML", null, true);
+                        }
+                    }
+                    else {
+                        showErrorMessage("Failed to import config file: no data read from selected file", null, true);
+                    }
                 };
 
                 reader.onloadend = function () {
                     if (reader.error && reader.error.message)
-                        showErrorMessage("Failed to import config file: " + reader.error.message);
+                        showErrorMessage(`Failed to import config file: ${reader.error.message}`, null, true);
                 };
 
                 reader.readAsText(fileData);
@@ -1418,31 +1454,24 @@
                 if (!deviceFound || viewModel.selectedAnalyzerConfig().commandresult)
                     return;
 
+                $("#editDeviceName").html(`Editing&nbsp;${deviceAcronym}`);
+
                 // Handle initial page load
-                showInfoMessage("Loading device details, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
+                showInfoMessage("Querying device modules, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
                 showLoadingMessage();
 
-                dataHub.queryDeviceByID(deviceID).done(function (device) {
-                    $("#editDeviceName").html(`Editing&nbsp;${device.Acronym}`);
+                viewModel.queryModules().done(function () {
+                    // Create initial section tabs
+                    viewModel.createSectionTabs(true);
 
-                    viewModel.queryModules().done(function () {
-                        // Create initial section tabs
-                        viewModel.createSectionTabs(true);
-
-                        setTimeout(function () {
-                            loadAnalyzerConfig(viewModel.analyzers()[viewModel.selectedAnalyzerType()]);
-                            $("[show-data-button]").tooltip({placement: "top", delay: { "show": 500, "hide": 100 }});
-                        }, 500);
-                    })
-                    .fail(function (error) {
-                        hideInfoMessage();
-                        showErrorMessage(`Device Info Load ${error}`, null, true);
-                        hideLoadingMessage();
-                    });
+                    setTimeout(function () {
+                        loadAnalyzerConfig(viewModel.analyzers()[viewModel.selectedAnalyzerType()]);
+                        $("[show-data-button]").tooltip({placement: "top", delay: { "show": 500, "hide": 100 }});
+                    }, 500);
                 })
                 .fail(function (error) {
                     hideInfoMessage();
-                    showErrorMessage(`Device Query ${error}`, null, true);
+                    showErrorMessage(`Module Query Load ${error}`, null, true);
                     hideLoadingMessage();
                 });
             });
