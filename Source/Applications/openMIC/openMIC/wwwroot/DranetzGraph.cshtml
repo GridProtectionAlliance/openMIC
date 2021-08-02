@@ -904,8 +904,8 @@
 
             self.initializeRegisters = function (records) {
                 // Set initial register bindings
-                $("[register]").each(function (_, element) {
-                    const target = $(element);
+                $("[register]").each(function () {
+                    const target = $(this);
                     const register = target.attr("register");
                     target.attr("data-bind", `text: registerMap[${register}].localeValue(), attr: { title: 'Register ${register}' }`);
                     target.attr("data-toggle", "tooltip");
@@ -1105,9 +1105,9 @@
                     $("#plotToolTip").hide();
                 });
 
-                $.each(self.plot.getData(), function (_, series) {
-                    if (series.enabled)
-                        self.plotLegend.push(series);
+                $.each(self.plot.getData(), function () {
+                    if (this.enabled)
+                        self.plotLegend.push(this);
                 });
             }
 
@@ -1119,9 +1119,9 @@
                     const scopePlot = $("#scopePlot");
                     const plotData = [];
 
-                    $.each(self.plotData, function (_, series) {
-                        if (series.visible())
-                            plotData.push(series);
+                    $.each(self.plotData, function () {
+                        if (this.visible())
+                            plotData.push(this);
                     });
 
                     let yaxisMin = undefined;
