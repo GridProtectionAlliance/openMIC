@@ -1,25 +1,25 @@
 ﻿@*******************************************************************************************************
-//  DranetzConfig.cshtml - Gbtc
-//
-//  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
-//
-//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
-//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
-//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
-//  file except in compliance with the License. You may obtain a copy of the License at:
-//
-//      http://opensource.org/licenses/MIT
-//
-//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
-//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
-//  License for the specific language governing permissions and limitations.
-//
-//  Code Modification History:
-//  ----------------------------------------------------------------------------------------------------
-//  05/19/2021 - Ritchie Carroll
-//       Generated original version of source code.
-//
-//*****************************************************************************************************@
+    //  DranetzConfig.cshtml - Gbtc
+    //
+    //  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
+    //
+    //  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+    //  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+    //  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+    //  file except in compliance with the License. You may obtain a copy of the License at:
+    //
+    //      http://opensource.org/licenses/MIT
+    //
+    //  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+    //  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+    //  License for the specific language governing permissions and limitations.
+    //
+    //  Code Modification History:
+    //  ----------------------------------------------------------------------------------------------------
+    //  05/19/2021 - Ritchie Carroll
+    //       Generated original version of source code.
+    //
+    //*****************************************************************************************************@
 @using System.Net.Http
 @using System.Threading
 @using GSF.Identity
@@ -81,6 +81,7 @@
 }
 @section StyleSheets {
     <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
+    <link href="Content/SectionMapBuilder.css" rel="stylesheet">
     <style>
         html, body {
             height: 100%;
@@ -101,29 +102,6 @@
             margin-bottom: 2px;
         }
 
-        th.pad-right {
-            padding-right: 8px;
-            white-space: nowrap;
-            width: 50%;
-        }
-
-        th.header {
-            text-align: center;
-            font-size: 18px;
-            font-weight: bolder;
-            padding-bottom: 5px;
-            width: 100%;
-        }
-
-        th.header-section-row {
-            text-align: center;
-            font-size: 18px;
-            font-weight: bolder;
-            padding-bottom: 5px;
-            padding-top: 10px;
-            width: 100%;
-        }
-
         tr.selected {
             background-color: #FFCF8B
         }
@@ -132,46 +110,28 @@
             background-color: lightgray
         }
 
+        th.pad-right {
+            width: 50%;
+            padding-right: 8px;
+            white-space: nowrap;
+        }        
+
         div.header {
             border-bottom: 4px solid;
+        }
+
+        th.header {
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bolder;
+            padding-bottom: 5px;
         }
 
         div.tab-section {
             overflow: auto;
             margin-top: 5px;
             margin-bottom: 5px;
-        }
-
-        table.section-elements {
-            border-spacing: 0 4px;
-            border-collapse: separate;
-            width: 100%;
-        }
-
-        .list-bank {
-            margin-bottom: 10px;
-        }
-
-        th.bank-header {
-            padding-bottom: 0;
-        }
-
-        th.bank-footer {
-            padding-top: 0;
-        }
-
-        tr.bank-group {
-            border: 1px solid;
-        }
-
-        td.bank-group {
-            padding: 2px;
-        }
-
-        .btn-bank {
-            padding-top: 0;
-            padding-bottom: 0;
-            padding-left: 5px;
         }
 
         /* Collapsable button style */
@@ -206,24 +166,6 @@
 
         .ui-tabs .ui-tabs-nav li a {
             font-size: 9.6pt !important;
-        }
-
-        input[type=checkbox] {
-            margin-top: 8px;
-            margin-bottom: 8px;
-        }
-
-        input[type="checkbox"]:focus {
-            outline-offset: 2px;
-            outline-style: solid;
-            outline-color: #66afe9;
-            outline-width: thin;
-            box-shadow: -1px 0 2px 2px #9ecaed;
-        }
-
-        input:out-of-range {
-            background-color: #ff0000;
-            background-color: rgba(255, 0, 0, 0.25);
         }
 
         .graph-data-img {
@@ -307,8 +249,7 @@
 @functions {
     public DataContext DataContext { get; set; }
 
-    public string GetCurrentUserID()
-    {
+    public string GetCurrentUserID() {
         if (Thread.CurrentPrincipal.Identity == null)
             return UserInfo.CurrentUserID;
 
@@ -317,8 +258,7 @@
 
     // This function simply limits access to UI elements that the user does not have access to, server-side
     // functions will further validate user rights even if UI restriction was somehow bypassed
-    public bool UserIsEditor()
-    {
+    public bool UserIsEditor() {
         SecurityPrincipal securityPrincipal = ViewBag.SecurityPrincipal as SecurityPrincipal;
 
         if ((object)securityPrincipal == null)
@@ -332,7 +272,7 @@
     }
 }
 <div style="display: none" search-header></div>
-<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" alt="Dranetz" src="Images/Dranetz.png"/></h3>
+<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" alt="Dranetz" src="Images/Dranetz.png" /></h3>
 <hr class="quarter-break" />
 <div id="contentWell" class="well well-dynamic-content" content-fill-height>
     <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">
@@ -490,7 +430,8 @@
 <hr id="view-spacer" class="thick-spacer" style="margin-top: -10px; margin-bottom: 8px" />
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 30px; padding-top: 5px">
-        <label style="margin-top: 1px"><span data-bind="text: selectedAnalyzerName"></span>&nbsp;Configuration&nbsp;&nbsp;&nbsp;
+        <label style="margin-top: 1px">
+            <span data-bind="text: selectedAnalyzerName"></span>&nbsp;Configuration&nbsp;&nbsp;&nbsp;
             <label id="configTypeSelectionBlock">
                 &nbsp;view as:
                 &nbsp;&nbsp;<input id="xmlConfigType" type="radio" class="view-config-type" value="xml" data-bind="checked: viewConfigType"><label for="xmlConfigType">&nbsp;XML</label>
@@ -522,6 +463,7 @@
     <script src="@Resources.Root/Shared/Scripts/knockout.validation.js"></script>
     <script src="@Resources.Root/Shared/Scripts/knockout.reactor.js"></script>
     <script src="@Resources.Root/Shared/Scripts/gsf.web.knockout.js"></script>
+    <script src="Scripts/SectionMapBuilder.js"></script>
 
     <script>
         "use strict";
@@ -541,74 +483,80 @@
             shiftIsDown = false;
         });
 
+        // Section map builder operations
+        const smb = new SectionMapBuilder("smb");
+
+        smb.elementIsEnabled = elementTargetsInputConfig;
+        smb.modelChangedExpr = "viewModel.configChanged()";
+
         const analyzerTypes = {
-            PQDataNode:            { index: 0, name: "61000 PQ DataNode" },
-            VoltageDataNode:       { index: 1, name: "61000 Voltage DataNode" },
-            CurrentDataNode:       { index: 2, name: "61000 Current DataNode" },
-            VoltageTransducerNode: { index: 3, name: "61000 Voltage Transducer Node" },
-            CurrentTransducerNode: { index: 4, name: "61000 Current Transducer Node" },
-            DigitalInputDataNode:  { index: 5, name: "61000 Digital Input DataNode" },
-            DigitalOutputDataNode: { index: 6, name: "61000 Digital Output DataNode" }
+            PQDataNode:             { index: 0, name: "61000 PQ DataNode" },
+            VoltageDataNode:        { index: 1, name: "61000 Voltage DataNode" },
+            CurrentDataNode:        { index: 2, name: "61000 Current DataNode" },
+            VoltageTransducerNode:  { index: 3, name: "61000 Voltage Transducer Node" },
+            CurrentTransducerNode:  { index: 4, name: "61000 Current Transducer Node" },
+            DigitalInputDataNode:   { index: 5, name: "61000 Digital Input DataNode" },
+            DigitalOutputDataNode:  { index: 6, name: "61000 Digital Output DataNode" }
         };
 
         const analyzerTypeKeys = Object.keys(analyzerTypes);
 
         // One section defined per analyzer type
         const sections = [
-        {
-            // [0] PQ Data Node Analyzer Sections
-            InputConfiguration: { index: 0, name: "Input Configuration" },
-            RMSVariations:      { index: 1, name: "RMS Variations" },
-            Transients:         { index: 2, name: "Transients" },
-            WaveformCapture:    { index: 3, name: "Waveform Capture" },
-            Power:              { index: 4, name: "Power" },
-            EnergyAndDemand:    { index: 5, name: "Energy and Demand" },
-            Harmonics:          { index: 6, name: "Harmonics" },
-            Flicker:            { index: 7, name: "Flicker" },
-            CrossTriggering:    { index: 8, name: "Cross-Triggering" }
-        },
-        {
-            // [1] Voltage Data Node Analyzer Sections
-            InputConfiguration: { index: 0, name: "Input Configuration" },
-            RMSVariations:      { index: 1, name: "RMS Variations" },
-            Transients:         { index: 2, name: "Transients" },
-            WaveformCapture:    { index: 3, name: "Waveform Capture" },
-            Power:              { index: 4, name: "Voltage" },
-            Harmonics:          { index: 5, name: "Harmonics" },
-            Flicker:            { index: 6, name: "Flicker" },
-            CrossTriggering:    { index: 7, name: "Cross-Triggering" }
-        },
-        {
-            // [2] Current Data Node Analyzer Sections
-            InputConfiguration: { index: 0, name: "Input Configuration" },
-            RMSVariations:      { index: 1, name: "RMS Variations" },
-            Transients:         { index: 2, name: "Transients" },
-            WaveformCapture:    { index: 3, name: "Waveform Capture" },
-            Power:              { index: 4, name: "Current" },
-            EnergyAndDemand:    { index: 5, name: "Demand" },
-            Harmonics:          { index: 6, name: "Harmonics" },
-            CrossTriggering:    { index: 7, name: "Cross-Triggering" }
-        },
-        {
-            // [3] Voltage Transducer Analyzer Sections
-            InputConfiguration: { index: 0, name: "Input Configuration" }
-            // Sections TBD...
-        },
-        {
-            // [4] Current Transducer Analyzer Sections
-            InputConfiguration: { index: 0, name: "Input Configuration" }
-            // Sections TBD...
-        },
-        {
-            // [5] Digital Input Analyzer Sections
-            DigitalInputConfiguration:  { index: 0, name: "Input Configuration" },
-            DigitalCrossTriggering:     { index: 1, name: "Cross-Triggering" }
-        },
-        {
-            // [6] Digital Output Analyzer Sections
-            DigitalOutputConfiguration: { index: 0, name: "Output Configuration" },
-            DigitalCrossTriggering:     { index: 1, name: "Cross-Triggering" }
-        }];
+            {
+                // [0] PQ Data Node Analyzer Sections
+                InputConfiguration: { index: 0, name: "Input Configuration" },
+                RMSVariations:      { index: 1, name: "RMS Variations" },
+                Transients:         { index: 2, name: "Transients" },
+                WaveformCapture:    { index: 3, name: "Waveform Capture" },
+                Power:              { index: 4, name: "Power" },
+                EnergyAndDemand:    { index: 5, name: "Energy and Demand" },
+                Harmonics:          { index: 6, name: "Harmonics" },
+                Flicker:            { index: 7, name: "Flicker" },
+                CrossTriggering:    { index: 8, name: "Cross-Triggering" }
+            },
+            {
+                // [1] Voltage Data Node Analyzer Sections
+                InputConfiguration: { index: 0, name: "Input Configuration" },
+                RMSVariations:      { index: 1, name: "RMS Variations" },
+                Transients:         { index: 2, name: "Transients" },
+                WaveformCapture:    { index: 3, name: "Waveform Capture" },
+                Power:              { index: 4, name: "Voltage" },
+                Harmonics:          { index: 5, name: "Harmonics" },
+                Flicker:            { index: 6, name: "Flicker" },
+                CrossTriggering:    { index: 7, name: "Cross-Triggering" }
+            },
+            {
+                // [2] Current Data Node Analyzer Sections
+                InputConfiguration: { index: 0, name: "Input Configuration" },
+                RMSVariations:      { index: 1, name: "RMS Variations" },
+                Transients:         { index: 2, name: "Transients" },
+                WaveformCapture:    { index: 3, name: "Waveform Capture" },
+                Power:              { index: 4, name: "Current" },
+                EnergyAndDemand:    { index: 5, name: "Demand" },
+                Harmonics:          { index: 6, name: "Harmonics" },
+                CrossTriggering:    { index: 7, name: "Cross-Triggering" }
+            },
+            {
+                // [3] Voltage Transducer Analyzer Sections
+                InputConfiguration: { index: 0, name: "Input Configuration" }
+                // Sections TBD...
+            },
+            {
+                // [4] Current Transducer Analyzer Sections
+                InputConfiguration: { index: 0, name: "Input Configuration" }
+                // Sections TBD...
+            },
+            {
+                // [5] Digital Input Analyzer Sections
+                DigitalInputConfiguration:  { index: 0, name: "Input Configuration" },
+                DigitalCrossTriggering:     { index: 1, name: "Cross-Triggering" }
+            },
+            {
+                // [6] Digital Output Analyzer Sections
+                DigitalOutputConfiguration: { index: 0, name: "Output Configuration" },
+                DigitalCrossTriggering:     { index: 1, name: "Cross-Triggering" }
+            }];
 
         const sectionKeys = [
             Object.keys(sections[analyzerTypes.PQDataNode.index]),
@@ -628,7 +576,7 @@
             // Misorder intentional, Generic appears before Delta 2 Watt Meter
             Config5: { index: 4, name: "Generic", type: "Generic" },
             Config4: { index: 5, name: "Delta 2 Watt Meter", type: "Delta" },
-            Config6: { index: 6, name: "Wye 2.5 element, no B", type: "Wye"},
+            Config6: { index: 6, name: "Wye 2.5 element, no B", type: "Wye" },
             Config7: { index: 7, name: "Wye 2.5 element, no C", type: "Wye" }
         };
 
@@ -639,6 +587,138 @@
                 return wiringConfig[key];
 
             return { name: "Undefined", type: "Undefined" };
+        }
+
+        function setWaveformCaptureSelections(values) {
+            const waveformMasks = viewModel.selectedAnalyzerConfig().commandresult.characteristics.anyalyzer.VA_power.trig_resp.masks.list.item;
+
+            for (let i = 0; i < values.length; i++)
+                waveformMasks[i]['@@value'] = values[i];
+        }
+
+        function updateWiringConfig(value) {
+            viewModel.setWiringConfigValue(value);
+
+            // Set any needed circuit selection defaults
+            switch (viewModel.selectedWiringConfig().type.toUpperCase()) {
+                case "SINGLE":
+                    setWaveformCaptureSelections([17, 0, 0, 8, 16, 0, 0, 128, 0, 0, 0, 0, 0]);
+                    break;
+                case "SPLIT":
+                    setWaveformCaptureSelections([51, 51, 0, 8, 16, 32, 0, 128, 0, 0, 0, 0, 0]);
+                    break;
+                case "DELTA":
+                    setWaveformCaptureSelections([0, 0, 0, 0, 16, 32, 64, 0, 1904, 1904, 1904, 0, 0]);
+                    break;
+                case "GENERIC":
+                    setWaveformCaptureSelections([119, 119, 119, 119, 16, 32, 64, 128, 0, 0, 0, 0, 0]);
+                    break;
+                default: // WYE
+                    setWaveformCaptureSelections([119, 119, 119, 8, 16, 32, 64, 128, 119, 119, 119, 0, 0]);
+                    break;
+            }
+
+            viewModel.reloadTabSections(); // Reload all tabs
+            showInfoMessage(`Selected "${viewModel.selectedWiringConfig().name}" circuit type...`);
+        }
+
+        function configMatches() {
+            const args = arguments.length === 1 && Array.isArray(arguments[0]) ?
+                arguments[0] :
+                Array.from(arguments);
+
+            if (args.length === 0)
+                return false;
+
+            for (let i = 0; i < args.length; i++)
+                args[i] = args[i].trim().toUpperCase();
+
+            // key value DOM lookup: getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase()
+            const keyValue = viewModel.selectedWiringConfig().type.toUpperCase();
+
+            return args.every(arg => arg.startsWith("!")) ?
+                /* AND logic: */ args.every(arg => arg.substr(1) !== keyValue) :
+                /*  OR logic: */ args.some(arg => arg.startsWith("!") ? arg.substr(1) !== keyValue : arg === keyValue);
+        }
+
+        function elementTargetsInputConfig(definition) {
+            if (definition.hasOwnProperty("@@CONFIG")) {
+                const config = definition["@@CONFIG"].trim();
+
+                if (config.length > 0 && config !== "*" && !configMatches(config.split(",")))
+                    return false;
+            }
+
+            const selectedAnalyzer = viewModel.selectedAnalyzerType();
+            let targetAnalyzer = 0;
+
+            if (definition.hasOwnProperty("@@ANALYZER")) {
+                let analyzer = definition["@@ANALYZER"].trim();
+
+                // Check for exact match
+                if (analyzer.endsWith("!")) {
+                    analyzer = analyzer.substring(0, analyzer.length - 1);
+                    return parseInt(analyzer, 10) === selectedAnalyzer;
+                }
+
+                targetAnalyzer = parseInt(analyzer, 10);
+            }
+
+            // [0] PQ Data Node analyzer considered to apply to all
+            return targetAnalyzer === 0 || selectedAnalyzer === 0 || targetAnalyzer === selectedAnalyzer;
+        }
+
+        // Non-config related section map UI control variables
+
+        let normalizeThresholdState = Cookies.get("normalizeThresholds") || "1";
+
+        function normalizeThresholds() {
+            return parseInt(normalizeThresholdState, 10) > 0;
+        }
+
+        function normalizeThresholdStateUpdated() {
+            Cookies.set("normalizeThresholds", normalizeThresholdState, { expires: 365 });
+
+            const selectedInput = ($("#inputSection_bankInput").val() || [0])[0];
+
+            viewModel.reloadTabSections("RMSVariations", "Transients", "Power", "Harmonics").then(function () {
+                $("#inputSection_bankInput").val([selectedInput]).trigger("change");
+            });
+
+            showInfoMessage(`Switched to ${normalizeThresholds() ? 'normalized' : 'raw'} thresholds...`);
+        }
+
+        let genericChannelNames = (Cookies.get("genericChannelNames") || "1|2|3|4").split("|");
+
+        if (genericChannelNames.length !== 4) {
+            if (genericChannelNames.length < 4) {
+                for (let i = genericChannelNames.length; i < 4; i++)
+                    genericChannelNames.push((i + 1).toString());
+            }
+            else {
+                genericChannelNames.splice(4, genericChannelNames.length - 4);
+            }
+        }
+
+        function genericChannelNameUpdated() {
+            if (viewModel.selectedWiringConfig().type.toUpperCase() !== "GENERIC")
+                return;
+
+            Cookies.set("genericChannelNames", genericChannelNames.join("|"), { expires: 365 });
+
+            const selectedInput = ($("#inputSection_bankInput").val() || [0])[0];
+
+            viewModel.reloadTabSections("RMSVariations", "Transients", "WaveformCapture", "Power", "EnergyAndDemand", "Harmonics").then(function () {
+                $("#inputSection_bankInput").val([selectedInput]).trigger("change");
+            });
+
+            showInfoMessage(`Generic channel name updated...`);
+        }
+
+        function getChannelName(index, neutralName) {
+            return configMatches("Generic") ?
+                genericChannelNames[index] :
+                index < 3 ? String.fromCharCode(65 + index) : neutralName || "N";
         }
 
         function DeviceViewModel() {
@@ -1099,7 +1179,7 @@
                         tabSections.push(`<div id="tab${key}" class="tab-section" style="display: none" tab-section>`);
                         tabSections.push(`    <table width="75%" class="table-center">`);
                         tabSections.push(`        <tr>`);
-                        tabSections.push(`            <th class="header"><div class="header">${name}</div></th>`);
+                        tabSections.push(`            <th class="smb-header"><div class="smb-header">${name}</div></th>`);
                         tabSections.push(`        </tr>`);
                         tabSections.push(`    </table>`);
 
@@ -1129,7 +1209,7 @@
 
             self.loadTabSection = function (sectionKey) {
                 return dataHub.getSectionMap(`${sectionKey}.xml`).done(function (result) {
-                    const [ sectionHtml, sectionScript ] = buildSection(JSON.parse(result).SECTION);
+                    const [sectionHtml, sectionScript] = smb.buildSection(JSON.parse(result).SECTION, "viewModel.selectedAnalyzerConfig()");
 
                     $(`#tab${sectionKey}`).html(sectionHtml);
 
@@ -1358,9 +1438,10 @@
 
         function showToolTip() {
             if (shiftIsDown) {
-                const mapRootLen = "viewModel.selectedAnalyzerConfig().".length;
                 const mapExpr = this.getAttribute("map-expr");
-                $(this).attr("data-original-title", `<p class="text-left">map: ${mapExpr.substr(mapRootLen)}<br/>value: ${eval(mapExpr)}</p>`)
+                const mapRootLen = "viewModel.selectedAnalyzerConfig().".length;
+                const mapDisplay = mapExpr.substr(mapRootLen).replaceAll("smb.getValue(", "#val(");
+                $(this).attr("data-original-title", `<p class="text-left">map: ${mapDisplay}<br/>value: ${eval(mapExpr)}</p>`)
                     .tooltip("fixTitle")
                     .tooltip("show");
             }
@@ -1558,669 +1639,5 @@
             if (!deviceFound)
                 $("#invalidDeviceMessage").show();
         });
-
-        // Section map operations
-
-        function setWaveformCaptureSelections(values) {
-            const waveformMasks = viewModel.selectedAnalyzerConfig().commandresult.characteristics.anyalyzer.VA_power.trig_resp.masks.list.item;
-
-            for (let i = 0; i < values.length; i++)
-                waveformMasks[i]['@@value'] = values[i];
-        }
-
-        function updateWiringConfig(value) {
-            viewModel.setWiringConfigValue(value);
-
-            // Set any needed circuit selection defaults
-            switch (viewModel.selectedWiringConfig().type.toUpperCase()) {
-                case "SINGLE":
-                    setWaveformCaptureSelections([17, 0, 0, 8, 16, 0, 0, 128, 0, 0, 0, 0, 0]);
-                    break;
-                case "SPLIT":
-                    setWaveformCaptureSelections([51, 51, 0, 8, 16, 32, 0, 128, 0, 0, 0, 0, 0]);
-                    break;
-                case "DELTA":
-                    setWaveformCaptureSelections([0, 0, 0, 0, 16, 32, 64, 0, 1904, 1904, 1904, 0, 0]);
-                    break;
-                case "GENERIC":
-                    setWaveformCaptureSelections([119, 119, 119, 119, 16, 32, 64, 128, 0, 0, 0, 0, 0]);
-                    break;
-                default: // WYE
-                    setWaveformCaptureSelections([119, 119, 119, 8, 16, 32, 64, 128, 119, 119, 119, 0, 0]);
-                    break;
-            }
-
-            viewModel.reloadTabSections(); // Reload all tabs
-            showInfoMessage(`Selected "${viewModel.selectedWiringConfig().name}" circuit type...`);
-        }
-
-        function configMatches() {
-            const args = arguments.length === 1 && Array.isArray(arguments[0]) ?
-                arguments[0] :
-                Array.from(arguments);
-
-            if (args.length === 0)
-                return false;
-
-            for (let i = 0; i < args.length; i++)
-                args[i] = args[i].trim().toUpperCase();
-
-            // key value DOM lookup: getKeyValue("inputSection_wiringConfig", "string").trim().toUpperCase()
-            const keyValue = viewModel.selectedWiringConfig().type.toUpperCase();
-
-            return args.every(arg => arg.startsWith("!")) ?
-                /* AND logic: */ args.every(arg => arg.substr(1) !== keyValue) :
-                /*  OR logic: */ args.some(arg => arg.startsWith("!") ? arg.substr(1) !== keyValue : arg === keyValue);
-        }
-
-        // Non-config related UI control variables
-
-        let normalizeThresholdState = Cookies.get("normalizeThresholds") || "1";
-
-        function normalizeThresholds() {
-            return parseInt(normalizeThresholdState, 10) > 0;
-        }
-
-        function normalizeThresholdStateUpdated() {
-            Cookies.set("normalizeThresholds", normalizeThresholdState, { expires: 365 });
-
-            const selectedInput = ($("#inputSection_bankInput").val() || [0])[0];
-
-            viewModel.reloadTabSections("RMSVariations", "Transients", "Power", "Harmonics").then(function () {
-                $("#inputSection_bankInput").val([selectedInput]).trigger("change");
-            });
-
-            showInfoMessage(`Switched to ${normalizeThresholds() ? 'normalized' : 'raw'} thresholds...`);
-        }
-
-        let genericChannelNames = (Cookies.get("genericChannelNames") || "1|2|3|4").split("|");
-
-        if (genericChannelNames.length !== 4) {
-            if (genericChannelNames.length < 4) {
-                for (let i = genericChannelNames.length; i < 4; i++)
-                    genericChannelNames.push((i + 1).toString());
-            }
-            else {
-                genericChannelNames.splice(4, genericChannelNames.length - 4);
-            }
-        }
-
-        function genericChannelNameUpdated() {
-            if (viewModel.selectedWiringConfig().type.toUpperCase() !== "GENERIC")
-                return;
-
-            Cookies.set("genericChannelNames", genericChannelNames.join("|"), { expires: 365 });
-
-            const selectedInput = ($("#inputSection_bankInput").val() || [0])[0];
-
-            viewModel.reloadTabSections("RMSVariations", "Transients", "WaveformCapture", "Power", "EnergyAndDemand", "Harmonics").then(function () {
-                $("#inputSection_bankInput").val([selectedInput]).trigger("change");
-            });
-
-            showInfoMessage(`Generic channel name updated...`);
-        }
-
-        function getChannelName(index, neutralName) {
-            return configMatches("Generic") ?
-                genericChannelNames[index] :
-                index < 3 ? String.fromCharCode(65 + index) : neutralName || "N";
-        }
-
-        // Section Map Builder code - consider migrating to independent file
-
-        const PropDefType = {
-            CHECKBOX:      0,
-            NUMERIC:       1,
-            FLOAT:         2,
-            HEADER:        3,
-            TEXT:          4,
-            DATE:          5,
-            TIME:          6,
-            SELECT:        8,
-            DATETIMERANGE: 11,
-            PASSWORD:      12,
-            MULTILINETEXT: 13
-        }
-
-        const zeroFieldTypes = [PropDefType.FLOAT, PropDefType.NUMERIC, PropDefType.TEXT];
-        const maxAliasParams = 5;
-        const unmapped = 0;
-        let bankIndex = undefined;
-
-        function execOperationAtBankIndex(index, operation) {
-            try {
-                bankIndex = index;
-                operation();
-            }
-            finally {
-                bankIndex = undefined;
-            }
-        }
-
-        function clearValue(target, isCheckBox, clearConfig) {
-            if (isCheckBox)
-                target.prop("checked", false);
-            else
-                target.val("");
-
-            if (clearConfig && !target[0].hasAttribute("config-cleared")) {
-                target.attr("config-cleared", "");
-                target.trigger("change");
-            }
-        }
-
-        function clearZeroValue(target, type) {
-            if (!zeroFieldTypes.includes(type) || target[0].hasAttribute("zero-cleared"))
-                return;
-
-            target.attr("zero-cleared", "");
-
-            // Show zero values from config as blank
-            if (parseFloat(target.val()) === 0.0)
-                target.val("");
-        };
-
-        function readValue(element, readOperation, enabled, type) {
-            const target = $(element);
-            const bank = target.attr("bank");
-            const isCheckBox = type === PropDefType.CHECKBOX;
-
-            // Handle multi-select bank list read operation
-            if (bank && bank.length) {
-                const selections = getValue(bank);
-
-                if (Array.isArray(selections) && selections.length > 1) {
-                    const values = [];
-
-                    selections.forEach(selection => {
-                        execOperationAtBankIndex(parseInt(selection, 10), readOperation);
-                        values.push(isCheckBox ? target.prop("checked") : target.val());
-                    });
-
-                    // If any selected items have different values, clear target
-                    if (values.some(value => value !== values[0]))
-                        clearValue(target, isCheckBox);
-                }
-                else {
-                    if (enabled) {
-                        readOperation();
-                        clearZeroValue(target, type);
-                    } else {
-                        clearValue(target, isCheckBox, true);
-                    }
-                }
-            }
-            else {
-                if (enabled) {
-                    readOperation();
-                    clearZeroValue(target, type);
-                } else {
-                    clearValue(target, isCheckBox, true);
-                }
-            }
-        }
-
-        function writeValue(element, writeOperation) {
-            const target = $(element);
-            const bank = target.attr("bank");
-
-            // Handle multi-select bank list write operation
-            if (bank && bank.length) {
-                const selections = getValue(bank);
-
-                if (Array.isArray(selections) && selections.length > 1) {
-                    // Assign changed value to all selected items
-                    selections.forEach(selection => {
-                        execOperationAtBankIndex(parseInt(selection, 10), writeOperation);
-                    });
-                }
-                else {
-                    writeOperation();
-                }
-            }
-            else {
-                writeOperation();
-            }
-        }
-
-        function getValue(targetID, targetType) {
-            const target = $(`#${targetID}`);
-
-            // Check if target is a bank list
-            if (target[0].hasAttribute("bank-list")) {
-                if (bankIndex === undefined) {
-                    const values = target.val() || [];
-
-                    if (values.length > 0)
-                        return values.length === 1 ? parseInt(values[0], 10) : values;
-
-                    return 0;
-                }
-                else {
-                    return bankIndex;
-                }
-            }
-            else {
-                const value = target.val();
-
-                switch (targetType) {
-                    case undefined:
-                    case "float":
-                        return parseFloat(value);
-                    case "int":
-                        return parseInt(value, 10);
-                    case "bool":
-                        return parseInt(value, 10) !== 0;
-                    default:
-                        return value.toString();
-                }
-            }
-        }
-
-        function getKeyValue(targetSelectID, targetType) {
-            const selectedOption = $(`#${targetSelectID} option:selected`);
-
-            if (selectedOption.length === 0) {
-                switch (targetType) {
-                    case undefined:
-                    case "float":
-                        return 0.0;
-                    case "int":
-                        return 0;
-                    case "bool":
-                        return false;
-                    default:
-                        return "";
-                }
-            }
-
-            const value = selectedOption.attr("key-value");
-
-            switch (targetType) {
-                case undefined:
-                case "float":
-                    return parseFloat(value);
-                case "int":
-                    return parseInt(value, 10);
-                case "bool":
-                    return parseInt(value, 10) !== 0;
-                default:
-                    return value.toString();
-            }
-        }
-
-        function selectBankItem(bankTargetID) {
-            $(`[bank="${bankTargetID}"]`).each(function () {
-                try {
-                    this.removeAttribute("zero-cleared");
-                    eval(this.getAttribute("update-expr"));
-                } catch (e) {
-                    console.error(e);
-                }
-            });
-        }
-
-        function elementTargetsInputConfig(definition) {
-            if (definition.hasOwnProperty("@@CONFIG")) {
-                const config = definition["@@CONFIG"].trim();
-
-                if (config.length > 0 && config !== "*" && !configMatches(config.split(",")))
-                    return false;
-            }
-
-            const selectedAnalyzer = viewModel.selectedAnalyzerType();
-            let targetAnalyzer = 0;
-
-            if (definition.hasOwnProperty("@@ANALYZER")) {
-                let analyzer = definition["@@ANALYZER"].trim();
-
-                // Check for exact match
-                if (analyzer.endsWith("!")) {
-                    analyzer = analyzer.substring(0, analyzer.length - 1);
-                    return parseInt(analyzer, 10) === selectedAnalyzer;
-                }
-
-                targetAnalyzer = parseInt(analyzer, 10);
-            }
-
-            // [0] PQ Data Node analyzer considered to apply to all
-            return targetAnalyzer === 0 || selectedAnalyzer === 0 || targetAnalyzer === selectedAnalyzer;
-        }
-
-        function buildListElements(list, defaultVal) {
-            let index = 0;
-            let totalOptions = 0;
-
-            const html = [];
-
-            for (let i = 0; i < list.ITEM.length; i++) {
-                const value = list.ITEM[i];
-                const optVal = value["@@VALUE"] || index;
-                const keyVal = value["@@KEYVALUE"] ? ` key-value="${value["@@KEYVALUE"]}"` : "";
-                const enabled = elementTargetsInputConfig(value);
-                const hidden = enabled ? "" : " hidden";
-                const selected = optVal === defaultVal || !defaultVal && enabled && totalOptions === 0 ? " selected" : "";
-                let alias = value["@@ALIAS"];
-
-                if (alias) {
-                    for (let j = 0; j < maxAliasParams; j++) {
-                        const aliasParam = value[`@@ALIAS${j}`];
-
-                        if (aliasParam)
-                            alias = alias.replaceAll(`{${j}}`, eval(aliasParam));
-                        else
-                            break;
-                    }
-                }
-
-                html.push(`<option value="${optVal}"${keyVal}${selected}${hidden}>${alias || value["@@NAME"]}</option>`);
-
-                if (enabled)
-                    totalOptions++;
-
-                index++;
-            }
-
-            return [ html.join(""), totalOptions ];
-        }
-
-        function buildPropDefElement(propDef, mapRoot, bankTarget) {
-            const type = parseInt(propDef["@@TYPE"], 10);
-            const name = propDef["@@NAME"];
-            let alias = propDef["@@ALIAS"];
-
-            if (alias) {
-                for (let i = 0; i < maxAliasParams; i++) {
-                    const aliasParam = propDef[`@@ALIAS${i}`];
-
-                    if (aliasParam)
-                        alias = alias.replaceAll(`{${i}}`, eval(aliasParam));
-                    else
-                        break;
-                }
-            }
-
-            const enabled = elementTargetsInputConfig(propDef);
-            const hidden = enabled ? "" : " hidden";
-            const bank = bankTarget && bankTarget.length ? ` bank="${bankTarget}"` : "";
-            const getPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked')` : `$('#${name}').val()`;
-            const setPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked', {0})` : `$('#${name}').val({0})`;
-            const readOnly = parseInt(propDef["@@RO"] || "1", 10) > 0;
-            const map = propDef["@@MAP"] || "unmapped";
-            const mapExpr = String.format(map.startsWith(".") ? `${mapRoot}${map}` : map, bankTarget);
-
-            const applySubstitutions = value => value
-                .replaceAll("{name}", name)
-                .replaceAll("{value}", getPropVal)
-                .replaceAll("{mapExpr}", mapExpr)
-                .replaceAll("{mapRoot}", mapRoot)
-                .replaceAll("{bankTarget}", bankTarget);
-
-            const readExpr = propDef["@@READ"] ? applySubstitutions(propDef["@@READ"]) : undefined;
-            const writeExpr = propDef["@@WRITE"] ? applySubstitutions(propDef["@@WRITE"]) : undefined;
-            const preReadExpr = propDef["@@PREREAD"] ? `${applySubstitutions(propDef["@@PREREAD"])}; ` : "";
-            const postReadExpr = propDef["@@POSTREAD"] ? ` ${applySubstitutions(propDef["@@POSTREAD"])};` : "";
-            const preWriteExpr = propDef["@@PREWRITE"] ? `${applySubstitutions(propDef["@@PREWRITE"])}; ` : "";
-            const postWriteExpr = propDef["@@POSTWRITE"] ? ` ${applySubstitutions(propDef["@@POSTWRITE"])};` : "";
-            const updatesConfigExpr = enabled && parseInt(propDef["@@UPDATESCONFIG"] || "1", 10) !== 0 ? " viewModel.configChanged();" : "";
-
-            const updateFunction = `const update_{0} = new Function("${readOnly ? "" : `${preReadExpr}{1};${postReadExpr}`}");`;
-            const changedFunction = `const {0}_changed = new Function("${preWriteExpr}{1};${postWriteExpr}${updatesConfigExpr}");`;
-
-            const defaultVal = propDef["@@DEFAULT"];
-            const placeHolderText = propDef["@@PLACEHOLDER"] ? ` placeholder="${propDef["@@PLACEHOLDER"]}"` : "";
-            const hasParam = propDef.hasOwnProperty("PARAM");
-            const min = hasParam ? propDef.PARAM["@@MIN"] : undefined;
-            const max = hasParam ? propDef.PARAM["@@MAX"] : undefined;
-            const minMaxText = `${min ? ` min="${min}"` : ``}${max ? ` max="${max}"` : ``}`;
-            const maxLen = hasParam ? propDef.PARAM["@@LEN"] : undefined;
-            const maxLenText = `${maxLen ? ` maxlength="${maxLen}"` : ``}`;
-
-            const html = [];
-            const script = [];
-
-            html.push(`<tr${hidden}><th class="text-right pad-right" width="30%">${alias || name}:</th><td>`);
-
-            switch (type) {
-                case PropDefType.CHECKBOX:
-                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) !== 0`}`)}`));
-                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? String.format(writeExpr, getPropVal) : `${getPropVal} ? '1' : '0'`}`));
-                    html.push(`<input type="checkbox" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
-                    break;
-                case PropDefType.NUMERIC:
-                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
-                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
-                break;
-                case PropDefType.FLOAT:
-                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? `(${String.format(readExpr, mapExpr)})` : `parseFloat(${mapExpr})`}.toFixed(4)`)}`));
-                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
-                    break;
-                case PropDefType.TEXT:
-                case PropDefType.PASSWORD:
-                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
-                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
-                    break;
-                case PropDefType.SELECT:
-                    script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
-                    script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<select class="form-control" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}>`);
-                    html.push(buildListElements(propDef.PARAM.LIST, defaultVal)[0]);
-                    html.push(`</select>`);
-                    break;
-            }
-
-            html.push(`</td></tr>`);
-
-            return [ html.join(""), script.join("\r\n") ];
-        }
-
-        function buildBankElement(definition, mapRoot, sectionName) {
-            const bankName = definition["@@NAME"];
-            const bankAlias = definition["@@ALIAS"];
-            const enabled = elementTargetsInputConfig(definition);
-            const hidden = enabled ? "" : " hidden";
-            const rows = definition["@@ROWS"];
-
-            const sizeToken = "[_SIZE-TOKEN_]";
-            let sizeAttribute = "";
-
-            const html = [];
-            const script = [];
-
-            html.push(`<tr${hidden}><th class="header${definition.order > 0 ? "-section-row" : ""} bank-header"><div class="header">${bankAlias}</div></th></tr>`);
-            html.push(`<tr class="bank-group"${hidden}><td class="bank-group">`);
-
-            var propDefsStarted = false;
-
-            const startPropDefs = function () {
-                if (propDefsStarted)
-                    return;
-
-                propDefsStarted = true;
-                html.push(`<table class="section-elements">`);
-            };
-
-            const closePropDefs = function () {
-                if (!propDefsStarted)
-                    return;
-
-                propDefsStarted = false;
-                html.push(`</table>`);
-            };
-
-            const addPropDef = function (propDef) {
-                if (parseInt(propDef["@@TYPE"], 10) === PropDefType.HEADER) {
-                    console.warn(`Unexpected header property definition encountered in section "${sectionName}" bank "${bankName}"`);
-                    return;
-                }
-
-                if (propDef.hasOwnProperty("@@NAME"))
-                    propDef["@@NAME"] = `${bankName}_${propDef["@@NAME"]}`;
-
-                const [ propDefHtml, propDefScript ] = buildPropDefElement(propDef, mapRoot, bankName);
-
-                html.push(propDefHtml);
-
-                if (propDefScript.length > 0)
-                    script.push(propDefScript);
-            }
-
-            for (let key in definition) {
-                if (definition.hasOwnProperty(key) && !key.startsWith("@@")) {
-                    const value = definition[key];
-
-                    switch (key) {
-                        case "LIST":
-                        {
-                            closePropDefs();
-                            html.push(`<select multiple class="form-control list-bank" id="${bankName}"${sizeToken} onchange="selectBankItem('${bankName}')" update-expr="selectBankItem('${bankName}')" bank-list>`);
-
-                            const [ listHtml, totalOptions ] = buildListElements(value);
-                            html.push(listHtml);
-
-                            if (rows) {
-                                let selectSize = parseInt(rows, 10);
-
-                                if (selectSize > totalOptions && totalOptions > 0)
-                                    selectSize = totalOptions;
-
-                                sizeAttribute = ` size="${selectSize}"`;
-                            }
-
-                            html.push(`</select>`);
-                        }
-                        break;
-                        case "PROPDEF":
-                        {
-                            startPropDefs();
-
-                            if (Array.isArray(value)) {
-                                for (let i = 0; i < value.length; i++)
-                                    addPropDef(value[i]);
-                            }
-                            else {
-                                addPropDef(value);
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-
-            closePropDefs();
-
-            html.push(`</td></tr>`);
-            html.push(`<tr${hidden}><th class="header-section-row bank-footer"><div class="header"></div></th></tr>`);
-
-            return [ html.join("").replace(sizeToken, sizeAttribute), script.join("\r\n") ];
-        }
-
-        function buildSection(section) {
-            const mapRoot = `viewModel.selectedAnalyzerConfig().${section["@@MAPROOT"]}`;
-            const sectionName = section["@@NAME"];
-            const html = [];
-            const script = [];
-            const definitions = [];
-            let naturalOrder = 100000;
-
-            html.push(`<table width="75%" class="table-center">`);
-
-            var propDefsStarted = false;
-
-            const startPropDefs = function () {
-                if (propDefsStarted)
-                    return;
-
-                propDefsStarted = true;
-                html.push(`<tr><td><table class="section-elements">`);
-            };
-
-            const closePropDefs = function () {
-                if (!propDefsStarted)
-                    return;
-
-                propDefsStarted = false;
-                html.push(`</table></td></tr>`);
-            };
-
-            const addSectionElementDefinition = function (definition, elementType) {
-                if (definition.hasOwnProperty("@@NAME") && parseInt(definition["@@TYPE"], 10) !== PropDefType.HEADER)
-                    definition["@@NAME"] = `${sectionName}Section_${definition["@@NAME"]}`;
-
-                definition.order = definition.hasOwnProperty("@@ORDER") ?
-                    parseInt(definition["@@ORDER"], 10) :
-                    definitions.length > 0 ? naturalOrder++ : 0;
-
-                definition.elementType = elementType;
-
-                definitions.push(definition);
-            }
-
-            const addSectionElementDefinitions = function (elementType) {
-                const definition = section[elementType];
-
-                if (!definition)
-                    return;
-
-                if (Array.isArray(definition)) {
-                    for (let i = 0; i < definition.length; i++) {
-                        addSectionElementDefinition(definition[i], elementType);
-                    }
-                }
-                else {
-                    addSectionElementDefinition(definition, elementType);
-                }
-            };
-
-            addSectionElementDefinitions("BANK");
-            addSectionElementDefinitions("PROPDEF");
-
-            definitions.sort((a, b) => a.order > b.order ? 1 : -1);
-
-            for (let i = 0; i < definitions.length; i++) {
-                const definition = definitions[i];
-
-                switch (definition.elementType) {
-                    case "BANK":
-                    {
-                        const [ bankHtml, bankScript ] = buildBankElement(definition, mapRoot, sectionName);
-
-                        closePropDefs();
-                        html.push(bankHtml);
-
-                        if (bankScript.length > 0)
-                            script.push(bankScript);
-                    }
-                    break;
-                    case "PROPDEF":
-                    {
-                        if (parseInt(definition["@@TYPE"], 10) === PropDefType.HEADER) {
-                            if (elementTargetsInputConfig(definition)) {
-                                closePropDefs();
-                                html.push(`<tr><th class="header${definition.order > 0 ? "-section-row": ""}"><div class="header">${definition["@@ALIAS"] || definition["@@NAME"]}</div></th></tr>`);
-                            }
-                        }
-                        else {
-                            const [ propDefHtml, propDefScript ] = buildPropDefElement(definition, mapRoot);
-
-                            startPropDefs();
-                            html.push(propDefHtml);
-
-                            if (propDefScript.length > 0)
-                                script.push(propDefScript);
-                        }
-                    }
-                    break;
-                }
-            }
-
-            closePropDefs();
-            html.push(`</table>`);
-
-            return [ html.join(""), script.join("\r\n") ];
-        }
     </script>
 }

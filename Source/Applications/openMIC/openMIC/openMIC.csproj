@@ -326,6 +326,7 @@
     <Content Include="wwwroot\Content\bootstrap-datetimepicker.css" />
     <Content Include="wwwroot\Content\fonts\jsglyph.svg" />
     <Content Include="wwwroot\Content\jquery.jspanel.css" />
+    <Content Include="wwwroot\Content\SectionMapBuilder.css" />
     <Content Include="wwwroot\Images\Dranetz.png" />
     <Content Include="wwwroot\Images\GraphData.png" />
     <Content Include="wwwroot\Images\Icons\openMIC.ico" />
@@ -340,6 +341,7 @@
     <Content Include="wwwroot\Help.cshtml" />
     <Content Include="wwwroot\ModbusConfig.cshtml" />
     <Content Include="wwwroot\Groups.cshtml" />
+    <Content Include="wwwroot\Scripts\SectionMapBuilder.js" />
     <Content Include="wwwroot\SectionMaps\CrossTriggering.xml" />
     <Content Include="wwwroot\SectionMaps\DigitalCrossTriggering.xml" />
     <Content Include="wwwroot\SectionMaps\DigitalInputConfiguration.xml" />
