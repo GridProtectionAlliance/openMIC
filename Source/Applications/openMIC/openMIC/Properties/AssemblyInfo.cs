@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 // Informational attributes.
 [assembly: AssemblyCompany("Grid Protection Alliance")]
-[assembly: AssemblyCopyright("Copyright © 2015.  All Rights Reserved.")]
+[assembly: AssemblyCopyright("Copyright © 2016-2021.  All Rights Reserved.")]
 [assembly: AssemblyProduct("openMIC")]
 
 // Assembly manifest attributes.

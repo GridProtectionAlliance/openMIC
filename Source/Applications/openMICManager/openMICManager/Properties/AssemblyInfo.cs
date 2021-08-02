@@ -9,7 +9,7 @@ using System.Windows;
 [assembly: AssemblyDescription("WPF application that manages openMIC system configuration.")]
 [assembly: AssemblyCompany("Grid Protection Alliance")]
 [assembly: AssemblyProduct("openMIC")]
-[assembly: AssemblyCopyright("Copyright © 2015-2012.  All Rights Reserved.")]
+[assembly: AssemblyCopyright("Copyright © 2015-2021.  All Rights Reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
