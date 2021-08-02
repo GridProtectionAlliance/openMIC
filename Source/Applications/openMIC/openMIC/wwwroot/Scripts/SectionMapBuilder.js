@@ -253,6 +253,24 @@ function SectionMapBuilder(instanceName) {
         });
     };
 
+    self.getAlias = (element) => {
+        let alias = element["@ALIAS"];
+
+        if (!alias || alias.length === 0)
+            return element["@NAME"];
+
+        for (let i = 0; i < self.maxAliasParams; i++) {
+            const aliasParam = element[`@ALIAS${i}`];
+
+            if (aliasParam)
+                alias = alias.replaceAll(`{${i}}`, eval(aliasParam));
+            else
+                break;
+        }
+
+        return alias;
+    };
+
     self.buildListElements = (list, defaultVal) => {
         const html = [];
 
@@ -266,20 +284,9 @@ function SectionMapBuilder(instanceName) {
             const enabled = self.elementIsEnabled(value);
             const hidden = enabled ? "" : " hidden";
             const selected = optVal === defaultVal || !defaultVal && enabled && totalOptions === 0 ? " selected" : "";
-            let alias = value["@ALIAS"];
+            const alias = self.getAlias(value);
 
-            if (alias) {
-                for (let j = 0; j < self.maxAliasParams; j++) {
-                    const aliasParam = value[`@ALIAS${j}`];
-
-                    if (aliasParam)
-                        alias = alias.replaceAll(`{${j}}`, eval(aliasParam));
-                    else
-                        break;
-                }
-            }
-
-            html.push(`<option value="${optVal}"${keyVal}${selected}${hidden}>${alias || value["@NAME"]}</option>`);
+            html.push(`<option value="${optVal}"${keyVal}${selected}${hidden}>${alias}</option>`);
 
             if (enabled)
                 totalOptions++;
@@ -293,19 +300,7 @@ function SectionMapBuilder(instanceName) {
     self.buildPropDefElement = (propDef, mapRoot, bankTarget) => {
         const type = parseInt(propDef["@TYPE"], 10);
         const name = propDef["@NAME"];
-        let alias = propDef["@ALIAS"];
-
-        if (alias) {
-            for (let i = 0; i < self.maxAliasParams; i++) {
-                const aliasParam = propDef[`@ALIAS${i}`];
-
-                if (aliasParam)
-                    alias = alias.replaceAll(`{${i}}`, eval(aliasParam));
-                else
-                    break;
-            }
-        }
-
+        const alias = self.getAlias(propDef);
         const enabled = self.elementIsEnabled(propDef);
         const hidden = enabled ? "" : " hidden";
         const bank = bankTarget && bankTarget.length ? ` bank="${bankTarget}"` : "";
@@ -352,7 +347,7 @@ function SectionMapBuilder(instanceName) {
         const html = [];
         const script = [];
 
-        html.push(`<tr${hidden}><th class="smb-pad-right" width="30%">${alias || name}:</th><td>`);
+        html.push(`<tr${hidden}><th class="smb-pad-right" width="30%">${alias}:</th><td>`);
 
         switch (type) {
             case PropDefType.CHECKBOX:
@@ -392,7 +387,7 @@ function SectionMapBuilder(instanceName) {
 
     self.buildBankElement = (definition, mapRoot, sectionName) => {
         const bankName = definition["@NAME"];
-        const bankAlias = definition["@ALIAS"];
+        const alias = self.getAlias(definition);
         const enabled = self.elementIsEnabled(definition);
         const hidden = enabled ? "" : " hidden";
         const rows = definition["@ROWS"];
@@ -403,7 +398,7 @@ function SectionMapBuilder(instanceName) {
         let sizeAttribute = "";
         let propDefsStarted = false;
 
-        html.push(`<tr${hidden}><th class="smb-header${definition.order > 0 ? "-section-row" : ""} smb-bank-header"><div class="smb-header">${bankAlias}</div></th></tr>`);
+        html.push(`<tr${hidden}><th class="smb-header${definition.order > 0 ? "-section-row" : ""} smb-bank-header"><div class="smb-header">${alias}</div></th></tr>`);
         html.push(`<tr class="smb-bank-group"${hidden}><td class="smb-bank-group">`);
 
         const startPropDefs = () => {
@@ -571,7 +566,7 @@ function SectionMapBuilder(instanceName) {
                         if (parseInt(definition["@TYPE"], 10) === PropDefType.HEADER) {
                             if (self.elementIsEnabled(definition)) {
                                 closePropDefs();
-                                html.push(`<tr><th class="smb-header${definition.order > 0 ? "-section-row" : ""}"><div class="header">${definition["@ALIAS"] || definition["@NAME"]}</div></th></tr>`);
+                                html.push(`<tr><th class="smb-header${definition.order > 0 ? "-section-row" : ""}"><div class="header">${self.getAlias(definition)}</div></th></tr>`);
                             }
                         }
                         else {
