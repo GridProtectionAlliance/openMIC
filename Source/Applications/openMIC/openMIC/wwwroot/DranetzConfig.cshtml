@@ -1152,7 +1152,7 @@
             self.refreshTabSections = function () {
                 $("[update-expr]").each(function () {
                     try {
-                        eval($(this).attr("update-expr"));
+                        eval(this.getAttribute("update-expr"));
                     } catch (e) {
                         console.error(e);
                     }
@@ -1359,7 +1359,7 @@
         function showToolTip() {
             if (shiftIsDown) {
                 const mapRootLen = "viewModel.selectedAnalyzerConfig().".length;
-                const mapExpr = $(this).attr("map-expr");
+                const mapExpr = this.getAttribute("map-expr");
                 $(this).attr("data-original-title", `<p class="text-left">map: ${mapExpr.substr(mapRootLen)}<br/>value: ${eval(mapExpr)}</p>`)
                     .tooltip("fixTitle")
                     .tooltip("show");
@@ -1669,19 +1669,20 @@
         // Section Map Builder code - consider migrating to independent file
 
         const PropDefType = {
-            CHECKBOX: "0",
-            NUMERIC: "1",
-            FLOAT: "2",
-            HEADER: "3",
-            TEXT: "4",
-            DATE: "5",
-            TIME: "6",
-            SELECT: "8",
-            DATETIMERANGE: "11",
-            PASSWORD: "12",
-            MULTILINETEXT: "13"
+            CHECKBOX:      0,
+            NUMERIC:       1,
+            FLOAT:         2,
+            HEADER:        3,
+            TEXT:          4,
+            DATE:          5,
+            TIME:          6,
+            SELECT:        8,
+            DATETIMERANGE: 11,
+            PASSWORD:      12,
+            MULTILINETEXT: 13
         }
 
+        const zeroFieldTypes = [PropDefType.FLOAT, PropDefType.NUMERIC, PropDefType.TEXT];
         const maxAliasParams = 5;
         const unmapped = 0;
         let bankIndex = undefined;
@@ -1708,9 +1709,21 @@
             }
         }
 
-        function readValue(element, readOperation, enabled, isCheckBox) {
+        function clearZeroValue(target, type) {
+            if (!zeroFieldTypes.includes(type) || target[0].hasAttribute("zero-cleared"))
+                return;
+
+            target.attr("zero-cleared", "");
+
+            // Show zero values from config as blank
+            if (parseFloat(target.val()) === 0.0)
+                target.val("");
+        };
+
+        function readValue(element, readOperation, enabled, type) {
             const target = $(element);
             const bank = target.attr("bank");
+            const isCheckBox = type === PropDefType.CHECKBOX;
 
             // Handle multi-select bank list read operation
             if (bank && bank.length) {
@@ -1729,17 +1742,21 @@
                         clearValue(target, isCheckBox);
                 }
                 else {
-                    if (enabled)
+                    if (enabled) {
                         readOperation();
-                    else
+                        clearZeroValue(target, type);
+                    } else {
                         clearValue(target, isCheckBox, true);
+                    }
                 }
             }
             else {
-                if (enabled)
+                if (enabled) {
                     readOperation();
-                else
+                    clearZeroValue(target, type);
+                } else {
                     clearValue(target, isCheckBox, true);
+                }
             }
         }
 
@@ -1835,7 +1852,8 @@
         function selectBankItem(bankTargetID) {
             $(`[bank="${bankTargetID}"]`).each(function () {
                 try {
-                    eval($(this).attr("update-expr"));
+                    this.removeAttribute("zero-cleared");
+                    eval(this.getAttribute("update-expr"));
                 } catch (e) {
                     console.error(e);
                 }
@@ -1907,7 +1925,7 @@
         }
 
         function buildPropDefElement(propDef, mapRoot, bankTarget) {
-            const type = propDef["@@TYPE"];
+            const type = parseInt(propDef["@@TYPE"], 10);
             const name = propDef["@@NAME"];
             let alias = propDef["@@ALIAS"];
 
@@ -1967,28 +1985,28 @@
                 case PropDefType.CHECKBOX:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) !== 0`}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? String.format(writeExpr, getPropVal) : `${getPropVal} ? '1' : '0'`}`));
-                    html.push(`<input type="checkbox" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, true)" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
+                    html.push(`<input type="checkbox" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
                     break;
                 case PropDefType.NUMERIC:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
                 break;
                 case PropDefType.FLOAT:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? `(${String.format(readExpr, mapExpr)})` : `parseFloat(${mapExpr})`}.toFixed(4)`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
+                    html.push(`<input type="number" class="form-control" id="${name}"${minMaxText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
                     break;
                 case PropDefType.TEXT:
                 case PropDefType.PASSWORD:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
+                    html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control" id="${name}"${maxLenText}${placeHolderText} onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}/>`);
                     break;
                 case PropDefType.SELECT:
                     script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                     script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
-                    html.push(`<select class="form-control" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}>`);
+                    html.push(`<select class="form-control" id="${name}" onchange="writeValue(this, ${name}_changed)" update-expr="readValue(this, update_${name}, ${enabled}, ${type})" data-toggle="tooltip" map-expr="${mapExpr}"${bank}>`);
                     html.push(buildListElements(propDef.PARAM.LIST, defaultVal)[0]);
                     html.push(`</select>`);
                     break;
@@ -2034,7 +2052,7 @@
             };
 
             const addPropDef = function (propDef) {
-                if (propDef["@@TYPE"] === PropDefType.HEADER) {
+                if (parseInt(propDef["@@TYPE"], 10) === PropDefType.HEADER) {
                     console.warn(`Unexpected header property definition encountered in section "${sectionName}" bank "${bankName}"`);
                     return;
                 }
@@ -2129,7 +2147,7 @@
             };
 
             const addSectionElementDefinition = function (definition, elementType) {
-                if (definition.hasOwnProperty("@@NAME") && definition["@@TYPE"] !== PropDefType.HEADER)
+                if (definition.hasOwnProperty("@@NAME") && parseInt(definition["@@TYPE"], 10) !== PropDefType.HEADER)
                     definition["@@NAME"] = `${sectionName}Section_${definition["@@NAME"]}`;
 
                 definition.order = definition.hasOwnProperty("@@ORDER") ?
@@ -2179,7 +2197,7 @@
                     break;
                     case "PROPDEF":
                     {
-                        if (definition["@@TYPE"] === PropDefType.HEADER) {
+                        if (parseInt(definition["@@TYPE"], 10) === PropDefType.HEADER) {
                             if (elementTargetsInputConfig(definition)) {
                                 closePropDefs();
                                 html.push(`<tr><th class="header${definition.order > 0 ? "-section-row": ""}"><div class="header">${definition["@@ALIAS"] || definition["@@NAME"]}</div></th></tr>`);
