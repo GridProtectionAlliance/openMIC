@@ -1883,9 +1883,6 @@
         }
 
         function buildPropDefElement(propDef, mapRoot, bankTarget) {
-            if (parseInt(propDef["@@ENABLED"] || "1", 10) === 0)
-                return [ "", "" ];
-
             const type = propDef["@@TYPE"];
             const name = propDef["@@NAME"];
             let alias = propDef["@@ALIAS"];
