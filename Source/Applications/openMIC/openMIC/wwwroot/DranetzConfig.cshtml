@@ -193,6 +193,12 @@
             visibility: hidden;
         }
 
+        #copyConfigButton {
+            margin-left: -55px;
+            margin-right: 15px;
+            visibility: hidden;
+        }
+
         input[type="radio"].view-config-type {
             vertical-align: middle;
             margin-bottom: 8px;
@@ -431,17 +437,17 @@
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 30px; padding-top: 5px">
         <label style="margin-top: 1px">
-            <span data-bind="text: selectedAnalyzerName"></span>&nbsp;Configuration&nbsp;&nbsp;&nbsp;
-            <label id="configTypeSelectionBlock">
-                &nbsp;view as:
-                &nbsp;&nbsp;<input id="xmlConfigType" type="radio" class="view-config-type" value="xml" data-bind="checked: viewConfigType"><label for="xmlConfigType">&nbsp;XML</label>
-                &nbsp;&nbsp;<input id="jsonConfigType" type="radio" class="view-config-type" value="json" data-bind="checked: viewConfigType"><label for="jsonConfigType">&nbsp;JSON</label>
+            <span data-bind="text: `${selectedAnalyzerName()}&nbsp;Configuration`"></span>&nbsp;&nbsp;&nbsp;
+            <label id="configTypeSelectionBlock">view as:
+                &nbsp;<input id="xmlConfigType" type="radio" class="view-config-type" value="xml" data-bind="checked: viewConfigType"><label for="xmlConfigType">&nbsp;XML</label>
+                &nbsp;<input id="jsonConfigType" type="radio" class="view-config-type" value="json" data-bind="checked: viewConfigType"><label for="jsonConfigType">&nbsp;JSON</label>
             </label>
         </label>
+        <button id="copyConfigButton" type="button" class="btn btn-xs btn-default pull-right">Copy</button>
         <button type="button" class="btn btn-xs btn-collapsable collapsed" style="top: 0; right: -10px" data-toggle="collapse" data-target="#analyzerConfiguration"></button>
     </div>
     <div id="analyzerConfiguration" class="panel-body collapse" style="padding: 2px; margin-bottom: -10px">
-        <pre data-bind="text: viewConfigAsXml() ? selectedAnalyzerConfigXml() : selectedAnalyzerConfigJson()"></pre>
+        <pre id="configText" data-bind="text: viewConfigAsXml() ? selectedAnalyzerConfigXml() : selectedAnalyzerConfigJson()"></pre>
     </div>
 </div>
 <div id="graphDataWindow" class="modal modal-wide fade" role="dialog" style="max-width: 1000px; margin: 0 auto">
@@ -1567,6 +1573,15 @@
                 viewModel.saveAnalyzerConfig();
             });
 
+            $("#copyConfigButton").click(function (e) {
+                e.preventDefault();
+
+                if (copyToClipboard($("#configText").text()))
+                    showInfoMessage("Configuration copied!");
+                else
+                    showErrorMessage("Failed to copy configuration to the clipboard");
+            });
+
             $("#restartDeviceButton").click(function (e) {
                 e.preventDefault();
 
@@ -1614,11 +1629,13 @@
 
             $("#analyzerConfiguration").on("shown.bs.collapse", function () {
                 $("#configTypeSelectionBlock").visible();
+                $("#copyConfigButton").visible();
                 $("#view-spacer")[0].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
             });
 
             $("#analyzerConfiguration").on("hidden.bs.collapse", function () {
                 $("#configTypeSelectionBlock").invisible();
+                $("#copyConfigButton").invisible();
             });
 
             $(window).on("messageVisibiltyChanged", function () {
@@ -1640,5 +1657,31 @@
             if (!deviceFound)
                 $("#invalidDeviceMessage").show();
         });
+
+        function copyToClipboard(text) {
+            if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+                const textarea = document.createElement("textarea");
+
+                textarea.textContent = text;
+                textarea.style.position = "fixed";
+                document.body.appendChild(textarea);
+                textarea.select();
+
+                try {
+                    return document.execCommand("copy");
+                }
+                catch (ex) {
+                    console.warn("Copy to clipboard failed.", ex);
+                    return false;
+                }
+                finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+            else {
+                console.warn("Clipboard function unavailable.");
+                return false;
+            }
+        }
     </script>
 }
