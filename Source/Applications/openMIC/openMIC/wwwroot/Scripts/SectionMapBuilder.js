@@ -42,7 +42,7 @@ if (!String.format) {
         let text = format;
 
         for (let i = 1; i < arguments.length; i++)
-            text = text.replaceAll("{" + (i - 1) + "}", arguments[i]);
+            text = text.replaceAll(`{${i - 1}}`, arguments[i]);
 
         return text;
     };
@@ -66,9 +66,10 @@ function SectionMapBuilder(instanceName) {
         MULTILINETEXT: 13
     }
 
-    const zeroFieldTypes = [PropDefType.FLOAT, PropDefType.NUMERIC, PropDefType.TEXT];
+    // Property types that can display a zero value, i.e., are subject to show zero as blank
+    const zeroFieldTypes = [PropDefType.NUMERIC, PropDefType.FLOAT, PropDefType.TEXT];
 
-    // Defines the maximum number of alias parameters to check for
+    // Defines the maximum number of alias parameters to check
     self.maxAliasParams = 5;
 
     // Assign function to determine if section element is enabled
@@ -77,6 +78,7 @@ function SectionMapBuilder(instanceName) {
     // Assign function expression (as string) that represents notification that model has changed (isDirty = true)
     self.modelChangedExpr = "";
 
+    // Internal fields
     self._bankIndex = undefined;
     self._unmapped = 0;
 
@@ -115,33 +117,20 @@ function SectionMapBuilder(instanceName) {
 
     self.readValue = (element, readOperation, enabled, type) => {
         const target = $(element);
-        const bank = target.attr("bank");
+        const selections = self.getBankSelections(target.attr("bank"), true);
         const isCheckBox = type === PropDefType.CHECKBOX;
 
-        // Handle multi-select bank list read operation
-        if (bank && bank.length) {
-            const selections = self.getValue(bank);
+        if (selections) {
+            const values = [];
 
-            if (Array.isArray(selections) && selections.length > 1) {
-                const values = [];
+            selections.forEach(selection => {
+                self.execOperationAtBankIndex(selection, readOperation);
+                values.push(isCheckBox ? target.prop("checked") : target.val());
+            });
 
-                selections.forEach(selection => {
-                    self.execOperationAtBankIndex(parseInt(selection, 10), readOperation);
-                    values.push(isCheckBox ? target.prop("checked") : target.val());
-                });
-
-                // If any selected items have different values, clear target
-                if (values.some(value => value !== values[0]))
-                    self.clearValue(target, isCheckBox);
-            }
-            else {
-                if (enabled) {
-                    readOperation();
-                    self.clearZeroValue(target, type);
-                } else {
-                    self.clearValue(target, isCheckBox, true);
-                }
-            }
+            // If any selected items have different values, clear target
+            if (values.some(value => value !== values[0]))
+                self.clearValue(target, isCheckBox);
         }
         else {
             if (enabled) {
@@ -155,21 +144,13 @@ function SectionMapBuilder(instanceName) {
 
     self.writeValue = (element, writeOperation) => {
         const target = $(element);
-        const bank = target.attr("bank");
+        const selections = self.getBankSelections(target.attr("bank"), true);
 
-        // Handle multi-select bank list write operation
-        if (bank && bank.length) {
-            const selections = self.getValue(bank);
-
-            if (Array.isArray(selections) && selections.length > 1) {
-                // Assign changed value to all selected items
-                selections.forEach(selection => {
-                    self.execOperationAtBankIndex(parseInt(selection, 10), writeOperation);
-                });
-            }
-            else {
-                writeOperation();
-            }
+        if (selections) {
+            // Assign changed value to all selected items
+            selections.forEach(selection => {
+                self.execOperationAtBankIndex(selection, writeOperation);
+            });
         }
         else {
             writeOperation();
@@ -179,17 +160,15 @@ function SectionMapBuilder(instanceName) {
     self.getValue = (targetID, targetType) => {
         const target = $(`#${targetID}`);
 
-        // Check if target is a bank list
-        if (target[0].hasAttribute("bank-list")) {
+        if (target.length === 0)
+            return undefined;
+
+        if (self.targetIsBankList(target)) {
+            // Get selected bank index
             if (self._bankIndex === undefined) {
                 const values = target.val() || [];
-
-                if (values.length > 0)
-                    return values.length === 1 ? parseInt(values[0], 10) : values;
-
-                return 0;
-            }
-            else {
+                return values.length > 0 ? parseInt(values[0], 10) : 0;
+            } else {
                 return self._bankIndex;
             }
         }
@@ -242,6 +221,32 @@ function SectionMapBuilder(instanceName) {
         }
     };
 
+    self.targetIsBankList = (target) => {
+        if (typeof target === "string")
+            target = $(`#${target}`);
+
+        if (target instanceof jQuery)
+            target = target.length ? target[0] : undefined;
+
+        return target ? target.hasAttribute("bank-list") : false;
+    };
+
+    self.getBankSelections = (bank, multipleOnly) => {
+        const target = $(`#${bank}`);
+
+        if (self.targetIsBankList(target)) {
+            const values = target.val() || [];
+
+            if (Array.isArray(values) && !(multipleOnly && values.length < 2)) {
+                const selections = [];
+                values.forEach(value => selections.push(parseInt(value, 10)));
+                return selections;
+            }
+        }
+
+        return multipleOnly ? undefined : [];
+    };
+
     self.selectBankItem = (bankTargetID) => {
         $(`[bank="${bankTargetID}"]`).each(function () {
             try {
@@ -284,9 +289,8 @@ function SectionMapBuilder(instanceName) {
             const enabled = self.elementIsEnabled(value);
             const hidden = enabled ? "" : " hidden";
             const selected = optVal === defaultVal || !defaultVal && enabled && totalOptions === 0 ? " selected" : "";
-            const alias = self.getAlias(value);
 
-            html.push(`<option value="${optVal}"${keyVal}${selected}${hidden}>${alias}</option>`);
+            html.push(`<option value="${optVal}"${keyVal}${selected}${hidden}>${self.getAlias(value)}</option>`);
 
             if (enabled)
                 totalOptions++;
@@ -300,7 +304,6 @@ function SectionMapBuilder(instanceName) {
     self.buildPropDefElement = (propDef, mapRoot, bankTarget) => {
         const type = parseInt(propDef["@TYPE"], 10);
         const name = propDef["@NAME"];
-        const alias = self.getAlias(propDef);
         const enabled = self.elementIsEnabled(propDef);
         const hidden = enabled ? "" : " hidden";
         const bank = bankTarget && bankTarget.length ? ` bank="${bankTarget}"` : "";
@@ -347,7 +350,7 @@ function SectionMapBuilder(instanceName) {
         const html = [];
         const script = [];
 
-        html.push(`<tr${hidden}><th class="smb-pad-right" width="30%">${alias}:</th><td>`);
+        html.push(`<tr${hidden}><th class="smb-pad-right" width="30%">${self.getAlias(propDef)}:</th><td>`);
 
         switch (type) {
             case PropDefType.CHECKBOX:
@@ -387,7 +390,6 @@ function SectionMapBuilder(instanceName) {
 
     self.buildBankElement = (definition, mapRoot, sectionName) => {
         const bankName = definition["@NAME"];
-        const alias = self.getAlias(definition);
         const enabled = self.elementIsEnabled(definition);
         const hidden = enabled ? "" : " hidden";
         const rows = definition["@ROWS"];
@@ -398,7 +400,7 @@ function SectionMapBuilder(instanceName) {
         let sizeAttribute = "";
         let propDefsStarted = false;
 
-        html.push(`<tr${hidden}><th class="smb-header${definition.order > 0 ? "-section-row" : ""} smb-bank-header"><div class="smb-header">${alias}</div></th></tr>`);
+        html.push(`<tr${hidden}><th class="smb-header${definition.order > 0 ? "-section-row" : ""} smb-bank-header"><div class="smb-header">${self.getAlias(definition)}</div></th></tr>`);
         html.push(`<tr class="smb-bank-group"${hidden}><td class="smb-bank-group">`);
 
         const startPropDefs = () => {
