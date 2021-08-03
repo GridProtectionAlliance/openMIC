@@ -568,7 +568,7 @@ function SectionMapBuilder(instanceName) {
                         if (parseInt(definition["@TYPE"], 10) === PropDefType.HEADER) {
                             if (self.elementIsEnabled(definition)) {
                                 closePropDefs();
-                                html.push(`<tr><th class="smb-header${definition.order > 0 ? "-section-row" : ""}"><div class="header">${self.getAlias(definition)}</div></th></tr>`);
+                                html.push(`<tr><th class="smb-header${definition.order > 0 ? "-section-row" : ""}"><div class="smb-header">${self.getAlias(definition)}</div></th></tr>`);
                             }
                         }
                         else {

@@ -31,8 +31,8 @@ th.smb-pad-right {
 }
 
 div.smb-header {
-    border-bottom: 4px solid;
-    margin: 0;
+    border-bottom: 5px solid;
+    margin: -1px -1px 0 -1px;
 }
 
 th.smb-header {
@@ -75,8 +75,8 @@ th.smb-bank-footer {
 }
 
 div.smb-bank-footer {
-    border-bottom: 4px solid;
-    margin: -1px 0 0 0;
+    border-bottom: 5px solid;
+    margin: -1px -1px 0 -1px;
 }
 
 tr.smb-bank-group {
