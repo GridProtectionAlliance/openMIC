@@ -21,6 +21,8 @@
 
 \******************************************************************************************************/
 
+/* ReSharper disable CssBrowserCompatibility */
+
 th.smb-pad-right {
     width: 50%;
     text-align: right;
@@ -30,7 +32,7 @@ th.smb-pad-right {
 
 div.smb-header {
     border-bottom: 4px solid;
-    margin: 0 0 0 0;
+    margin: 0;
 }
 
 th.smb-header {
@@ -94,6 +96,7 @@ input[type=checkbox].smb-input {
     margin-bottom: 8px;
 }
 
+/* Adds a bootstrap-like selection frame around checkbox */
 input[type=checkbox]:focus.smb-input {
     outline-offset: 2px;
     outline-style: solid;
