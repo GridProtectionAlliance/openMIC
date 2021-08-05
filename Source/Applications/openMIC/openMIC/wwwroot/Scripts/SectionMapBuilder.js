@@ -78,6 +78,9 @@ function SectionMapBuilder(instanceName) {
     // Assign function expression (as string) that represents notification that model has changed (isDirty = true)
     self.modelChangedExpr = "";
 
+    // Option to show loaded zero values as blank
+    self.showZeroValuesAsBlank = true;
+
     // Internal fields
     self._bankIndex = undefined;
     self._unmapped = 0;
@@ -135,7 +138,9 @@ function SectionMapBuilder(instanceName) {
         else {
             if (enabled) {
                 readOperation();
-                self.clearZeroValue(target, type);
+
+                if (self.showZeroValuesAsBlank)
+                    self.clearZeroValue(target, type);
             } else {
                 self.clearValue(target, isCheckBox, true);
             }
