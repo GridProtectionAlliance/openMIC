@@ -119,6 +119,9 @@
   <Component Id="Content_Popup_css">
     <File Id="Content_Popup.css" Name="Popup.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Popup.css" />
   </Component>
+  <Component Id="Content_SectionMapBuilder_css">
+    <File Id="Content_SectionMapBuilder.css" Name="SectionMapBuilder.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\SectionMapBuilder.css" />
+  </Component>
   <Component Id="Content_Site_css">
     <File Id="Content_Site.css" Name="Site.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Site.css" />
   </Component>
@@ -171,6 +174,9 @@
   </Component>
   <Component Id="Scripts_jquery_jspanel_js">
     <File Id="Scripts_jquery.jspanel.js" Name="jquery.jspanel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.jspanel.js" />
+  </Component>
+  <Component Id="Scripts_SectionMapBuilder_js">
+    <File Id="Scripts_SectionMapBuilder.js" Name="SectionMapBuilder.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\SectionMapBuilder.js" />
   </Component>
   <Component Id="Scripts_Site_js">
     <File Id="Scripts_Site.js" Name="Site.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\Site.js" />
