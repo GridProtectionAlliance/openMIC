@@ -63,7 +63,7 @@ Meter Information Collector
 
 ## Downloads
 * Download the latest stable release [here](https://github.com/GridProtectionAlliance/openMIC/releases).
-* Download the nightly build [here](http://www.gridprotectionalliance.org/nightlybuilds/openMIC/Beta/Setup.zip).
+* Download the nightly build [here](https://www.gridprotectionalliance.org/nightlybuilds/openMIC/Beta/openMIC.Installs.zip).
 
 # Contributing
 If you would like to contribute please:
