@@ -48,6 +48,7 @@ using System.Security;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using GSF.Diagnostics;
 using static System.Net.WebUtility;
 
 namespace openMIC
@@ -58,6 +59,7 @@ namespace openMIC
 
         // Constants
         private const int DefaultMaximumDiagnosticLogSize = 10;
+        private const string DefaultMinifyJavascriptExclusionExpression = @"^/?Scripts/SectionMapBuilder\.js$";
 
         // Events
 
@@ -87,6 +89,20 @@ namespace openMIC
         public ServiceHost()
         {
             ServiceName = "openMIC";
+
+            try
+            {
+                // Assign default minification exclusion early (well before web server static initialization)
+                CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
+                systemSettings.Add("MinifyJavascriptExclusionExpression", DefaultMinifyJavascriptExclusionExpression, "Defines the regular expression that will exclude Javascript files from being minified. Empty value will target all files for minification.");
+
+                if (string.IsNullOrWhiteSpace(systemSettings["MinifyJavascriptExclusionExpression"].Value))
+                    systemSettings["MinifyJavascriptExclusionExpression"].Value = DefaultMinifyJavascriptExclusionExpression;
+            }
+            catch (Exception ex)
+            {
+                Logger.SwallowException(ex);
+            }
         }
 
         #endregion
@@ -236,8 +252,6 @@ namespace openMIC
             Model.Global.PasswordRequirementsRegex = securityProvider["PasswordRequirementsRegex"].Value;
             Model.Global.PasswordRequirementsError = securityProvider["PasswordRequirementsError"].Value;
             Model.Global.BootstrapTheme = systemSettings["BootstrapTheme"].Value;
-            Model.Global.PasswordRequirementsRegex = securityProvider["PasswordRequirementsRegex"].Value;
-            Model.Global.PasswordRequirementsError = securityProvider["PasswordRequirementsError"].Value;
             Model.Global.DefaultDialUpRetries = int.Parse(systemSettings["DefaultDialUpRetries"].Value);
             Model.Global.DefaultDialUpTimeout = int.Parse(systemSettings["DefaultDialUpTimeout"].Value);
             Model.Global.DefaultFTPUserName = systemSettings["DefaultFTPUserName"].Value;
