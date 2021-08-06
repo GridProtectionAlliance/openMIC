@@ -688,7 +688,7 @@
 
             const selectedInput = ($("#inputSection_bankInput").val() || [0])[0];
 
-            viewModel.reloadTabSections("RMSVariations", "Transients", "Power", "Harmonics").then(function () {
+            viewModel.reloadTabSections("RMSVariations", "Transients", "Power", "EnergyAndDemand", "Harmonics", "Flicker").then(function () {
                 $("#inputSection_bankInput").val([selectedInput]).trigger("change");
             });
 
