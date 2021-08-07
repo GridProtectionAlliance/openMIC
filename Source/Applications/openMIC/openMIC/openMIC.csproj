@@ -246,6 +246,7 @@
   <ItemGroup>
     <Compile Include="Controllers\RequestVerificationHeaderTokenController.cs" />
     <Compile Include="DataHub.cs" />
+    <Compile Include="DataHub_PQube.cs" />
     <Compile Include="DataHub_Dranetz.cs" />
     <Compile Include="DataHub_IGrid.cs" />
     <Compile Include="DataHub_Modbus.cs" />
@@ -253,6 +254,7 @@
     <Compile Include="DataSubscriptionOperations.cs" />
     <Compile Include="Downloader.cs" />
     <Compile Include="GlobalSettings.cs" />
+    <Compile Include="IniJsonInterop.cs" />
     <Compile Include="IOrderedQueryableExtensions.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Model\ConnectionProfileTaskQueue.cs" />
@@ -342,17 +344,17 @@
     <Content Include="wwwroot\ModbusConfig.cshtml" />
     <Content Include="wwwroot\Groups.cshtml" />
     <Content Include="wwwroot\Scripts\SectionMapBuilder.js" />
-    <Content Include="wwwroot\SectionMaps\CrossTriggering.xml" />
-    <Content Include="wwwroot\SectionMaps\DigitalCrossTriggering.xml" />
-    <Content Include="wwwroot\SectionMaps\DigitalInputConfiguration.xml" />
-    <Content Include="wwwroot\SectionMaps\EnergyAndDemand.xml" />
-    <Content Include="wwwroot\SectionMaps\Flicker.xml" />
-    <Content Include="wwwroot\SectionMaps\Harmonics.xml" />
-    <Content Include="wwwroot\SectionMaps\InputConfiguration.xml" />
-    <Content Include="wwwroot\SectionMaps\Power.xml" />
-    <Content Include="wwwroot\SectionMaps\RMSVariations.xml" />
-    <Content Include="wwwroot\SectionMaps\Transients.xml" />
-    <Content Include="wwwroot\SectionMaps\WaveformCapture.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\CrossTriggering.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\DigitalCrossTriggering.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\DigitalInputConfiguration.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\EnergyAndDemand.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\Flicker.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\Harmonics.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\InputConfiguration.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\Power.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\RMSVariations.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\Transients.xml" />
+    <Content Include="wwwroot\SectionMaps\Dranetz\WaveformCapture.xml" />
     <Content Include="wwwroot\Users.cshtml" />
     <Content Include="wwwroot\SelectTheme.cshtml" />
     <Content Include="wwwroot\Status.cshtml" />
@@ -431,7 +433,9 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="wwwroot\SectionMaps\PQube\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)Database Scripts" "$(SolutionDir)Data\*.*"
