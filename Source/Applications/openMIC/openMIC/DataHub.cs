@@ -860,7 +860,7 @@ namespace openMIC
         public string GetSectionMap(string mapName)
         {
             // Prevent file access leakage
-            if (AllowedSectionMapPaths.Contains(Path.GetDirectoryName(mapName) ?? string.Empty))
+            if (!AllowedSectionMapPaths.Contains(Path.GetDirectoryName(mapName) ?? string.Empty))
                 throw new SecurityException("Path access error");
 
             string mapFileName = Path.Combine(WebRootPath, "SectionMaps", mapName);
