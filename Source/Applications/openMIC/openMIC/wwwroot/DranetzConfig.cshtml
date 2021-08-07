@@ -1215,7 +1215,7 @@
             }
 
             self.loadTabSection = function (sectionKey) {
-                return dataHub.getSectionMap(`${sectionKey}.xml`).done(function (result) {
+                return dataHub.getSectionMap(`Dranetz\\${sectionKey}.xml`).done(function (result) {
                     const [sectionHtml, sectionScript] = smb.buildSection(JSON.parse(result).SECTION, "viewModel.selectedAnalyzerConfig()");
 
                     $(`#tab${sectionKey}`).html(sectionHtml);
