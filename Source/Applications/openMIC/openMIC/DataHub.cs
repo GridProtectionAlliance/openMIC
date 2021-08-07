@@ -28,10 +28,15 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using GSF;
 using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
@@ -44,9 +49,7 @@ using GSF.Web.Security;
 using GSF.Web.Shared.Model;
 using ModbusAdapters;
 using ModbusAdapters.Model;
-using Newtonsoft.Json.Linq;
 using openMIC.Model;
-using Microsoft.AspNet.SignalR.Hubs;
 
 namespace openMIC
 {
@@ -110,13 +113,18 @@ namespace openMIC
         private static readonly HttpClient s_http;
         private static bool? s_useRemoteScheduler;
         private static string s_remoteSchedulerUri;
+        private static HashSet<string> s_allowedSectionMapPaths;
+        
+        private static readonly string[] s_allowedSectionMaps = { "", "Dranetz", "PQube" };
+
+        private static HashSet<string> AllowedSectionMapPaths => s_allowedSectionMapPaths ??= new HashSet<string>(s_allowedSectionMaps, StringComparer.OrdinalIgnoreCase);
 
         private static string SystemName => s_systemName ??= Program.Host.Model.Global.SystemName ?? "";
 
         private static string WebRootPath => s_webRootPath ??= Program.Host.Model.Global.WebRootPath ?? FilePath.GetAbsolutePath("wwwroot");
 
         private static bool UseRemoteScheduler => s_useRemoteScheduler ?? (s_useRemoteScheduler = Program.Host.Model.Global.UseRemoteScheduler).GetValueOrDefault();
-        
+
         private static string RemoteSchedulerUri
         {
             get
@@ -842,6 +850,83 @@ namespace openMIC
         {
             return Task.Factory.StartNew(() => new Ticks(stopTime - startTime).ToElapsedTimeString(2));
         }
+
+        /// <summary>
+        /// Reads section map XML file as JSON.
+        /// </summary>
+        /// <param name="mapName">Map file name</param>
+        /// <returns>Section map XML as JSON.</returns>
+        [AuthorizeHubRole("Administrator, Editor")]
+        public string GetSectionMap(string mapName)
+        {
+            // Prevent file access leakage
+            if (AllowedSectionMapPaths.Contains(Path.GetDirectoryName(mapName) ?? string.Empty))
+                throw new SecurityException("Path access error");
+
+            string mapFileName = Path.Combine(WebRootPath, "SectionMaps", mapName);
+
+            if (!File.Exists(mapFileName))
+                throw new FileNotFoundException("Section Map Not Found", mapName);
+
+            XmlDocument mapFile = new XmlDocument();
+            mapFile.Load(mapFileName);
+
+            return JsonConvert.SerializeXmlNode(mapFile);
+        }
+
+        /// <summary>
+        /// Gets XML as JSON.
+        /// </summary>
+        /// <param name="value">XML source.</param>
+        /// <param name="indented"><c>true</c> to indent result JSON; otherwise, <c>false</c>.</param>
+        /// <returns>Converted JSON.</returns>
+        public string GetXmlAsJson(string value, bool indented)
+        {
+            XmlDocument document = new();
+            document.LoadXml(value);
+            return JsonConvert.SerializeXmlNode(document, indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None);
+        }
+
+        /// <summary>
+        /// Gets JSON as XML.
+        /// </summary>
+        /// <param name="value">JSON source.</param>
+        /// <param name="indented"><c>true</c> to indent result XML; otherwise, <c>false</c>.</param>
+        /// <returns>Converted XML.</returns>
+        public string GetJsonAsXml(string value, bool indented)
+        {
+            XmlDocument document = JsonConvert.DeserializeXmlNode(value);
+
+            if (document is null)
+                return "";
+
+            if (indented)
+            {
+                StringWriter textWriter = new();
+                XmlTextWriter xmlWriter = new(textWriter) { Formatting = System.Xml.Formatting.Indented };
+                document.WriteTo(xmlWriter);
+                return textWriter.ToString();
+            }
+
+            return document.InnerXml;
+        }
+
+        /// <summary>
+        /// Gets INI as JSON.
+        /// </summary>
+        /// <param name="value">INI source.</param>
+        /// <param name="indented"><c>true</c> to indent result JSON; otherwise, <c>false</c>.</param>
+        /// <returns>Converted JSON.</returns>
+        public string GetIniAsJson(string value, bool indented) =>
+            IniJsonInterop.GetIniAsJson(value, indented, true);
+
+        /// <summary>
+        /// Gets JSON as INI.
+        /// </summary>
+        /// <param name="value">JSON source.</param>
+        /// <returns>Converted INI.</returns>
+        public string GetJsonAsIni(string value) =>
+            IniJsonInterop.GetJsonAsIni(value, true);
 
         #endregion
     }

@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -169,24 +168,6 @@ namespace openMIC
                 s_dranetzCredentialCache.Remove(deviceID.ToString());
         }
 
-        [AuthorizeHubRole("Administrator, Editor")]
-        public string GetSectionMap(string mapName)
-        {
-            // Prevent file access leakage
-            if (!string.IsNullOrEmpty(Path.GetDirectoryName(mapName)))
-                throw new SecurityException("Path access error");
-
-            string mapFileName = Path.Combine(WebRootPath, "SectionMaps", mapName);
-
-            if (!File.Exists(mapFileName))
-                throw new FileNotFoundException("Section Map Not Found", mapName);
-
-            XmlDocument mapFile = new XmlDocument();
-            mapFile.Load(mapFileName);
-            
-            return JsonConvert.SerializeXmlNode(mapFile);
-        }
-
         public Task<string> GetInstanceStatus(int deviceID) => 
             GetCommandJson(deviceID, "getinststatus");
 
@@ -250,31 +231,6 @@ namespace openMIC
 
         public Task<string> GetWaveforms(int deviceID, int configID) =>
             GetCommandJson(deviceID, $"getwaveforms&id={configID}&format=0");
-
-        public string GetXmlAsJson(string value, bool indented)
-        {
-            XmlDocument document = new();
-            document.LoadXml(value);
-            return JsonConvert.SerializeXmlNode(document, indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None);
-        }
-
-        public string GetJsonAsXml(string value, bool indented)
-        {
-            XmlDocument document = JsonConvert.DeserializeXmlNode(value);
-
-            if (document is null)
-                return "";
-
-            if (indented)
-            {
-                StringWriter textWriter = new();
-                XmlTextWriter xmlWriter = new(textWriter) { Formatting = System.Xml.Formatting.Indented };
-                document.WriteTo(xmlWriter);
-                return textWriter.ToString();
-            }
-
-            return document.InnerXml;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task<XmlDocument> GetCommandXml(int deviceID, string cmdParam, bool clearCookies = false)
