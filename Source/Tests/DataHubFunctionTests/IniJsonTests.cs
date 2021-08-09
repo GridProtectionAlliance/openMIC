@@ -25,7 +25,7 @@ using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using GSF.Collections;
+using static GSF.Collections.CollectionExtensions;
 using static openMIC.IniJsonInterop;
 
 namespace DataHubFunctions
@@ -37,38 +37,47 @@ namespace DataHubFunctions
           @"; ------ PQube 3 from Powerside.
             ; ------ www.powerside.com
             ; ------ PQube 3 Version 3.8
-
+            rootKey=R00tVal
             ;----------------------------------------------------
-            [PQube_Information]
+            [PQube_Information] ; End of section comment
             ;----------------------------------------------------
             ; ------ Assign a unique identifier for your PQube 3
-            PQube_ID=""(PQube_ID not set)""
+            PQube_ID=""(PQube_ID not set)"" ; End of value comment
 
             ; ------ Describe the place where your PQube 3 is installed
             Location_Name=""(location not set)""
 
             ; ------ Optional additional information about your PQube 3
             Note_1=""(note not set)""
-            Note_2=""(note not set)""";
+            Note_2=""(note not set)""
+            [NewSection]
+            ; New section
+            NewKey=NewValue";
 
-        private static string jsonInput = 
+        private static string jsonInput =
           @"{
               ""@c1"": ""; ------ PQube 3 from Powerside."",
               ""@c2"": ""; ------ www.powerside.com"",
               ""@c3"": ""; ------ PQube 3 Version 3.8"",
-              ""@c4"": """",
-              ""@c5"": "";----------------------------------------------------"",
+              ""rootKey"": ""R00tVal"",
+              ""@c4"": "";----------------------------------------------------"",
+              ""@c5eol"": ""; End of section comment"",
               ""PQube_Information"": {
                 ""@c1"": "";----------------------------------------------------"",
                 ""@c2"": ""; ------ Assign a unique identifier for your PQube 3"",
+                ""@c3eol"": ""; End of value comment"",
                 ""PQube_ID"": ""\""(PQube_ID not set)\"""",
-                ""@c3"": """",
-                ""@c4"": ""; ------ Describe the place where your PQube 3 is installed"",
+                ""@c4"": """",
+                ""@c5"": ""; ------ Describe the place where your PQube 3 is installed"",
                 ""Location_Name"": ""\""(location not set)\"""",
-                ""@c5"": """",
-                ""@c6"": ""; ------ Optional additional information about your PQube 3"",
+                ""@c6"": """",
+                ""@c7"": ""; ------ Optional additional information about your PQube 3"",
                 ""Note_1"": ""\""(note not set)\"""",
                 ""Note_2"": ""\""(note not set)\""""
+              },
+              ""NewSection"": {
+                ""@c1"": ""; New section"",
+                ""NewKey"": ""NewValue""
               }
             }";
 

@@ -46,15 +46,15 @@ namespace openMIC
             StringBuilder json = new();
             string[] lines = value.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None).Select(line => line.Trim()).ToArray();
             string section = null;
-            int keyValueIndex = 0, commentIndex = 0;
+            int kvpIndex = 0, commentIndex = 0;
 
-            void addComment(string comment)
+            void addComment(string comment, bool eol = false)
             {
                 if (!preserveComments)
                     return;
 
-                json.Append($"{(keyValueIndex > 0 ? "," : "")}\"@c{++commentIndex}\":\"{comment.JavaScriptEncode()}\"");
-                keyValueIndex++;
+                json.Append($"{(kvpIndex > 0 ? "," : "")}\"@c{++commentIndex}{(eol ? "eol" : "")}\":\"{comment.Trim().JavaScriptEncode()}\"");
+                kvpIndex++;
             }
 
             string removeTrailingComment(string line)
@@ -64,7 +64,7 @@ namespace openMIC
 
                 if (index > -1)
                 {
-                    addComment(line.Substring(index));
+                    addComment(line.Substring(index), true);
                     line = line.Substring(0, index).Trim();
                 }
 
@@ -94,7 +94,7 @@ namespace openMIC
 
                         section = line.Substring(1, line.Length - 2).Trim();
                         json.Append($"\"{section.JavaScriptEncode()}\":{{");
-                        keyValueIndex = commentIndex = 0;
+                        kvpIndex = commentIndex = 0;
                     }
                     else
                     {
@@ -105,13 +105,13 @@ namespace openMIC
                 {
                     line = removeTrailingComment(line);
 
-                    string[] kvpParts = line.Split('=');
+                    string[] kvp = line.Split('=');
 
-                    if (kvpParts.Length != 2)
+                    if (kvp.Length != 2)
                         throw new InvalidOperationException($"INI key-value entry has an invalid format: \"{lines[i]}\"");
 
-                    json.Append($"{(keyValueIndex > 0 ? "," : "")}\"{kvpParts[0].Trim().JavaScriptEncode()}\":\"{kvpParts[1].Trim().JavaScriptEncode()}\"");
-                    keyValueIndex++;
+                    json.Append($"{(kvpIndex > 0 ? "," : "")}\"{kvp[0].Trim().JavaScriptEncode()}\":\"{kvp[1].Trim().JavaScriptEncode()}\"");
+                    kvpIndex++;
                 }
             }
 
@@ -135,6 +135,7 @@ namespace openMIC
         {
             StringBuilder ini = new();
             JObject json = JObject.Parse(value);
+            string eolComment = string.Empty;
 
             void writeProperty(JProperty property)
             {
@@ -144,11 +145,17 @@ namespace openMIC
                 if (property.Name.StartsWith("@c"))
                 {
                     if (restoreComments)
-                        ini.AppendLine(property.Value.ToString());
+                    {
+                        if (property.Name.EndsWith("eol"))
+                            eolComment = $" {property.Value}";
+                        else
+                            ini.AppendLine(property.Value.ToString());
+                    }
                 }
                 else
                 {
-                    ini.AppendLine($"{property.Name}={property.Value}");
+                    ini.AppendLine($"{property.Name}={property.Value}{eolComment}");
+                    eolComment = string.Empty;
                 }
             }
 
@@ -156,7 +163,8 @@ namespace openMIC
             {
                 if (property.Value.HasValues)
                 {
-                    ini.AppendLine($"[{property.Name}]");
+                    ini.AppendLine($"[{property.Name}]{eolComment}");
+                    eolComment = string.Empty;
 
                     foreach (JToken kvp in property.Value)
                         writeProperty(kvp as JProperty);
