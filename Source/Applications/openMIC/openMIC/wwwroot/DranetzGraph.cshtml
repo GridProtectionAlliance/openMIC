@@ -615,15 +615,15 @@
                 <thead>
                     <tr>
                         <th />
-                        <th style="width: 100px" class="reading">Magnitude<br />(Volts)</th>
-                        <th style="width: 100px" class="reading">Angle<br />(Degrees)</th>
+                        <th style="width: 100px" class="reading">Magnitude</th>
+                        <th style="width: 100px" class="reading">Angle</th>
                     </tr>
                 </thead>
                 <tbody data-bind="foreach: phasorValues">
                     <tr data-bind="visible: visible">
-                        <th class="phasor-reading-label" data-bind="text: key, style: { color: color }, attr: { title: title }" />
+                        <th class="phasor-reading-label" data-bind="html: `${$data.key} <small>(${$data.type === phasorType.voltage ? 'Volts' : 'Amps'})</small>`, style: { color: color }, attr: { title: title }" />
                         <td class="phasor-reading" data-toggle="tooltip" data-bind="text: $root.localeValue(magnitude()), attr: { title: magnitudeRegister.title }" />
-                        <td class="phasor-reading" data-toggle="tooltip" data-bind="text:  $root.localeValue(angle()), attr: { title: angleRegister.title }" />
+                        <td class="phasor-reading" data-toggle="tooltip" data-bind="text: `${$root.localeValue(angle())}&#176;`, attr: { title: angleRegister.title }" />
                     </tr>
                 </tbody>
             </table>
@@ -983,6 +983,9 @@
                         phasor.y2 = ko.pureComputed({ read: () => height - phasor.scaledMagnitude() * Math.sin(phasor.angle()), owner: self });
                         phasor.visible = ko.observable(true);
 
+                        phasor.angleRegister.title = `${phasor.angleRegister.title}<br/>Raw Value: ${self.localeValue(phasor.angleRegister.value())}`;
+                        phasor.magnitudeRegister.title = `${phasor.magnitudeRegister.title}<br/>Plot Value: ${self.localeValue(phasor.scaledMagnitude())}`;
+
                         self.phasorValues.push(phasor);
 
                         if (group !== phasor.group) {
@@ -1318,6 +1321,7 @@
                     ko.applyBindings(viewModel, document.getElementsByTagName("body")[0]);
 
                     $("[data-toggle]").tooltip({
+                        html: true,
                         trigger: "manual",
                         boundary: "viewport",
                         placement: "top",
