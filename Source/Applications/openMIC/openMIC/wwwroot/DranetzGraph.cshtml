@@ -977,9 +977,10 @@
                         phasor.magnitudeRegister = phaseValues[magnitude];
                         phasor.title = `${phasor.magnitudeRegister["@@desc"]}`;
                         phasor.angle = ko.pureComputed({ read: () => (phasor.angleRegister.value() - referenceAngleRegister.value()) * Math.PI / 180.0, owner: self });
-                        phasor.magnitude = ko.pureComputed({ read: () => extent * (phasor.magnitudeRegister.value() / scale), owner: self });
-                        phasor.x2 = ko.pureComputed({ read: () => width + phasor.magnitude() * Math.cos(phasor.angle()), owner: self });
-                        phasor.y2 = ko.pureComputed({ read: () => height - phasor.magnitude() * Math.sin(phasor.angle()), owner: self });
+                        phasor.magnitude = ko.pureComputed({ read: () => phasor.magnitudeRegister.value(), owner: self });
+                        phasor.scaledMagnitude = ko.pureComputed({ read: () => extent * phasor.magnitude() / scale, owner: self });
+                        phasor.x2 = ko.pureComputed({ read: () => width + phasor.scaledMagnitude() * Math.cos(phasor.angle()), owner: self });
+                        phasor.y2 = ko.pureComputed({ read: () => height - phasor.scaledMagnitude() * Math.sin(phasor.angle()), owner: self });
                         phasor.visible = ko.observable(true);
 
                         self.phasorValues.push(phasor);
