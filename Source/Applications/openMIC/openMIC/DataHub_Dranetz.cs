@@ -45,9 +45,6 @@ namespace openMIC
     public partial class DataHub
     {
         private static readonly MemoryCache s_dranetzCredentialCache = new MemoryCache($"{nameof(DataHub)}-DranetzCredentialCache");
-        private static string s_shortDateTimeFormat;
-
-        private static string ShortDateTimeFormat => s_shortDateTimeFormat ??= Program.Host.Model.Global.DateTimeFormat.Replace(".fff", "");
 
         private sealed class DranetzCredential : IDisposable
         {
@@ -116,7 +113,7 @@ namespace openMIC
                 $"{m_rootUri.ToUnsecureString()}/cmd={cmdParam}";
         }
 
-        private DranetzCredential GetCredential(int deviceID)
+        private DranetzCredential DrantezGetCredential(int deviceID)
         {
             string key = deviceID.ToString();
 
@@ -162,45 +159,45 @@ namespace openMIC
             }
         }
 
-        private void ClearCredential(int deviceID)
+        private void DranetzClearCredential(int deviceID)
         {
             lock (s_dranetzCredentialCache)
                 s_dranetzCredentialCache.Remove(deviceID.ToString());
         }
 
-        public Task<string> GetInstanceStatus(int deviceID) => 
-            GetCommandJson(deviceID, "getinststatus");
+        public Task<string> DrantezGetInstanceStatus(int deviceID) => 
+            DrantezGetCommandJson(deviceID, "getinststatus");
 
-        public Task<string> GetInstanceConfig(int deviceID) =>
-            GetCommandJson(deviceID, "getinstconfig");
+        public Task<string> DrantezGetInstanceConfig(int deviceID) =>
+            DrantezGetCommandJson(deviceID, "getinstconfig");
 
-        public Task<string> GetAnalyzerConfig(int deviceID, int configID) =>
-            GetCommandJson(deviceID, $"getanalyzerconfig&id={configID}");
+        public Task<string> DrantezGetAnalyzerConfig(int deviceID, int configID) =>
+            DrantezGetCommandJson(deviceID, $"getanalyzerconfig&id={configID}");
 
         // Sets TransactionID cookie
         [AuthorizeHubRole("Administrator, Editor")]
-        public Task BeginTransaction(int deviceID) =>
-            GetCommandJson(deviceID, "begintransaction");
+        public Task DrantezBeginTransaction(int deviceID) =>
+            DrantezGetCommandJson(deviceID, "begintransaction");
 
         [AuthorizeHubRole("Administrator, Editor")]
-        public Task SetInstanceConfig(int deviceID, string value) =>
-            PostCommandJson(deviceID, "setinstconfig", value);
+        public Task DrantezSetInstanceConfig(int deviceID, string value) =>
+            DrantezPostCommandJson(deviceID, "setinstconfig", value);
 
         [AuthorizeHubRole("Administrator, Editor")]
-        public Task SetAnalyzerConfig(int deviceID, int configID, string value) =>
-            PostCommandJson(deviceID, $"setanalyzerconfig&id={configID}", value);
+        public Task DrantezSetAnalyzerConfig(int deviceID, int configID, string value) =>
+            DrantezPostCommandJson(deviceID, $"setanalyzerconfig&id={configID}", value);
 
         // Clears TransactionID cookie
         [AuthorizeHubRole("Administrator, Editor")]
-        public Task EndTransaction(int deviceID) =>
-            GetCommandJson(deviceID, "endtransaction", true);
+        public Task DrantezEndTransaction(int deviceID) =>
+            DrantezGetCommandJson(deviceID, "endtransaction", true);
 
-        public Task<string> GetDeviceTime(int deviceID) =>
-            GetCommandJson(deviceID, "gettime");
+        public Task<string> DrantezGetDeviceTime(int deviceID) =>
+            DrantezGetCommandJson(deviceID, "gettime");
         
-        public async Task<dynamic> GetDeviceTimeWithError(int deviceID)
+        public async Task<dynamic> DrantezGetDeviceTimeWithError(int deviceID)
         {
-            XmlDocument result = await GetCommandXml(deviceID, "gettime");
+            XmlDocument result = await DrantezGetCommandXml(deviceID, "gettime");
             string receivedTime = result.SelectSingleNode("commandresult/characteristics/@current_time")?.Value ?? throw new NullReferenceException("Failed to get device time");
             DateTime parsedTime = DateTime.ParseExact(receivedTime, "yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
             double totalError = (parsedTime - DateTime.UtcNow).TotalSeconds;
@@ -213,32 +210,32 @@ namespace openMIC
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
-        public Task SetDeviceTime(int deviceID, string time) =>
-            GetCommandJson(deviceID, $"puttime&time={DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal):MM/dd/yyyy HH:mm:ss}");
+        public Task DrantezSetDeviceTime(int deviceID, string time) =>
+            DrantezGetCommandJson(deviceID, $"puttime&time={DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal):MM/dd/yyyy HH:mm:ss}");
 
         [AuthorizeHubRole("Administrator, Editor")]
-        public Task RestartDevice(int deviceID, bool hard) =>
-            GetCommandJson(deviceID, $"restart&hard={(hard ? "yes" : "no")}");
+        public Task DrantezRestartDevice(int deviceID, bool hard) =>
+            DrantezGetCommandJson(deviceID, $"restart&hard={(hard ? "yes" : "no")}");
 
-        public Task<string> GetValuesShortList(int deviceID, int configID) =>
-            GetValues(deviceID, configID, 0, 54);
+        public Task<string> DrantezGetValuesShortList(int deviceID, int configID) =>
+            DrantezGetValues(deviceID, configID, 0, 54);
 
-        public Task<string> GetValuesLongList(int deviceID, int configID) =>
-            GetValues(deviceID, configID, 0, 3234);
+        public Task<string> DrantezGetValuesLongList(int deviceID, int configID) =>
+            DrantezGetValues(deviceID, configID, 0, 3234);
 
-        public Task<string> GetValues(int deviceID, int configID, int lowRegister, int highRegister) =>
-            GetCommandJson(deviceID, $"getvalues&id={configID}&registers={lowRegister}-{highRegister}&verbose=1");
+        public Task<string> DrantezGetValues(int deviceID, int configID, int lowRegister, int highRegister) =>
+            DrantezGetCommandJson(deviceID, $"getvalues&id={configID}&registers={lowRegister}-{highRegister}&verbose=1");
 
-        public Task<string> GetWaveforms(int deviceID, int configID) =>
-            GetCommandJson(deviceID, $"getwaveforms&id={configID}&format=0");
+        public Task<string> DrantezGetWaveforms(int deviceID, int configID) =>
+            DrantezGetCommandJson(deviceID, $"getwaveforms&id={configID}&format=0");
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private async Task<XmlDocument> GetCommandXml(int deviceID, string cmdParam, bool clearCookies = false)
+        private async Task<XmlDocument> DrantezGetCommandXml(int deviceID, string cmdParam, bool clearCookies = false)
         {
             if (string.IsNullOrWhiteSpace(cmdParam))
                 throw new ArgumentNullException(nameof(cmdParam));
 
-            DranetzCredential credential = GetCredential(deviceID);
+            DranetzCredential credential = DrantezGetCredential(deviceID);
 
             using (HttpClient client = credential.GetNewClient())
             {
@@ -275,11 +272,11 @@ namespace openMIC
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private async Task<string> GetCommandJson(int deviceID, string cmdParam, bool clearCookies = false) => 
-            JsonConvert.SerializeXmlNode(await GetCommandXml(deviceID, cmdParam, clearCookies));
+        private async Task<string> DrantezGetCommandJson(int deviceID, string cmdParam, bool clearCookies = false) => 
+            JsonConvert.SerializeXmlNode(await DrantezGetCommandXml(deviceID, cmdParam, clearCookies));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private async Task PostCommandXml(int deviceID, string cmdParam, XmlDocument commandResult)
+        private async Task DrantezPostCommandXml(int deviceID, string cmdParam, XmlDocument commandResult)
         {
             if (string.IsNullOrWhiteSpace(cmdParam))
                 throw new ArgumentNullException(nameof(cmdParam));
@@ -287,7 +284,7 @@ namespace openMIC
             if (commandResult is null)
                 throw new ArgumentNullException(nameof(commandResult));
 
-            DranetzCredential credential = GetCredential(deviceID);
+            DranetzCredential credential = DrantezGetCredential(deviceID);
 
             if (commandResult.FirstChild is XmlDeclaration declaration)
             {
@@ -311,14 +308,14 @@ namespace openMIC
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Task PostCommandJson(int deviceID, string cmdParam, string value)
+        private Task DrantezPostCommandJson(int deviceID, string cmdParam, string value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 throw new ArgumentNullException(nameof(value));
 
             XmlDocument commandResult = JsonConvert.DeserializeXmlNode(value) ?? throw new ArgumentException("Failed to deserialize XML Node", nameof(value));
 
-            return PostCommandXml(deviceID, cmdParam, commandResult);
+            return DrantezPostCommandXml(deviceID, cmdParam, commandResult);
         }
     }
 }

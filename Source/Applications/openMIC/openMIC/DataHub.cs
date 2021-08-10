@@ -106,6 +106,7 @@ namespace openMIC
         // Static Fields
         private static string s_systemName;
         private static string s_webRootPath;
+        private static string s_shortDateTimeFormat;
         private static int s_downloaderProtocolID;
         private static int s_modbusProtocolID;
         private static readonly Func<char, bool> s_isInvalidAcronymChar;
@@ -114,7 +115,7 @@ namespace openMIC
         private static bool? s_useRemoteScheduler;
         private static string s_remoteSchedulerUri;
         private static HashSet<string> s_allowedSectionMapPaths;
-        
+
         private static readonly string[] s_allowedSectionMaps = { "", "Dranetz", "PQube" };
 
         private static HashSet<string> AllowedSectionMapPaths => s_allowedSectionMapPaths ??= new HashSet<string>(s_allowedSectionMaps, StringComparer.OrdinalIgnoreCase);
@@ -122,6 +123,8 @@ namespace openMIC
         private static string SystemName => s_systemName ??= Program.Host.Model.Global.SystemName ?? "";
 
         private static string WebRootPath => s_webRootPath ??= Program.Host.Model.Global.WebRootPath ?? FilePath.GetAbsolutePath("wwwroot");
+
+        private static string ShortDateTimeFormat => s_shortDateTimeFormat ??= Program.Host.Model.Global.DateTimeFormat.Replace(".fff", "");
 
         private static bool UseRemoteScheduler => s_useRemoteScheduler ?? (s_useRemoteScheduler = Program.Host.Model.Global.UseRemoteScheduler).GetValueOrDefault();
 
@@ -359,7 +362,7 @@ namespace openMIC
             DataContext.Table<StatusLog>().DeleteRecordWhere("DeviceID = {0}", id);
             DataContext.Table<DownloadedFile>().DeleteRecordWhere("DeviceID = {0}", id);
 
-            ClearCredential(id);
+            DranetzClearCredential(id);
         }
 
         [RecordOperation(typeof(Device), RecordOperation.CreateNewRecord)]
@@ -387,7 +390,7 @@ namespace openMIC
 
             DataContext.Table<Device>().UpdateRecord(device);
 
-            ClearCredential(device.ID);
+            DranetzClearCredential(device.ID);
         }
 
         [AuthorizeHubRole("Administrator, Editor")]
@@ -396,7 +399,7 @@ namespace openMIC
             DataContext.Table<Device>().AddNewOrUpdateRecord(device);
 
             if (device.ID != default)
-                ClearCredential(device.ID);
+                DranetzClearCredential(device.ID);
         }
 
         public Vendor GetDeviceVendor(int? vendorDeviceID)

@@ -1233,7 +1233,7 @@
 
                 if (getActiveTabIndex() === tab.scopeView) {
                     // Scope view tab depends on wave form data, only query this data when this tab is active
-                    return dataHub.getWaveforms(deviceID, configID).done(function (result) {
+                    return dataHub.drantezGetWaveforms(deviceID, configID).done(function (result) {
                         const records = JSON.parse(result);
 
                         self.buildPlot(records.characteristics.list.item);
@@ -1243,7 +1243,7 @@
                 }
                 else {
                     // All other tabs depend on register values
-                    return dataHub.getValuesLongList(deviceID, configID).done(function (result) {
+                    return dataHub.drantezGetValuesLongList(deviceID, configID).done(function (result) {
                         const records = JSON.parse(result);
 
                         if (self.registerMap.length === 0) {

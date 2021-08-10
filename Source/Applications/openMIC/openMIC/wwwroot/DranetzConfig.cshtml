@@ -507,7 +507,7 @@
 
         const analyzerTypeKeys = Object.keys(analyzerTypes);
 
-        // One section defined per analyzer type
+        // One section set defined per analyzer type
         const sections = [
             {
                 // [0] PQ Data Node Analyzer Sections
@@ -593,7 +593,7 @@
             if (wiringConfig.hasOwnProperty(key))
                 return wiringConfig[key];
 
-            return { name: "Undefined", type: "Undefined" };
+            return { index: -1, name: "Undefined", type: "Undefined" };
         }
 
         function setWaveformCaptureSelections(values) {
@@ -929,7 +929,7 @@
                 $("[id=analyzerRow]").css("visibility", "hidden");
                 self.modules.removeAll();
 
-                return dataHub.getInstanceStatus(deviceID).done(function (statusResult) {
+                return dataHub.drantezGetInstanceStatus(deviceID).done(function (statusResult) {
                     const status = JSON.parse(statusResult);
 
                     self.serialNumber(status.commandresult.characteristics["@@serial_number"]);
@@ -940,7 +940,7 @@
                     self.gpsInstalled(parseInt(status.commandresult.gps_status["@@installed"], 10) !== 0);
                     self.gpsSatellites(status.commandresult.gps_status["@@gps_satellites"]);
 
-                    var observableModules = [];
+                    const observableModules = [];
 
                     status.commandresult.inputs.list.item.forEach(function (module) {
                         const observableModule = ko.mapping.fromJS(module);
@@ -984,7 +984,7 @@
 
                     const promises = [];
 
-                    promises.push(dataHub.getInstanceConfig(deviceID).done(function (configResult) {
+                    promises.push(dataHub.drantezGetInstanceConfig(deviceID).done(function (configResult) {
                         const config = JSON.parse(configResult);
 
                         self.versionInfo(config.commandresult.characteristics.psz_version_string["@@value"]);
@@ -995,7 +995,7 @@
                         $("[id=analyzerRow]").css("visibility", "visible");
                     }));
 
-                    promises.push(dataHub.getDeviceTimeWithError(deviceID).done(function (timeResult) {
+                    promises.push(dataHub.drantezGetDeviceTimeWithError(deviceID).done(function (timeResult) {
                         const utcTimeText = `${timeResult.time} UTC`;
                         const localTime = utcTimeText.toDate();
                         const timeZone = localTime.toLocaleTimeString("en-us", { timeZoneName: "short" }).split(' ')[2];
@@ -1038,7 +1038,7 @@
             }
 
             self.loadAnalyzerConfig = function (configID, analyzerType) {
-                return dataHub.getAnalyzerConfig(deviceID, configID).then(function (configResult) {
+                return dataHub.drantezGetAnalyzerConfig(deviceID, configID).then(function (configResult) {
                     return self._loadAnalyzerConfig(configID, analyzerType, JSON.parse(configResult));
                 })
                 .fail(function (error) {
@@ -1058,8 +1058,8 @@
 
                 const configID = self.selectedAnalyzerConfigID();
 
-                return dataHub.beginTransaction(deviceID).then(function () {
-                    return dataHub.setAnalyzerConfig(deviceID, configID, JSON.stringify(self.selectedAnalyzerConfig())).done(function () {
+                return dataHub.drantezBeginTransaction(deviceID).then(function () {
+                    return dataHub.drantezSetAnalyzerConfig(deviceID, configID, JSON.stringify(self.selectedAnalyzerConfig())).done(function () {
                         self.isDirty(false);
                         showInfoMessage("Save complete.", 5000);
                         hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
@@ -1077,7 +1077,7 @@
                     hideWorkingMessage();
                 })
                 .always(function () {
-                    dataHub.endTransaction(deviceID).fail(function (error) {
+                    dataHub.drantezEndTransaction(deviceID).fail(function (error) {
                         showErrorMessage(`End Transaction ${error}`, null, true);
                     });
 
@@ -1468,13 +1468,17 @@
             if (!analyzer)
                 return;
 
+            const analyzerName = encodeURIComponent(analyzer['@@name']());
+            const analyzerType = encodeURIComponent(analyzer.analyzerType());
+            const analyzerTypeName = encodeURIComponent(analyzer.analyzerTypeName());
+
             // Delta wiring configurations do not include neutral values, defaulting to line-to-line voltage angle in this case
-            const referenceAngle = viewModel.selectedWiringConfig().type.toUpperCase() === "DELTA" ?
+            const referenceAngle = encodeURIComponent(viewModel.selectedWiringConfig().type.toUpperCase() === "DELTA" ?
                 "VABA" /* Voltage A to B Angle */ :
-                "VANA" /* Voltage A to Neutral Angle */;
+                "VANA" /* Voltage A to Neutral Angle */);
 
             $("#graphDataFrame").attr({
-                "src": `DranetzGraph.cshtml?DeviceID=@deviceID&ConfigID=${analyzer.configID()}&AnalyzerName=${analyzer['@@name']()}&AnalyzerType=${analyzer.analyzerType()}&AnalyzerTypeName=${analyzer.analyzerTypeName()}&vNom=${viewModel.vNom}&iNom=${viewModel.iNom}&ReferenceAngle=${referenceAngle}`,
+                "src": `DranetzGraph.cshtml?DeviceID=@deviceID&ConfigID=${analyzer.configID()}&AnalyzerName=${analyzerName}&AnalyzerType=${analyzerType}&AnalyzerTypeName=${analyzerTypeName}&vNom=${viewModel.vNom}&iNom=${viewModel.iNom}&ReferenceAngle=${referenceAngle}`,
                 "height": `${$("#contentWell").outerHeight(true)}px`,
                 "width": "100%"
             });
@@ -1596,7 +1600,7 @@
                     showInfoMessage("Attempting to restart device...", -1, true);
                     showWorkingMessage("Restarting");
 
-                    dataHub.restartDevice(deviceID, hardRestart).done(function () {
+                    dataHub.drantezRestartDevice(deviceID, hardRestart).done(function () {
                         showInfoMessage("Device restart request sent successfully.", null, true);
                         hideWorkingMessage();
                     })
