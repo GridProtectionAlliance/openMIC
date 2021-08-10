@@ -1,4 +1,4 @@
-<SECTION NAME="crossTrig" ALIAS="Cross-Triggering" REFRESH="1">
+<SECTION NAME="crossTrig" ALIAS="Cross-Triggering">
 	<PROPDEF ALIAS="Communication Configuration (common to all messages)" TYPE="3"/>
 	<PROPDEF NAME="crossTrigGroupID" ALIAS="Broadcast group ID" TYPE="4" RO="0" PLACEHOLDER="0"/>
 	<PROPDEF NAME="crossTrigBroadcastAddr" ALIAS="Broadcast address (empty for local)" TYPE="4" RO="0" PLACEHOLDER="0.0.0.0"/>

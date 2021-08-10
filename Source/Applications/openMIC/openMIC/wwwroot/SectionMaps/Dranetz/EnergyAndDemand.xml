@@ -1,4 +1,4 @@
-<SECTION NAME="energy" ALIAS="Energy and Demand" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
+<SECTION NAME="energy" ALIAS="Energy and Demand" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
   <PROPDEF ORDER="0" NAME="dmdSubInterval" ALIAS="Demand sub-interval" TYPE="8" DEFAULT="0" RO="0">
     <PARAM TYPE="1">
       <LIST>

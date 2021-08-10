@@ -1,4 +1,4 @@
-<SECTION NAME="transients" ALIAS="Transients" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
+<SECTION NAME="transients" ALIAS="Transients" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
   <BANK NAME="bankTransientLimits" ALIAS="Transient Limits (select the channel(s) to change)" ROWS="8">
     <LIST>
       <ITEM NAME="ci1" ALIAS="Instantaneous Voltage {0}" VALUE="0" ANALYZER="1" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>

@@ -1,4 +1,4 @@
-﻿<SECTION NAME="input" ALIAS="Input Configuration" REFRESH="1">
+﻿<SECTION NAME="input" ALIAS="Input Configuration">
   <BANK NAME="bankChannel" ALIAS="Channels (select the channel(s) to change)" ROWS="8">
     <LIST>
       <ITEM NAME="D1" ALIAS="D1"/>

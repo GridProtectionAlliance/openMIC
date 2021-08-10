@@ -1,4 +1,4 @@
-<SECTION NAME="input" ALIAS="Input Configuration" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
+<SECTION NAME="input" ALIAS="Input Configuration" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
   <BANK NAME="bankInput" ALIAS="Input Configuration (select the input(s) to change)">
     <LIST>
       <ITEM NAME="A"/>

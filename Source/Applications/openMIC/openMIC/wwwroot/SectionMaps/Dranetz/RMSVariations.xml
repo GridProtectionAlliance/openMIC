@@ -1,4 +1,4 @@
-<SECTION NAME="rms" ALIAS="Rms Variations" REFRESH="1" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
+<SECTION NAME="rms" ALIAS="Rms Variations" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
   <PROPDEF ORDER="0" NAME="Sliding Voltage Reference for High and Low Limits" TYPE="3" ANALYZER="1"/>
   <PROPDEF ORDER="1" NAME="rmsUSREnable" ALIAS="Enable threshold adjustment" TYPE="0" RO="0" ANALYZER="1" MAP=".usr.bEnabled['@value']"/>
   <PROPDEF ORDER="2" NAME="rmsUSRMax" ALIAS="Sliding reference maximum value ({0})" TYPE="4" RO="0" ANALYZER="1" MAP=".usr.fHighLimit['@value']" READ="normalizeThresholds() ? (parseFloat({0}) / #val('inputSection_nominalV') * 100.0).toFixed(1) : {0}" WRITE="normalizeThresholds() ? parseFloat({0}) / 100.0 * #val('inputSection_nominalV') : {0}" ALIAS0="normalizeThresholds() ? '%' : 'Volts'"/>
