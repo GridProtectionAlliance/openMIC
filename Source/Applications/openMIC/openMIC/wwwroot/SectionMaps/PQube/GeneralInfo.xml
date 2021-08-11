@@ -1,5 +1,15 @@
 ﻿<SECTION NAME="generalInfo" ALIAS="General Info" MAPROOT="PQube_Information">
   <PROPDEF NAME="PQube Information" TYPE="3"/>
+  <PROPDEF NAME="deviceType" ALIAS="Device Type" TYPE="8" DEFAULT="0" MAP="deviceTypeIndex" PREREAD="deviceTypeIndex = viewModel.deviceTypeIndex()" POSTWRITE="updateDeviceType({mapExpr})">
+    <PARAM TYPE="1">
+      <LIST>
+        <ITEM NAME="PQube 3" VALUE="0"/>
+        <ITEM NAME="PQube 3e" VALUE="1"/>
+        <ITEM NAME="PQube 3v" VALUE="2"/>
+        <ITEM NAME="PQube 3r" VALUE="3"/>
+      </LIST>
+    </PARAM>
+  </PROPDEF>
   <PROPDEF NAME="pqubeID" ALIAS="PQube ID" TYPE="4" DEFAULT="(PQube_ID not set)" MAP=".PQube_ID" READ="removeQuotes({0})" WRITE="addQuotes({0})"/>
   <PROPDEF NAME="locationName" ALIAS="Location Name" TYPE="4" DEFAULT="(location not set)" MAP=".Location_Name" READ="removeQuotes({0})" WRITE="addQuotes({0})"/>
   <PROPDEF NAME="note1" ALIAS="Note 1" TYPE="4" DEFAULT="(note not set)" MAP=".Note_1" READ="removeQuotes({0})" WRITE="addQuotes({0})"/>

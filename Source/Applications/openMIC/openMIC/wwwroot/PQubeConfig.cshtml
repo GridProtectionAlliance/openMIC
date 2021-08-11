@@ -463,8 +463,10 @@
         ];
 
         function getDeviceType(value) {
-            if (typeof value === "string") {
-                const key = `PQube${value}`;
+            const index = parseInt(value, 10);
+
+            if (isNaN(index)) {
+                const key = value;
 
                 if (deviceTypes.hasOwnProperty(key))
                     return deviceTypes[key];
@@ -472,7 +474,7 @@
                 return { index: -1, name: "Undefined", type: "Undefined" };
             }
 
-            return deviceTypeArray[parseInt(value, 10)];
+            return deviceTypeArray[index];
         }
 
         // One section set defined per device type
@@ -586,6 +588,16 @@
             Object.keys(sections[deviceTypes.PQube3r.index])
         ];
 
+        let deviceTypeIndex = deviceTypes.PQube3.index;
+
+        function updateDeviceType(value) {
+            const deviceType = getDeviceType(value);
+
+            viewModel.deviceTypeIndex(deviceType.index);
+            viewModel.reloadDeviceConfig();
+            showInfoMessage(`Selected "${viewModel.deviceTypeName()}" configuration...`);
+        }
+
         function configMatches() {
             const args = arguments.length === 1 && Array.isArray(arguments[0]) ?
                 arguments[0] :
@@ -645,7 +657,7 @@
             const self = this;
 
             // Observable fields
-            self.versionInfo = ko.observable("Version 3.9");
+            self.versionInfo = ko.observable("3.x");
             self.locationName = ko.observable("querying...");
             self.gpsInstalled = ko.observable(false);
             self.gpsSatellites = ko.observable(0);
@@ -667,7 +679,7 @@
             self._isDirty = ko.observable(false);
             self._isSaving = ko.observable(false);
             self._deviceConfigIni = ko.observable("");
-            self._deviceTypeIndex = ko.observable(deviceTypes.PQube3.index);
+            self._deviceTypeIndex = ko.observable(deviceTypeIndex);
 
             // Properties
             self.dataHubIsConnected = ko.pureComputed({
@@ -782,21 +794,31 @@
             self.deviceTypeIndex = ko.pureComputed({
                 read: self._deviceTypeIndex,
                 write: function (value) {
+                    if (value === self._deviceTypeIndex())
+                        return;
+
                     self._deviceTypeIndex(value);
+                    deviceTypeIndex = self._deviceTypeIndex();
+
+                    const deviceConfig = self.deviceConfig();
+
+                    if (deviceConfig && deviceConfig.PQube_Information) {
+                        deviceConfig["@@c3"] = `; ------ ${self.deviceTypeName()} Version ${self.versionInfo()}`;
+                    }
                 },
                 owner: self
             });
 
             self.deviceType = ko.pureComputed({
                 read: function () {
-                    return getDeviceType(self._deviceTypeIndex()).type;
+                    return getDeviceType(self.deviceTypeIndex()).type;
                 },
                 owner: self
             });
 
             self.deviceTypeName = ko.pureComputed({
                 read: function () {
-                    return getDeviceType(self._deviceTypeIndex()).name;
+                    return getDeviceType(self.deviceTypeIndex()).name;
                 },
                 owner: self
             });
@@ -956,8 +978,10 @@
 
                 tabList.push(`</ul>`);
 
-                if (!firstCall)
+                if (!firstCall) {
+                    $("#tabs").scrollTabs("destroy");
                     $("#tabs").tabs("destroy");
+                }
 
                 $("#tabs").html(tabList.join("\r\n") + tabSections.join("\r\n"));
 
@@ -1036,7 +1060,11 @@
                     return;
 
                 self.reloadTabSections(sectionKey);
-                showInfoMessage(`Reloaded "${sectionKey}" tab section...`);
+
+                if (sectionKey)
+                    showInfoMessage(`Reloaded "${sectionKey}" tab...`);
+                else
+                    showInfoMessage(`Reloaded all tab sections...`);
             };
 
             self.reloadTabSections = function () {
@@ -1054,6 +1082,11 @@
                 return $(promises).whenAll().then(self.refreshTabSections);
             };
 
+            self.reloadDeviceConfig = function () {
+                viewModel.createSectionTabs(); // Reload all tabs
+                self._loadDeviceConfig(self.deviceConfig());
+            }
+
             self._loadDeviceConfig = function (deviceConfig) {
                 self.isDirty(false);
                 self.deviceConfig(deviceConfig); // PQube INI config serialized as JSON
@@ -1067,12 +1100,12 @@
                 const parts = line3Comment.split(" ");
 
                 if (parts.length === 4 && parts[0] === "PQube" && parts[2] === "Version") {
-                    self.deviceTypeIndex(getDeviceType(parts[1]).index);
+                    self._deviceTypeIndex(getDeviceType(`PQube${parts[1]}`).index);
                     self.versionInfo(parts[3]);
                 }
                 else {
-                    self.deviceTypeIndex(deviceTypeKeys[deviceTypes.PQube3.index]);
-                    self.versionInfo("3.9?");
+                    self._deviceTypeIndex(deviceTypeKeys[deviceTypes.PQube3.index]);
+                    self.versionInfo("3.x");
                 }
 
                 if (deviceConfig.Network_SetupIP_Address_Method === "Use_DHCP")
@@ -1330,7 +1363,7 @@
             $(window).on("hubConnected", function() {
                 viewModel.dataHubIsConnected(true);
 
-                if (!deviceFound || viewModel.deviceConfig().commandresult)
+                if (!deviceFound || viewModel.deviceConfig().PQube_Information)
                     return;
 
                 $("#editDeviceName").html(`Editing&nbsp;${deviceAcronym}`);
