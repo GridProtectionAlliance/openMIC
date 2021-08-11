@@ -90,7 +90,7 @@
   <PROPDEF NAME="nominalF" ALIAS="Nominal frequency (Hz)" TYPE="2" RO="0" MAP=".nominal_freq['@value']"/>
   <PROPDEF NAME="normalize" ALIAS="Normalize thresholds" TYPE="0" DEFAULT="1" RO="0" MAP="normalizeThresholdState" POSTWRITE="normalizeThresholdStateUpdated()" UPDATESCONFIG="0"/>
   <PROPDEF NAME="Frequency Tracking" TYPE="3"/>
-  <PROPDEF NAME="freqTrackMode" ALIAS="Tracking mode" TYPE="8" DEFAULT="0" RO="0" MAP=".pll_sync_style['@value']">
+  <PROPDEF NAME="freqTrackMode" ALIAS="Tracking mode" TYPE="8" DEFAULT="2" RO="0" MAP=".pll_sync_style['@value']">
     <PARAM TYPE="1">
       <LIST>
         <ITEM NAME="Standard (utility power line)" VALUE="2"/>
