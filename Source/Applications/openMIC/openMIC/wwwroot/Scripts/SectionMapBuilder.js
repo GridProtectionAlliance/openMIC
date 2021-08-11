@@ -286,9 +286,15 @@ function SectionMapBuilder(instanceName) {
 
         let index = 0;
         let totalOptions = 0;
+        let items = [];
 
-        for (let i = 0; i < list.ITEM.length; i++) {
-            const value = list.ITEM[i];
+        if (Array.isArray(list.ITEM))
+            items = list.ITEM;
+        else
+            items.push(list.ITEM);
+
+        for (let i = 0; i < items.length; i++) {
+            const value = items[i];
             const optVal = value["@VALUE"] || index;
             const keyVal = value["@KEYVALUE"] ? ` key-value="${value["@KEYVALUE"]}"` : "";
             const enabled = self.elementIsEnabled(value);
