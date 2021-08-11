@@ -81,6 +81,7 @@
 }
 @section StyleSheets {
     <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
+    <link href="Content/jquery.ui.scrolltabs.css" rel="stylesheet">
     <link href="Content/SectionMapBuilder.css" rel="stylesheet">
     <style>
         html, body {
@@ -469,6 +470,8 @@
     <script src="@Resources.Root/Shared/Scripts/knockout.validation.js"></script>
     <script src="@Resources.Root/Shared/Scripts/knockout.reactor.js"></script>
     <script src="@Resources.Root/Shared/Scripts/gsf.web.knockout.js"></script>
+    <script src="Scripts/jquery.mousewheel.js"></script>
+    <script src="Scripts/jquery.ui.scrolltabs.js"></script>
     <script src="Scripts/SectionMapBuilder.js"></script>
 
     <script>
@@ -1223,7 +1226,21 @@
                     }
                 });
 
-                $("[tab-section-link]").tooltip({ title: "Shift+click to reload tab", placement: "top", delay: 1000 });
+                $("#tabs").scrollTabs({
+                    scrollOptions: {
+                        showFirstLastArrows: true,
+                        showNavWhenNeeded: true,
+                        selectTabAfterScroll: true
+                    }
+                });
+
+                $("[tab-section-link]").tooltip({
+                    title: "Shift+click to reload tab",
+                    boundary: "viewport",
+                    container: "body",
+                    placement: "top",
+                    delay: { "show": 1800, "hide": 100 }
+                });
             };
 
             self.loadTabSection = function (sectionKey) {

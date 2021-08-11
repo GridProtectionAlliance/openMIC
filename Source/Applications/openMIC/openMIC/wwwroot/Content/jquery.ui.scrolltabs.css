@@ -1,0 +1,139 @@
+﻿.ui-scroll-tabs-header ul.ui-tabs-nav:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Scroll tab default css*/
+.ui-scroll-tabs-view {
+    -ms-touch-action: inherit;
+    touch-action: inherit;
+    z-index: 1;
+    overflow: scroll;
+    overflow-y: hidden;
+}
+
+.ui-scroll-tabs-view::-webkit-scrollbar {
+    display: none;
+}
+
+.ui-scroll-tabs-view .ui-widget-header {
+    border: none;
+    background: transparent;
+}
+
+.ui-scroll-tabs-header {
+    position: relative;
+    overflow: hidden;
+    /* Show when required - overlays button on top */
+    /* Show always - reserves the space and shows the button in disable state */
+}
+
+.ui-scroll-tabs-header .stNavMain {
+    position: absolute;
+    top: 0;
+    z-index: 2;
+    height: 100%;
+    transition: left .2s, right .2s, opacity .4s;
+    transition-timing-function: swing;
+}
+
+.ui-scroll-tabs-header .stNavMain button,
+.ui-scroll-tabs-header .stNavMain .navbutton {
+    height: 100%;
+}
+
+.ui-scroll-tabs-header .stNavMain .navbutton {
+    display: inline-block;
+    padding: 8px;
+    margin: 3px 0 3px 0;
+    height: 30px;
+}
+
+.ui-scroll-tabs-header .stNavMainLeft {
+    left: -250px;
+}
+
+.ui-scroll-tabs-header .stNavMainRight {
+    right: -250px;
+}
+
+.ui-scroll-tabs-header.show-controls-when-required .stNavMain {
+    opacity: 0;
+}
+
+.ui-scroll-tabs-header.show-controls-when-required .stNavMainLeft.stNavVisible {
+    left: 0;
+    opacity: 1;
+}
+
+.ui-scroll-tabs-header.show-controls-when-required .stNavMainRight.stNavVisible {
+    right: 0;
+    opacity: 1;
+}
+
+.ui-scroll-tabs-header.show-controls-always.st-activate-controls {
+    padding: 0 42px;
+}
+
+.ui-scroll-tabs-header.show-controls-always.st-activate-controls .stNavMainLeft {
+    left: 0;
+}
+
+.ui-scroll-tabs-header.show-controls-always.st-activate-controls .stNavMainRight {
+    right: 0;
+}
+
+.ui-scroll-tabs-header ul.ui-tabs-nav {
+    position: relative;
+    white-space: nowrap;
+}
+
+.ui-scroll-tabs-header ul.ui-tabs-nav li {
+    display: inline-block;
+    float: none;
+    padding: 0;
+    margin: 0 0 -0.25em;
+}
+
+.ui-scroll-tabs-header ul.ui-tabs-nav li.ui-tabs-selected {
+    margin-bottom: -0.25em;
+}
+
+.ui-scroll-tabs-header ul.ui-tabs-nav li.stHasCloseBtn a {
+    padding-right: 0.5em;
+}
+
+.ui-scroll-tabs-header ul.ui-tabs-nav li.stHasCloseBtn a:focus {
+    outline: none;
+}
+
+.ui-scroll-tabs-header ul.ui-tabs-nav li span.stCloseBtn {
+    float: left;
+    padding: 4px 2px;
+    border: none;
+    cursor: pointer;
+}
+/*End of scrolltabs css*/
+
+/* Following are custom settings for openMIC environment: */
+.btn-nav {
+    color: white;
+    background: #007fff;
+    outline: 1px inset #3333333b;
+}
+
+.btn-nav:focus, .btn-nav:active, .btn-nav:active:focus {
+    color: white;
+    outline: 1px inset #3333333b;
+    outline-offset: 0;
+}
+
+.btn-nav:hover, .btn-nav:focus:hover, .btn-nav:active:hover, .btn-nav:active:focus:hover {
+    color: #ffeb3b;
+}
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+    margin-bottom: -4px;
+    padding-bottom: 0;
+}
