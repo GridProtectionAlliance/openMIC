@@ -1,2 +1,17 @@
-﻿<SECTION NAME="reportGeneration" ALIAS="Report Generation">
+﻿<SECTION NAME="reportGeneration" ALIAS="Report Generation" MAPROOT="Report_Generation">
+	<PROPDEF ALIAS="Report Generation" TYPE="HEADER"/>
+	<PROPDEF NAME="enableReportGen" ALIAS="Enable Report Generator" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Report_Generator" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="reportCoveragePctReq" ALIAS="Report Coverage Percentage Requirement:" TYPE="NUMERIC" DEFAULT="80" MAP=".Report_Coverage_Percentage_Requirement">
+		<PARAM MIN="0" MAX="100"/>
+	</PROPDEF>
+		<PROPDEF NAME="en50160Type" ALIAS="EN50160 Report Type:" TYPE="8" DEFAULT="EN50160_Low_Voltage_Sync" MAP=".Report_Template">
+			<PARAM TYPE="4">
+				<LIST>
+					<ITEM NAME="Low Voltage, interconnected" VALUE="EN50160_Low_Voltage_Sync"/>
+					<ITEM NAME="Low Voltage, non interconnected" VALUE="EN50160_Low_Voltage_NoSync"/>
+					<ITEM NAME="Med Voltage, interconnected" VALUE="EN50160_Med_Voltage_Sync"/>
+					<ITEM NAME="Med Voltage, non interconnected" VALUE="EN50160_Med_Voltage_NoSync"/>
+				</LIST>
+			</PARAM>
+		</PROPDEF>
 </SECTION>
