@@ -10,8 +10,8 @@
       <ITEM NAME="D7" ALIAS="D7"/>
       <ITEM NAME="D8" ALIAS="D8"/>
     </LIST>
-    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="4" RO="0"/>
-    <PROPDEF NAME="function" ALIAS="Function" TYPE="8" DEFAULT="0" RO="0">
+    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="4"/>
+    <PROPDEF NAME="function" ALIAS="Function" TYPE="8" DEFAULT="0">
       <PARAM TYPE="1">
         <LIST>
           <ITEM NAME="Unused"/>
@@ -25,7 +25,7 @@
         </LIST>
       </PARAM>
     </PROPDEF>
-    <PROPDEF NAME="input" ALIAS="Input" TYPE="8" DEFAULT="0" RO="0">
+    <PROPDEF NAME="input" ALIAS="Input" TYPE="8" DEFAULT="0">
       <PARAM TYPE="1">
         <LIST>
           <ITEM NAME="I1"/>
@@ -39,7 +39,7 @@
         </LIST>
       </PARAM>
     </PROPDEF>
-    <PROPDEF NAME="activeState" ALIAS="Active state" TYPE="8" DEFAULT="0" RO="0">
+    <PROPDEF NAME="activeState" ALIAS="Active state" TYPE="8" DEFAULT="0">
       <PARAM TYPE="1">
         <LIST>
           <ITEM NAME="Low to high transitions"/>
@@ -48,10 +48,10 @@
         </LIST>
       </PARAM>
     </PROPDEF>
-    <PROPDEF NAME="inputDebounceTime" ALIAS="Debounce time (microseconds)" TYPE="1" RO="0"/>
+    <PROPDEF NAME="inputDebounceTime" ALIAS="Debounce time (microseconds)" TYPE="1"/>
   </BANK>
-  <PROPDEF NAME="Journaling Setup (for all appropriate channels)" TYPE="3" RO="0"/>
-  <PROPDEF NAME="journalPeriod" ALIAS="Journaling interval" TYPE="8" DEFAULT="0" RO="0">
+  <PROPDEF NAME="Journaling Setup (for all appropriate channels)" TYPE="3"/>
+  <PROPDEF NAME="journalPeriod" ALIAS="Journaling interval" TYPE="8" DEFAULT="0">
     <PARAM TYPE="1">
       <LIST>
         <ITEM NAME="Off"/>

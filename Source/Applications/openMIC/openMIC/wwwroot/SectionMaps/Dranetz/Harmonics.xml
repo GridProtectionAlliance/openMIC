@@ -1,5 +1,5 @@
 <SECTION NAME="harmonics" ALIAS="Harmonics" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
-  <PROPDEF ORDER="0" NAME="journalPeriod" ALIAS="Journaling interval" TYPE="8" DEFAULT="0" RO="0">
+  <PROPDEF ORDER="0" NAME="journalPeriod" ALIAS="Journaling interval" TYPE="8" DEFAULT="0">
     <PARAM TYPE="1">
       <LIST>
         <ITEM NAME="Off"/>
@@ -15,7 +15,7 @@
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF ORDER="2" NAME="maxDemandCurrent" ALIAS="Maximum demand load current" TYPE="2" RO="0"/>
+  <PROPDEF ORDER="2" NAME="maxDemandCurrent" ALIAS="Maximum demand load current" TYPE="2"/>
   <BANK ORDER="3" NAME="bankJournal" ALIAS="Journal Channels (select the channel(s) to change)" ROWS="8">
     <LIST>
       <ITEM NAME="j160" ALIAS="Positive Sequence Voltage Total" ANALYZER="1" CONFIG="Wye,Delta"/>
@@ -152,13 +152,13 @@
       <ITEM NAME="j574" ALIAS="Rms Overdeviation Voltage BC" ANALYZER="1" CONFIG="Wye,Delta"/>
       <ITEM NAME="j575" ALIAS="Rms Overdeviation Voltage CA" ANALYZER="1" CONFIG="Wye,Delta"/>
     </LIST>
-    <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0" RO="0"/>
-    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
-    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4" RO="0"/>
+    <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0"/>
+    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0"/>
+    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4"/>
+    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4"/>
+    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4"/>
+    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4"/>
+    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4"/>
   </BANK>
   <BANK NAME="bankHarmonicTrending" ALIAS="Individual Harmonic Trending (select the channel(s) to change)" ROWS="8">
     <LIST>
@@ -185,7 +185,7 @@
       <ITEM NAME="he610" ALIAS="Interharmonic Current {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
       <ITEM NAME="he612" ALIAS="Interharmonic Current {0}" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
     </LIST>
-    <PROPDEF NAME="harmTrendingEnable" ALIAS="Harmonics to trend" TYPE="4" RO="0"/>
+    <PROPDEF NAME="harmTrendingEnable" ALIAS="Harmonics to trend" TYPE="4"/>
   </BANK>
   <BANK NAME="bankHarmonicLimits" ALIAS="Individual Harmonic Limits (select the channel(s) to change)" ROWS="8">
     <LIST>
@@ -245,12 +245,12 @@
       <ITEM NAME="hl631_3" ALIAS="Current Spectra {0} #4" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
       <ITEM NAME="hl631_4" ALIAS="Current Spectra {0} #5" ANALYZER="2" CONFIG="!Delta" ALIAS0="getChannelName(3)"/>
     </LIST>
-    <PROPDEF NAME="harmonicFreq" ALIAS="Frequency (5Hz bin)" TYPE="1" RO="0"/>
-    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
-    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4" RO="0"/>
+    <PROPDEF NAME="harmonicFreq" ALIAS="Frequency (5Hz bin)" TYPE="1"/>
+    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0"/>
+    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4"/>
+    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4"/>
+    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4"/>
+    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4"/>
+    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4"/>
   </BANK>
 </SECTION>

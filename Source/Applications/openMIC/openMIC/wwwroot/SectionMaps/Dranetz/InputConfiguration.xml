@@ -6,11 +6,11 @@
       <ITEM NAME="C"/>
       <ITEM NAME="D"/>
     </LIST>
-    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="4" RO="0" CONFIG="Generic" MAP="genericChannelNames[#val('{0}')]" WRITE="configMatches('Generic') ? {0} : genericChannelNames[#val('{bankTarget}')]" POSTWRITE="genericChannelNameUpdated()" UPDATESCONFIG="0"/>
-    <PROPDEF NAME="inputVTPrimary" ALIAS="Voltage transducer primary" TYPE="1" RO="0" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[#val('{0}') * 2].psratio.list.item[0]['@value']"/>
-    <PROPDEF NAME="inputVTSecondary" ALIAS="Voltage transducer secondary" TYPE="1" RO="0" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[#val('{0}') * 2].psratio.list.item[1]['@value']"/>
-    <PROPDEF NAME="inputVInverted" ALIAS="Voltage input inverted" TYPE="0" RO="0" ANALYZER="1" MAP=".invert_inputs.list.item[#val('{0}') * 2]['@value']"/>
-    <PROPDEF NAME="inputVOrder" ALIAS="Voltage input order" TYPE="8" DEFAULT="0" RO="0" ANALYZER="1" MAP=".order_of_inputs.list.item[#val('{0}') * 2]['@value']">
+    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="4" CONFIG="Generic" MAP="genericChannelNames[#val('{0}')]" WRITE="configMatches('Generic') ? {0} : genericChannelNames[#val('{bankTarget}')]" POSTWRITE="genericChannelNameUpdated()" UPDATESCONFIG="0"/>
+    <PROPDEF NAME="inputVTPrimary" ALIAS="Voltage transducer primary" TYPE="1" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[#val('{0}') * 2].psratio.list.item[0]['@value']"/>
+    <PROPDEF NAME="inputVTSecondary" ALIAS="Voltage transducer secondary" TYPE="1" ANALYZER="1" MAP=".pri_and_sec_trans.list.item[#val('{0}') * 2].psratio.list.item[1]['@value']"/>
+    <PROPDEF NAME="inputVInverted" ALIAS="Voltage input inverted" TYPE="0" ANALYZER="1" MAP=".invert_inputs.list.item[#val('{0}') * 2]['@value']"/>
+    <PROPDEF NAME="inputVOrder" ALIAS="Voltage input order" TYPE="8" DEFAULT="0" ANALYZER="1" MAP=".order_of_inputs.list.item[#val('{0}') * 2]['@value']">
       <PARAM TYPE="1">
         <LIST>
           <ITEM NAME="V1" VALUE="0"/>
@@ -20,10 +20,10 @@
         </LIST>
       </PARAM>
     </PROPDEF>
-    <PROPDEF NAME="inputITPrimary" ALIAS="Current transducer primary" TYPE="1" RO="0" ANALYZER="2" MAP=".pri_and_sec_trans.list.item[#val('{0}') * 2 + 1].psratio.list.item[0]['@value']"/>
-    <PROPDEF NAME="inputITSecondary" ALIAS="Current transducer secondary" TYPE="1" RO="0" ANALYZER="2" MAP=".pri_and_sec_trans.list.item[#val('{0}') * 2 + 1].psratio.list.item[1]['@value']"/>
-    <PROPDEF NAME="inputIInverted" ALIAS="Current input inverted" TYPE="0" RO="0" ANALYZER="2" MAP=".invert_inputs.list.item[#val('{0}') * 2 + 1]['@value']"/>
-    <PROPDEF NAME="inputIOrder" ALIAS="Current input order" TYPE="8" DEFAULT="0" RO="0" ANALYZER="2" MAP=".order_of_inputs.list.item[#val('{0}') * 2 + 1]['@value']">
+    <PROPDEF NAME="inputITPrimary" ALIAS="Current transducer primary" TYPE="1" ANALYZER="2" MAP=".pri_and_sec_trans.list.item[#val('{0}') * 2 + 1].psratio.list.item[0]['@value']"/>
+    <PROPDEF NAME="inputITSecondary" ALIAS="Current transducer secondary" TYPE="1" ANALYZER="2" MAP=".pri_and_sec_trans.list.item[#val('{0}') * 2 + 1].psratio.list.item[1]['@value']"/>
+    <PROPDEF NAME="inputIInverted" ALIAS="Current input inverted" TYPE="0" ANALYZER="2" MAP=".invert_inputs.list.item[#val('{0}') * 2 + 1]['@value']"/>
+    <PROPDEF NAME="inputIOrder" ALIAS="Current input order" TYPE="8" DEFAULT="0" ANALYZER="2" MAP=".order_of_inputs.list.item[#val('{0}') * 2 + 1]['@value']">
       <PARAM TYPE="1">
         <LIST>
           <ITEM NAME="I1" VALUE="1"/>
@@ -33,7 +33,7 @@
         </LIST>
       </PARAM>
     </PROPDEF>
-    <PROPDEF NAME="inputIProbeType" ALIAS="Current probe type" TYPE="8" DEFAULT="0" RO="0" ANALYZER="2" MAP=".probe_config.probe_type.list.item[#val('{0}')]['@value']" POSTWRITE="{mapRoot}.probe_config.scale.list.item[#val('{bankTarget}')]['@value'] = getKeyValue('{name}').toFixed(6)">
+    <PROPDEF NAME="inputIProbeType" ALIAS="Current probe type" TYPE="8" DEFAULT="0" ANALYZER="2" MAP=".probe_config.probe_type.list.item[#val('{0}')]['@value']" POSTWRITE="{mapRoot}.probe_config.scale.list.item[#val('{bankTarget}')]['@value'] = getKeyValue('{name}').toFixed(6)">
       <PARAM TYPE="1">
         <LIST>
           <ITEM NAME="Other" KEYVALUE="1.0"/>
@@ -70,7 +70,7 @@
       </PARAM>
     </PROPDEF>
   </BANK>
-  <PROPDEF NAME="wiringConfig" ALIAS="Circuit type" TYPE="8" DEFAULT="0" RO="0" MAP=".config['@value']" POSTWRITE="updateWiringConfig({mapExpr})">
+  <PROPDEF NAME="wiringConfig" ALIAS="Circuit type" TYPE="8" DEFAULT="0" MAP=".config['@value']" POSTWRITE="updateWiringConfig({mapExpr})">
     <PARAM TYPE="1">
       <LIST>
         <ITEM NAME="Single phase" VALUE="0" KEYVALUE="Single"/>
@@ -85,12 +85,12 @@
     </PARAM>
   </PROPDEF>
   <PROPDEF NAME="Nominal Values" TYPE="3"/>
-  <PROPDEF NAME="nominalV" ALIAS="Nominal voltage (Volts)" TYPE="2" RO="0" MAP=".nominal_volts['@value']"/>
-  <PROPDEF NAME="nomnalI" ALIAS="Nominal current (Amps)" TYPE="2" RO="0" MAP=".nominal_amps['@value']"/>
-  <PROPDEF NAME="nominalF" ALIAS="Nominal frequency (Hz)" TYPE="2" RO="0" MAP=".nominal_freq['@value']"/>
-  <PROPDEF NAME="normalize" ALIAS="Normalize thresholds" TYPE="0" DEFAULT="1" RO="0" MAP="normalizeThresholdState" POSTWRITE="normalizeThresholdStateUpdated()" UPDATESCONFIG="0"/>
+  <PROPDEF NAME="nominalV" ALIAS="Nominal voltage (Volts)" TYPE="2" MAP=".nominal_volts['@value']"/>
+  <PROPDEF NAME="nomnalI" ALIAS="Nominal current (Amps)" TYPE="2" MAP=".nominal_amps['@value']"/>
+  <PROPDEF NAME="nominalF" ALIAS="Nominal frequency (Hz)" TYPE="2" MAP=".nominal_freq['@value']"/>
+  <PROPDEF NAME="normalize" ALIAS="Normalize thresholds" TYPE="0" DEFAULT="1" MAP="normalizeThresholdState" POSTWRITE="normalizeThresholdStateUpdated()" UPDATESCONFIG="0"/>
   <PROPDEF NAME="Frequency Tracking" TYPE="3"/>
-  <PROPDEF NAME="freqTrackMode" ALIAS="Tracking mode" TYPE="8" DEFAULT="2" RO="0" MAP=".pll_sync_style['@value']">
+  <PROPDEF NAME="freqTrackMode" ALIAS="Tracking mode" TYPE="8" DEFAULT="2" MAP=".pll_sync_style['@value']">
     <PARAM TYPE="1">
       <LIST>
         <ITEM NAME="Standard (utility power line)" VALUE="2"/>
@@ -99,6 +99,6 @@
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF NAME="freqMin" ALIAS="Minimum frequency" TYPE="2" RO="0" MAP=".min_and_max_track_freq.list.item[0]['@value']"/>
-  <PROPDEF NAME="freqMax" ALIAS="Maximum frequency" TYPE="2" RO="0" MAP=".min_and_max_track_freq.list.item[1]['@value']"/>
+  <PROPDEF NAME="freqMin" ALIAS="Minimum frequency" TYPE="2" MAP=".min_and_max_track_freq.list.item[0]['@value']"/>
+  <PROPDEF NAME="freqMax" ALIAS="Maximum frequency" TYPE="2" MAP=".min_and_max_track_freq.list.item[1]['@value']"/>
 </SECTION>

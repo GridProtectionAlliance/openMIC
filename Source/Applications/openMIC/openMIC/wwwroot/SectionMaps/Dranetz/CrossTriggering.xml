@@ -1,9 +1,9 @@
 <SECTION NAME="crossTrig" ALIAS="Cross-Triggering">
 	<PROPDEF ALIAS="Communication Configuration (common to all messages)" TYPE="3"/>
-	<PROPDEF NAME="crossTrigGroupID" ALIAS="Broadcast group ID" TYPE="4" RO="0" PLACEHOLDER="0"/>
-	<PROPDEF NAME="crossTrigBroadcastAddr" ALIAS="Broadcast address (empty for local)" TYPE="4" RO="0" PLACEHOLDER="0.0.0.0"/>
+	<PROPDEF NAME="crossTrigGroupID" ALIAS="Broadcast group ID" TYPE="4" PLACEHOLDER="0"/>
+	<PROPDEF NAME="crossTrigBroadcastAddr" ALIAS="Broadcast address (empty for local)" TYPE="4" PLACEHOLDER="0.0.0.0"/>
 	<PROPDEF ALIAS="RMS Event Message Configuration" TYPE="3"/>
-	<PROPDEF NAME="crossTrigSendRMS" ALIAS="Send this message when a RMS event is detected" TYPE="8" DEFAULT="0" RO="0">
+	<PROPDEF NAME="crossTrigSendRMS" ALIAS="Send this message when a RMS event is detected" TYPE="8" DEFAULT="0">
 		<PARAM TYPE="1">
 			<LIST>
 				<ITEM NAME="None (disabled)"/>
@@ -26,7 +26,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="crossTrigReceiveRMS" ALIAS="Record a RMS event when this message is received" TYPE="8" DEFAULT="0" RO="0">
+	<PROPDEF NAME="crossTrigReceiveRMS" ALIAS="Record a RMS event when this message is received" TYPE="8" DEFAULT="0">
 		<PARAM TYPE="1">
 			<LIST>
 				<ITEM NAME="None (disabled)"/>
@@ -50,7 +50,7 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF ALIAS="Transient Event Message Configuration" TYPE="3"/>
-	<PROPDEF NAME="crossTrigSendTransient" ALIAS="Send this message when a Transient event is detected" TYPE="8" DEFAULT="0" RO="0">
+	<PROPDEF NAME="crossTrigSendTransient" ALIAS="Send this message when a Transient event is detected" TYPE="8" DEFAULT="0">
 		<PARAM TYPE="1">
 			<LIST>
 				<ITEM NAME="None (disabled)"/>
@@ -73,7 +73,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="crossTrigReceiveTransient" ALIAS="Record a Transient event when this message is received" TYPE="8" DEFAULT="0" RO="0">
+	<PROPDEF NAME="crossTrigReceiveTransient" ALIAS="Record a Transient event when this message is received" TYPE="8" DEFAULT="0">
 		<PARAM TYPE="1">
 			<LIST>
 				<ITEM NAME="None (disabled)"/>

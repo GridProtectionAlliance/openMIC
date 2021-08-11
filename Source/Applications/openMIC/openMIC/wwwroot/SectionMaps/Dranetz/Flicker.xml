@@ -1,5 +1,5 @@
 <SECTION NAME="flicker" ALIAS="Flicker" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
-  <PROPDEF ORDER="0" NAME="flickerPstInterval" ALIAS="Pst (short term) interval" TYPE="8" DEFAULT="0" RO="0">
+  <PROPDEF ORDER="0" NAME="flickerPstInterval" ALIAS="Pst (short term) interval" TYPE="8" DEFAULT="0">
     <PARAM TYPE="1">
       <LIST>
         <ITEM NAME="Off"/>
@@ -13,7 +13,7 @@
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF ORDER="1" NAME="flickerPltPeriod" ALIAS="Plt (long term) interval" TYPE="8" DEFAULT="0" RO="0">
+  <PROPDEF ORDER="1" NAME="flickerPltPeriod" ALIAS="Plt (long term) interval" TYPE="8" DEFAULT="0">
     <PARAM TYPE="1">
       <LIST>
         <ITEM NAME="Off"/>
@@ -46,12 +46,12 @@
       <ITEM NAME="j491" ALIAS="Sliding PLT {0}" CONFIG="Wye,Generic" ALIAS0="getChannelName(2)"/>
       <ITEM NAME="j492" ALIAS="Sliding PLT CA" CONFIG="Delta"/>
     </LIST>
-    <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0" RO="0"/>
-    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0" RO="0"/>
-    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4" RO="0"/>
-    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4" RO="0"/>
+    <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0"/>
+    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0"/>
+    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4"/>
+    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4"/>
+    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4"/>
+    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4"/>
+    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4"/>
   </BANK>
 </SECTION>
