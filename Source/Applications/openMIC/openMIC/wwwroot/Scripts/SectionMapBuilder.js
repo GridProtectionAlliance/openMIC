@@ -82,6 +82,7 @@ function SectionMapBuilder(instanceName) {
     self.showZeroValuesAsBlank = true;
 
     // Internal fields
+    self._configRoot = undefined;
     self._bankIndex = undefined;
     self._unmapped = 0;
 
@@ -134,6 +135,8 @@ function SectionMapBuilder(instanceName) {
             // If any selected items have different values, clear target
             if (values.some(value => value !== values[0]))
                 self.clearValue(target, isCheckBox);
+            else if (self.showZeroValuesAsBlank)
+                self.clearZeroValue(target, type);
         }
         else {
             if (enabled) {
@@ -281,6 +284,36 @@ function SectionMapBuilder(instanceName) {
         return alias;
     };
 
+    self.getProperty = (element, propertyName, defaultValue) => {
+        if (element && element.hasOwnProperty(propertyName)) {
+            const value = element[propertyName].trim();
+
+            if (value.length)
+                return value;
+        }
+
+        return defaultValue;
+    };
+
+    self.getType = (element, defaultValue) => {
+        const typeValue = self.getProperty(element, "@TYPE", defaultValue);
+
+        if (!typeValue)
+            throw new Error("@TYPE attribute not found");
+
+        const type = parseInt(typeValue, 10);
+
+        if (!isNaN(type))
+            return type;
+
+        const typeName = typeValue.toString().toUpperCase().trim();
+
+        if (PropDefType.hasOwnProperty(typeName))
+            return PropDefType[typeName];
+
+        throw new Error(`@TYPE attribute "${typeName}" is undefined`);
+    }
+
     self.buildListElements = (list, type, defaultVal) => {
         const html = [];
 
@@ -302,15 +335,15 @@ function SectionMapBuilder(instanceName) {
             let optVal;
             
             if (type === PropDefType.NUMERIC) {
-                optVal = value["@VALUE"] ? parseInt(value["@VALUE"], 10) : index;
+                optVal = parseInt(self.getProperty(value, "@VALUE", index), 10);
                 defaultVal = defaultVal ? parseInt(defaultVal, 10) : -1;
             }
             else if (type === PropDefType.TEXT) {
-                optVal = value["@VALUE"] || "";
+                optVal = self.getProperty(value, "@VALUE", "");
                 defaultVal = defaultVal || null;
             }
             else {
-                optVal = value["@VALUE"] || index;
+                optVal = self.getProperty(value, "@VALUE", index);
                 defaultVal = defaultVal || null;
             }
 
@@ -328,19 +361,19 @@ function SectionMapBuilder(instanceName) {
     };
 
     self.buildPropDefElement = (propDef, mapRoot, bankTarget) => {
-        const type = parseInt(propDef["@TYPE"], 10);
-        const name = propDef["@NAME"];
+        const type = self.getType(propDef);
+        const name = self.getProperty(propDef, "@NAME");
         const enabled = self.elementIsEnabled(propDef);
         const hidden = enabled ? "" : " hidden";
         const bank = bankTarget && bankTarget.length ? ` bank="${bankTarget}"` : "";
         const getPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked')` : `$('#${name}').val()`;
         const setPropVal = type === PropDefType.CHECKBOX ? `$('#${name}').prop('checked', {0})` : `$('#${name}').val({0})`;
-        const readOnly = parseInt(propDef["@RO"] || "1", 10) > 0;
-        const map = propDef["@MAP"] || `${instanceName}._unmapped`;
+        const readOnly = parseInt(self.getProperty(propDef, "@RO", "0"), 10) > 0;
+        const map = self.getProperty(propDef, "@MAP") || `${instanceName}._unmapped`;
 
         const applyInstanceGetValue = value => value.replaceAll("#val(", `${instanceName}.getValue(`);
         const mapExpr = applyInstanceGetValue(String.format(map.startsWith(".") ? `${mapRoot}${map}` : map, bankTarget));
-        const sectionName = propDef["@SECTIONNAME"];
+        const sectionName = self.getProperty(propDef, "@SECTIONNAME");
         const rootName = `${sectionName}${bankTarget && bankTarget.length ? `_${bankTarget}` : ""}`;
 
         const applySubstitutions = value => applyInstanceGetValue(value
@@ -358,17 +391,16 @@ function SectionMapBuilder(instanceName) {
         const postReadExpr = propDef["@POSTREAD"] ? ` ${applySubstitutions(propDef["@POSTREAD"])};` : "";
         const preWriteExpr = propDef["@PREWRITE"] ? `${applySubstitutions(propDef["@PREWRITE"])}; ` : "";
         const postWriteExpr = propDef["@POSTWRITE"] ? ` ${applySubstitutions(propDef["@POSTWRITE"])};` : "";
-        const updatesConfigExpr = enabled && parseInt(propDef["@UPDATESCONFIG"] || "1", 10) !== 0 && self.modelChangedExpr ? ` ${self.modelChangedExpr};` : "";
+        const updatesConfigExpr = enabled && parseInt(self.getProperty(propDef, "@UPDATESCONFIG", "1"), 10) !== 0 && self.modelChangedExpr ? ` ${self.modelChangedExpr};` : "";
 
         const updateFunction = `const update_{0} = new Function("${readOnly ? "" : `${preReadExpr}{1};${postReadExpr}`}");`;
         const changedFunction = `const {0}_changed = new Function("${preWriteExpr}{1};${postWriteExpr}${updatesConfigExpr}");`;
 
         const placeHolderText = propDef["@PLACEHOLDER"] ? ` placeholder="${propDef["@PLACEHOLDER"]}"` : "";
-        const hasParam = propDef.hasOwnProperty("PARAM");
-        const min = hasParam ? propDef.PARAM["@MIN"] : undefined;
-        const max = hasParam ? propDef.PARAM["@MAX"] : undefined;
+        const min = self.getProperty(propDef.PARAM, "@MIN");
+        const max = self.getProperty(propDef.PARAM, "@MAX");
         const minMaxText = `${min ? ` min="${min}"` : ``}${max ? ` max="${max}"` : ``}`;
-        const maxLen = hasParam ? propDef.PARAM["@LEN"] : undefined;
+        const maxLen = self.getProperty(propDef.PARAM, "@LEN");
         const maxLenText = `${maxLen ? ` maxlength="${maxLen}"` : ``}`;
 
         const inputAttributes =
@@ -408,7 +440,7 @@ function SectionMapBuilder(instanceName) {
                 script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                 script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
                 html.push(`<select class="form-control smb-input" ${inputAttributes}>`);
-                html.push(self.buildListElements(propDef.PARAM.LIST, parseInt(propDef.PARAM["@TYPE"] || PropDefType.NUMERIC, 10), propDef["@DEFAULT"])[0]);
+                html.push(self.buildListElements(propDef.PARAM.LIST, self.getType(propDef.PARAM, PropDefType.NUMERIC), propDef["@DEFAULT"])[0]);
                 html.push(`</select>`);
                 break;
         }
@@ -419,16 +451,22 @@ function SectionMapBuilder(instanceName) {
     };
 
     self.buildBankElement = (definition, mapRoot, sectionName) => {
-        const bankName = definition["@NAME"];
+        const bankName = self.getProperty(definition, "@NAME");
         const enabled = self.elementIsEnabled(definition);
         const hidden = enabled ? "" : " hidden";
-        const rows = definition["@ROWS"];
+        const rows = self.getProperty(definition, "@ROWS");
         const sizeToken = "[_SIZE-TOKEN_]";
         const html = [];
         const script = [];
 
         let sizeAttribute = "";
         let propDefsStarted = false;
+        let bankMapRoot = mapRoot;
+
+        const mapRootValue = self.getProperty(definition, "@MAPROOT");
+
+        if (mapRootValue)
+            bankMapRoot = mapRootValue.startsWith(".") ? `${mapRoot}${mapRootValue}` : `${self._configRoot}.${mapRootValue}`;
 
         html.push(`<tr${hidden}><th class="smb-header${definition.order > 0 ? "-section-row" : ""} smb-bank-header"><div class="smb-header">${self.getAlias(definition)}</div></th></tr>`);
         html.push(`<tr class="smb-bank-group"${hidden}><td class="smb-bank-group">`);
@@ -450,15 +488,17 @@ function SectionMapBuilder(instanceName) {
         };
 
         const addPropDef = (propDef) => {
-            if (parseInt(propDef["@TYPE"], 10) === PropDefType.HEADER) {
+            if (self.getType(propDef) === PropDefType.HEADER) {
                 console.warn(`Unexpected header property definition encountered in section "${sectionName}" bank "${bankName}"`);
                 return;
             }
 
-            if (propDef.hasOwnProperty("@NAME"))
-                propDef["@NAME"] = `${bankName}_${propDef["@NAME"]}`;
+            const name = self.getProperty(propDef, "@NAME");
 
-            const [propDefHtml, propDefScript] = self.buildPropDefElement(propDef, mapRoot, bankName);
+            if (name)
+                propDef["@NAME"] = `${bankName}_${name}`;
+
+            const [propDefHtml, propDefScript] = self.buildPropDefElement(propDef, bankMapRoot, bankName);
 
             html.push(propDefHtml);
 
@@ -517,14 +557,17 @@ function SectionMapBuilder(instanceName) {
     };
 
     self.buildSection = (section, configRoot) => {
-        const mapRoot = `${configRoot}${section["@MAPROOT"] ? `.${section["@MAPROOT"]}` : ""}`;
-        const sectionName = section["@NAME"];
+        const mapRoot = self.getProperty(section, "@MAPROOT");
+        const sectionMapRoot = `${configRoot}${mapRoot ? `.${mapRoot}` : ""}`;
+        const sectionName = self.getProperty(section, "@NAME");
         const html = [];
         const script = [];
         const definitions = [];
 
         let naturalOrder = 100000;
         let propDefsStarted = false;
+        let groupMapRoot = undefined;
+        self._configRoot = configRoot;
 
         html.push(`<table class="smb-section">`);
 
@@ -545,14 +588,18 @@ function SectionMapBuilder(instanceName) {
         };
 
         const addSectionElementDefinition = (definition, elementType) => {
-            if (definition.hasOwnProperty("@NAME") && parseInt(definition["@TYPE"], 10) !== PropDefType.HEADER) {
+            const elementName = self.getProperty(definition, "@NAME");
+
+            if (elementName && self.getType(definition, -1) !== PropDefType.HEADER) {
                 definition["@SECTIONNAME"] = `${sectionName}Section`;
-                definition["@NAME"] = `${definition["@SECTIONNAME"]}_${definition["@NAME"]}`;
+                definition["@NAME"] = `${definition["@SECTIONNAME"]}_${elementName}`;
             }
 
-            definition.order = definition.hasOwnProperty("@ORDER") ?
-                parseInt(definition["@ORDER"], 10) :
-                definitions.length > 0 ? naturalOrder++ : 0;
+            const order = parseInt(self.getProperty(definition, "@ORDER"), 10);
+
+            definition.order = isNaN(order) ?
+                definitions.length > 0 ? naturalOrder++ : 0 :
+                order;
 
             definition.elementType = elementType;
 
@@ -586,7 +633,7 @@ function SectionMapBuilder(instanceName) {
             switch (definition.elementType) {
                 case "BANK":
                     {
-                        const [bankHtml, bankScript] = self.buildBankElement(definition, mapRoot, sectionName);
+                        const [bankHtml, bankScript] = self.buildBankElement(definition, sectionMapRoot, sectionName);
 
                         closePropDefs();
                         html.push(bankHtml);
@@ -597,14 +644,21 @@ function SectionMapBuilder(instanceName) {
                     break;
                 case "PROPDEF":
                     {
-                        if (parseInt(definition["@TYPE"], 10) === PropDefType.HEADER) {
+                        if (self.getType(definition) === PropDefType.HEADER) {
                             if (self.elementIsEnabled(definition)) {
                                 closePropDefs();
+
+                                const mapRootValue = self.getProperty(definition, "@MAPROOT");
+
+                                groupMapRoot = mapRootValue ?
+                                    (mapRootValue.startsWith(".") ? `${sectionMapRoot}${mapRootValue}` : `${self._configRoot}.${mapRootValue}`) :
+                                    undefined;
+
                                 html.push(`<tr><th class="smb-header${definition.order > 0 ? "-section-row" : ""}"><div class="smb-header">${self.getAlias(definition)}</div></th></tr>`);
                             }
                         }
                         else {
-                            const [propDefHtml, propDefScript] = self.buildPropDefElement(definition, mapRoot);
+                            const [propDefHtml, propDefScript] = self.buildPropDefElement(definition, groupMapRoot || sectionMapRoot);
 
                             startPropDefs();
                             html.push(propDefHtml);
