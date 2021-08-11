@@ -919,7 +919,7 @@
 
             self.setWiringConfigValue = function (value) {
                 self._selectedWiringConfig(parseInt(value, 10));
-            }
+            };
 
             self.queryModules = function () {
                 if (!self.dataHubIsConnected())
@@ -929,95 +929,101 @@
                 $("[id=analyzerRow]").css("visibility", "hidden");
                 self.modules.removeAll();
 
-                return dataHub.drantezGetInstanceStatus(deviceID).done(function (statusResult) {
-                    const status = JSON.parse(statusResult);
+                return dataHub.drantezGetInstanceStatus(deviceID)
+                    .done(function (statusResult) {
+                        const status = JSON.parse(statusResult);
 
-                    self.serialNumber(status.commandresult.characteristics["@@serial_number"]);
-                    self.systemHealth(status.commandresult.characteristics["@@system_health"]);
-                    self.databaseHealth(status.commandresult.characteristics["@@database_health"]);
-                    self.hostFirmware(status.commandresult.characteristics["@@cs_firmware_version"]);
-                    self.commFirmware(status.commandresult.characteristics["@@host_firmware_version"]);
-                    self.gpsInstalled(parseInt(status.commandresult.gps_status["@@installed"], 10) !== 0);
-                    self.gpsSatellites(status.commandresult.gps_status["@@gps_satellites"]);
+                        self.serialNumber(status.commandresult.characteristics["@@serial_number"]);
+                        self.systemHealth(status.commandresult.characteristics["@@system_health"]);
+                        self.databaseHealth(status.commandresult.characteristics["@@database_health"]);
+                        self.hostFirmware(status.commandresult.characteristics["@@cs_firmware_version"]);
+                        self.commFirmware(status.commandresult.characteristics["@@host_firmware_version"]);
+                        self.gpsInstalled(parseInt(status.commandresult.gps_status["@@installed"], 10) !== 0);
+                        self.gpsSatellites(status.commandresult.gps_status["@@gps_satellites"]);
 
-                    const observableModules = [];
+                        const observableModules = [];
 
-                    status.commandresult.inputs.list.item.forEach(function (module) {
-                        const observableModule = ko.mapping.fromJS(module);
-                        observableModules.push(observableModule);
+                        status.commandresult.inputs.list.item.forEach(function (module) {
+                            const observableModule = ko.mapping.fromJS(module);
+                            observableModules.push(observableModule);
+                        });
+
+                        self.modules(observableModules);
+
+                        const observableAnalyzers = [];
+
+                        status.commandresult.analyzers.list.item.forEach(function (analyzer) {
+                            const observerableAnalyzer = ko.mapping.fromJS(analyzer);
+
+                            observerableAnalyzer.configID = ko.pureComputed({
+                                read: () => parseInt(observerableAnalyzer["@@id"](), 10)
+                            });
+
+                            observerableAnalyzer.analyzerType = ko.pureComputed({
+                                read: () => parseInt(observerableAnalyzer["@@analyzer_type"](), 10)
+                            });
+
+                            observerableAnalyzer.analyzerTypeName = ko.pureComputed({
+                                read: () => `[${observerableAnalyzer.analyzerType()}]: ${analyzerTypes[analyzerTypeKeys[observerableAnalyzer.analyzerType()]].name}`
+                            });
+
+                            observerableAnalyzer.isSelected = ko.pureComputed({
+                                read: () => observerableAnalyzer.configID() === viewModel.selectedAnalyzerConfigID()
+                            });
+
+                            observerableAnalyzer.montitoringStatus = ko.pureComputed({
+                                read: () => parseInt(observerableAnalyzer["@@monitoring_on"](), 10) > 0 ? "On" : "Off"
+                            });
+
+                            observableAnalyzers.push(observerableAnalyzer);
+                        });
+
+                        if (observableAnalyzers.length > 0)
+                            $("#header-collapse").css("visibility", "visible");
+
+                        self.analyzers(observableAnalyzers);
+
+                        const promises = [];
+
+                        promises.push(dataHub.drantezGetInstanceConfig(deviceID)
+                            .done(function (configResult) {
+                                const config = JSON.parse(configResult);
+
+                                self.versionInfo(config.commandresult.characteristics.psz_version_string["@@value"]);
+                                self.ipAddress(config.commandresult.communications.tcp_ip["@@ip_address"]);
+                                self.siteName(config.commandresult.characteristics.psz_sitename["@@value"]);
+
+                                $("[id=moduleRow]").css("visibility", "visible");
+                                $("[id=analyzerRow]").css("visibility", "visible");
+                            })
+                        );
+
+                        promises.push(dataHub.drantezGetDeviceTimeWithError(deviceID)
+                            .done(function (timeResult) {
+                                const utcTimeText = `${timeResult.time} UTC`;
+                                const localTime = utcTimeText.toDate();
+                                const timeZone = localTime.toLocaleTimeString("en-us", { timeZoneName: "short" }).split(' ')[2];
+                                const localTimeText = `${localTime.formatDate(ShortDateTimeFormat, false)} ${timeZone}`;
+
+                                self.time(`${utcTimeText}<br/>${localTimeText}`);
+                                self.timeError(timeResult.error);
+                                self.timeErrorText(`${timeResult.errorText}<br/>${timeResult.error < 0 ? "behind" : "ahead of"} server time`);
+                            })
+                        );
+
+                        return $(promises).whenAll()
+                            .then(function () {
+                                self.isDirty(false);
+
+                                // Make sure table is refreshed
+                                if (ko.options.deferUpdates)
+                                    ko.tasks.runEarly();
+                            });
+                    })
+                    .fail(function (error) {
+                        showErrorMessage(error, null, true);
                     });
-
-                    self.modules(observableModules);
-
-                    const observableAnalyzers = [];
-
-                    status.commandresult.analyzers.list.item.forEach(function (analyzer) {
-                        const observerableAnalyzer = ko.mapping.fromJS(analyzer);
-
-                        observerableAnalyzer.configID = ko.pureComputed({
-                            read: () => parseInt(observerableAnalyzer["@@id"](), 10)
-                        });
-
-                        observerableAnalyzer.analyzerType = ko.pureComputed({
-                            read: () => parseInt(observerableAnalyzer["@@analyzer_type"](), 10)
-                        });
-
-                        observerableAnalyzer.analyzerTypeName = ko.pureComputed({
-                            read: () => `[${observerableAnalyzer.analyzerType()}]: ${analyzerTypes[analyzerTypeKeys[observerableAnalyzer.analyzerType()]].name}`
-                        });
-
-                        observerableAnalyzer.isSelected = ko.pureComputed({
-                            read: () => observerableAnalyzer.configID() === viewModel.selectedAnalyzerConfigID()
-                        });
-
-                        observerableAnalyzer.montitoringStatus = ko.pureComputed({
-                            read: () => parseInt(observerableAnalyzer["@@monitoring_on"](), 10) > 0 ? "On" : "Off"
-                        });
-
-                        observableAnalyzers.push(observerableAnalyzer);
-                    });
-
-                    if (observableAnalyzers.length > 0)
-                        $("#header-collapse").css("visibility", "visible");
-
-                    self.analyzers(observableAnalyzers);
-
-                    const promises = [];
-
-                    promises.push(dataHub.drantezGetInstanceConfig(deviceID).done(function (configResult) {
-                        const config = JSON.parse(configResult);
-
-                        self.versionInfo(config.commandresult.characteristics.psz_version_string["@@value"]);
-                        self.ipAddress(config.commandresult.communications.tcp_ip["@@ip_address"]);
-                        self.siteName(config.commandresult.characteristics.psz_sitename["@@value"]);
-
-                        $("[id=moduleRow]").css("visibility", "visible");
-                        $("[id=analyzerRow]").css("visibility", "visible");
-                    }));
-
-                    promises.push(dataHub.drantezGetDeviceTimeWithError(deviceID).done(function (timeResult) {
-                        const utcTimeText = `${timeResult.time} UTC`;
-                        const localTime = utcTimeText.toDate();
-                        const timeZone = localTime.toLocaleTimeString("en-us", { timeZoneName: "short" }).split(' ')[2];
-                        const localTimeText = `${localTime.formatDate(ShortDateTimeFormat, false)} ${timeZone}`;
-
-                        self.time(`${utcTimeText}<br/>${localTimeText}`);
-                        self.timeError(timeResult.error);
-                        self.timeErrorText(`${timeResult.errorText}<br/>${timeResult.error < 0 ? "behind" : "ahead of"} server time`);
-                    }));
-
-                    return $(promises).whenAll().then(function () {
-                        self.isDirty(false);
-
-                        // Make sure table is refreshed
-                        if (ko.options.deferUpdates)
-                            ko.tasks.runEarly();
-                    });
-                })
-                .fail(function (error) {
-                    showErrorMessage(error, null, true);
-                });
-            }
+            };
 
             self.getAnalyzer = function (configID) {
                 const analyzers = self.analyzers();
@@ -1030,21 +1036,22 @@
                 }
 
                 return undefined;
-            }
+            };
 
             self.configChanged = function () {
                 self.selectedAnalyzerConfig.valueHasMutated();
                 self.isDirty(true);
-            }
+            };
 
             self.loadAnalyzerConfig = function (configID, analyzerType) {
-                return dataHub.drantezGetAnalyzerConfig(deviceID, configID).then(function (configResult) {
-                    return self._loadAnalyzerConfig(configID, analyzerType, JSON.parse(configResult));
-                })
-                .fail(function (error) {
-                    showErrorMessage(`Load Analyzer Config "${error}"`, null, true);
-                });
-            }
+                return dataHub.drantezGetAnalyzerConfig(deviceID, configID)
+                    .then(function (configResult) {
+                        return self._loadAnalyzerConfig(configID, analyzerType, JSON.parse(configResult));
+                    })
+                    .fail(function (error) {
+                        showErrorMessage(`Load Analyzer Config "${error}"`, null, true);
+                    });
+            };
 
             self.saveAnalyzerConfig = function () {
                 if (!self.canSave()) {
@@ -1058,32 +1065,35 @@
 
                 const configID = self.selectedAnalyzerConfigID();
 
-                return dataHub.drantezBeginTransaction(deviceID).then(function () {
-                    return dataHub.drantezSetAnalyzerConfig(deviceID, configID, JSON.stringify(self.selectedAnalyzerConfig())).done(function () {
-                        self.isDirty(false);
-                        showInfoMessage("Save complete.", 5000);
-                        hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
-                        hideWorkingMessage();
+                return dataHub.drantezBeginTransaction(deviceID)
+                    .then(function () {
+                        return dataHub.drantezSetAnalyzerConfig(deviceID, configID, JSON.stringify(self.selectedAnalyzerConfig()))
+                            .done(function () {
+                                self.isDirty(false);
+                                showInfoMessage("Save complete.", 5000);
+                                hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
+                                hideWorkingMessage();
+                            })
+                            .fail(function (error) {
+                                hideInfoMessage();
+                                showErrorMessage(`Save Configuration ${error}`, null, true);
+                                hideWorkingMessage();
+                            });
                     })
                     .fail(function (error) {
                         hideInfoMessage();
-                        showErrorMessage(`Save Configuration ${error}`, null, true);
+                        showErrorMessage(`Begin Transaction ${error}`, null, true);
                         hideWorkingMessage();
-                    });
-                })
-                .fail(function (error) {
-                    hideInfoMessage();
-                    showErrorMessage(`Begin Transaction ${error}`, null, true);
-                    hideWorkingMessage();
-                })
-                .always(function () {
-                    dataHub.drantezEndTransaction(deviceID).fail(function (error) {
-                        showErrorMessage(`End Transaction ${error}`, null, true);
-                    });
+                    })
+                    .always(function () {
+                        dataHub.drantezEndTransaction(deviceID)
+                            .fail(function (error) {
+                                showErrorMessage(`End Transaction ${error}`, null, true);
+                            });
 
-                    self._isSaving(false);
-                });
-            }
+                        self._isSaving(false);
+                    });
+            };
 
             self.loadImportedAnalyzerConfig = function (configID, result) {
                 const config = JSON.parse(result);
@@ -1095,18 +1105,19 @@
 
                 const analyzerType = parseInt(config.commandresult.characteristics.anyalyzer.analyzer_type["@@value"], 10);
 
-                self._loadAnalyzerConfig(configID, analyzerType, config).done(function () {
-                    const selectedAnalyzer = self.selectedAnalyzer();
+                self._loadAnalyzerConfig(configID, analyzerType, config)
+                    .done(function () {
+                        const selectedAnalyzer = self.selectedAnalyzer();
 
-                    if (selectedAnalyzer) {
-                        selectedAnalyzer["@@name"](config.commandresult.characteristics.anyalyzer.tag["@@value"]);
-                        selectedAnalyzer["@@analyzer_type"](analyzerType.toString());
-                    }
+                        if (selectedAnalyzer) {
+                            selectedAnalyzer["@@name"](config.commandresult.characteristics.anyalyzer.tag["@@value"]);
+                            selectedAnalyzer["@@analyzer_type"](analyzerType.toString());
+                        }
 
-                    self.isDirty(true);
-                    showInfoMessage(`Successfully imported "${selectedAnalyzer["@@name"]()}" analyzer config.`, null, true);
-                });
-            }
+                        self.isDirty(true);
+                        showInfoMessage(`Successfully imported "${selectedAnalyzer["@@name"]()}" analyzer config.`, null, true);
+                    });
+            };
 
             self.importAnalyzerConfig = function (fileData) {
                 const reader = new FileReader();
@@ -1121,12 +1132,13 @@
                         if (result.startsWith("<")) {
                             if (self.dataHubIsConnected()) {
                                 // User selected an XML-based configuration to import, convert to JSON
-                                dataHub.getXmlAsJson(result, false).done(function (convertResult) {
-                                    self.loadImportedAnalyzerConfig(configID, convertResult);
-                                })
-                                .fail(function (error) {
-                                    showErrorMessage(`Failed to import config file: Convert XML to JSON ${error}`, null, true);
-                                });
+                                dataHub.getXmlAsJson(result, false)
+                                    .done(function (convertResult) {
+                                        self.loadImportedAnalyzerConfig(configID, convertResult);
+                                    })
+                                    .fail(function (error) {
+                                        showErrorMessage(`Failed to import config file: Convert XML to JSON ${error}`, null, true);
+                                    });
                             }
                             else {
                                 showErrorMessage("Failed to import config file: cannot convert XML config to JSON at this time, hub is not connected", null, true);
@@ -1150,7 +1162,7 @@
                 };
 
                 reader.readAsText(fileData);
-            }
+            };
 
             self.exportAnalyzerConfig = function (fileName) {
                 const data = self.selectedAnalyzerConfigJson();
@@ -1212,29 +1224,30 @@
                 });
 
                 $("[tab-section-link]").tooltip({ title: "Shift+click to reload tab", placement: "top", delay: 1000 });
-            }
+            };
 
             self.loadTabSection = function (sectionKey) {
-                return dataHub.getSectionMap(`Dranetz\\${sectionKey}.xml`).done(function (result) {
-                    const [sectionHtml, sectionScript] = smb.buildSection(JSON.parse(result).SECTION, "viewModel.selectedAnalyzerConfig()");
+                return dataHub.getSectionMap(`Dranetz\\${sectionKey}.xml`)
+                    .done(function (result) {
+                        const [sectionHtml, sectionScript] = smb.buildSection(JSON.parse(result).SECTION, "viewModel.selectedAnalyzerConfig()");
 
-                    $(`#tab${sectionKey}`).html(sectionHtml);
+                        $(`#tab${sectionKey}`).html(sectionHtml);
 
-                    if (sectionScript.length > 0) {
-                        const scriptID = `${sectionKey}SectionMappings`;
+                        if (sectionScript.length > 0) {
+                            const scriptID = `${sectionKey}SectionMappings`;
 
-                        if ($(`#${scriptID}`).length)
-                            return;
+                            if ($(`#${scriptID}`).length)
+                                return;
 
-                        const scriptElem = document.createElement("script");
-                        scriptElem.id = scriptID;
-                        scriptElem.innerHTML = sectionScript;
-                        document.body.appendChild(scriptElem);
-                    }
-                }).fail(function (error) {
-                    showErrorMessage(error, null, true);
-                });
-            }
+                            const scriptElem = document.createElement("script");
+                            scriptElem.id = scriptID;
+                            scriptElem.innerHTML = sectionScript;
+                            document.body.appendChild(scriptElem);
+                        }
+                    }).fail(function (error) {
+                        showErrorMessage(error, null, true);
+                    });
+            };
 
             self.refreshTabSections = function () {
                 $("[update-expr]").each(function () {
@@ -1256,7 +1269,7 @@
                         appendToBody: true
                     })
                     .hover(showToolTip, hideToolTip);
-            }
+            };
 
             self.reloadTabSection = function (sectionKey, whenShiftIsDown) {
                 if (whenShiftIsDown && !shiftIsDown)
@@ -1264,9 +1277,9 @@
 
                 self.reloadTabSections(sectionKey);
                 showInfoMessage(`Reloaded "${sectionKey}" tab section...`);
-            }
+            };
 
-            self.reloadTabSections = function() {
+            self.reloadTabSections = function () {
                 const activeSectionKeys = sectionKeys[self.selectedAnalyzerType()];
                 const targetSectionKeys = arguments.length === 0 ? activeSectionKeys : Array.from(arguments);
                 const promises = [];
@@ -1279,7 +1292,7 @@
                 }
 
                 return $(promises).whenAll().then(self.refreshTabSections);
-            }
+            };
 
             self._loadAnalyzerConfig = function (configID, analyzerType, analyzerConfig) {
                 if (analyzerTypeKeys.every(key => analyzerType !== analyzerTypes[key].index)) {
@@ -1329,7 +1342,7 @@
                     setActiveTabIndex(0);
                     self.refreshTabSections();
                 });
-            }
+            };
         }
 
         function resizePageElements() {
@@ -1600,15 +1613,16 @@
                     showInfoMessage("Attempting to restart device...", -1, true);
                     showWorkingMessage("Restarting");
 
-                    dataHub.drantezRestartDevice(deviceID, hardRestart).done(function () {
-                        showInfoMessage("Device restart request sent successfully.", null, true);
-                        hideWorkingMessage();
-                    })
-                    .fail(function (error) {
-                        hideInfoMessage();
-                        showErrorMessage(`Device Restart ${error}`, null, true);
-                        hideWorkingMessage();
-                    });
+                    dataHub.drantezRestartDevice(deviceID, hardRestart)
+                        .done(function () {
+                            showInfoMessage("Device restart request sent successfully.", null, true);
+                            hideWorkingMessage();
+                        })
+                        .fail(function (error) {
+                            hideInfoMessage();
+                            showErrorMessage(`Device Restart ${error}`, null, true);
+                            hideWorkingMessage();
+                        });
                 }
             });
 
