@@ -62,7 +62,7 @@
         VendorDevice vendorDevice = QueryRecordByID<VendorDevice>(device.VendorDeviceID);
 
         if (vendorDevice == null) {
-            invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Powerisde meter - no vendor device is assigned", deviceAcronym, deviceID);
+            invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Powerside meter - no vendor device is assigned", deviceAcronym, deviceID);
         }
         else {
             Vendor vendor = QueryRecordByID<Vendor>(vendorDevice.VendorID);
@@ -71,7 +71,7 @@
                 deviceFound = string.Equals(vendor.Acronym.Trim().ToUpper(), "POWERSIDE");
 
                 if (!deviceFound) {
-                    invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Powerisde meter.<br/><br/>Configured as: \"{2}\" / \"{3}\"", deviceAcronym, deviceID, vendor.Acronym, vendorDevice.Name);
+                    invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Powerside meter.<br/><br/>Configured as: \"{2}\" / \"{3}\"", deviceAcronym, deviceID, vendor.Acronym, vendorDevice.Name);
                 }
             }
         }
@@ -1089,10 +1089,10 @@
 
                 modules.push({ name: "AC Voltage Inputs", model: "All Models" });
 
-                if (self.deviceType !== deviceTypes.PQube3v.type) {
+                if (self.deviceType() !== deviceTypes.PQube3v.type) {
                     modules.push({ name: "AC Current Inputs (I1-I8)", model: "3, 3e and 3r" });
 
-                    if (self.deviceType === deviceTypes.PQube3e.type) {
+                    if (self.deviceType() === deviceTypes.PQube3e.type) {
                         modules.push({ name: "AC Current Inputs (I9-I14)", model: "3e only" });
                     }
                 }
