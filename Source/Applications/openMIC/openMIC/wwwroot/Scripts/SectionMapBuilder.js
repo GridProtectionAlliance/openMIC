@@ -266,24 +266,6 @@ function SectionMapBuilder(instanceName) {
         });
     };
 
-    self.getAlias = (element) => {
-        let alias = element["@ALIAS"];
-
-        if (!alias || alias.length === 0)
-            return element["@NAME"];
-
-        for (let i = 0; i < self.maxAliasParams; i++) {
-            const aliasParam = element[`@ALIAS${i}`];
-
-            if (aliasParam)
-                alias = alias.replaceAll(`{${i}}`, eval(aliasParam));
-            else
-                break;
-        }
-
-        return alias;
-    };
-
     self.getProperty = (element, propertyName, defaultValue) => {
         if (element && element.hasOwnProperty(propertyName)) {
             const value = element[propertyName].trim();
@@ -293,6 +275,24 @@ function SectionMapBuilder(instanceName) {
         }
 
         return defaultValue;
+    };
+
+    self.getAlias = (element) => {
+        let alias = self.getProperty(element, "@ALIAS");
+
+        if (!alias)
+            return self.getProperty(element, "@NAME");
+
+        for (let i = 0; i < self.maxAliasParams; i++) {
+            const aliasParam = self.getProperty(element, `@ALIAS${i}`);
+
+            if (aliasParam === undefined)
+                break;
+
+            alias = alias.replaceAll(`{${i}}`, eval(aliasParam));
+        }
+
+        return alias;
     };
 
     self.getType = (element, defaultValue) => {
@@ -377,6 +377,7 @@ function SectionMapBuilder(instanceName) {
         const rootName = `${sectionName}${bankTarget && bankTarget.length ? `_${bankTarget}` : ""}`;
 
         const applySubstitutions = value => applyInstanceGetValue(value
+            .replaceAll("{configRoot}", self._configRoot)
             .replaceAll("{name}", name)
             .replaceAll("{sectionName}", sectionName)
             .replaceAll("{rootName}", rootName)
