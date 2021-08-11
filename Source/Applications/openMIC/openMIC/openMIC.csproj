@@ -333,6 +333,7 @@
     <Content Include="wwwroot\Images\GraphData.png" />
     <Content Include="wwwroot\Images\Icons\openMIC.ico" />
     <Content Include="wwwroot\Images\iGridConfigEditor.png" />
+    <Content Include="wwwroot\Images\Powerside.png" />
     <Content Include="wwwroot\Scripts\bootstrap-datetimepicker.js" />
     <Content Include="wwwroot\Scripts\dateFormat.js" />
     <Content Include="wwwroot\Scripts\jquery.jspanel.js" />
@@ -343,6 +344,8 @@
     <Content Include="wwwroot\Help.cshtml" />
     <Content Include="wwwroot\ModbusConfig.cshtml" />
     <Content Include="wwwroot\Groups.cshtml" />
+    <Content Include="wwwroot\Scripts\jquery.mousewheel.js" />
+    <Content Include="wwwroot\Scripts\jquery.ui.scrolltabs.js" />
     <Content Include="wwwroot\Scripts\SectionMapBuilder.js" />
     <Content Include="wwwroot\SectionMaps\Dranetz\CrossTriggering.xml" />
     <Content Include="wwwroot\SectionMaps\Dranetz\DigitalCrossTriggering.xml" />
@@ -355,6 +358,30 @@
     <Content Include="wwwroot\SectionMaps\Dranetz\RMSVariations.xml" />
     <Content Include="wwwroot\SectionMaps\Dranetz\Transients.xml" />
     <Content Include="wwwroot\SectionMaps\Dranetz\WaveformCapture.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\Accelerometer.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\ACCurrents9_14.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\ACCurrents1_8.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\ACVoltage.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\AdditionalProtocols.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\ADInputs.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\ADTriggering.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\CurrentTriggering1_8.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\CurrentTriggering9_14.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\DualVoltageMode.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\Email.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\EnvirosensorProbe.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\Events.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\GeneralInfo.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\Harmonics.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\LoadDefinition.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\MainsSignaling.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\Network.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\RelayOutput.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\ReportGeneration.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\Security.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\TimeSynchronization.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\TrendRecording.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\VoltageTriggering.xml" />
     <Content Include="wwwroot\Users.cshtml" />
     <Content Include="wwwroot\SelectTheme.cshtml" />
     <Content Include="wwwroot\Status.cshtml" />
@@ -375,6 +402,8 @@
     <Content Include="wwwroot\DranetzConfig.cshtml" />
     <Content Include="wwwroot\ResetSchedules.cshtml" />
     <Content Include="wwwroot\DranetzGraph.cshtml" />
+    <Content Include="wwwroot\PQubeConfig.cshtml" />
+    <Content Include="wwwroot\Content\jquery.ui.scrolltabs.css" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />
@@ -433,9 +462,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="wwwroot\SectionMaps\PQube\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>CALL "$(ProjectDir)PostBuildSetup.bat" "$(TargetDir)Database Scripts" "$(SolutionDir)Data\*.*"

@@ -1,0 +1,1479 @@
+﻿@*******************************************************************************************************
+//  PQubeConfig.cshtml - Gbtc
+//
+//  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  08/09/2021 - Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System.Net.Http
+@using System.Threading
+@using GSF.Identity
+@using GSF.Security
+@using GSF.Web
+@using GSF.Web.Model
+@using GSF.Web.Shared
+@using GSF.Web.Shared.Model
+@using openMIC.Model
+@* ReSharper disable Html.PathError *@
+@* ReSharper disable UnknownCssClass *@
+@* ReSharper disable CssBrowserCompatibility *@
+@inherits ExtendedTemplateBase<AppModel>
+@{
+    DataContext = ViewBag.DataContext;
+    Layout = "Layout.cshtml";
+    ViewBag.HidePageTitle = true;
+    ViewBag.Title = "Manage Configuration";
+
+    HttpRequestMessage request = ViewBag.Request;
+    Dictionary<string, string> parameters = request.QueryParameters();
+    string parameter;
+    int deviceID;
+
+    if (!parameters.TryGetValue("DeviceID", out parameter) || !int.TryParse(parameter, out deviceID)) {
+        deviceID = 0;
+    }
+
+    // Verify specified device vendor is Powerside
+    bool deviceFound = false;
+    Device device = QueryRecordByID<Device>(deviceID);
+    string deviceAcronym = "";
+    string invalidDeviceMessage = "";
+
+    if (device == null) {
+        invalidDeviceMessage = string.Format("No device record could not be found for <code>ID={0}</code>", deviceID);
+    }
+    else {
+        deviceAcronym = device.Acronym;
+        VendorDevice vendorDevice = QueryRecordByID<VendorDevice>(device.VendorDeviceID);
+
+        if (vendorDevice == null) {
+            invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Powerisde meter - no vendor device is assigned", deviceAcronym, deviceID);
+        }
+        else {
+            Vendor vendor = QueryRecordByID<Vendor>(vendorDevice.VendorID);
+
+            if (vendor != null) {
+                deviceFound = string.Equals(vendor.Acronym.Trim().ToUpper(), "POWERSIDE");
+
+                if (!deviceFound) {
+                    invalidDeviceMessage = string.Format("Device \"{0}\" <code>ID={1}</code> is not configured as a Powerisde meter.<br/><br/>Configured as: \"{2}\" / \"{3}\"", deviceAcronym, deviceID, vendor.Acronym, vendorDevice.Name);
+                }
+            }
+        }
+    }
+
+    bool userIsEditor = UserIsEditor();
+}
+@section StyleSheets {
+    <link href="@Resources.Root/Shared/Content/jquery-ui.css" rel="stylesheet">
+    <link href="Content/jquery.ui.scrolltabs.css" rel="stylesheet">
+    <link href="Content/SectionMapBuilder.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            min-width: 800px;
+        }
+
+        body.wait, body.wait * {
+            cursor: wait !important;
+        }
+
+        .tooltip-inner {
+            white-space: pre;
+            min-width: 100px;
+            max-width: 100%;
+        }
+
+        .btn-group-vertical > button {
+            margin-bottom: 2px;
+        }
+
+        th.pad-right {
+            width: 50%;
+            padding-right: 8px;
+            white-space: nowrap;
+        }        
+
+        div.header {
+            border-bottom: 4px solid;
+        }
+
+        th.header {
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bolder;
+            padding-bottom: 5px;
+        }
+
+        div.tab-section {
+            overflow: auto;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        /* Collapsable button style */
+        .btn-collapsable.btn {
+            color: #606060;
+            font-family: "Glyphicons Halflings";
+            font-size: 8pt;
+            position: relative;
+            top: -9px;
+            right: -14px;
+            padding: 0 2px 2px 2px;
+            height: 18px;
+            float: right !important;
+        }
+
+        /* Collapsable button icon when content is shown - arrow down */
+        .btn-collapsable.btn:after {
+            content: "\e114";
+        }
+
+        /* Collapsable button icon when content is hidden - arrow right */
+        .btn-collapsable.btn.collapsed:after {
+            content: "\e080";
+        }
+
+        #header-collapse {
+            left: 0;
+            top: 12px;
+            margin-bottom: -10px;
+            visibility: hidden;
+        }
+
+        #config-header {
+            min-height: 120px;
+        }
+
+        .config-header-expanded {
+            margin: 0 auto -40px auto;
+        }
+
+        .config-header-collapsed {
+            margin: 25px auto -40px auto;
+        }
+
+        #left-buttons {
+            margin-top: -70px;
+            width: 130px;
+        }
+
+        #right-buttons {
+            margin-top: -100px;
+            width: 130px;
+        }
+
+        .right-buttons-collapsed {
+            margin-right: 20px;
+        }
+
+        .ui-tabs .ui-tabs-nav li a {
+            font-size: 9.6pt !important;
+        }
+
+        .graph-data-img {
+            width: 18px;
+            height: 14px;
+            margin-top: -5px;
+            margin-left: 5px;
+        }
+
+        #hardRestartLabel {
+            font-weight: normal;
+            font-size: 12px;
+            margin-left: 25px;
+            margin-top: -4px;
+        }
+
+        .page-logo {
+            margin-bottom: -25px;
+            margin-top: 1px;
+        }
+
+        #configTypeSelectionBlock {
+            font-size: x-small;
+            font-weight: 500;
+            visibility: hidden;
+        }
+
+        #copyConfigButton {
+            margin-left: -55px;
+            margin-right: 15px;
+            visibility: hidden;
+        }
+
+        input[type="radio"].view-config-type {
+            vertical-align: middle;
+            margin-bottom: 8px;
+        }
+    </style>
+}
+@functions {
+    public DataContext DataContext { get; set; }
+
+    public string GetCurrentUserID() {
+        if (Thread.CurrentPrincipal.Identity == null)
+            return UserInfo.CurrentUserID;
+
+        return Thread.CurrentPrincipal.Identity.Name;
+    }
+
+    // This function simply limits access to UI elements that the user does not have access to, server-side
+    // functions will further validate user rights even if UI restriction was somehow bypassed
+    public bool UserIsEditor() {
+        SecurityPrincipal securityPrincipal = ViewBag.SecurityPrincipal as SecurityPrincipal;
+
+        if ((object)securityPrincipal == null)
+            return false;
+
+        return securityPrincipal.IsInRole("Administrator") || securityPrincipal.IsInRole("Editor");
+    }
+
+    public T QueryRecordByID<T>(object parameter) where T : class, new() {
+        return DataContext.Table<T>().QueryRecordWhere("ID = {0}", parameter);
+    }
+}
+<div style="display: none" search-header></div>
+<h3 style="margin-top: -10px;">@ViewBag.Title <span class="label label-info" id="editDeviceName"></span> <img class="page-logo pull-right" alt="Powerisde" src="Images/Powerside.png" /></h3>
+<hr class="quarter-break" />
+<div id="contentWell" class="well well-dynamic-content" content-fill-height>
+    <div id="responsiveTableDiv" class="table-responsive" style="display: none; border: none">
+        <table id="headerArea" width="100%" style="margin-top: -12px">
+            <tr>
+                <td colspan="2">
+                    <button id="header-collapse" type="button" class="btn btn-xs btn-collapsable" data-toggle="collapse" data-target="#topRow" aria-expanded="true"></button>
+                </td>
+            </tr>
+            <tr id="topRow" aria-expanded="true" class="collapse in">
+                <td width="50%" style="vertical-align: top; padding-right: 15px; min-width: 400px">
+                    <table width="95%" style="margin-bottom: -5px">
+                        <tr>
+                            <th class="header" colspan="2"><div class="header">System</div></th>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">PQube ID:</th>
+                            <td class="text-left" data-bind="text: deviceName" />
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Device Type:</th>
+                            <td class="text-left" nowrap><span data-bind="text: deviceTypeName"></span>&nbsp;&ndash;&nbsp;<btn type="button" class="btn btn-link" style="padding: 0" data-bind="click: openGraphDataWindow.bind(), attr: {title: 'Show real-time values for ' + deviceName() + '...'}" show-data-button><small>View Real-time Data</small><img src="Images/GraphData.png" class="graph-data-img" alt="Graph Data" /></btn></td>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Firmware:</th>
+                            <td class="text-left" data-bind="text: `Version ${versionInfo()}`" />
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">Location Name:</th>
+                            <td class="text-left" data-bind="text: locationName" />
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right">IP Address:</th>
+                            <td class="text-left" data-bind="text: ipAddress" />
+                        </tr>
+                        <tr hidden>
+                            <th class="text-right pad-right">GPS:</th>
+                            <td class="text-left nowrap" data-bind="text: `${gpsInstalled() ? '' : 'not '}installed / ${gpsSatellites()} satellites`" />
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right" style="vertical-align: top">Monitoring:</th>
+                            <td class="text-left nowrap">@(device != null && device.Enabled ? "Enabled" : "Disabled")</td>
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right" style="vertical-align: top">Device Time:</th>
+                            <td class="text-left nowrap" data-bind="html: time" />
+                        </tr>
+                        <tr>
+                            <th class="text-right pad-right" style="vertical-align: top">Time Error:</th>
+                            <td class="text-left nowrap" data-bind="html: timeErrorText, attr: { title: `Total error: ${timeError().toFixed(2)} seconds` }" />
+                        </tr>
+                    </table>
+                </td>
+                <td width="50%" style="vertical-align: top">
+                    <table width="95%">
+                        <tr>
+                            <th class="header"><div class="header">Input Modules</div></th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <table class="table table-condensed table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Name</th>
+                                            <th class="text-center">Availability</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: modules">
+                                        <tr id="moduleRow" style="visibility: hidden">
+                                            <td width="50%" class="text-center valign-middle nowrap" data-bind="text: name" />
+                                            <td width="50%" class="text-center valign-middle nowrap"><span data-bind="text: model"></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table id="config-header" class="config-header-expanded" width="50%">
+                        <tr>
+                            <th class="header"><div class="header">Device Configuration</div></th>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <div id="busyDataBlock" style="display: none">
+            <span id="busyDataLabel">Loading</span>&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+        </div>
+        <div id="left-buttons" class="btn-group-vertical pull-left" role="group">
+            <button id="restartDeviceButton" type="button" class="btn btn-sm btn-default pull-left" data-bind="enable: canRestart" hub-dependent>
+                <span class="glyphicon glyphicon-off"></span>&nbsp;&nbsp;Restart&nbsp;Device&nbsp;
+            </button>
+            <div class="pull-left">
+                <label id="hardRestartLabel"><input id="hardRestart" type="checkbox">&nbsp;Hard restart</label>
+            </div>
+        </div>
+        <div id="right-buttons" class="btn-group-vertical pull-right" role="group">
+            <button id="saveChangesButton" type="button" class="btn btn-sm btn-primary pull-right" data-bind="enable: canSave" hub-dependent>
+                <span class="glyphicon glyphicon-floppy-save"></span>&nbsp;&nbsp;Save&nbsp;Changes
+            </button>
+            <button id="exportConfigButton" type="button" class="btn btn-sm btn-default pull-right" data-bind="enable: canExport" onclick="showExportConfigFileNameDialog()">
+                <span class="glyphicon glyphicon-save-file"></span>&nbsp;&nbsp;Export&nbsp;Config
+            </button>
+            <div class="well well-sm floating-form" id="exportConfigFileNameDialog" style="z-index: 1000; margin-left: -100px; margin-top: 65px; border: 1px solid black">
+                <form class="form-inline" role="form">
+                    <div class="form-group form-group-sm">
+                        <button type="button" class="close" onclick="$('#exportConfigFileNameDialog').hide()" style="margin-top: -5px; margin-left: 8px">&times;</button>
+                        <label for="exportConfigFileName">Config file name:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="exportConfigFileName" placeholder="File name..." />
+                            <span class="input-group-btn">
+                                <button id="exportConfigFile" type="button" class="btn btn-default btn-sm" style="margin-right: -3px; font-weight: bold">Save</button>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <a href="#" id="exportConfigFileLink" target="_blank" style="display: none"></a>
+            <button id="importConfigButton" type="button" class="btn btn-sm btn-default pull-right" data-bind="enable: canImport" onclick="showImportConfigFileNameDialog()">
+                <span class="glyphicon glyphicon-open-file"></span>&nbsp;&nbsp;Import&nbsp;Config
+            </button>
+            <input id="importConfigFileName" type="file" accept="text/json" style="position: fixed; top: -100em" onchange="importConfigFile(event)">
+        </div>
+        <div id="tabs"></div>
+    </div>
+    <h3 id="invalidDeviceMessage" style="display: none; color: red">@Raw(invalidDeviceMessage)</h3>
+</div>
+<hr id="view-spacer" class="thick-spacer" style="margin-top: -10px; margin-bottom: 8px" />
+<div class="panel panel-default">
+    <div class="panel-heading" style="height: 30px; padding-top: 5px">
+        <label style="margin-top: 1px">
+            <span data-bind="text: `${deviceName()}&nbsp;Configuration`"></span>&nbsp;&nbsp;&nbsp;
+            <label id="configTypeSelectionBlock">view as:
+                &nbsp;<input id="iniConfigType" type="radio" class="view-config-type" value="ini" data-bind="checked: viewConfigType"><label for="iniConfigType">&nbsp;INI</label>
+                &nbsp;<input id="jsonConfigType" type="radio" class="view-config-type" value="json" data-bind="checked: viewConfigType"><label for="jsonConfigType">&nbsp;JSON</label>
+            </label>
+        </label>
+        <button id="copyConfigButton" type="button" class="btn btn-xs btn-default pull-right">Copy</button>
+        <button type="button" class="btn btn-xs btn-collapsable collapsed" style="top: 2px; right: -10px" data-toggle="collapse" data-target="#deviceConfiguration"></button>
+    </div>
+    <div id="deviceConfiguration" class="panel-body collapse" style="padding: 2px; margin-bottom: -10px">
+        <pre id="configText" data-bind="text: viewConfigAsIni() ? deviceConfigIni() : deviceConfigJson()"></pre>
+    </div>
+</div>
+<div id="graphDataWindow" class="modal modal-wide fade" role="dialog" style="max-width: 1050px; margin: 0 auto">
+    <div class="modal-vertical-align-container">ge
+        <div class="modal-dialog modal-md modal-vertical-align-center">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <iframe style="border: none" id="graphDataFrame"></iframe>
+                    <button type="button" class="btn btn-default pull-right popup-ok-button" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="@Resources.Root/Shared/Scripts/knockout.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.mapping.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.validation.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/knockout.reactor.js"></script>
+    <script src="@Resources.Root/Shared/Scripts/gsf.web.knockout.js"></script>
+    <script src="Scripts/jquery.mousewheel.js"></script>
+    <script src="Scripts/jquery.ui.scrolltabs.js"></script>
+    <script src="Scripts/SectionMapBuilder.js"></script>
+
+    <script>
+        "use strict";
+
+        var viewModel = null;
+        const deviceID = @deviceID;
+        const deviceAcronym = "@deviceAcronym.JavaScriptEncode()";
+        const deviceFound = @deviceFound.ToString().ToLower();
+
+        let shiftIsDown = false;
+
+        $(document).keydown(function (e) {
+            shiftIsDown = e.keyCode === 16;
+        });
+
+        $(document).keyup(function (e) {
+            shiftIsDown = false;
+        });
+
+        // Section map builder operations
+        const smb = new SectionMapBuilder("smb");
+
+        smb.elementIsEnabled = elementTargetsInputConfig;
+        smb.modelChangedExpr = "viewModel.configChanged()";
+
+        const deviceTypes = {
+            PQube3:  { index: 0, name: "PQube 3",  type: "3" },
+            PQube3e: { index: 1, name: "PQube 3e", type: "3e" },
+            PQube3v: { index: 2, name: "PQube 3v", type: "3v" },
+            PQube3r: { index: 3, name: "PQube 3r", type: "3r" }
+        };
+
+        const deviceTypeKeys = Object.keys(deviceTypes);
+
+        const deviceTypeArray = [
+            deviceTypes.PQube3,
+            deviceTypes.PQube3e,
+            deviceTypes.PQube3v,
+            deviceTypes.PQube3r
+        ];
+
+        function getDeviceType(value) {
+            if (typeof value === "string") {
+                const key = `PQube${value}`;
+
+                if (deviceTypes.hasOwnProperty(key))
+                    return deviceTypes[key];
+
+                return { index: -1, name: "Undefined", type: "Undefined" };
+            }
+
+            return deviceTypeArray[parseInt(value, 10)];
+        }
+
+        // One section set defined per device type
+        const sections = [
+            {
+                // [0] PQube3
+                GeneralInfo:           { index: 0,  name: "General Info" },
+                LoadDefinition:        { index: 1,  name: "Load Definition" },
+                ACVoltage:             { index: 2,  name: "AC Voltage" },
+                VoltageTriggering:     { index: 3,  name: "Voltage Triggering" },
+                DualVoltageMode:       { index: 4,  name: "Dual Voltage Mode" },
+                ACCurrents1_8:         { index: 5,  name: "AC Currents (I1-I8)" },
+                CurrentTriggering1_8:  { index: 6,  name: "Current Triggering (I1-I8)" },
+                Harmonics:             { index: 7,  name: "Harmonics" },
+                ADInputs:              { index: 8,  name: "Analog/Digital Inputs" },
+                ADTriggering:          { index: 9,  name: "Analog/Digital Triggering" },
+                EnvirosensorProbe:     { index: 10, name: "Envirosensor Probe" },
+                Accelerometer:         { index: 11, name: "Accelerometer" },
+                RelayOutput:           { index: 12, name: "Relay Output" },
+                Events:                { index: 13, name: "Events" },
+                TrendRecording:        { index: 14, name: "Trend Recording" },
+                MainsSignaling:        { index: 15, name: "Mains Signaling" },
+                Network:               { index: 16, name: "Network" },
+                Security:              { index: 17, name: "Security" },
+                TimeSynchronization:   { index: 18, name: "Time Synchronization" },
+                AdditionalProtocols:   { index: 19, name: "Additional Protocols" },
+                EMail:                 { index: 20, name: "E-Mail" },
+                ReportGeneration:      { index: 21, name: "Report Generation" }
+            },
+            {
+                // [1] PQube3e
+                GeneralInfo:           { index: 0,  name: "General Info" },
+                LoadDefinition:        { index: 1,  name: "Load Definition" },
+                ACVoltage:             { index: 2,  name: "AC Voltage" },
+                VoltageTriggering:     { index: 3,  name: "Voltage Triggering" },
+                DualVoltageMode:       { index: 4,  name: "Dual Voltage/Power Mode" },
+                ACCurrents1_8:         { index: 5,  name: "AC Currents (I1-I8)" },
+                ACCurrents9_14:        { index: 6,  name: "AC Currents (I9-I14)" },
+                CurrentTriggering1_8:  { index: 7,  name: "Current Triggering (I1-I8)" },
+                CurrentTriggering9_14: { index: 8,  name: "Current Triggering (I9-I14)" },
+                Harmonics:             { index: 9,  name: "Harmonics" },
+                ADInputs:              { index: 10, name: "Analog/Digital Inputs" },
+                ADTriggering:          { index: 11, name: "Analog/Digital Triggering" },
+                EnvirosensorProbe:     { index: 12, name: "Envirosensor Probe" },
+                Accelerometer:         { index: 13, name: "Accelerometer" },
+                RelayOutput:           { index: 14, name: "Relay Output" },
+                Events:                { index: 15, name: "Events" },
+                TrendRecording:        { index: 16, name: "Trend Recording" },
+                MainsSignaling:        { index: 17, name: "Mains Signaling" },
+                Network:               { index: 18, name: "Network" },
+                Security:              { index: 19, name: "Security" },
+                TimeSynchronization:   { index: 10, name: "Time Synchronization" },
+                AdditionalProtocols:   { index: 20, name: "Additional Protocols" },
+                EMail:                 { index: 21, name: "E-Mail" },
+                ReportGeneration:      { index: 22, name: "Report Generation" }
+            },
+            {
+                // [2] PQube3v
+                GeneralInfo:           { index: 0,  name: "General Info" },
+                LoadDefinition:        { index: 1,  name: "Load Definition" },
+                ACVoltage:             { index: 2,  name: "AC Voltage" },
+                VoltageTriggering:     { index: 3,  name: "Voltage Triggering" },
+                DualVoltageMode:       { index: 4,  name: "Dual Voltage Mode" },
+                Harmonics:             { index: 5,  name: "Harmonics" },
+                ADInputs:              { index: 6,  name: "Analog/Digital Inputs" },
+                ADTriggering:          { index: 7,  name: "Analog/Digital Triggering" },
+                EnvirosensorProbe:     { index: 8,  name: "Envirosensor Probe" },
+                Accelerometer:         { index: 9,  name: "Accelerometer" },
+                RelayOutput:           { index: 10, name: "Relay Output" },
+                Events:                { index: 11, name: "Events" },
+                TrendRecording:        { index: 12, name: "Trend Recording" },
+                MainsSignaling:        { index: 13, name: "Mains Signaling" },
+                Network:               { index: 14, name: "Network" },
+                Security:              { index: 15, name: "Security" },
+                TimeSynchronization:   { index: 16, name: "Time Synchronization" },
+                AdditionalProtocols:   { index: 17, name: "Additional Protocols" },
+                EMail:                 { index: 18, name: "E-Mail" },
+                ReportGeneration:      { index: 19, name: "Report Generation" }
+            },
+            {
+                // [3] PQube3r
+                GeneralInfo:           { index: 0,  name: "General Info" },
+                LoadDefinition:        { index: 1,  name: "Load Definition" },
+                ACVoltage:             { index: 2,  name: "AC Voltage" },
+                VoltageTriggering:     { index: 3,  name: "Voltage Triggering" },
+                DualVoltageMode:       { index: 4,  name: "Dual Voltage Mode" },
+                ACCurrents1_8:         { index: 5,  name: "AC Currents (I1-I8)" },
+                CurrentTriggering1_8:  { index: 6,  name: "Current Triggering (I1-I8)" },
+                Harmonics:             { index: 7,  name: "Harmonics" },
+                ADInputs:              { index: 8,  name: "Analog/Digital Inputs" },
+                ADTriggering:          { index: 9,  name: "Analog/Digital Triggering" },
+                EnvirosensorProbe:     { index: 10, name: "Envirosensor Probe" },
+                Accelerometer:         { index: 11, name: "Accelerometer" },
+                RelayOutput:           { index: 12, name: "Relay Outputs" },
+                Events:                { index: 13, name: "Events" },
+                TrendRecording:        { index: 14, name: "Trend Recording" },
+                MainsSignaling:        { index: 15, name: "Mains Signaling" },
+                Network:               { index: 16, name: "Network" },
+                Security:              { index: 17, name: "Security" },
+                TimeSynchronization:   { index: 18, name: "Time Synchronization" },
+                AdditionalProtocols:   { index: 19, name: "Additional Protocols" },
+                EMail:                 { index: 20, name: "E-Mail" },
+                ReportGeneration:      { index: 21, name: "Report Generation" }
+            }
+        ];
+
+        const sectionKeys = [
+            Object.keys(sections[deviceTypes.PQube3.index]),
+            Object.keys(sections[deviceTypes.PQube3e.index]),
+            Object.keys(sections[deviceTypes.PQube3v.index]),
+            Object.keys(sections[deviceTypes.PQube3r.index])
+        ];
+
+        function configMatches() {
+            const args = arguments.length === 1 && Array.isArray(arguments[0]) ?
+                arguments[0] :
+                Array.from(arguments);
+
+            if (args.length === 0)
+                return false;
+
+            for (let i = 0; i < args.length; i++)
+                args[i] = args[i].trim().toUpperCase();
+
+            const keyValue = viewModel.deviceType().toUpperCase();
+
+            return args.every(arg => arg.startsWith("!")) ?
+                /* AND logic: */ args.every(arg => arg.substr(1) !== keyValue) :
+                /*  OR logic: */ args.some(arg => arg.startsWith("!") ? arg.substr(1) !== keyValue : arg === keyValue);
+        }
+
+        function elementTargetsInputConfig(definition) {
+            if (definition.hasOwnProperty("@@CONFIG")) {
+                const config = definition["@@CONFIG"].trim();
+
+                if (config.length > 0 && config !== "*" && !configMatches(config.split(",")))
+                    return false;
+            }
+
+            return true;
+        }
+
+        function addQuotes(value) {
+            value = (value || "").trim();
+
+            if (value.startsWith("\"") && value.endsWith("\""))
+                return value;
+
+            return `"${value}"`;
+        }
+
+        function removeQuotes(value) {
+            value = (value || "").trim();
+
+            if (value.startsWith("\"") && value.endsWith("\""))
+                return value.length > 2 ? value.substr(1, value.length - 2) : "";
+
+            return value;
+        };
+
+        function fromOnOff(value) {
+            return (value || "OFF").trim().toUpperCase() !== "OFF";
+        }
+
+        function toOnOff(value) {
+            return value ? "ON" : "OFF";
+        }
+
+        function DeviceViewModel() {
+            const self = this;
+
+            // Observable fields
+            self.versionInfo = ko.observable("Version 3.9");
+            self.locationName = ko.observable("querying...");
+            self.gpsInstalled = ko.observable(false);
+            self.gpsSatellites = ko.observable(0);
+            self.ipAddress = ko.observable("");
+            self.time = ko.observable("");
+            self.timeError = ko.observable(0.0);
+            self.timeErrorText = ko.observable("");
+            self.modules = ko.observableArray();
+            self.deviceConfig = ko.observable("");
+            self.viewConfigAsIni = ko.observable(true);
+            self.errors = ko.validation.group(self);
+
+            // Standard fields
+            self.vNom = undefined;
+            self.iNom = undefined;
+
+            // Internal fields
+            self._dataHubIsConnected = ko.observable(false);
+            self._isDirty = ko.observable(false);
+            self._isSaving = ko.observable(false);
+            self._deviceConfigIni = ko.observable("");
+            self._deviceTypeIndex = ko.observable(deviceTypes.PQube3.index);
+
+            // Properties
+            self.dataHubIsConnected = ko.pureComputed({
+                read: self._dataHubIsConnected,
+                write: function (value) {
+                    if (value === undefined)
+                        value = false;
+
+                    self._dataHubIsConnected(value);
+                },
+                owner: self
+            });
+
+            self.deviceName = ko.pureComputed({
+                read: function () {
+                    const deviceConfig = self.deviceConfig();
+
+                    if (!deviceConfig)
+                        return "loading...";
+
+                    const configuredName = removeQuotes(deviceConfig.PQube_Information.PQube_ID);
+
+                    if (configuredName === "PQube_ID not set")
+                        return deviceAcronym;
+
+                    return configuredName;
+                },
+                owner: self
+            });
+
+            self.canSave = ko.pureComputed({
+                read: function () {
+                    return @(userIsEditor.ToString().ToLower()) &&
+                        self.deviceConfig().PQube_Information &&
+                        self.isDirty() &&
+                        !self.isSaving() &&
+                        self.dataHubIsConnected();
+                },
+                owner: self
+            });
+
+            self.canExport = ko.pureComputed({
+                read: function () {
+                    return self.deviceConfig().PQube_Information &&
+                        !self.isSaving() &&
+                        self.dataHubIsConnected();
+                },
+                owner: self
+            });
+
+            self.canImport = ko.pureComputed({
+                read: function () {
+                    return  @(userIsEditor.ToString().ToLower()) &&
+                        !self.isSaving() &&
+                        self.dataHubIsConnected();
+                },
+                owner: self
+            });
+
+            self.canRestart = ko.pureComputed({
+                read: function () {
+                    return @(userIsEditor.ToString().ToLower()) &&
+                        !self.isSaving() &&
+                        self.dataHubIsConnected();
+                },
+                owner: self
+            });
+
+            self.isDirty = ko.pureComputed({
+                read: self._isDirty,
+                write: function (value) {
+                    self._isDirty(value);
+                },
+                owner: self
+            });
+
+            self.isSaving = ko.pureComputed({
+                read: self._isSaving,
+                owner: self
+            });
+
+            self.deviceConfigJson = ko.pureComputed({
+                read: function () {
+                    return JSON.stringify(self.deviceConfig(), null, 2);
+                },
+                owner: self
+            });
+
+            self.deviceConfigIni = ko.pureComputed({
+                read: function () {
+                    const configJson = self.deviceConfigJson();
+
+                    if (configJson && configJson.length > 2) {
+                        if (self.dataHubIsConnected()) {
+                            dataHub.getJsonAsIni(configJson)
+                                .done(self._deviceConfigIni)
+                                .fail(error => self._deviceConfigIni(`Failed to convert JSON to INI: ${error}\r\n\r\nJSON:\r\n${configJson}`));
+                        }
+                        else {
+                            self._deviceConfigIni(`Waiting for hub connection to convert JSON to INI.\r\n\r\nJSON:\r\n${configJson}`);
+                        }
+                    }
+                    else {
+                        self._deviceConfigIni("");
+                    }
+
+                    return self._deviceConfigIni();
+                },
+                owner: self
+            });
+
+            self.deviceTypeIndex = ko.pureComputed({
+                read: self._deviceTypeIndex,
+                write: function (value) {
+                    self._deviceTypeIndex(value);
+                },
+                owner: self
+            });
+
+            self.deviceType = ko.pureComputed({
+                read: function () {
+                    return getDeviceType(self._deviceTypeIndex()).type;
+                },
+                owner: self
+            });
+
+            self.deviceTypeName = ko.pureComputed({
+                read: function () {
+                    return getDeviceType(self._deviceTypeIndex()).name;
+                },
+                owner: self
+            });
+
+            self.viewConfigType = ko.pureComputed({
+                read: function () {
+                    return self.viewConfigAsIni() ? "ini" : "json";
+                },
+                write: function (value) {
+                    self.viewConfigAsIni(value.trim().toLowerCase() === "ini");
+                },
+                owner: self
+            });
+
+            // Methods
+            self.configChanged = function () {
+                self.deviceConfig.valueHasMutated();
+                self.isDirty(true);
+            };
+
+            self.loadDeviceConfig = function () {
+                return dataHub.pQubeLoadConfig(deviceID)
+                    .then(function (configResult) {
+                        return self._loadDeviceConfig(JSON.parse(configResult));
+                    })
+                    .fail(function (error) {
+                        showErrorMessage(`Load Device Config "${error}"`, null, true);
+                    });
+            };
+
+            self.saveDeviceConfig = function () {
+                if (!self.canSave()) {
+                    showErrorMessage("Cannot save data at this time.");
+                    return $.Deferred().resolve().promise();
+                }
+
+                showInfoMessage("Saving configuration, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
+                showWorkingMessage("Saving");
+                self._isSaving(true);
+
+                return dataHub.pQubeSaveConfig(deviceID, JSON.stringify(self.deviceConfig()))
+                    .done(function () {
+                        self.isDirty(false);
+                        showInfoMessage("Save complete.", 5000);
+                        hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
+                        hideWorkingMessage();
+                    })
+                    .fail(function (error) {
+                        hideInfoMessage();
+                        showErrorMessage(`Save Configuration ${error}`, null, true);
+                        hideWorkingMessage();
+                    });
+            };
+
+            self.loadImportedDeviceConfig = function (result) {
+                const config = JSON.parse(result);
+
+                if (!config.PQube_Information) {
+                    showErrorMessage("Unexpected config file format", null, true);
+                    return;
+                }
+
+                self._loadDeviceConfig(config).done(function () {
+                    self.isDirty(true);
+                    showInfoMessage(`Successfully imported "${deviceName()}" device config.`, null, true);
+                });
+            };
+
+            self.importDeviceConfig = function (fileData) {
+                const reader = new FileReader();
+
+                reader.onload = function () {
+                    const result = reader.result.trim();
+
+                    if (result) {
+                        hideErrorMessage();
+
+                        if (result.startsWith("[") || result.startsWith(";")) {
+                            if (self.dataHubIsConnected()) {
+                                // User selected an INI-based configuration to import, convert to JSON
+                                dataHub.getIniAsJson(result, false)
+                                    .done(function (convertResult) {
+                                        self.loadImportedDeviceConfig(configID, convertResult);
+                                    })
+                                    .fail(function (error) {
+                                        showErrorMessage(`Failed to import config file: Convert INI to JSON ${error}`, null, true);
+                                    });
+                            }
+                            else {
+                                showErrorMessage("Failed to import config file: cannot convert INI config to JSON at this time, hub is not connected", null, true);
+                            }
+                        }
+                        else if (result.startsWith("{")) {
+                            self.loadImportedDeviceConfig(result);
+                        }
+                        else {
+                            showErrorMessage("Unexpected config file format: source file should start with \"{\" character for JSON or one of either \"[\", \";\" characters for INI", null, true);
+                        }
+                    }
+                    else {
+                        showErrorMessage("Failed to import config file: no data read from selected file", null, true);
+                    }
+                };
+
+                reader.onloadend = function () {
+                    if (reader.error && reader.error.message)
+                        showErrorMessage(`Failed to import config file: ${reader.error.message}`, null, true);
+                };
+
+                reader.readAsText(fileData);
+            };
+
+            self.exportDeviceConfig = function (fileName) {
+                const data = self.deviceConfigJson();
+                const anchor = $("#exportConfigFileLink");
+
+                if (typeof anchor[0].download != "undefined") {
+                    anchor.attr("href", "data:text/json;charset=utf-8," + encodeURIComponent(data));
+                    anchor.attr("download", fileName);
+                    anchor[0].click();
+                } else {
+                    if (isIE)
+                        window.navigator.msSaveBlob(new Blob([data]), fileName);
+                    else
+                        window.open("data:text/json;charset=utf-8," + encodeURIComponent(data), "_blank", "");
+                }
+            };
+
+            self.createSectionTabs = function (firstCall) {
+                const activeSections = sections[self.deviceTypeIndex()];
+                const tabList = [];
+                const tabSections = [];
+
+                tabList.push(`<ul id="tablist">`);
+
+                for (let key in activeSections) {
+                    if (activeSections.hasOwnProperty(key)) {
+                        const section = activeSections[key];
+                        const name = section.name;
+                        const index = section.index;
+
+                        tabList.push(`<li><a href="#tab${key}" onclick="viewModel.reloadTabSection('${key}', true)" tab-section-link>${name}</a></li>`);
+
+                        tabSections.push(`<div id="tab${key}" class="tab-section" style="display: none" tab-section>`);
+                        tabSections.push(`    <table width="75%" class="table-center">`);
+                        tabSections.push(`        <tr>`);
+                        tabSections.push(`            <th class="smb-header"><div class="smb-header">${name}</div></th>`);
+                        tabSections.push(`        </tr>`);
+                        tabSections.push(`    </table>`);
+
+                        if (index === 0)
+                            tabSections.push(`<div id="stubTabSections"></div>`);
+
+                        tabSections.push(`</div>`);
+                    }
+                }
+
+                tabList.push(`</ul>`);
+
+                if (!firstCall)
+                    $("#tabs").tabs("destroy");
+
+                $("#tabs").html(tabList.join("\r\n") + tabSections.join("\r\n"));
+
+                $("#tabs").tabs({
+                    activate: function (event, ui) {
+                        ui.newPanel.find(":input:not([type=hidden]):first").focus();
+                        $("[tab-section-link]").tooltip("hide");
+                    }
+                });
+
+                $("#tabs").scrollTabs({
+                    scrollOptions: {
+                        showFirstLastArrows: true,
+                        showNavWhenNeeded: true,
+                        selectTabAfterScroll: true
+                    }
+                });
+
+                $("[tab-section-link]").tooltip({
+                    title: "Shift+click to reload tab",
+                    boundary: "viewport",
+                    container: "body",
+                    placement: "top",
+                    delay: { "show": 1800, "hide": 100 }
+                });
+            };
+
+            self.loadTabSection = function (sectionKey) {
+                return dataHub.getSectionMap(`PQube\\${sectionKey}.xml`)
+                    .done(function (result) {
+                        const [sectionHtml, sectionScript] = smb.buildSection(JSON.parse(result).SECTION, "viewModel.deviceConfig()");
+
+                        $(`#tab${sectionKey}`).html(sectionHtml);
+
+                        if (sectionScript.length > 0) {
+                            const scriptID = `${sectionKey}SectionMappings`;
+
+                            if ($(`#${scriptID}`).length)
+                                return;
+
+                            const scriptElem = document.createElement("script");
+                            scriptElem.id = scriptID;
+                            scriptElem.innerHTML = sectionScript;
+                            document.body.appendChild(scriptElem);
+                        }
+                    })
+                    .fail(function (error) {
+                        showErrorMessage(error, null, true);
+                    });
+            };
+
+            self.refreshTabSections = function () {
+                $("[update-expr]").each(function () {
+                    try {
+                        eval(this.getAttribute("update-expr"));
+                    } catch (e) {
+                        console.error(e);
+                    }
+                });
+
+                $("[data-toggle='tooltip'][map-expr]")
+                    .tooltip({
+                        html: true,
+                        trigger: "manual",
+                        boundary: "viewport",
+                        placement: "top",
+                        container: "body",
+                        sanitize: true,
+                        appendToBody: true
+                    })
+                    .hover(showToolTip, hideToolTip);
+            };
+
+            self.reloadTabSection = function (sectionKey, whenShiftIsDown) {
+                if (whenShiftIsDown && !shiftIsDown)
+                    return;
+
+                self.reloadTabSections(sectionKey);
+                showInfoMessage(`Reloaded "${sectionKey}" tab section...`);
+            };
+
+            self.reloadTabSections = function () {
+                const activeSectionKeys = sectionKeys[self.deviceTypeIndex()];
+                const targetSectionKeys = arguments.length === 0 ? activeSectionKeys : Array.from(arguments);
+                const promises = [];
+
+                for (let i = 0; i < targetSectionKeys.length; i++) {
+                    const sectionKey = targetSectionKeys[i];
+
+                    if (activeSectionKeys.indexOf(sectionKey) !== -1)
+                        promises.push(self.loadTabSection(sectionKey));
+                }
+
+                return $(promises).whenAll().then(self.refreshTabSections);
+            };
+
+            self._loadDeviceConfig = function (deviceConfig) {
+                self.isDirty(false);
+                self.deviceConfig(deviceConfig); // PQube INI config serialized as JSON
+
+                // Parse device type and version
+                let line3Comment = deviceConfig["@@c3"].trim();
+
+                if (line3Comment.startsWith("; ------ "))
+                    line3Comment = line3Comment.substr(9).trim();
+
+                const parts = line3Comment.split(" ");
+
+                if (parts.length === 4 && parts[0] === "PQube" && parts[2] === "Version") {
+                    self.deviceTypeIndex(getDeviceType(parts[1]).index);
+                    self.versionInfo(parts[3]);
+                }
+                else {
+                    self.deviceTypeIndex(deviceTypeKeys[deviceTypes.PQube3.index]);
+                    self.versionInfo("3.9?");
+                }
+
+                if (deviceConfig.Network_SetupIP_Address_Method === "Use_DHCP")
+                    self.ipAddress("DHCP");
+                else
+                    self.ipAddress(deviceConfig.Fixed_IP.IP_Address);
+
+                self.locationName(deviceConfig.PQube_Information.Location_Name);
+
+                $("[id=moduleRow]").css("visibility", "hidden");
+                self.modules.removeAll();
+
+                const modules = [];
+
+                modules.push({ name: "AC Voltage Inputs", model: "All Models" });
+
+                if (self.deviceType !== deviceTypes.PQube3v.type) {
+                    modules.push({ name: "AC Current Inputs (I1-I8)", model: "3, 3e and 3r" });
+
+                    if (self.deviceType === deviceTypes.PQube3e.type) {
+                        modules.push({ name: "AC Current Inputs (I9-I14)", model: "3e only" });
+                    }
+                }
+
+                modules.push({ name: "Analog/Digital Inputs", model: "All Models" });
+
+                self.modules(modules);
+
+                $("#header-collapse").css("visibility", "visible");
+                $("[id=moduleRow]").css("visibility", "visible");
+
+                if (!$("#stubTabSections").length)
+                    self.createSectionTabs(true);
+
+                resizePageElements();
+
+                if (!self.dataHubIsConnected())
+                    return $.Deferred().resolve().promise();
+
+                const activeSections = sections[self.deviceTypeIndex()];
+                const promises = [];
+
+                promises.push(dataHub.pQubeGetDeviceTimeWithError(deviceID)
+                    .done(function (timeResult) {
+                        const utcTimeText = `${timeResult.time} UTC`;
+                        const localTime = utcTimeText.toDate();
+                        const timeZone = localTime.toLocaleTimeString("en-us", { timeZoneName: "short" }).split(' ')[2];
+                        const localTimeText = `${localTime.formatDate(ShortDateTimeFormat, false)} ${timeZone}`;
+
+                        self.time(`${utcTimeText}<br/>${localTimeText}`);
+                        self.timeError(timeResult.error);
+                        self.timeErrorText(`${timeResult.errorText}<br/>${timeResult.error < 0 ? "behind" : "ahead of"} server time`);
+                    })
+                );
+
+                for (let key in activeSections) {
+                    if (activeSections.hasOwnProperty(key)) {
+                        // Other tabs may depend on values loaded into primary tabs, so make sure
+                        // values are refreshed for first tab as soon as it is loaded
+                        if (activeSections[key].index === 0)
+                            promises.push(self.loadTabSection(key).done(self.refreshTabSections));
+                        else
+                            promises.push(self.loadTabSection(key));
+                    }
+                }
+
+                return $(promises).whenAll().then(function () {
+                    setActiveTabIndex(0);
+                    self.refreshTabSections();
+                });
+            };
+        }
+
+        function resizePageElements() {
+            let height = $("#contentWell").height() -
+                $("#headerArea").outerHeight(true) - 55;
+
+            if ($("#tablist").length)
+                height -= $("#tablist").outerHeight(true);
+
+            if ($("#busyDataBlock").is(":visible"))
+                height -= $("#busyDataBlock").outerHeight(true);
+
+            if (height > 75)
+                $("[tab-section]").height(height);
+
+            $("#graphDataFrame").attr({
+                "height": `${$("#contentWell").outerHeight(true)}px`
+            });
+        }
+
+        function showWorkingMessage(message) {
+            $("#busyDataLabel").text(message);
+            $("#busyDataBlock").show();
+            $("body").addClass("wait");
+            resizePageElements();
+        }
+
+        function hideWorkingMessage() {
+            $("#busyDataBlock").hide();
+            $("body").removeClass("wait");
+            resizePageElements();
+        }
+
+        function showLoadingMessage() {
+            $("#responsiveTableDiv").show();
+            showWorkingMessage("Loading");
+        }
+
+        function hideLoadingMessage() {
+            hideWorkingMessage();
+        }
+
+        function loadDeviceConfig() {
+            if (viewModel.canSave() && !confirm("WARNING: Device configuration changes are not saved. Are you sure you want to lose current changes and load new device config?"))
+                return $.Deferred().resolve().promise();
+
+            showInfoMessage(`Loading device configuration, please wait...&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh glyphicon-spin"></span>`, -1, true);
+            hideInfoMessage({ closeHeaderPanel: false, closeFloatingPanels: true });
+            hideErrorMessage();
+            showLoadingMessage();
+
+            return viewModel.loadDeviceConfig()
+                .done(function () {
+                    showInfoMessage("Load complete.", 5000);
+                    hideInfoMessage({ closeHeaderPanel: true, closeFloatingPanels: false });
+                    hideLoadingMessage();
+                });
+        }
+
+        function importConfigFile(event) {
+            setTimeout(function () {
+                const files = event.target.files;
+
+                viewModel.importDeviceConfig(files[0]);
+
+                $("#importConfigFileName").val("");
+            }, 100);
+        }
+
+        function showImportConfigFileNameDialog() {
+            if (viewModel.canSave() && !confirm("WARNING: Configuration changes are not saved. Are you sure you want to lose current changes and import new config?"))
+                return;
+
+            $("#importConfigFileName").trigger("click");
+        }
+
+        function showExportConfigFileNameDialog() {
+            $("#exportConfigFileNameDialog").toggle();
+
+            if ($("#exportConfigFileNameDialog").is(":visible")) {
+                $("#exportConfigFileName").val(`${viewModel.deviceName()}.json`);
+                $("#exportConfigFileName").focus();
+            }
+        }
+
+        function getActiveTabIndex() {
+            return $("#tabs").tabs("option", "active");
+        }
+
+        function setActiveTabIndex(index) {
+            const deviceTypeIndex = viewModel.deviceTypeIndex();
+            $("#tabs").tabs({ active: index });
+            $(`#tab${sectionKeys[deviceTypeIndex][index]}`).find(":input:not([type=hidden]):first").focus();
+        }
+
+        function setActiveTabSection(section) {
+            setActiveTabIndex(section.index);
+        }
+
+        function showToolTip() {
+            if (shiftIsDown) {
+                const mapExpr = this.getAttribute("map-expr");
+                const mapRootLen = "viewModel.deviceConfig().".length;
+                const mapDisplay = mapExpr.substr(mapRootLen).replaceAll("smb.getValue(", "#val(");
+                $(this).attr("data-original-title", `<p class="text-left">map: ${mapDisplay}<br/>value: ${eval(mapExpr)}</p>`)
+                    .tooltip("fixTitle")
+                    .tooltip("show");
+            }
+        }
+
+        function hideToolTip() {
+            $(this).tooltip("hide");
+        }
+
+        function clearGraphDataWindow() {
+            $("#graphDataFrame").attr({ "src": "about:blank" });
+        }
+
+        function openGraphDataWindow() {
+            const deviceName = encodeURIComponent(viewModel.deviceName());
+            const deviceType = encodeURIComponent(viewModel.deviceType());
+            const deviceTypeName = encodeURIComponent(viewModel.deviceTypeName());
+
+            $("#graphDataFrame").attr({
+                "src": `PQubeGraph.cshtml?DeviceID=@deviceID&DeviceName=${deviceName}&DeviceType=${deviceType}&DeviceTypeName=${deviceTypeName}&vNom=${viewModel.vNom}&iNom=${viewModel.iNom}&ReferenceAngle=VANA`,
+                "height": `${$("#contentWell").outerHeight(true)}px`,
+                "width": "100%"
+            });
+
+            $("#graphDataWindow").modal("show");
+        }
+
+        // Page initialization function
+        $(function() {
+            $("#bodyContainer").addClass("fill-height");
+            $("#pageHeader").css("margin-bottom", "-20px");
+
+            // Create the primary view model
+            viewModel = new DeviceViewModel();
+
+            // Initialize primary view model
+            ko.applyBindings(viewModel, document.getElementsByTagName("body")[0]);
+
+            // Monitor for view model changes
+            ko.watch(viewModel.devices, { depth: -1 }, function(parents, child, item) {
+                viewModel.isDirty(true);
+            });
+
+            // Setup export config file name dialog functionality
+            $("#exportConfigFile").click(function () {
+                $("#exportConfigFileNameDialog").hide();
+
+                let fileName = $("#exportConfigFileName").val();
+
+                if (!fileName.endsWith(".json"))
+                    fileName += ".json";
+
+                viewModel.exportDeviceConfig(fileName);
+            });
+
+            // Make enter key auto-click save
+            $("#exportConfigFileName").keyup(function (event) {
+                if (event.keyCode === 13)
+                    $("#exportConfigFile").click();
+            });
+
+            // Auto-select all text on focus
+            $("#exportConfigFileName").focus(function () {
+                $(this).select();
+            });
+
+            // Prevent default form submission when user presses enter
+            $("#exportConfigFileNameDialog").submit(function () {
+                return false;
+            });
+
+            // Auto-hide pop-up form when user clicks outside form area
+            $("#exportConfigFileNameDialog").focusout(function () {
+                if (!$("#exportConfigFileNameDialog").is(":hover") && !$("#exportConfigButton").is(":hover"))
+                    $("#exportConfigFileNameDialog").hide();
+            });
+
+            // Let view model know about hub connectivity changes
+            $(window).on("hubConnected", function() {
+                viewModel.dataHubIsConnected(true);
+
+                if (!deviceFound || viewModel.deviceConfig().commandresult)
+                    return;
+
+                $("#editDeviceName").html(`Editing&nbsp;${deviceAcronym}`);
+
+                // Handle initial page load
+                showInfoMessage("Querying device configuration, please wait...&nbsp;&nbsp;<span class=\"glyphicon glyphicon-refresh glyphicon-spin\"></span>", -1, true);
+                showLoadingMessage();
+
+                loadDeviceConfig()
+                    .done(function () {
+                        $("[show-data-button]").tooltip({placement: "top", delay: { "show": 500, "hide": 100 }});
+                    })
+                    .fail(function (error) {
+                        hideInfoMessage();
+                        showErrorMessage(`Device Configuration Load ${error}`, null, true);
+                        hideLoadingMessage();
+                    });
+            });
+
+            $(window).on("hubDisconnected", function() {
+                viewModel.dataHubIsConnected(false);
+            });
+
+            $("#saveChangesButton").click(function (e) {
+                e.preventDefault();
+                viewModel.saveDeviceConfig();
+            });
+
+            $("#copyConfigButton").click(function (e) {
+                e.preventDefault();
+
+                if (copyToClipboard($("#configText").text()))
+                    showInfoMessage("Configuration copied!");
+                else
+                    showErrorMessage("Failed to copy configuration to the clipboard");
+            });
+
+            $("#restartDeviceButton").click(function (e) {
+                e.preventDefault();
+
+                if (!viewModel.canRestart()) {
+                    showErrorMessage("Cannot restart at this time.");
+                    return;
+                }
+
+                const hardRestart = $("#hardRestart").is(":checked");
+
+                if (confirm(`Are you sure you want to ${hardRestart ? "hard " : ""}restart device?`)) {
+                    showInfoMessage("Attempting to restart device...", -1, true);
+                    showWorkingMessage("Restarting");
+
+                    dataHub.pQubeRestartDevice(deviceID, hardRestart).done(function () {
+                        showInfoMessage("Device restart request sent successfully.", null, true);
+                        hideWorkingMessage();
+                    })
+                    .fail(function (error) {
+                        hideInfoMessage();
+                        showErrorMessage(`Device Restart ${error}`, null, true);
+                        hideWorkingMessage();
+                    });
+                }
+            });
+
+            $(window).bind("beforeunload", function () {
+                if (viewModel.isSaving()) {
+                    return "WARNING: Currently attempting to save changes. It is recommended to stay on page until save completes. Are you sure want to exit page?";
+                }
+                else {
+                    return viewModel.canSave() ?
+                        "WARNING: Configuration changes are not saved. Are you sure you want to lose changes and exit page?" :
+                        undefined;
+                }
+            });
+
+            $("#headerArea").on("shown.bs.collapse", function() {
+                resizePageElements();
+                $("#config-header").addClass("config-header-expanded");
+                $("#config-header").removeClass("config-header-collapsed");
+                $("#right-buttons").removeClass("right-buttons-collapsed");
+            });
+
+            $("#headerArea").on("hidden.bs.collapse", function() {
+                resizePageElements();
+                $("#config-header").removeClass("config-header-expanded");
+                $("#config-header").addClass("config-header-collapsed");
+                $("#right-buttons").addClass("right-buttons-collapsed");
+            });
+
+            $("#deviceConfiguration").on("shown.bs.collapse", function () {
+                $("#configTypeSelectionBlock").visible();
+                $("#copyConfigButton").visible();
+                $("#view-spacer")[0].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+            });
+
+            $("#deviceConfiguration").on("hidden.bs.collapse", function () {
+                $("#configTypeSelectionBlock").invisible();
+                $("#copyConfigButton").invisible();
+            });
+
+            $(window).on("messageVisibiltyChanged", function () {
+                resizePageElements();
+            });
+
+            $(window).resize(function () {
+                resizePageElements();
+            });
+
+            resizePageElements();
+
+            $("#graphDataWindow").modal({ show: false, backdrop: "static", keyboard: false });
+
+            $(document).on("hidden.bs.modal", "#graphDataWindow", function () {
+                clearGraphDataWindow();
+            });
+
+            if (!deviceFound)
+                $("#invalidDeviceMessage").show();
+        });
+
+        function copyToClipboard(text) {
+            if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+                const textarea = document.createElement("textarea");
+
+                textarea.textContent = text;
+                textarea.style.position = "fixed";
+                document.body.appendChild(textarea);
+                textarea.select();
+
+                try {
+                    return document.execCommand("copy");
+                }
+                catch (ex) {
+                    console.warn("Copy to clipboard failed.", ex);
+                    return false;
+                }
+                finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+            else {
+                console.warn("Clipboard function unavailable.");
+                return false;
+            }
+        }
+    </script>
+}

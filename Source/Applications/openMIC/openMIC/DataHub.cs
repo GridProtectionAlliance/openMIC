@@ -869,7 +869,7 @@ namespace openMIC
             string mapFileName = Path.Combine(WebRootPath, "SectionMaps", mapName);
 
             if (!File.Exists(mapFileName))
-                throw new FileNotFoundException("Section Map Not Found", mapName);
+                throw new FileNotFoundException($"Section Map \"{mapName}\" Not Found", mapName);
 
             XmlDocument mapFile = new XmlDocument();
             mapFile.Load(mapFileName);
