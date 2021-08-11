@@ -281,7 +281,7 @@ function SectionMapBuilder(instanceName) {
         return alias;
     };
 
-    self.buildListElements = (list, defaultVal) => {
+    self.buildListElements = (list, type, defaultVal) => {
         const html = [];
 
         let index = 0;
@@ -295,10 +295,25 @@ function SectionMapBuilder(instanceName) {
 
         for (let i = 0; i < items.length; i++) {
             const value = items[i];
-            const optVal = value["@VALUE"] || index;
             const keyVal = value["@KEYVALUE"] ? ` key-value="${value["@KEYVALUE"]}"` : "";
             const enabled = self.elementIsEnabled(value);
             const hidden = enabled ? "" : " hidden";
+
+            let optVal;
+            
+            if (type === PropDefType.NUMERIC) {
+                optVal = value["@VALUE"] ? parseInt(value["@VALUE"], 10) : index;
+                defaultVal = defaultVal ? parseInt(defaultVal, 10) : -1;
+            }
+            else if (type === PropDefType.TEXT) {
+                optVal = value["@VALUE"] || "";
+                defaultVal = defaultVal || null;
+            }
+            else {
+                optVal = value["@VALUE"] || index;
+                defaultVal = defaultVal || null;
+            }
+
             const selected = optVal === defaultVal || !defaultVal && enabled && totalOptions === 0 ? " selected" : "";
 
             html.push(`<option value="${optVal}"${keyVal}${selected}${hidden}>${self.getAlias(value)}</option>`);
@@ -325,9 +340,13 @@ function SectionMapBuilder(instanceName) {
 
         const applyInstanceGetValue = value => value.replaceAll("#val(", `${instanceName}.getValue(`);
         const mapExpr = applyInstanceGetValue(String.format(map.startsWith(".") ? `${mapRoot}${map}` : map, bankTarget));
+        const sectionName = propDef["@SECTIONNAME"];
+        const rootName = `${sectionName}${bankTarget && bankTarget.length ? `_${bankTarget}` : ""}`;
 
         const applySubstitutions = value => applyInstanceGetValue(value
             .replaceAll("{name}", name)
+            .replaceAll("{sectionName}", sectionName)
+            .replaceAll("{rootName}", rootName)
             .replaceAll("{value}", getPropVal)
             .replaceAll("{mapExpr}", mapExpr)
             .replaceAll("{mapRoot}", mapRoot)
@@ -361,7 +380,7 @@ function SectionMapBuilder(instanceName) {
         const html = [];
         const script = [];
 
-        html.push(`<tr${hidden}><th class="smb-pad-right" width="30%">${self.getAlias(propDef)}:</th><td>`);
+        html.push(`<tr id="row-${name}"${hidden}><th class="smb-pad-right" width="30%">${self.getAlias(propDef)}:</th><td>`);
 
         switch (type) {
             case PropDefType.CHECKBOX:
@@ -389,7 +408,7 @@ function SectionMapBuilder(instanceName) {
                 script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
                 script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
                 html.push(`<select class="form-control smb-input" ${inputAttributes}>`);
-                html.push(self.buildListElements(propDef.PARAM.LIST, propDef["@DEFAULT"])[0]);
+                html.push(self.buildListElements(propDef.PARAM.LIST, parseInt(propDef.PARAM["@TYPE"] || PropDefType.NUMERIC, 10), propDef["@DEFAULT"])[0]);
                 html.push(`</select>`);
                 break;
         }
@@ -526,8 +545,10 @@ function SectionMapBuilder(instanceName) {
         };
 
         const addSectionElementDefinition = (definition, elementType) => {
-            if (definition.hasOwnProperty("@NAME") && parseInt(definition["@TYPE"], 10) !== PropDefType.HEADER)
-                definition["@NAME"] = `${sectionName}Section_${definition["@NAME"]}`;
+            if (definition.hasOwnProperty("@NAME") && parseInt(definition["@TYPE"], 10) !== PropDefType.HEADER) {
+                definition["@SECTIONNAME"] = `${sectionName}Section`;
+                definition["@NAME"] = `${definition["@SECTIONNAME"]}_${definition["@NAME"]}`;
+            }
 
             definition.order = definition.hasOwnProperty("@ORDER") ?
                 parseInt(definition["@ORDER"], 10) :
