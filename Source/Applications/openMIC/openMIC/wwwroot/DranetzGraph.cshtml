@@ -974,7 +974,8 @@
                         const isVoltage = phasor.phasorType === phasorType.voltage;
                         const voltageTolerance = 0.9;  // 10% (NEMA)
                         const currentTolerance = 0.85; // 15%
-                        const extent = width * (isVoltage ? voltageTolerance : currentTolerance);
+                        const xExtent = width * (isVoltage ? voltageTolerance : currentTolerance);
+                        const yExtent = height * (isVoltage ? voltageTolerance : currentTolerance);
                         const phaseValues = self.phasorRegisterMap[key];
                         const scale = isVoltage ? vNom : iNom;
                         const magnitudeRatio = isVoltage && phasor.lineType === lineType.lineToLine ? sqrt3 : 1.0;
@@ -986,8 +987,8 @@
                         phasor.angle = ko.pureComputed({ read: () => phasor.angleRegister.value() - referenceAngleRegister.value(), owner: self });
                         phasor.magnitude = ko.pureComputed({ read: () => phasor.magnitudeRegister.value() / magnitudeRatio, owner: self });
                         phasor.perUnit = ko.pureComputed({ read: () => phasor.magnitude() / scale, owner: self });
-                        phasor.x2 = ko.pureComputed({ read: () => width + extent * phasor.perUnit() * Math.cos(phasor.angle() * Math.PI / 180.0), owner: self });
-                        phasor.y2 = ko.pureComputed({ read: () => height - extent * phasor.perUnit() * Math.sin(phasor.angle() * Math.PI / 180.0), owner: self });
+                        phasor.x2 = ko.pureComputed({ read: () => width + xExtent * phasor.perUnit() * Math.cos(phasor.angle() * Math.PI / 180.0), owner: self });
+                        phasor.y2 = ko.pureComputed({ read: () => height - yExtent * phasor.perUnit() * Math.sin(phasor.angle() * Math.PI / 180.0), owner: self });
                         phasor.visible = ko.observable(true);
 
                         phasor.angleRegister.title = `${phasor.angleRegister.title}<br/>Raw Value: ${self.localeValue(phasor.angleRegister.value())}`;
