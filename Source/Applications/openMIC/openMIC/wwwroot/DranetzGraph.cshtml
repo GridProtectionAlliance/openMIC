@@ -169,7 +169,7 @@
         vNom = 1.0;
     }
 
-    if (!parameters.TryGetValue("iNnom", out parameter) || !double.TryParse(parameter, out iNom)) {
+    if (!parameters.TryGetValue("iNom", out parameter) || !double.TryParse(parameter, out iNom)) {
         iNom = 1.0;
     }
 
@@ -977,8 +977,8 @@
                         const xExtent = width * (isVoltage ? voltageTolerance : currentTolerance);
                         const yExtent = height * (isVoltage ? voltageTolerance : currentTolerance);
                         const phaseValues = self.phasorRegisterMap[key];
-                        const scale = isVoltage ? vNom : iNom;
                         const magnitudeRatio = isVoltage && phasor.lineType === lineTypes.lineToLine ? sqrt3 : 1.0;
+                        const scale = isVoltage ? vNom * magnitudeRatio : iNom;
 
                         phasor.key = key;
                         phasor.angleRegister = phaseValues[angle];
