@@ -1,2 +1,40 @@
-﻿<SECTION NAME="events" ALIAS="Events">
+﻿<SECTION NAME="events" ALIAS="Events" MAPROOT="Snapshot_Events">
+	<PROPDEF ALIAS="Snapshot Events" TYPE="HEADER"/>
+	<PROPDEF NAME="waveformSnapshotInterval" ALIAS="Waveform Snapshot Interval In Hour(s)" TYPE="SELECT" DEFAULT="OFF" MAP=".Waveform_Snapshot_Interval_In_Hours">
+		<PARAM TYPE="4">
+			<LIST>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="3" VALUE="3"/>
+				<ITEM NAME="6" VALUE="6"/>
+				<ITEM NAME="24" VALUE="24"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="snapshotTriggerHour" ALIAS="Snapshot Trigger Hour" TYPE="NUMERIC" DEFAULT="0" MAP=".Snapshot_Trigger_Hour">
+		<PARAM MIN="0" MAX="23"/>
+	</PROPDEF>
+	<PROPDEF NAME="waveformSnapshotAtStartup" ALIAS="Waveform Snapshot At Startup" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Waveform_Snapshot_At_Startup" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF ALIAS="Event Recordings" TYPE="HEADER" MAPROOT="Channel_Recordings"/>
+	<PROPDEF NAME="recordedSamplesPerCycle" ALIAS="Recorded Samples Per Cycle" TYPE="SELECT" DEFAULT="256" MAP=".Recorded_Samples_Per_Cycle">
+		<PARAM TYPE="4">
+			<LIST>
+				<ITEM NAME="32" VALUE="32"/>
+				<ITEM NAME="64" VALUE="64"/>
+				<ITEM NAME="128" VALUE="128"/>
+				<ITEM NAME="256" VALUE="256"/>
+				<ITEM NAME="512" VALUE="512"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="captureEndOfEvent" ALIAS="Capture End Of Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Capture_End_Of_Event" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="rmsRecordingDef" ALIAS="Event RMS Recording Definition" TYPE="SELECT" DEFAULT="Urms1/2" MAP=".Event_RMS_Recording_Definition">
+		<PARAM TYPE="4">
+			<LIST>
+				<ITEM NAME="Urms1/2" VALUE="Urms1/2"/>
+				<ITEM NAME="Urms1" VALUE="Urms1"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="eventOverflowProtection" ALIAS="Event Overflow Protection" TYPE="CHECKBOX" DEFAULT="OFF" MAP="viewModel.deviceConfig().Measurement_Setup.Enable_Event_Overflow_Protection" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="useExtendedEventRec" ALIAS="Use Extended Event Recording" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_Extended_RMS_Event_Recording" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
 </SECTION>

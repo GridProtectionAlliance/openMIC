@@ -1,2 +1,29 @@
-﻿<SECTION NAME="harmonics" ALIAS="Harmonics">
+﻿<SECTION NAME="harmonics" ALIAS="Harmonics" MAPROOT="Measurement_Setup">
+	<PROPDEF ALIAS="Spectrum Harmonics in Snapshots" TYPE="HEADER" MAPROOT="Snapshot_Events"/>
+	<PROPDEF NAME="enableSnapshotHarmonics" ALIAS="Enable Snapshot Harmonics" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Snapshot_Harmonics" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="enableSnapshotHarmonicsPower" ALIAS="Enable Snapshot Harmonics Power" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Snapshot_Harmonics_Power" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF ALIAS="Voltage Harmonics" TYPE="HEADER"/>
+	<PROPDEF NAME="recordVoltageTHD" ALIAS="Record THD" TYPE="CHECKBOX" DEFAULT="ON" MAP="viewModel.deviceConfig().Channel_Recordings.Record_Voltage_THD" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="harmonicsUnit" ALIAS="Harmonics Unit" TYPE="SELECT" DEFAULT="Volts_and_THD" MAP=".Voltage_Harmonics_Unit" READ="removeQuotes({0})" WRITE="addQuotes({0})">
+		<PARAM TYPE="4">
+			<LIST>
+				<ITEM NAME="Volts" VALUE="Volts_and_THD"/>
+				<ITEM NAME="% Fundamental" VALUE="Percent_of_Fundamental_and_THD"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ALIAS="Current Harmonics" TYPE="HEADER"/>
+	<PROPDEF NAME="recordTDD" ALIAS="Record TDD" TYPE="CHECKBOX" DEFAULT="ON" MAP="viewModel.deviceConfig().Channel_Recordings.Record_Current_TDD" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="currentHarmonicsDistortion" ALIAS="Current Harmonics Distortion" TYPE="SELECT" DEFAULT="Current_Distortion_TDD" MAP=".Current_Harmonics_Distortion" READ="removeQuotes({0})" WRITE="addQuotes({0})">
+		<PARAM TYPE="4">
+			<LIST>
+				<ITEM NAME="TDD" VALUE="Current_Distortion_TDD"/>
+				<ITEM NAME="THDi" VALUE="Current_Distortion_THDi"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="tddDemandCurrentIL" ALIAS="TDD Demand Current IL (A)" TYPE="NUMERIC" DEFAULT="AUTO" MAP=".TDD_Available_Current_In_Amps">
+		<PARAM MIN="0" MAX="9999"/>
+	</PROPDEF>
+	<PROPDEF NAME="individualPercentIL" ALIAS="Individual In % Of IL" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Individual_Harmonics_in_Percent_of_IL" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
 </SECTION>
