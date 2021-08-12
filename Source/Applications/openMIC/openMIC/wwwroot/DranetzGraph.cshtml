@@ -978,21 +978,21 @@
                         const yExtent = height * (isVoltage ? voltageTolerance : currentTolerance);
                         const phaseValues = self.phasorRegisterMap[key];
                         const magnitudeRatio = isVoltage && phasor.lineType === lineTypes.lineToLine ? sqrt3 : 1.0;
-                        const scale = isVoltage ? vNom * magnitudeRatio : iNom;
+                        const scale = isVoltage ? vNom : iNom;
 
                         phasor.key = key;
                         phasor.angleRegister = phaseValues[angle];
                         phasor.magnitudeRegister = phaseValues[magnitude];
                         phasor.title = `${phasor.magnitudeRegister["@@desc"]}`;
                         phasor.angle = ko.pureComputed({ read: () => phasor.angleRegister.value() - referenceAngleRegister.value(), owner: self });
-                        phasor.magnitude = ko.pureComputed({ read: () => phasor.magnitudeRegister.value() / magnitudeRatio, owner: self });
-                        phasor.perUnit = ko.pureComputed({ read: () => phasor.magnitude() / scale, owner: self });
-                        phasor.x2 = ko.pureComputed({ read: () => width + xExtent * phasor.perUnit() * Math.cos(phasor.angle() * Math.PI / 180.0), owner: self });
-                        phasor.y2 = ko.pureComputed({ read: () => height - yExtent * phasor.perUnit() * Math.sin(phasor.angle() * Math.PI / 180.0), owner: self });
+                        phasor.magnitude = ko.pureComputed({ read: () => phasor.magnitudeRegister.value(), owner: self });
+                        phasor.magnitudePerUnit = ko.pureComputed({ read: () => phasor.magnitude() / magnitudeRatio / scale, owner: self });
+                        phasor.x2 = ko.pureComputed({ read: () => width + xExtent * phasor.magnitudePerUnit() * Math.cos(phasor.angle() * Math.PI / 180.0), owner: self });
+                        phasor.y2 = ko.pureComputed({ read: () => height - yExtent * phasor.magnitudePerUnit() * Math.sin(phasor.angle() * Math.PI / 180.0), owner: self });
                         phasor.visible = ko.observable(true);
 
                         phasor.angleRegister.title = `${phasor.angleRegister.title}<br/>Raw Value: ${self.localeValue(phasor.angleRegister.value())}`;
-                        phasor.magnitudeRegister.title = `${phasor.magnitudeRegister.title}<br/>Plot Value: ${self.localeValue(phasor.perUnit())} p.u.`;
+                        phasor.magnitudeRegister.title = `${phasor.magnitudeRegister.title}<br/>Plot Value: ${self.localeValue(phasor.magnitudePerUnit())} p.u.`;
 
                         self.phasorValues.push(phasor);
 
@@ -1088,7 +1088,7 @@
                         const scale = parseFloat(item["@@scale"]);
                         const enabled = analyzerType === 0 || analyzerType === (isVoltage ? phasorTypes.voltage : phasorTypes.current);
                         const phasorKey = (isVoltage && label.length === 2) ? `${label}N` : label;
-                        const color = (phasors[phasorKey] !== undefined ? phasors[phasorKey].color : index);
+                        const color = phasors[phasorKey] !== undefined ? phasors[phasorKey].color : index;
 
                         self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, color, isVoltage, scale, enabled, self.drawPlotData));
                     }
@@ -1134,9 +1134,8 @@
                     const plotData = [];
 
                     $.each(self.plotData, function () {
-                        if (this.visible()) {
+                        if (this.visible())
                             plotData.push(this);
-                        }
                     });
 
                     let yaxisMin = undefined;
