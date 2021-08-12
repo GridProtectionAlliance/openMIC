@@ -621,7 +621,7 @@
                 </thead>
                 <tbody data-bind="foreach: phasorValues">
                     <tr data-bind="visible: visible">
-                        <th class="phasor-reading-label" data-bind="html: `${$data.key} <small>(${$data.phasorType === phasorType.voltage ? 'Volts' : 'Amps'})</small>`, style: { color: color }, attr: { title: title }" />
+                        <th class="phasor-reading-label" data-bind="html: `${$data.key} <small>(${$data.phasorType === phasorTypes.voltage ? 'Volts' : 'Amps'})</small>`, style: { color: color }, attr: { title: title }" />
                         <td class="phasor-reading" data-toggle="tooltip" data-bind="text: $root.localeValue(magnitude()), attr: { title: magnitudeRegister.title }" />
                         <td class="phasor-reading" data-toggle="tooltip" data-bind="text: `${$root.localeValue(angle())}&#176;`, attr: { title: angleRegister.title }" />
                     </tr>
@@ -719,12 +719,12 @@
         const angle = 0;
         const magnitude = 1;
 
-        const phasorType = {
+        const phasorTypes = {
             voltage: 1,
             current: 2
         }
 
-        const lineType = {
+        const lineTypes = {
             lineToLine: 0,
             lineToNeutral: 1
         }
@@ -732,17 +732,17 @@
         // Color scheme: A-phase = Red, B-phase = Green, C-phase = Blue, Neutral = Gray
         // Shading: line-to-line = darker, line-to-neutral = normal shade, current = lighter
         const phasors = {
-            VAN: { registers: [phasorRegisters.VANA, phasorRegisters.VANM], phasorType: phasorType.voltage, lineType: lineType.lineToNeutral, group: 0, color: "#8B0000" },
-            VBN: { registers: [phasorRegisters.VBNA, phasorRegisters.VBNM], phasorType: phasorType.voltage, lineType: lineType.lineToNeutral, group: 0, color: "#339900" },
-            VCN: { registers: [phasorRegisters.VCNA, phasorRegisters.VCNM], phasorType: phasorType.voltage, lineType: lineType.lineToNeutral, group: 0, color: "#0000FF" },
-            VNG: { registers: [phasorRegisters.VNGA, phasorRegisters.VNGM], phasorType: phasorType.voltage, lineType: lineType.lineToNeutral, group: 0, color: "#000000" },
-            VAB: { registers: [phasorRegisters.VABA, phasorRegisters.VABM], phasorType: phasorType.voltage, lineType: lineType.lineToLine, group: 1, color: "#FF0000" },
-            VBC: { registers: [phasorRegisters.VBCA, phasorRegisters.VBCM], phasorType: phasorType.voltage, lineType: lineType.lineToLine, group: 1, color: "#00D000" },
-            VCA: { registers: [phasorRegisters.VCAA, phasorRegisters.VCAM], phasorType: phasorType.voltage, lineType: lineType.lineToLine, group: 1, color: "#008BFF" },
-            IA: { registers: [phasorRegisters.IAA, phasorRegisters.IAM], phasorType: phasorType.current, group: 2, color: "#FF0099" },
-            IB: { registers: [phasorRegisters.IBA, phasorRegisters.IBM], phasorType: phasorType.current, group: 2, color: "#04FF00" },
-            IC: { registers: [phasorRegisters.ICA, phasorRegisters.ICM], phasorType: phasorType.current, group: 2, color: "#42D4F4" },
-            IN: { registers: [phasorRegisters.INA, phasorRegisters.INM], phasorType: phasorType.current, group: 2, color: "#A9A9A9"}
+            VAN: { registers: [phasorRegisters.VANA, phasorRegisters.VANM], phasorType: phasorTypes.voltage, lineType: lineTypes.lineToNeutral, group: 0, color: "#8B0000" },
+            VBN: { registers: [phasorRegisters.VBNA, phasorRegisters.VBNM], phasorType: phasorTypes.voltage, lineType: lineTypes.lineToNeutral, group: 0, color: "#339900" },
+            VCN: { registers: [phasorRegisters.VCNA, phasorRegisters.VCNM], phasorType: phasorTypes.voltage, lineType: lineTypes.lineToNeutral, group: 0, color: "#0000FF" },
+            VNG: { registers: [phasorRegisters.VNGA, phasorRegisters.VNGM], phasorType: phasorTypes.voltage, lineType: lineTypes.lineToNeutral, group: 0, color: "#000000" },
+            VAB: { registers: [phasorRegisters.VABA, phasorRegisters.VABM], phasorType: phasorTypes.voltage, lineType: lineTypes.lineToLine, group: 1, color: "#FF0000" },
+            VBC: { registers: [phasorRegisters.VBCA, phasorRegisters.VBCM], phasorType: phasorTypes.voltage, lineType: lineTypes.lineToLine, group: 1, color: "#00D000" },
+            VCA: { registers: [phasorRegisters.VCAA, phasorRegisters.VCAM], phasorType: phasorTypes.voltage, lineType: lineTypes.lineToLine, group: 1, color: "#008BFF" },
+            IA: { registers: [phasorRegisters.IAA, phasorRegisters.IAM], phasorType: phasorTypes.current, group: 2, color: "#FF0099" },
+            IB: { registers: [phasorRegisters.IBA, phasorRegisters.IBM], phasorType: phasorTypes.current, group: 2, color: "#04FF00" },
+            IC: { registers: [phasorRegisters.ICA, phasorRegisters.ICM], phasorType: phasorTypes.current, group: 2, color: "#42D4F4" },
+            IN: { registers: [phasorRegisters.INA, phasorRegisters.INM], phasorType: phasorTypes.current, group: 2, color: "#A9A9A9"}
         }
 
         function PlotSeriesViewModel(index, label, yaxis, data, color, isVoltage, scale, enabled, redrawPlotData) {
@@ -971,14 +971,14 @@
 
                         const width = $("#phasorChart").width() / 2;
                         const height = $("#phasorChart").height() / 2;
-                        const isVoltage = phasor.phasorType === phasorType.voltage;
+                        const isVoltage = phasor.phasorType === phasorTypes.voltage;
                         const voltageTolerance = 0.9;  // 10% (NEMA)
                         const currentTolerance = 0.85; // 15%
                         const xExtent = width * (isVoltage ? voltageTolerance : currentTolerance);
                         const yExtent = height * (isVoltage ? voltageTolerance : currentTolerance);
                         const phaseValues = self.phasorRegisterMap[key];
                         const scale = isVoltage ? vNom : iNom;
-                        const magnitudeRatio = isVoltage && phasor.lineType === lineType.lineToLine ? sqrt3 : 1.0;
+                        const magnitudeRatio = isVoltage && phasor.lineType === lineTypes.lineToLine ? sqrt3 : 1.0;
 
                         phasor.key = key;
                         phasor.angleRegister = phaseValues[angle];
@@ -1084,9 +1084,9 @@
                         // 2: Current axis (right)
                         const isVoltage = index < 4;
                         const label = isVoltage ? `V${String.fromCharCode(65 + index)}` : `I${String.fromCharCode(65 + (index - 4))}`;
-                        const yaxis = isVoltage ? phasorType.voltage : phasorType.current;
+                        const yaxis = isVoltage ? phasorTypes.voltage : phasorTypes.current;
                         const scale = parseFloat(item["@@scale"]);
-                        const enabled = analyzerType === 0 || analyzerType === (isVoltage ? phasorType.voltage : phasorType.current);
+                        const enabled = analyzerType === 0 || analyzerType === (isVoltage ? phasorTypes.voltage : phasorTypes.current);
 
                         self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, index, isVoltage, scale, enabled, self.drawPlotData));
                     }
