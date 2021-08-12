@@ -1087,8 +1087,10 @@
                         const yaxis = isVoltage ? phasorTypes.voltage : phasorTypes.current;
                         const scale = parseFloat(item["@@scale"]);
                         const enabled = analyzerType === 0 || analyzerType === (isVoltage ? phasorTypes.voltage : phasorTypes.current);
+                        const phasorKey = (isVoltage && label.length === 2) ? `${label}N` : label;
+                        const color = (phasors[phasorKey] !== undefined ? phasors[phasorKey].color : index);
 
-                        self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, index, isVoltage, scale, enabled, self.drawPlotData));
+                        self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, color, isVoltage, scale, enabled, self.drawPlotData));
                     }
                     else {
                         self.plotData[index].data = data;
@@ -1132,8 +1134,9 @@
                     const plotData = [];
 
                     $.each(self.plotData, function () {
-                        if (this.visible())
+                        if (this.visible()) {
                             plotData.push(this);
+                        }
                     });
 
                     let yaxisMin = undefined;
