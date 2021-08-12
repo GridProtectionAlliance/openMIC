@@ -344,6 +344,11 @@
         <Shortcut Id="WebManagerStartMenuShortcut" Directory="ApplicationProgramsFolder" Name="openMIC Web Manager" Icon="openMICWebManager.ico.exe" Description="URL to the openMIC Web Manager." Target="[WEBMANAGERURL]" />
         <RegistryValue Root="HKLM" Key="SOFTWARE\Grid Protection Alliance\openMIC" Name="WebManagerShortcut" Type="string" Value="" KeyPath="yes" />
       </Component>
+
+      <!-- DotRas dial-up components -->
+      <Component Id="DotRas">
+        <File Id="DotRas.dll" Name="DotRas.dll" Source="$(var.SolutionDir)Dependencies\NuGet\DotRas.for.Win7.1.3.0\lib\net40\DotRas.dll"/>
+      </Component>
     </ComponentGroup>
 
     <!-- openMIC Manager -->
