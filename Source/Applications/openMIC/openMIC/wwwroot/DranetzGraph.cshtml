@@ -310,7 +310,7 @@
                     <th class="reading">S0</th>
                 </tr>
                 <tr>
-                    <th class="reading-label">Current Magnitude (Volts)</th>
+                    <th class="reading-label">Current Magnitude (Amps)</th>
                     <td class="reading" register="14" />
                     <td class="reading" register="16" />
                     <td class="reading" register="18" />
@@ -621,7 +621,7 @@
                 </thead>
                 <tbody data-bind="foreach: phasorValues">
                     <tr data-bind="visible: visible">
-                        <th class="phasor-reading-label" data-bind="html: `${$data.key} <small>(${$data.type === phasorType.voltage ? 'Volts' : 'Amps'})</small>`, style: { color: color }, attr: { title: title }" />
+                        <th class="phasor-reading-label" data-bind="html: `${$data.key} <small>(${$data.phasorType === phasorType.voltage ? 'Volts' : 'Amps'})</small>`, style: { color: color }, attr: { title: title }" />
                         <td class="phasor-reading" data-toggle="tooltip" data-bind="text: $root.localeValue(magnitude()), attr: { title: magnitudeRegister.title }" />
                         <td class="phasor-reading" data-toggle="tooltip" data-bind="text: `${$root.localeValue(angle())}&#176;`, attr: { title: angleRegister.title }" />
                     </tr>
@@ -670,6 +670,7 @@
         const vNom = @vNom;
         const iNom = @iNom;
         const referenceAngle = "@referenceAngle.JavaScriptEncode()";
+        const sqrt3 = 1.73205;
 
         let shiftIsDown = false;
 
@@ -723,20 +724,25 @@
             current: 2
         }
 
+        const lineType = {
+            lineToLine: 0,
+            lineToNeutral: 1
+        }
+
         // Color scheme: A-phase = Red, B-phase = Green, C-phase = Blue, Neutral = Gray
         // Shading: line-to-line = darker, line-to-neutral = normal shade, current = lighter
         const phasors = {
-            VAN: { registers: [phasorRegisters.VANA, phasorRegisters.VANM], type: phasorType.voltage, group: 0, color: "#8B0000" },
-            VBN: { registers: [phasorRegisters.VBNA, phasorRegisters.VBNM], type: phasorType.voltage, group: 0, color: "#339900" },
-            VCN: { registers: [phasorRegisters.VCNA, phasorRegisters.VCNM], type: phasorType.voltage, group: 0, color: "#0000FF" },
-            VNG: { registers: [phasorRegisters.VNGA, phasorRegisters.VNGM], type: phasorType.voltage, group: 0, color: "#000000" },
-            VAB: { registers: [phasorRegisters.VABA, phasorRegisters.VABM], type: phasorType.voltage, group: 1, color: "#FF0000" },
-            VBC: { registers: [phasorRegisters.VBCA, phasorRegisters.VBCM], type: phasorType.voltage, group: 1, color: "#00D000" },
-            VCA: { registers: [phasorRegisters.VCAA, phasorRegisters.VCAM], type: phasorType.voltage, group: 1, color: "#008BFF" },
-            IA: { registers: [phasorRegisters.IAA, phasorRegisters.IAM], type: phasorType.current, group: 2, color: "#FF0099" },
-            IB: { registers: [phasorRegisters.IBA, phasorRegisters.IBM], type: phasorType.current, group: 2, color: "#04FF00" },
-            IC: { registers: [phasorRegisters.ICA, phasorRegisters.ICM], type: phasorType.current, group: 2, color: "#42D4F4" },
-            IN: { registers: [phasorRegisters.INA, phasorRegisters.INM], type: phasorType.current, group: 2, color: "#A9A9A9"}
+            VAN: { registers: [phasorRegisters.VANA, phasorRegisters.VANM], phasorType: phasorType.voltage, lineType: lineType.lineToNeutral, group: 0, color: "#8B0000" },
+            VBN: { registers: [phasorRegisters.VBNA, phasorRegisters.VBNM], phasorType: phasorType.voltage, lineType: lineType.lineToNeutral, group: 0, color: "#339900" },
+            VCN: { registers: [phasorRegisters.VCNA, phasorRegisters.VCNM], phasorType: phasorType.voltage, lineType: lineType.lineToNeutral, group: 0, color: "#0000FF" },
+            VNG: { registers: [phasorRegisters.VNGA, phasorRegisters.VNGM], phasorType: phasorType.voltage, lineType: lineType.lineToNeutral, group: 0, color: "#000000" },
+            VAB: { registers: [phasorRegisters.VABA, phasorRegisters.VABM], phasorType: phasorType.voltage, lineType: lineType.lineToLine, group: 1, color: "#FF0000" },
+            VBC: { registers: [phasorRegisters.VBCA, phasorRegisters.VBCM], phasorType: phasorType.voltage, lineType: lineType.lineToLine, group: 1, color: "#00D000" },
+            VCA: { registers: [phasorRegisters.VCAA, phasorRegisters.VCAM], phasorType: phasorType.voltage, lineType: lineType.lineToLine, group: 1, color: "#008BFF" },
+            IA: { registers: [phasorRegisters.IAA, phasorRegisters.IAM], phasorType: phasorType.current, group: 2, color: "#FF0099" },
+            IB: { registers: [phasorRegisters.IBA, phasorRegisters.IBM], phasorType: phasorType.current, group: 2, color: "#04FF00" },
+            IC: { registers: [phasorRegisters.ICA, phasorRegisters.ICM], phasorType: phasorType.current, group: 2, color: "#42D4F4" },
+            IN: { registers: [phasorRegisters.INA, phasorRegisters.INM], phasorType: phasorType.current, group: 2, color: "#A9A9A9"}
         }
 
         function PlotSeriesViewModel(index, label, yaxis, data, color, isVoltage, scale, enabled, redrawPlotData) {
@@ -932,7 +938,7 @@
                     if (phasors.hasOwnProperty(key)) {
                         const phasor = phasors[key];
 
-                        if (analyzerType > 0 && phasor.type !== analyzerType)
+                        if (analyzerType > 0 && phasor.phasorType !== analyzerType)
                             continue;
 
                         const registers = phasor.registers;
@@ -960,31 +966,32 @@
                     if (phasors.hasOwnProperty(key)) {
                         const phasor = phasors[key];
 
-                        if (analyzerType > 0 && phasor.type !== analyzerType)
+                        if (analyzerType > 0 && phasor.phasorType !== analyzerType)
                             continue;
 
                         const width = $("#phasorChart").width() / 2;
                         const height = $("#phasorChart").height() / 2;
-                        const isVoltage = phasor.type === phasorType.voltage;
+                        const isVoltage = phasor.phasorType === phasorType.voltage;
                         const voltageTolerance = 0.9;  // 10% (NEMA)
                         const currentTolerance = 0.85; // 15%
                         const extent = width * (isVoltage ? voltageTolerance : currentTolerance);
                         const phaseValues = self.phasorRegisterMap[key];
                         const scale = isVoltage ? vNom : iNom;
+                        const magnitudeRatio = isVoltage && phasor.lineType === lineType.lineToLine ? sqrt3 : 1.0;
 
                         phasor.key = key;
                         phasor.angleRegister = phaseValues[angle];
                         phasor.magnitudeRegister = phaseValues[magnitude];
                         phasor.title = `${phasor.magnitudeRegister["@@desc"]}`;
-                        phasor.angle = ko.pureComputed({ read: () => (phasor.angleRegister.value() - referenceAngleRegister.value()) * Math.PI / 180.0, owner: self });
-                        phasor.magnitude = ko.pureComputed({ read: () => phasor.magnitudeRegister.value(), owner: self });
-                        phasor.scaledMagnitude = ko.pureComputed({ read: () => extent * phasor.magnitude() / scale, owner: self });
-                        phasor.x2 = ko.pureComputed({ read: () => width + phasor.scaledMagnitude() * Math.cos(phasor.angle()), owner: self });
-                        phasor.y2 = ko.pureComputed({ read: () => height - phasor.scaledMagnitude() * Math.sin(phasor.angle()), owner: self });
+                        phasor.angle = ko.pureComputed({ read: () => phasor.angleRegister.value() - referenceAngleRegister.value(), owner: self });
+                        phasor.magnitude = ko.pureComputed({ read: () => phasor.magnitudeRegister.value() / magnitudeRatio, owner: self });
+                        phasor.perUnit = ko.pureComputed({ read: () => phasor.magnitude() / scale, owner: self });
+                        phasor.x2 = ko.pureComputed({ read: () => width + extent * phasor.perUnit() * Math.cos(phasor.angle() * Math.PI / 180.0), owner: self });
+                        phasor.y2 = ko.pureComputed({ read: () => height - extent * phasor.perUnit() * Math.sin(phasor.angle() * Math.PI / 180.0), owner: self });
                         phasor.visible = ko.observable(true);
 
                         phasor.angleRegister.title = `${phasor.angleRegister.title}<br/>Raw Value: ${self.localeValue(phasor.angleRegister.value())}`;
-                        phasor.magnitudeRegister.title = `${phasor.magnitudeRegister.title}<br/>Plot Value: ${self.localeValue(phasor.scaledMagnitude())}`;
+                        phasor.magnitudeRegister.title = `${phasor.magnitudeRegister.title}<br/>Plot Value: ${self.localeValue(phasor.perUnit())} p.u.`;
 
                         self.phasorValues.push(phasor);
 
