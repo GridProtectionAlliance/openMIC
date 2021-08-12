@@ -7,5 +7,7 @@
   <ComponentGroupRef Id="wwwroot_Images_Icons_Components" />
   <ComponentGroupRef Id="wwwroot_Scripts_Components" />
   <ComponentGroupRef Id="wwwroot_SectionMaps_Components" />
+  <ComponentGroupRef Id="wwwroot_SectionMaps_Dranetz_Components" />
+  <ComponentGroupRef Id="wwwroot_SectionMaps_PQube_Components" />
 </Feature>
 </Include>

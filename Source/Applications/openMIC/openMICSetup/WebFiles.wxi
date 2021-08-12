@@ -48,6 +48,9 @@
   <Component Id="ModbusConfig_cshtml">
     <File Id="ModbusConfig.cshtml" Name="ModbusConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfig.cshtml" />
   </Component>
+  <Component Id="PQubeConfig_cshtml">
+    <File Id="PQubeConfig.cshtml" Name="PQubeConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\PQubeConfig.cshtml" />
+  </Component>
   <Component Id="RemoteConsole_cshtml">
     <File Id="RemoteConsole.cshtml" Name="RemoteConsole.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\RemoteConsole.cshtml" />
   </Component>
@@ -116,6 +119,9 @@
   <Component Id="Content_jquery_jspanel_css">
     <File Id="Content_jquery.jspanel.css" Name="jquery.jspanel.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery.jspanel.css" />
   </Component>
+  <Component Id="Content_jquery_ui_scrolltabs_css">
+    <File Id="Content_jquery.ui.scrolltabs.css" Name="jquery.ui.scrolltabs.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\jquery.ui.scrolltabs.css" />
+  </Component>
   <Component Id="Content_Popup_css">
     <File Id="Content_Popup.css" Name="Popup.css" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Content\Popup.css" />
   </Component>
@@ -159,6 +165,9 @@
   <Component Id="Images_openMICBanner_png">
     <File Id="Images_openMICBanner.png" Name="openMICBanner.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\openMICBanner.png" />
   </Component>
+  <Component Id="Images_Powerside_png">
+    <File Id="Images_Powerside.png" Name="Powerside.png" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Images\Powerside.png" />
+  </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_Images_Icons_Components" Directory="IMAGESICONSFOLDER">
   <Component Id="Images_Icons_openMIC_ico">
@@ -175,6 +184,12 @@
   <Component Id="Scripts_jquery_jspanel_js">
     <File Id="Scripts_jquery.jspanel.js" Name="jquery.jspanel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.jspanel.js" />
   </Component>
+  <Component Id="Scripts_jquery_mousewheel_js">
+    <File Id="Scripts_jquery.mousewheel.js" Name="jquery.mousewheel.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.mousewheel.js" />
+  </Component>
+  <Component Id="Scripts_jquery_ui_scrolltabs_js">
+    <File Id="Scripts_jquery.ui.scrolltabs.js" Name="jquery.ui.scrolltabs.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\jquery.ui.scrolltabs.js" />
+  </Component>
   <Component Id="Scripts_SectionMapBuilder_js">
     <File Id="Scripts_SectionMapBuilder.js" Name="SectionMapBuilder.js" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\Scripts\SectionMapBuilder.js" />
   </Component>
@@ -183,38 +198,114 @@
   </Component>
 </ComponentGroup>
 <ComponentGroup Id="wwwroot_SectionMaps_Components" Directory="SECTIONMAPSFOLDER">
-  <Component Id="SectionMaps_CrossTriggering_xml">
-    <File Id="SectionMaps_CrossTriggering.xml" Name="CrossTriggering.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\CrossTriggering.xml" />
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_SectionMaps_Dranetz_Components" Directory="SECTIONMAPSDRANETZFOLDER">
+  <Component Id="SectionMaps_Dranetz_CrossTriggering_xml">
+    <File Id="SectionMaps_Dranetz_CrossTriggering.xml" Name="CrossTriggering.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\CrossTriggering.xml" />
   </Component>
-  <Component Id="SectionMaps_DigitalCrossTriggering_xml">
-    <File Id="SectionMaps_DigitalCrossTriggering.xml" Name="DigitalCrossTriggering.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\DigitalCrossTriggering.xml" />
+  <Component Id="SectionMaps_Dranetz_DigitalCrossTriggering_xml">
+    <File Id="SectionMaps_Dranetz_DigitalCrossTriggering.xml" Name="DigitalCrossTriggering.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\DigitalCrossTriggering.xml" />
   </Component>
-  <Component Id="SectionMaps_DigitalInputConfiguration_xml">
-    <File Id="SectionMaps_DigitalInputConfiguration.xml" Name="DigitalInputConfiguration.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\DigitalInputConfiguration.xml" />
+  <Component Id="SectionMaps_Dranetz_DigitalInputConfiguration_xml">
+    <File Id="SectionMaps_Dranetz_DigitalInputConfiguration.xml" Name="DigitalInputConfiguration.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\DigitalInputConfiguration.xml" />
   </Component>
-  <Component Id="SectionMaps_EnergyAndDemand_xml">
-    <File Id="SectionMaps_EnergyAndDemand.xml" Name="EnergyAndDemand.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\EnergyAndDemand.xml" />
+  <Component Id="SectionMaps_Dranetz_EnergyAndDemand_xml">
+    <File Id="SectionMaps_Dranetz_EnergyAndDemand.xml" Name="EnergyAndDemand.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\EnergyAndDemand.xml" />
   </Component>
-  <Component Id="SectionMaps_Flicker_xml">
-    <File Id="SectionMaps_Flicker.xml" Name="Flicker.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Flicker.xml" />
+  <Component Id="SectionMaps_Dranetz_Flicker_xml">
+    <File Id="SectionMaps_Dranetz_Flicker.xml" Name="Flicker.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\Flicker.xml" />
   </Component>
-  <Component Id="SectionMaps_Harmonics_xml">
-    <File Id="SectionMaps_Harmonics.xml" Name="Harmonics.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Harmonics.xml" />
+  <Component Id="SectionMaps_Dranetz_Harmonics_xml">
+    <File Id="SectionMaps_Dranetz_Harmonics.xml" Name="Harmonics.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\Harmonics.xml" />
   </Component>
-  <Component Id="SectionMaps_InputConfiguration_xml">
-    <File Id="SectionMaps_InputConfiguration.xml" Name="InputConfiguration.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\InputConfiguration.xml" />
+  <Component Id="SectionMaps_Dranetz_InputConfiguration_xml">
+    <File Id="SectionMaps_Dranetz_InputConfiguration.xml" Name="InputConfiguration.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\InputConfiguration.xml" />
   </Component>
-  <Component Id="SectionMaps_Power_xml">
-    <File Id="SectionMaps_Power.xml" Name="Power.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Power.xml" />
+  <Component Id="SectionMaps_Dranetz_Power_xml">
+    <File Id="SectionMaps_Dranetz_Power.xml" Name="Power.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\Power.xml" />
   </Component>
-  <Component Id="SectionMaps_RMSVariations_xml">
-    <File Id="SectionMaps_RMSVariations.xml" Name="RMSVariations.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\RMSVariations.xml" />
+  <Component Id="SectionMaps_Dranetz_RMSVariations_xml">
+    <File Id="SectionMaps_Dranetz_RMSVariations.xml" Name="RMSVariations.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\RMSVariations.xml" />
   </Component>
-  <Component Id="SectionMaps_Transients_xml">
-    <File Id="SectionMaps_Transients.xml" Name="Transients.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Transients.xml" />
+  <Component Id="SectionMaps_Dranetz_Transients_xml">
+    <File Id="SectionMaps_Dranetz_Transients.xml" Name="Transients.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\Transients.xml" />
   </Component>
-  <Component Id="SectionMaps_WaveformCapture_xml">
-    <File Id="SectionMaps_WaveformCapture.xml" Name="WaveformCapture.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\WaveformCapture.xml" />
+  <Component Id="SectionMaps_Dranetz_WaveformCapture_xml">
+    <File Id="SectionMaps_Dranetz_WaveformCapture.xml" Name="WaveformCapture.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\Dranetz\WaveformCapture.xml" />
+  </Component>
+</ComponentGroup>
+<ComponentGroup Id="wwwroot_SectionMaps_PQube_Components" Directory="SECTIONMAPSPQUBEFOLDER">
+  <Component Id="SectionMaps_PQube_Accelerometer_xml">
+    <File Id="SectionMaps_PQube_Accelerometer.xml" Name="Accelerometer.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\Accelerometer.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_ACCurrents1_8_xml">
+    <File Id="SectionMaps_PQube_ACCurrents1_8.xml" Name="ACCurrents1_8.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\ACCurrents1_8.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_ACCurrents9_14_xml">
+    <File Id="SectionMaps_PQube_ACCurrents9_14.xml" Name="ACCurrents9_14.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\ACCurrents9_14.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_ACVoltage_xml">
+    <File Id="SectionMaps_PQube_ACVoltage.xml" Name="ACVoltage.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\ACVoltage.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_AdditionalProtocols_xml">
+    <File Id="SectionMaps_PQube_AdditionalProtocols.xml" Name="AdditionalProtocols.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\AdditionalProtocols.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_ADInputs_xml">
+    <File Id="SectionMaps_PQube_ADInputs.xml" Name="ADInputs.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\ADInputs.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_ADTriggering_xml">
+    <File Id="SectionMaps_PQube_ADTriggering.xml" Name="ADTriggering.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\ADTriggering.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_CurrentTriggering1_8_xml">
+    <File Id="SectionMaps_PQube_CurrentTriggering1_8.xml" Name="CurrentTriggering1_8.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\CurrentTriggering1_8.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_CurrentTriggering9_14_xml">
+    <File Id="SectionMaps_PQube_CurrentTriggering9_14.xml" Name="CurrentTriggering9_14.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\CurrentTriggering9_14.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_DualVoltageMode_xml">
+    <File Id="SectionMaps_PQube_DualVoltageMode.xml" Name="DualVoltageMode.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\DualVoltageMode.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_Email_xml">
+    <File Id="SectionMaps_PQube_Email.xml" Name="Email.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\Email.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_EnvirosensorProbe_xml">
+    <File Id="SectionMaps_PQube_EnvirosensorProbe.xml" Name="EnvirosensorProbe.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\EnvirosensorProbe.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_Events_xml">
+    <File Id="SectionMaps_PQube_Events.xml" Name="Events.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\Events.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_GeneralInfo_xml">
+    <File Id="SectionMaps_PQube_GeneralInfo.xml" Name="GeneralInfo.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\GeneralInfo.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_Harmonics_xml">
+    <File Id="SectionMaps_PQube_Harmonics.xml" Name="Harmonics.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\Harmonics.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_LoadDefinition_xml">
+    <File Id="SectionMaps_PQube_LoadDefinition.xml" Name="LoadDefinition.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\LoadDefinition.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_MainsSignaling_xml">
+    <File Id="SectionMaps_PQube_MainsSignaling.xml" Name="MainsSignaling.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\MainsSignaling.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_Network_xml">
+    <File Id="SectionMaps_PQube_Network.xml" Name="Network.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\Network.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_RelayOutput_xml">
+    <File Id="SectionMaps_PQube_RelayOutput.xml" Name="RelayOutput.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\RelayOutput.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_ReportGeneration_xml">
+    <File Id="SectionMaps_PQube_ReportGeneration.xml" Name="ReportGeneration.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\ReportGeneration.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_Security_xml">
+    <File Id="SectionMaps_PQube_Security.xml" Name="Security.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\Security.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_TimeSynchronization_xml">
+    <File Id="SectionMaps_PQube_TimeSynchronization.xml" Name="TimeSynchronization.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\TimeSynchronization.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_TrendRecording_xml">
+    <File Id="SectionMaps_PQube_TrendRecording.xml" Name="TrendRecording.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\TrendRecording.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_VoltageTriggering_xml">
+    <File Id="SectionMaps_PQube_VoltageTriggering.xml" Name="VoltageTriggering.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\VoltageTriggering.xml" />
   </Component>
 </ComponentGroup>
 </Include>
