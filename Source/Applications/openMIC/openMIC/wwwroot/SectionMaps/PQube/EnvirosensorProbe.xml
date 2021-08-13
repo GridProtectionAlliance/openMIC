@@ -1,2 +1,13 @@
 ﻿<SECTION NAME="environsensorProbe" ALIAS="Envirosensor Probe">
+	<PROPDEF ALIAS="Probe A" TYPE="HEADER"/>
+	<PROPDEF ALIAS="Probe Configuration" TYPE="HEADER" MAPROOT="EnviroSensor_Probe_Setup"/>
+	<PROPDEF NAME="probeASerialNumber" ALIAS="Serial Number" TYPE="TEXT" DEFAULT="" MAP=".Probe_A_Serial_Number" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="probeAChannelName" ALIAS="Channel Name" TYPE="TEXT" DEFAULT="" MAP=".Probe_A_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF ALIAS="External Probe Events" TYPE="HEADER" MAPROOT="EnviroSensor_Probe_Events"/>
+	<PROPDEF NAME="probeAOvertemperatureEvent" ALIAS="Overtemperature Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_A_Overtemperature_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="probeAOvertemperatureThreshold" ALIAS="Overtemperature Threshold" TYPE="NUMERIC" DEFAULT="50" MAP=".Probe_A_Overtemperature_Threshold_in_Deg_C"/>
+	<PROPDEF NAME="probeAUndertemperatureEvent" ALIAS="Undertemperature Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_A_Undertemperature_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="probeAUndertemperatureThreshold" ALIAS="Undertemperature Threshold" TYPE="NUMERIC" DEFAULT="0" MAP=".Probe_A_Undertemperature_Threshold_in_Deg_C"/>
+	<PROPDEF NAME="probeAHighHumidityEvent" ALIAS="High Humidity Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_A_High_Humidity_Events" TRUE="ON" FALSE="OFF"/>
+	
 </SECTION>

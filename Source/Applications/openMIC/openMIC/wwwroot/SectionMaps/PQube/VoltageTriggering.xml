@@ -1,2 +1,132 @@
 ﻿<SECTION NAME="voltageTriggering" ALIAS="Voltage Triggering">
+	<PROPDEF ALIAS="Phase To Neutral Events" TYPE="HEADER" MAPROOT="Phase_To_Neutral_Events"/>
+	<PROPDEF NAME="phaseToNeutral" ALIAS="Phase To Neutral Events" TYPE="SELECT" DEFAULT="AUTO" MAP=".Phase_To_Neutral_Events">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="dipThreshold" ALIAS="Dip Threshold" TYPE="NUMERIC" DEFAULT="90.00" MAP=".Phase_To_Neutral_Dip_Threshold_In_Percent">
+		<PARAM MIN="1" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="swellThreshold" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="110.00" MAP=".Phase_To_Neutral_Swell_Threshold_In_Percent">
+		<PARAM MIN="100" MAX="200"/>
+	</PROPDEF>
+	<PROPDEF NAME="interruptionThreshold" ALIAS="Interruption Threshold" TYPE="NUMERIC" DEFAULT="90.00" MAP=".Phase_To_Neutral_Interruption_Threshold_In_Percent">
+		<PARAM MIN="1" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="eventHysteresis" ALIAS="Event Hysteresis" TYPE="NUMERIC" DEFAULT="2.00" MAP=".Phase_To_Neutral_Event_Hysteresis_In_Percent">
+		<PARAM MIN=".01" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF ALIAS="Phase To Phase Events" TYPE="HEADER" MAPROOT="Phase_To_Phase_Events"/>
+	<PROPDEF NAME="phaseToPhase" ALIAS="Phase To Phase Events" TYPE="SELECT" DEFAULT="AUTO" MAP=".Phase_To_Phase_Events">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="dipThresholdToPhase" ALIAS="Dip Threshold" TYPE="NUMERIC" DEFAULT="90.00" MAP=".Phase_To_Phase_Dip_Threshold_In_Percent">
+		<PARAM MIN="1" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="swellThresholdToPhase" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="110.00" MAP=".Phase_To_Phase_Swell_Threshold_In_Percent">
+		<PARAM MIN="100" MAX="200"/>
+	</PROPDEF>
+	<PROPDEF NAME="interruptionThresholdToPhase" ALIAS="Interruption Threshold" TYPE="NUMERIC" DEFAULT="90.00" MAP=".Phase_To_Phase_Interruption_Threshold_In_Percent">
+		<PARAM MIN="1" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="eventHysteresisToPhase" ALIAS="Event Hysteresis" TYPE="NUMERIC" DEFAULT="2.00" MAP=".Phase_To_Phase_Event_Hysteresis_In_Percent">
+		<PARAM MIN=".01" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF ALIAS="Frequency Events" TYPE="HEADER" MAPROOT="Frequency_Events"/>
+	<PROPDEF NAME="frequencyEvents" ALIAS="Frequency Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Frequency_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="underFrequencyThreshold" ALIAS="Underfrequency Threshold" TYPE="NUMERIC" DEFAULT="99.50" MAP=".Underfrequency_Threshold_In_Percent">
+		<PARAM MIN="1" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="overfrequencyThreshold" ALIAS="Overfrequency Threshold" TYPE="NUMERIC" DEFAULT="100.50" MAP=".Overfrequency_Threshold_In_Percent">
+		<PARAM MIN="100" MAX="200"/>
+	</PROPDEF>
+	<PROPDEF NAME="eventHysteresisFrequencyEvents" ALIAS="Event Hysteresis" TYPE="NUMERIC" DEFAULT="2.00" MAP=".Frequency_Event_Hysteresis_In_Percent">
+		<PARAM MIN=".01" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF ALIAS="Major Dip - Sensitivity Curves - Ride Through Curves" TYPE="HEADER" MAPROOT="Major_Dip_Events"/>
+	<PROPDEF NAME="majorDipThresholdSettings" ALIAS="Major Dip Threshold Settings" TYPE="SELECT" DEFAULT="OFF" MAP=".Major_Dip_Threshold_Settings">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="ITIC" VALUE="ITIC"/>
+				<ITEM NAME="CBEMA" VALUE="CBEMA"/>
+				<ITEM NAME="SEMI_F47" VALUE="SEMI_F47"/>
+				<ITEM NAME="STANDARD" VALUE="STANDARD"/>
+				<ITEM NAME="SAMSUNG_POWER_VACCINE" VALUE="SAMSUNG_POWER_VACCINE"/>
+				<ITEM NAME="MIL_STD_704E" VALUE="MIL_STD_704E"/>
+				<ITEM NAME="MIL_STD_1399" VALUE="MIL_STD_1399"/>
+				<ITEM NAME="CUSTOM" VALUE="CUSTOM"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ALIAS="Waveshape Change Events" TYPE="HEADER" MAPROOT="Waveshape_Change_Events"/>
+	<PROPDEF NAME="waveshapeChangeEvents" ALIAS="Waveshape Change Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Waveshape_Change_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="voltageThresholdPercentNominal" ALIAS="Voltage Threshold In Percent Of Nominal" TYPE="NUMERIC" DEFAULT="20.0" MAP=".Voltage_Threshold_In_Percent_Of_Nominal">
+		<PARAM MIN="5" MAX="50"/>
+	</PROPDEF>
+	<PROPDEF NAME="durationThreshioldPercentCycle" ALIAS="Duration Threshold In Percent Of Cycle" TYPE="NUMERIC" DEFAULT="10.0" MAP=".Duration_Threshold_In_Percent_Of_Cycle">
+		<PARAM MIN=".5" MAX="30.0"/>
+	</PROPDEF>
+	<PROPDEF ALIAS="Phase To Neutral RVC Events" TYPE="HEADER" MAPROOT="Phase_To_Neutral_RVC_Events"/>
+	<PROPDEF NAME="phaseToNeutralRVCEvents" ALIAS="Phase To Neutral RVC Events" TYPE="SELECT" DEFAULT="OFF" MAP=".Phase_To_Neutral_RVC_Events">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rvcThreshold" ALIAS="RVC Threshold" TYPE="NUMERIC" DEFAULT="6" MAP=".Phase_To_Neutral_RVC_Threshold_In_Percent">
+		<PARAM MIN="1" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="swellThreshold" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="2" MAP=".Phase_To_Neutral_RVC_Hysteresis_In_Percent">
+		<PARAM MIN=".01" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF ALIAS="Phase To Phase RVC Events" TYPE="HEADER" MAPROOT="Phase_To_Phase_RVC_Events"/>
+	<PROPDEF NAME="phaseToPhaseRVCEvents" ALIAS="Phase To Phase RVC Events" TYPE="SELECT" DEFAULT="OFF" MAP=".Phase_To_Phase_RVC_Events">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rvcThresholdPhase" ALIAS="RVC Threshold" TYPE="NUMERIC" DEFAULT="6" MAP=".Phase_To_Phase_RVC_Threshold_In_Percent">
+		<PARAM MIN="1" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="swellThresholdPhase" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="2" MAP=".Phase_To_Phase_RVC_Hysteresis_In_Percent">
+		<PARAM MIN=".01" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF ALIAS="HF Impulse" TYPE="HEADER" MAPROOT="HF_Impulse_Events"/>
+	<PROPDEF NAME="hfImpulseEvents" ALIAS="HF Impulse Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".HF_Impulse_Recording" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="hfImpulseDCAvg" ALIAS="HF Impulse DC Averaging" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".HF_Impulse_DC_Averageing" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="hfImpulseNoLowerThreshold" ALIAS="No Low Threshold Limit" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".HF_Impulse_No_Lower_Threshold_Limit" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="hfImpulseConfiguration" ALIAS="Configuration" TYPE="SELECT" DEFAULT="4-channels" MAP=".HF_Impulse_Configuration">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="4-channels" VALUE="4-channels"/>
+				<ITEM NAME="L1-E" VALUE="L1-E"/>
+				<ITEM NAME="L2-E" VALUE="L2-E"/>
+				<ITEM NAME="L3-E" VALUE="L3-E"/>
+				<ITEM NAME="N-E" VALUE="N-E"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="hfImpulseThreshold" ALIAS="Threshold" TYPE="NUMERIC" DEFAULT="2000" MAP=".HF_Impulse_Threshold_in_Volts">
+		<PARAM MIN="300" MAX="6000"/>
+	</PROPDEF>
 </SECTION>
+
