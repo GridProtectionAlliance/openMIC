@@ -847,7 +847,7 @@
                     if (self._voltageScale() === undefined)
                         self._voltageScale(parseInt(Cookies.get("voltageScale")));
 
-                    return self._voltageScale() || "";
+                    return self._voltageScale();
                 },
                 write: function (value) {
                     if (value === undefined)
@@ -855,7 +855,7 @@
 
                     value = Math.round(value);
 
-                    if (value < 1)
+                    if (value < 1 || isNaN(value))
                         value = 1;
 
                     if (value === self._voltageScale())
@@ -875,7 +875,7 @@
                     if (self._currentScale() === undefined)
                         self._currentScale(parseInt(Cookies.get("currentScale")));
 
-                    return self._currentScale() || "";
+                    return self._currentScale();
                 },
                 write: function (value) {
                     if (value === undefined)
@@ -883,7 +883,7 @@
 
                     value = Math.round(value);
 
-                    if (value < 1)
+                    if (value < 1 || isNaN(value))
                         value = 1;
 
                     if (value === self._currentScale())
@@ -1037,7 +1037,7 @@
 
                     const axes = self.plot.getAxes();
 
-                    if (self.voltageScale() !== "" && self.adjustVoltageScale()) {
+                    if (!isNaN(self.voltageScale()) && self.adjustVoltageScale()) {
                         const voltageScale = self.voltageScale() / 2;
                         const yaxis = axes.yaxis;
 
@@ -1046,7 +1046,7 @@
                         adjusted = true;
                     }
 
-                    if (self.currentScale() !== "" && self.adjustCurrentScale()) {
+                    if (!isNaN(self.currentScale()) && self.adjustCurrentScale()) {
                         const currentScale = self.currentScale() / 2;
                         const y2axis = axes.y2axis;
 
@@ -1158,13 +1158,13 @@
                             y2axisMax = y2axis.max;
                         }
                     } else {
-                        if (self.voltageScale() !== "") {
+                        if (!isNaN(self.voltageScale())) {
                             const voltageScale = self.voltageScale() / 2;
                             yaxisMin = -voltageScale;
                             yaxisMax = voltageScale;
                         }
 
-                        if (self.currentScale() !== "") {
+                        if (!isNaN(self.currentScale())) {
                             const currentScale = self.currentScale() / 2;
                             y2axisMin = -currentScale;
                             y2axisMax = currentScale;
@@ -1219,7 +1219,7 @@
                         }
                     });
 
-                    if (self.voltageScale() === "" || self.currentScale() === "")
+                    if (isNaN(self.voltageScale()) || isNaN(self.currentScale()))
                         self.readScales();
 
                     return true;
