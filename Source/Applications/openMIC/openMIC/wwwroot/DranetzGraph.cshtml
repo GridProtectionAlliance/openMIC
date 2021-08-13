@@ -906,7 +906,7 @@
                 // scale-test:
                 //return 999999.99.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
                 return value.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
-            }
+            };
 
             self.initializeRegisters = function (records) {
                 // Set initial register bindings
@@ -1004,7 +1004,7 @@
                         self.phasorValueGroups[group].push(phasor);
                     }
                 }
-            }
+            };
 
             self.readScales = function () {
                 try {
@@ -1027,7 +1027,7 @@
                 finally {
                     self._adjustingScales = false;
                 }
-            }
+            };
 
             self.applyScales = function () {
                 let adjusted = false;
@@ -1057,11 +1057,23 @@
                 }
                 finally {
                     self._adjustingScales = false;
-                } 
+                }
 
                 if (adjusted)
                     self.drawPlotData(true);
-            }
+            };
+
+            self.getTrendPhasor = function (label) {
+                const isDTrend = label.endsWith("D");
+
+                if (label.startsWith("V"))
+                    return phasors[isDTrend ? "VNG" : `${label}N`];
+
+                if (label.startsWith("I"))
+                    return phasors[isDTrend ? "IN" : label];
+
+                return undefined;
+            };
 
             self.buildPlot = function (items) {
                 $.each(items, function (index, item) {
@@ -1087,8 +1099,8 @@
                         const yaxis = isVoltage ? phasorTypes.voltage : phasorTypes.current;
                         const scale = parseFloat(item["@@scale"]);
                         const enabled = analyzerType === 0 || analyzerType === (isVoltage ? phasorTypes.voltage : phasorTypes.current);
-                        const phasorKey = (isVoltage && label.length === 2) ? `${label}N` : label;
-                        const color = phasors[phasorKey] !== undefined ? phasors[phasorKey].color : index;
+                        const phasor = self.getTrendPhasor(label);
+                        const color = phasor ? phasor.color : index;
 
                         self.plotData.push(new PlotSeriesViewModel(index, label, yaxis, data, color, isVoltage, scale, enabled, self.drawPlotData));
                     }
@@ -1115,7 +1127,7 @@
 
                 scopePlot.on("plotzoom", self.readScales);
 
-                scopePlot.mouseleave(function() {
+                scopePlot.mouseleave(function () {
                     $("#plotToolTip").hide();
                 });
 
@@ -1123,7 +1135,7 @@
                     if (this.enabled)
                         self.plotLegend.push(this);
                 });
-            }
+            };
 
             self.drawPlotData = function (applyingScales) {
                 if (getActiveTabIndex() !== tab.scopeView)
@@ -1227,7 +1239,7 @@
                     console.error(e);
                     return false;
                 }
-            }
+            };
 
             self.setQueryTimeout = function () {
                 if (!self.autoRefresh())
@@ -1237,7 +1249,7 @@
                     if (self.autoRefresh())
                         self.queryData();
                 }, self.refreshRate() * 1000);
-            }
+            };
 
             self.queryData = function () {
                 if (!self.dataHubIsConnected()) {
@@ -1273,7 +1285,7 @@
                         self.setQueryTimeout();
                     });
                 }
-            }
+            };
         }
 
         function showToolTip() {
