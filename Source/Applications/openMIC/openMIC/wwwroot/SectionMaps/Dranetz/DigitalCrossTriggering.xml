@@ -1,5 +1,5 @@
 ﻿<SECTION NAME="sectCrossTrig" ALIAS="Cross-Triggering">
-  <PROPDEF ALIAS="Communication Configuration (common to all messages)" TYPE="3"/>
-  <PROPDEF NAME="propCrossTrigGroupID" ALIAS="Broadcast group ID" TYPE="4"/>
-  <PROPDEF NAME="propCrossTrigBroadcastAddr" ALIAS="Broadcast address (empty for local)" TYPE="4"/>
+  <PROPDEF ALIAS="Communication Configuration (common to all messages)" TYPE="HEADER"/>
+  <PROPDEF NAME="propCrossTrigGroupID" ALIAS="Broadcast group ID" TYPE="TEXT"/>
+  <PROPDEF NAME="propCrossTrigBroadcastAddr" ALIAS="Broadcast address (empty for local)" TYPE="TEXT"/>
 </SECTION>

@@ -1,12 +1,12 @@
 ﻿<SECTION NAME="security" ALIAS="Security" MAPROOT="Security_Settings">
 	<PROPDEF ALIAS="PQube 3 Security" TYPE="HEADER"/>
-	<PROPDEF NAME="internalFirewallProtection" ALIAS="Internal Firewall Protection" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Firewall" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="internalFirewallProtection" ALIAS="Internal Firewall Protection" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Firewall" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF ALIAS="Web Server (Web Pages) Protection" TYPE="HEADER"/>
-	<PROPDEF NAME="requireHTTPS" ALIAS="Require HTTPS" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_WebServer_Security" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="requireHTTPS" ALIAS="Require HTTPS" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_WebServer_Security" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF ALIAS="FTP Server (File Transfer) Protection" TYPE="HEADER"/>
-	<PROPDEF NAME="requireFTPS" ALIAS="Require FTPS" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_FTP_Security" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="requireFTPS" ALIAS="Require FTPS" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_FTP_Security" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF ALIAS="Lock Screen On Display" TYPE="HEADER"/>
-	<PROPDEF NAME="enableDisplayPass" ALIAS="Enable Display Passcode" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Display_Passcode" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="enableDisplayPass" ALIAS="Enable Display Passcode" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Display_Passcode" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="displayPasscode" ALIAS="Display Passcode" TYPE="NUMERIC" DEFAULT="0000" MAP=".Display_Passcode">
 		<PARAM MIN="0000" MAX="9999"/>
 	</PROPDEF> 

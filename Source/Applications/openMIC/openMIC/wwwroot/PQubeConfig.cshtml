@@ -645,14 +645,6 @@
             return value;
         };
 
-        function fromOnOff(value) {
-            return (value || "OFF").trim().toUpperCase() !== "OFF";
-        }
-
-        function toOnOff(value) {
-            return value ? "ON" : "OFF";
-        }
-
         function DeviceViewModel() {
             const self = this;
 

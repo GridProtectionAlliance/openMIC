@@ -1,7 +1,7 @@
 ﻿<SECTION NAME="acVoltages" ALIAS="AC Voltages" MAPROOT="Channel_Recordings">
 	<PROPDEF ALIAS="Power Configuration" TYPE="HEADER" MAPROOT="Nominal_Inputs"/>
 	<PROPDEF NAME="powerConfiguration" ALIAS="Power Configuration" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().PQube_Information.Power_Configuration">
-		<PARAM TYPE="4">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="AUTO" VALUE="Auto"/>
 				<ITEM NAME="Single_Phase_L1_N" VALUE="Single_Phase_L1_N"/>
@@ -16,7 +16,7 @@
 	<PROPDEF NAME="nominalPhaseToPhase" ALIAS="Nominal Phase to Phase Voltage (V)" TYPE="NUMERIC" DEFAULT="AUTO" MAP=".Nominal_Phase_To_Phase_Voltage"/>
 	<PROPDEF NAME="nominalPhaseToNeutral" ALIAS="Nominal Phase to Neutral Voltage (V)" TYPE="NUMERIC" DEFAULT="AUTO" MAP=".Nominal_Phase_To_Neutral_Voltage"/>
 	<PROPDEF NAME="nominalFrequency" ALIAS="Nominal Frequency" TYPE="SELECT" DEFAULT="AUTO" MAP=".Nominal_Frequency">
-		<PARAM TYPE="4">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="AUTO" VALUE="Auto"/>
 				<ITEM NAME="16.67" VALUE="16.67"/>
@@ -28,7 +28,7 @@
 	</PROPDEF>
 	<PROPDEF ALIAS="Voltage Recordings" TYPE="HEADER"/>
 	<PROPDEF NAME="recordPhaseToPhase" ALIAS="Record Phase to Phase Channels" TYPE="SELECT" DEFAULT="AUTO" MAP=".Record_Phase_To_Phase_Channels">
-		<PARAM TYPE="4">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="AUTO" VALUE="AUTO"/>
 				<ITEM NAME="ON" VALUE="ON"/>
@@ -37,7 +37,7 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF NAME="recordPhaseToNeutral" ALIAS="Record Phase to Neutral Channels" TYPE="SELECT" DEFAULT="AUTO" MAP=".Record_Phase_To_Neutral_Channels">
-		<PARAM TYPE="4">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="AUTO" VALUE="AUTO"/>
 				<ITEM NAME="ON" VALUE="ON"/>
@@ -48,9 +48,9 @@
 	<PROPDEF ALIAS="Voltage Connections" TYPE="HEADER" MAPROOT="Potential_Transformers"/>
 	<PROPDEF NAME="potentialTransformerRatio" ALIAS="Potential Transformer Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".Potential_Transformer_Ratio"/>
 	<PROPDEF ALIAS="Advanced" TYPE="HEADER" MAPROOT="Measurement_Setup"/>
-	<PROPDEF NAME="recordVoltageUnbalance" ALIAS="Record Voltage Unbalance" TYPE="CHECKBOX" DEFAULT="ON" MAP="viewModel.deviceConfig().Channel_Recordings.Record_Voltage_Unbalance" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="recordVoltageUnbalance" ALIAS="Record Voltage Unbalance" TYPE="CHECKBOX" DEFAULT="ON" MAP="viewModel.deviceConfig().Channel_Recordings.Record_Voltage_Unbalance" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="unbalanceCalculationMethod" ALIAS="Unbalance Calculation Method" TYPE="SELECT" DEFAULT="IEC" MAP=".Unbalance_Calculation_Method">
-		<PARAM TYPE="4">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="ANSI" VALUE="ANSI"/>
 				<ITEM NAME="IEC" VALUE="IEC"/>
@@ -60,11 +60,11 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="recordTenSecondFrequency" ALIAS="Record 10 Second Frequency" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Record_10_Second_Frequency" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
-	<PROPDEF NAME="recordTenMinuteHarmoincsAndParam" ALIAS="Record 10 Min Harmonics and Param." TYPE="CHECKBOX" DEFAULT="ON" MAP=".Record_IEC_61000-4-30_10_Min_Interval" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
-	<PROPDEF NAME="recordConductedEmissions" ALIAS="Record 2-150kHz Conducted Emissions" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Record_2-150kHz_Conducted_Emissions" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="recordTenSecondFrequency" ALIAS="Record 10 Second Frequency" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Record_10_Second_Frequency" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="recordTenMinuteHarmoincsAndParam" ALIAS="Record 10 Min Harmonics and Param." TYPE="CHECKBOX" DEFAULT="ON" MAP="['Record_IEC_61000-4-30_10_Min_Interval']" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="recordConductedEmissions" ALIAS="Record 2-150kHz Conducted Emissions" TYPE="CHECKBOX" DEFAULT="ON" MAP="['Record_2-150kHz_Conducted_Emissions']" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="rotationConventionOnVectors" ALIAS="Rotation Convention on Vectors Screen" TYPE="SELECT" DEFAULT="COUNTER_CLOCKWISE" MAP=".Rotation_Convention_on_Vectors_Screen">
-		<PARAM TYPE="4">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="COUNTER_CLOCKWISE" VALUE="COUNTER_CLOCKWISE"/>
 				<ITEM NAME="CLOCKWISE" VALUE="CLOCKWISE"/>
@@ -72,9 +72,9 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF ALIAS="Flicker" TYPE="HEADER"/>
-	<PROPDEF NAME="recordFlicker" ALIAS="Record Flicker" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Record_Flicker" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="recordFlicker" ALIAS="Record Flicker" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Record_Flicker" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="flickerFrequencyFilter" ALIAS="Flicker Frequency Filter" TYPE="SELECT" DEFAULT="60Hz" MAP="viewModel.deviceConfig().Measurement_Setup.Flicker_Lamp_Voltage">
-		<PARAM TYPE="4">
+		<PARAM TYPE="NUMERIC">
 			<LIST>
 				<ITEM NAME="60Hz" VALUE="230"/>
 				<ITEM NAME="50Hz" VALUE="120"/>
@@ -83,7 +83,7 @@
 	</PROPDEF>
 	<PROPDEF ALIAS="Fix Connection Errors" TYPE="HEADER" MAPROOT="Adjust_Phase_Connections"/>
 	<PROPDEF NAME="channelL1" ALIAS="Channel L1 From Connector" TYPE="SELECT" DEFAULT="L1" MAP=".Voltage_L1_Input_Connected_To">
-		<PARAM TYPE="4">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="L1 (17)" VALUE="L1"/>
 				<ITEM NAME="L2 (18)" VALUE="L2"/>
@@ -92,8 +92,8 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="channelL1" ALIAS="Channel L2 From Connector" TYPE="SELECT" DEFAULT="L2" MAP=".Voltage_L2_Input_Connected_To">
-		<PARAM TYPE="4">
+	<PROPDEF NAME="channelL2" ALIAS="Channel L2 From Connector" TYPE="SELECT" DEFAULT="L2" MAP=".Voltage_L2_Input_Connected_To">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="L1 (17)" VALUE="L1"/>
 				<ITEM NAME="L2 (18)" VALUE="L2"/>
@@ -102,8 +102,8 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="channelL1" ALIAS="Channel L3 From Connector" TYPE="SELECT" DEFAULT="L3" MAP=".Voltage_L3_Input_Connected_To">
-		<PARAM TYPE="4">
+	<PROPDEF NAME="channelL3" ALIAS="Channel L3 From Connector" TYPE="SELECT" DEFAULT="L3" MAP=".Voltage_L3_Input_Connected_To">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="L1 (17)" VALUE="L1"/>
 				<ITEM NAME="L2 (18)" VALUE="L2"/>
@@ -112,8 +112,8 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="channelL1" ALIAS="Channel N From Connector" TYPE="SELECT" DEFAULT="N" MAP=".Voltage_N_Input_Connected_To">
-		<PARAM TYPE="4">
+	<PROPDEF NAME="channelL4" ALIAS="Channel N From Connector" TYPE="SELECT" DEFAULT="N" MAP=".Voltage_N_Input_Connected_To">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="L1 (17)" VALUE="L1"/>
 				<ITEM NAME="L2 (18)" VALUE="L2"/>

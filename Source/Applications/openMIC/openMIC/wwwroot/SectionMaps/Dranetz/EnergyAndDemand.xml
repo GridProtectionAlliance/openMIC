@@ -1,6 +1,6 @@
 <SECTION NAME="energy" ALIAS="Energy and Demand" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
-  <PROPDEF ORDER="0" NAME="dmdSubInterval" ALIAS="Demand sub-interval" TYPE="8" DEFAULT="0">
-    <PARAM TYPE="1">
+  <PROPDEF ORDER="0" NAME="dmdSubInterval" ALIAS="Demand sub-interval" TYPE="SELECT" DEFAULT="0">
+    <PARAM TYPE="NUMERIC">
       <LIST>
         <ITEM NAME="Off"/>
         <ITEM NAME="3 minutes"/>
@@ -15,8 +15,8 @@
   <PROPDEF ORDER="1" NAME="dmdInterval" ALIAS="Sub-intervals per demand interval" TYPE="1">
     <PARAM MIN="1" MAX="6"/>
   </PROPDEF>
-  <PROPDEF ORDER="2" NAME="enAccEnable" ALIAS="Enable energy accumulation" TYPE="0"/>
-  <PROPDEF ORDER="3" NAME="enAccReset" ALIAS="Reset energy accumulations" TYPE="0"/>
+  <PROPDEF ORDER="2" NAME="enAccEnable" ALIAS="Enable energy accumulation" TYPE="CHECKBOX"/>
+  <PROPDEF ORDER="3" NAME="enAccReset" ALIAS="Reset energy accumulations" TYPE="CHECKBOX"/>
   <BANK ORDER="4" NAME="bankJournal" ALIAS="Journal Channels (select the channel(s) to change)" ROWS="8">
     <LIST>
       <ITEM NAME="j373" ALIAS="Watthours {0}" ANALYZER="0!" CONFIG="!Delta" ALIAS0="getChannelName(0)"/>
@@ -77,12 +77,12 @@
       <ITEM NAME="j459" ALIAS="Peak Demand Current {0}" ANALYZER="2" CONFIG="!Split,!Single" ALIAS0="getChannelName(2)"/>
       <ITEM NAME="j461" ALIAS="Peak Demand Current Total" ANALYZER="2" CONFIG="!Generic"/>
     </LIST>
-    <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0"/>
-    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0"/>
-    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4"/>
-    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4"/>
-    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4"/>
-    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4"/>
-    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4"/>
+    <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="CHECKBOX"/>
+    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="CHECKBOX"/>
+    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="FLOAT"/>
+    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="FLOAT"/>
+    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="FLOAT"/>
+    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="FLOAT"/>
+    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="FLOAT"/>
   </BANK>
 </SECTION>

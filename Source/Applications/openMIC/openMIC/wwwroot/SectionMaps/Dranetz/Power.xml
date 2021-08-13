@@ -1,6 +1,6 @@
 <SECTION NAME="power" ALIAS="Power" MAPROOT="commandresult.characteristics.anyalyzer.VA_power">
-  <PROPDEF ORDER="0" NAME="journalPeriod" ALIAS="Journaling interval" TYPE="8" DEFAULT="0">
-    <PARAM TYPE="1">
+  <PROPDEF ORDER="0" NAME="journalPeriod" ALIAS="Journaling interval" TYPE="SELECT" DEFAULT="0">
+    <PARAM TYPE="NUMERIC">
       <LIST>
         <ITEM NAME="Off"/>
         <ITEM NAME="1 second"/>
@@ -18,9 +18,9 @@
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF ORDER="1" NAME="Limit crossing events can change the rate at which data is trended. These settings specify the journaling interval to use when a limit is crossed and how long that interval is applied." TYPE="3"/>
-  <PROPDEF ORDER="2" NAME="journalEventPeriod" ALIAS="Journal event interval" TYPE="8" DEFAULT="0">
-    <PARAM TYPE="1">
+  <PROPDEF ORDER="1" ALIAS="Limit crossing events can change the rate at which data is trended. These settings specify the journaling interval to use when a limit is crossed and how long that interval is applied." TYPE="HEADER"/>
+  <PROPDEF ORDER="2" NAME="journalEventPeriod" ALIAS="Journal event interval" TYPE="SELECT" DEFAULT="0">
+    <PARAM TYPE="NUMERIC">
       <LIST>
         <ITEM NAME="Off"/>
         <ITEM NAME="10 seconds"/>
@@ -29,8 +29,8 @@
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF ORDER="3" NAME="journalEventDuration" ALIAS="Journal event duration" TYPE="8" DEFAULT="0">
-    <PARAM TYPE="1">
+  <PROPDEF ORDER="3" NAME="journalEventDuration" ALIAS="Journal event duration" TYPE="SELECT" DEFAULT="0">
+    <PARAM TYPE="NUMERIC">
       <LIST>
         <ITEM NAME="Off"/>
         <ITEM NAME="1 minute"/>
@@ -124,13 +124,13 @@
       <ITEM NAME="j561" ALIAS="Rapid Voltage Change CA" ANALYZER="1" CONFIG="Delta"/>
       <ITEM NAME="j563" ALIAS="Rapid Voltage Change {0}" ANALYZER="1" CONFIG="Generic" ALIAS0="getChannelName(3)"/>
     </LIST>
-    <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="0"/>
-    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="0"/>
-    <PROPDEF NAME="enableWF" ALIAS="Enable waveform capture" TYPE="0"/>
-    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="4"/>
-    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="4"/>
-    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="4"/>
-    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="4"/>
-    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="4"/>
+    <PROPDEF NAME="trendingEnable" ALIAS="Enable trending" TYPE="CHECKBOX"/>
+    <PROPDEF NAME="limitEnable" ALIAS="Enable limit checking" TYPE="CHECKBOX"/>
+    <PROPDEF NAME="enableWF" ALIAS="Enable waveform capture" TYPE="CHECKBOX"/>
+    <PROPDEF NAME="limitHighHigh" ALIAS="Very high" TYPE="FLOAT"/>
+    <PROPDEF NAME="limitHigh" ALIAS="High" TYPE="FLOAT"/>
+    <PROPDEF NAME="limitLow" ALIAS="Low" TYPE="FLOAT"/>
+    <PROPDEF NAME="limitlLowLow" ALIAS="Very low" TYPE="FLOAT"/>
+    <PROPDEF NAME="limitDeadband" ALIAS="Deadband" TYPE="FLOAT"/>
   </BANK>
 </SECTION>

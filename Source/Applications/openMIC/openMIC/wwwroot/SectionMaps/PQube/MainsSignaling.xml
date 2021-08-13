@@ -1,6 +1,6 @@
 ﻿<SECTION NAME="mainsSignaling" ALIAS="Mains Signaling" MAPROOT="Mains_Signaling">
 	<PROPDEF ALIAS="Mains Signaling" TYPE="HEADER"/>
-	<PROPDEF NAME="mainsSignaligEvents" ALIAS="Mains Signaling Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Mains_Signaling_Events" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+	<PROPDEF NAME="mainsSignaligEvents" ALIAS="Mains Signaling Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Mains_Signaling_Events" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="mainsSignalingThreshold" ALIAS="Mains Signaling Threshold" TYPE="NUMERIC" DEFAULT="60" MAP=".Mains_Signaling_Threshold_In_Volts"/>
 	<PROPDEF NAME="mainsSignalingHarmonic" ALIAS="Mains_Signaling_Harmonic_In_Hz" TYPE="NUMERIC" DEFAULT="316.67" MAP=".Mains_Signaling_Harmonic_In_Hz"/>
 </SECTION>

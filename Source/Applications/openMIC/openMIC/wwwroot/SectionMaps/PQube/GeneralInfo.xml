@@ -1,7 +1,7 @@
 ﻿<SECTION NAME="generalInfo" ALIAS="General Info" MAPROOT="PQube_Information">
-  <PROPDEF NAME="PQube Information" TYPE="3"/>
-  <PROPDEF NAME="deviceType" ALIAS="Device Type" TYPE="8" DEFAULT="0" MAP="deviceTypeIndex" PREREAD="deviceTypeIndex = viewModel.deviceTypeIndex()" POSTWRITE="updateDeviceType({mapExpr})">
-    <PARAM TYPE="1">
+  <PROPDEF ALIAS="PQube Information" TYPE="HEADER"/>
+  <PROPDEF NAME="deviceType" ALIAS="Device Type" TYPE="SELECT" DEFAULT="0" MAP="deviceTypeIndex" PREREAD="deviceTypeIndex = viewModel.deviceTypeIndex()" POSTWRITE="updateDeviceType({mapExpr})">
+    <PARAM TYPE="NUMERIC">
       <LIST>
         <ITEM NAME="PQube 3" VALUE="0"/>
         <ITEM NAME="PQube 3e" VALUE="1"/>
@@ -10,14 +10,14 @@
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF NAME="pqubeID" ALIAS="PQube ID" TYPE="4" DEFAULT="(PQube_ID not set)" MAP=".PQube_ID" READ="removeQuotes({0})" WRITE="addQuotes({0})"/>
-  <PROPDEF NAME="locationName" ALIAS="Location Name" TYPE="4" DEFAULT="(location not set)" MAP=".Location_Name" READ="removeQuotes({0})" WRITE="addQuotes({0})"/>
-  <PROPDEF NAME="note1" ALIAS="Note 1" TYPE="4" DEFAULT="(note not set)" MAP=".Note_1" READ="removeQuotes({0})" WRITE="addQuotes({0})"/>
-  <PROPDEF NAME="note2" ALIAS="Note 2" TYPE="4" DEFAULT="(note not set)" MAP=".Note_2" READ="removeQuotes({0})" WRITE="addQuotes({0})"/>
+  <PROPDEF NAME="pqubeID" ALIAS="PQube ID" TYPE="TEXT" DEFAULT="(PQube_ID not set)" MAP=".PQube_ID" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+  <PROPDEF NAME="locationName" ALIAS="Location Name" TYPE="TEXT" DEFAULT="(location not set)" MAP=".Location_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+  <PROPDEF NAME="note1" ALIAS="Note 1" TYPE="TEXT" DEFAULT="(note not set)" MAP=".Note_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+  <PROPDEF NAME="note2" ALIAS="Note 2" TYPE="TEXT" DEFAULT="(note not set)" MAP=".Note_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
 
-  <PROPDEF NAME="Time Zone (automatic daylight savings time)" TYPE="3"/>
-  <PROPDEF NAME="timeZoneRegion" ALIAS="Time zone (automatic daylight savings time)" TYPE="8" DEFAULT="America/Los_Angeles" MAP=".Time_Zone_Region">
-    <PARAM TYPE="4">
+  <PROPDEF ALIAS="Time Zone (automatic daylight savings time)" TYPE="HEADER"/>
+  <PROPDEF NAME="timeZoneRegion" ALIAS="Time zone (automatic daylight savings time)" TYPE="SELECT" DEFAULT="America/Los_Angeles" MAP=".Time_Zone_Region">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME="(UTC-10:00) Hawaii" VALUE="Hawaiian Standard Time"/>
         <ITEM NAME="(UTC-09:00) Alaska" VALUE="Alaskan Standard Time"/>
@@ -32,9 +32,9 @@
     </PARAM>
   </PROPDEF>
 
-  <PROPDEF NAME="Language" TYPE="3"/>
-  <PROPDEF NAME="primaryLanguage" ALIAS="Primary Language" TYPE="8" DEFAULT="English-American" MAP=".PQube_Primary_Language">
-    <PARAM TYPE="4">
+  <PROPDEF ALIAS="Language" TYPE="HEADER"/>
+  <PROPDEF NAME="primaryLanguage" ALIAS="Primary Language" TYPE="SELECT" DEFAULT="English-American" MAP=".PQube_Primary_Language">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME="None" VALUE="None"/>
         <ITEM NAME="English-American" VALUE="English-American"/>
@@ -42,8 +42,8 @@
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF NAME="secondaryLanguage" ALIAS="Secondary Language" TYPE="8" DEFAULT="None" MAP=".PQube_Secondary_Language">
-    <PARAM TYPE="4">
+  <PROPDEF NAME="secondaryLanguage" ALIAS="Secondary Language" TYPE="SELECT" DEFAULT="None" MAP=".PQube_Secondary_Language">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME="None" VALUE="None"/>
         <ITEM NAME="English-American" VALUE="English-American"/>
@@ -52,31 +52,31 @@
     </PARAM>
   </PROPDEF>
 
-  <PROPDEF NAME="Output Formatting" TYPE="3" MAPROOT="Output_Formatting"/>
-  <PROPDEF NAME="decimalSeparator" ALIAS="Decimal Separator" TYPE="8" DEFAULT="." MAP=".Decimal_Separator" READ="removeQuotes({0})" WRITE="addQuotes({0})">
-    <PARAM TYPE="4">
+  <PROPDEF ALIAS="Output Formatting" TYPE="HEADER" MAPROOT="Output_Formatting"/>
+  <PROPDEF NAME="decimalSeparator" ALIAS="Decimal Separator" TYPE="SELECT" DEFAULT="." MAP=".Decimal_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME="." VALUE="."/>
         <ITEM NAME="," VALUE=","/>
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF NAME="dateSeparator" ALIAS="Date Separator" TYPE="8" DEFAULT="/" MAP=".Date_Separator" READ="removeQuotes({0})" WRITE="addQuotes({0})">
-    <PARAM TYPE="4">
+  <PROPDEF NAME="dateSeparator" ALIAS="Date Separator" TYPE="SELECT" DEFAULT="/" MAP=".Date_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME="/" VALUE="/"/>
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF NAME="timeSeparator" ALIAS="Time Separator" TYPE="8" DEFAULT=":" MAP=".Time_Separator" READ="removeQuotes({0})" WRITE="addQuotes({0})">
-    <PARAM TYPE="4">
+  <PROPDEF NAME="timeSeparator" ALIAS="Time Separator" TYPE="SELECT" DEFAULT=":" MAP=".Time_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME=":" VALUE=":"/>
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF NAME="csvSeparator" ALIAS="CSV Separator" TYPE="8" DEFAULT="," MAP=".CSV_Separator" READ="removeQuotes({0})" WRITE="addQuotes({0})">
-    <PARAM TYPE="4">
+  <PROPDEF NAME="csvSeparator" ALIAS="CSV Separator" TYPE="SELECT" DEFAULT="," MAP=".CSV_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME="," VALUE=","/>
         <ITEM NAME=";" VALUE=";"/>
@@ -85,16 +85,16 @@
     </PARAM>
   </PROPDEF>
 
-  <PROPDEF NAME="Recordings" TYPE="3" MAPROOT="Channel_Recordings"/>
-  <PROPDEF NAME="gifGraphs" ALIAS="GIF Graphs" TYPE="0" DEFAULT="ON" MAP=".Generate_GIF_Graphs" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
-  <PROPDEF NAME="pqdifFiles" ALIAS="PQDIF Files" TYPE="0" DEFAULT="OFF" MAP=".Generate_PQDIF_Files" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
-  <PROPDEF NAME="pqdifTimeAsUTC" ALIAS="Set PQDIF Timestamp to UTC" TYPE="0" DEFAULT="ON" MAP=".Enable_PQVIEW_Compatibility_Mode" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
-  <PROPDEF NAME="pqdif1MinIndex" ALIAS="Include 1-Min Data for PQView" TYPE="0" DEFAULT="OFF" MAP=".Enable_1_Min_PQDIF_Indexing" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
+  <PROPDEF ALIAS="Recordings" TYPE="HEADER" MAPROOT="Channel_Recordings"/>
+  <PROPDEF NAME="gifGraphs" ALIAS="GIF Graphs" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Generate_GIF_Graphs" TRUE="ON" FALSE="OFF"/>
+  <PROPDEF NAME="pqdifFiles" ALIAS="PQDIF Files" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Generate_PQDIF_Files" TRUE="ON" FALSE="OFF"/>
+  <PROPDEF NAME="pqdifTimeAsUTC" ALIAS="Set PQDIF Timestamp to UTC" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_PQVIEW_Compatibility_Mode" TRUE="ON" FALSE="OFF"/>
+  <PROPDEF NAME="pqdif1MinIndex" ALIAS="Include 1-Min Data for PQView" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_1_Min_PQDIF_Indexing" TRUE="ON" FALSE="OFF"/>
 
-  <PROPDEF NAME="Data Backup" TYPE="3" MAPROOT="Data_Backup"/>
-  <PROPDEF NAME="enableDataBackup" ALIAS="Enable Data Backup" TYPE="0" DEFAULT="ON" MAP=".Enable_Data_Backup" READ="fromOnOff({0})" WRITE="toOnOff({0})"/>
-  <PROPDEF NAME="dataBackupTarget" ALIAS="Data Backup To" TYPE="8" DEFAULT="SDCARD" MAP=".Data_Backup_to">
-    <PARAM TYPE="4">
+  <PROPDEF ALIAS="Data Backup" TYPE="HEADER" MAPROOT="Data_Backup"/>
+  <PROPDEF NAME="enableDataBackup" ALIAS="Enable Data Backup" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Data_Backup" TRUE="ON" FALSE="OFF"/>
+  <PROPDEF NAME="dataBackupTarget" ALIAS="Data Backup To" TYPE="SELECT" DEFAULT="SDCARD" MAP=".Data_Backup_to">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME="" VALUE=""/>
         <ITEM NAME="USB" VALUE="USB"/>
@@ -103,14 +103,14 @@
     </PARAM>
   </PROPDEF>
 
-  <PROPDEF NAME="" TYPE="3"/>
-  <PROPDEF NAME="fanTempThreshold" ALIAS="Fan Temperature Threshold (&#176;C)" TYPE="1" DEFAULT="45" MAP=".Fan_Temperature_Threshold_in_DegC">
+  <PROPDEF TYPE="HEADER"/>
+  <PROPDEF NAME="fanTempThreshold" ALIAS="Fan Temperature Threshold (&#176;C)" TYPE="NUMERIC" DEFAULT="45" MAP=".Fan_Temperature_Threshold_in_DegC">
     <PARAM MIN="40" MAX="60"/>
   </PROPDEF>
 
-  <PROPDEF NAME="UPS Battery" TYPE="3"/>
-  <PROPDEF NAME="upsModel" ALIAS="UPS Battery" TYPE="8" DEFAULT="None" MAP=".UPS_Model" POSTREAD="$('#row-{rootName}_upsMinutes').toggle({value} !== 'None')" POSTWRITE="$('#row-{rootName}_upsMinutes').toggle({value} !== 'None')">
-    <PARAM TYPE="4">
+  <PROPDEF ALIAS="UPS Battery" TYPE="HEADER"/>
+  <PROPDEF NAME="upsModel" ALIAS="UPS Battery" TYPE="SELECT" DEFAULT="None" MAP=".UPS_Model" POSTREAD="$('#row-{rootName}_upsMinutes').toggle({value} !== 'None')" POSTWRITE="$('#row-{rootName}_upsMinutes').toggle({value} !== 'None')">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME="None" VALUE="None"/>
         <ITEM NAME="UPS1" VALUE="UPS1"/>
@@ -119,13 +119,13 @@
       </LIST>
     </PARAM>
   </PROPDEF>
-  <PROPDEF NAME="upsMinutes" ALIAS="UPS Battery Backup Time" TYPE="1" DEFAULT="5" MAP=".UPS_Time_In_Minutes">
+  <PROPDEF NAME="upsMinutes" ALIAS="UPS Battery Backup Time" TYPE="NUMERIC" DEFAULT="5" MAP=".UPS_Time_In_Minutes">
     <PARAM MIN="3" MAX="30"/>
   </PROPDEF>
 
-  <PROPDEF NAME="Power Module" TYPE="3"/>
-  <PROPDEF NAME="auxOutput" ALIAS="AUX Output" TYPE="8" DEFAULT="UPS" MAP=".PM_AUX_Output_Cntl">
-    <PARAM TYPE="4">
+  <PROPDEF ALIAS="Power Module" TYPE="HEADER"/>
+  <PROPDEF NAME="auxOutput" ALIAS="AUX Output" TYPE="SELECT" DEFAULT="UPS" MAP=".PM_AUX_Output_Cntl">
+    <PARAM TYPE="TEXT">
       <LIST>
         <ITEM NAME="ON" VALUE="ON"/>
         <ITEM NAME="OFF" VALUE="OFF"/>

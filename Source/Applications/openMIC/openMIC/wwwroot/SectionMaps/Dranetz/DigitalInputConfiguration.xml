@@ -10,9 +10,9 @@
       <ITEM NAME="D7" ALIAS="D7"/>
       <ITEM NAME="D8" ALIAS="D8"/>
     </LIST>
-    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="4"/>
-    <PROPDEF NAME="function" ALIAS="Function" TYPE="8" DEFAULT="0">
-      <PARAM TYPE="1">
+    <PROPDEF NAME="channelName" ALIAS="Channel name" TYPE="TEXT"/>
+    <PROPDEF NAME="function" ALIAS="Function" TYPE="SELECT" DEFAULT="0">
+      <PARAM TYPE="NUMERIC">
         <LIST>
           <ITEM NAME="Unused"/>
           <ITEM NAME="Change of state"/>
@@ -25,8 +25,8 @@
         </LIST>
       </PARAM>
     </PROPDEF>
-    <PROPDEF NAME="input" ALIAS="Input" TYPE="8" DEFAULT="0">
-      <PARAM TYPE="1">
+    <PROPDEF NAME="input" ALIAS="Input" TYPE="SELECT" DEFAULT="0">
+      <PARAM TYPE="NUMERIC">
         <LIST>
           <ITEM NAME="I1"/>
           <ITEM NAME="I2"/>
@@ -39,8 +39,8 @@
         </LIST>
       </PARAM>
     </PROPDEF>
-    <PROPDEF NAME="activeState" ALIAS="Active state" TYPE="8" DEFAULT="0">
-      <PARAM TYPE="1">
+    <PROPDEF NAME="activeState" ALIAS="Active state" TYPE="SELECT" DEFAULT="0">
+      <PARAM TYPE="NUMERIC">
         <LIST>
           <ITEM NAME="Low to high transitions"/>
           <ITEM NAME="High to low transitions"/>
@@ -48,11 +48,11 @@
         </LIST>
       </PARAM>
     </PROPDEF>
-    <PROPDEF NAME="inputDebounceTime" ALIAS="Debounce time (microseconds)" TYPE="1"/>
+    <PROPDEF NAME="inputDebounceTime" ALIAS="Debounce time (microseconds)" TYPE="NUMERIC"/>
   </BANK>
-  <PROPDEF NAME="Journaling Setup (for all appropriate channels)" TYPE="3"/>
-  <PROPDEF NAME="journalPeriod" ALIAS="Journaling interval" TYPE="8" DEFAULT="0">
-    <PARAM TYPE="1">
+  <PROPDEF ALIAS="Journaling Setup (for all appropriate channels)" TYPE="HEADER"/>
+  <PROPDEF NAME="journalPeriod" ALIAS="Journaling interval" TYPE="SELECT" DEFAULT="0">
+    <PARAM TYPE="NUMERIC">
       <LIST>
         <ITEM NAME="Off"/>
         <ITEM NAME="1 second"/>

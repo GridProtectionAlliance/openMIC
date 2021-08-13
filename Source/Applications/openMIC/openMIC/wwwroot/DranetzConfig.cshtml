@@ -481,6 +481,7 @@
         const deviceID = @deviceID;
         const deviceAcronym = "@deviceAcronym.JavaScriptEncode()";
         const deviceFound = @deviceFound.ToString().ToLower();
+        const sqrt2 = Math.sqrt(2);
 
         let shiftIsDown = false;
 
@@ -696,6 +697,18 @@
             });
 
             showInfoMessage(`Switched to ${normalizeThresholds() ? 'normalized' : 'raw'} thresholds...`);
+        }
+
+        function normalizableRead(value, nominalFactor) {
+            value = parseFloat(value);
+            const nominalValue = smb.getValue("inputSection_nominalV") * (nominalFactor || 1.0);
+            return normalizeThresholds() ? (value / nominalValue * 100.0).toFixed(nominalFactor ? 2 : 1) : value.toFixed(6);
+        }
+
+        function normalizableWrite(value, nominalFactor) {
+            value = parseFloat(value);
+            const nominalValue = smb.getValue("inputSection_nominalV") * (nominalFactor || 1.0);
+            return normalizeThresholds() ? value / 100.0 * nominalValue : value;
         }
 
         let genericChannelNames = (Cookies.get("genericChannelNames") || "1|2|3|4").split("|");
