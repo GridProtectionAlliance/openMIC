@@ -371,20 +371,23 @@ function SectionMapBuilder(instanceName) {
         const readOnly = parseInt(self.getProperty(propDef, "@RO", "0"), 10) > 0;
         const map = self.getProperty(propDef, "@MAP") || `${instanceName}._unmapped`;
 
-        const applyInstanceGetValue = value => value.replaceAll("#val(", `${instanceName}.getValue(`);
+        const applyInstanceGetValue = value => value
+            .replaceAll("#val(", `${instanceName}.getValue(`, true)
+            .replaceAll("#keyVal(", `${instanceName}.getKeyValue(`, true);
+
         const mapExpr = applyInstanceGetValue(String.format(map.startsWith(".") ? `${mapRoot}${map}` : map, bankTarget));
         const sectionName = self.getProperty(propDef, "@SECTIONNAME");
         const rootName = `${sectionName}${bankTarget && bankTarget.length ? `_${bankTarget}` : ""}`;
 
         const applySubstitutions = value => applyInstanceGetValue(value
-            .replaceAll("{configRoot}", self._configRoot)
-            .replaceAll("{name}", name)
-            .replaceAll("{sectionName}", sectionName)
-            .replaceAll("{rootName}", rootName)
-            .replaceAll("{value}", getPropVal)
-            .replaceAll("{mapExpr}", mapExpr)
-            .replaceAll("{mapRoot}", mapRoot)
-            .replaceAll("{bankTarget}", bankTarget));
+            .replaceAll("{configRoot}", self._configRoot, true)
+            .replaceAll("{name}", name, true)
+            .replaceAll("{sectionName}", sectionName, true)
+            .replaceAll("{rootName}", rootName, true)
+            .replaceAll("{value}", getPropVal, true)
+            .replaceAll("{mapExpr}", mapExpr, true)
+            .replaceAll("{mapRoot}", mapRoot, true)
+            .replaceAll("{bankTarget}", bankTarget, true));
 
         const readExpr = propDef["@READ"] ? applySubstitutions(propDef["@READ"]) : undefined;
         const writeExpr = propDef["@WRITE"] ? applySubstitutions(propDef["@WRITE"]) : undefined;

@@ -33,7 +33,7 @@
         </LIST>
       </PARAM>
     </PROPDEF>
-    <PROPDEF NAME="inputIProbeType" ALIAS="Current probe type" TYPE="8" DEFAULT="0" ANALYZER="2" MAP=".probe_config.probe_type.list.item[#val('{0}')]['@value']" POSTWRITE="{mapRoot}.probe_config.scale.list.item[#val('{bankTarget}')]['@value'] = getKeyValue('{name}').toFixed(6)">
+    <PROPDEF NAME="inputIProbeType" ALIAS="Current probe type" TYPE="8" DEFAULT="0" ANALYZER="2" MAP=".probe_config.probe_type.list.item[#val('{0}')]['@value']" POSTWRITE="{mapRoot}.probe_config.scale.list.item[#val('{bankTarget}')]['@value'] = #keyVal('{name}').toFixed(6)">
       <PARAM TYPE="1">
         <LIST>
           <ITEM NAME="Other" KEYVALUE="1.0"/>
