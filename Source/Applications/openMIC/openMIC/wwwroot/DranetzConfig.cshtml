@@ -1224,8 +1224,10 @@
 
                 tabList.push(`</ul>`);
 
-                if (!firstCall)
+                if (!firstCall) {
+                    $("#tabs").scrollTabs("destroy");
                     $("#tabs").tabs("destroy");
+                }
 
                 $("#tabs").html(tabList.join("\r\n") + tabSections.join("\r\n"));
 
