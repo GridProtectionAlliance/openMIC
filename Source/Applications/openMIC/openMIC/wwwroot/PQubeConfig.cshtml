@@ -1163,7 +1163,7 @@
 
                 for (let key in activeSections) {
                     if (activeSections.hasOwnProperty(key)) {
-                        // Other tabs may depend on values loaded into primary tabs, so make sure
+                        // Other tabs may depend on values loaded into primary tab, so make sure
                         // values are refreshed for first tab as soon as it is loaded
                         if (activeSections[key].index === 0)
                             promises.push(self.loadTabSection(key).done(self.refreshTabSections));

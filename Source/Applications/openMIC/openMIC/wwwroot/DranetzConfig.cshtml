@@ -849,6 +849,16 @@
                 owner: self
             });
 
+            self.canGraph = ko.pureComputed({
+                read: function () {
+                    return self.selectedAnalyzerConfigID() > -1 &&
+                        self.selectedAnalyzerConfig().commandresult &&
+                        !self.isSaving() &&
+                        self.dataHubIsConnected();
+                },
+                owner: self
+            });
+
             self.isDirty = ko.pureComputed({
                 read: self._isDirty,
                 write: function (value) {
@@ -1493,6 +1503,11 @@
         }
 
         function openGraphDataWindow(record) {
+            if (!viewModel.canGraph()) {
+                showErrorMessage("Cannot show graph at this time.");
+                return;
+            }
+
             const analyzer = viewModel.getAnalyzer(parseInt(record["@@id"](), 10));
 
             if (!analyzer)
@@ -1503,15 +1518,20 @@
             const analyzerTypeName = encodeURIComponent(analyzer.analyzerTypeName());
 
             // Delta wiring configurations do not include neutral values, defaulting to line-to-line voltage angle in this case
-            const referenceAngle = encodeURIComponent(viewModel.selectedWiringConfig().type.toUpperCase() === "DELTA" ?
-                "VABA" /* Voltage A to B Angle */ :
-                "VANA" /* Voltage A to Neutral Angle */);
+            const referenceAngle = encodeURIComponent(
+                analyzer.analyzerType() === analyzerTypes.CurrentDataNode.index ? "IAA" :
+                viewModel.selectedWiringConfig().type.toUpperCase() === "DELTA" ?
+                    "VABA" /* Voltage A to B Angle */ :
+                    "VANA" /* Voltage A to Neutral Angle */);
 
             $("#graphDataFrame").attr({
                 "src": `DranetzGraph.cshtml?DeviceID=@deviceID&ConfigID=${analyzer.configID()}&AnalyzerName=${analyzerName}&AnalyzerType=${analyzerType}&AnalyzerTypeName=${analyzerTypeName}&vNom=${viewModel.vNom}&iNom=${viewModel.iNom}&ReferenceAngle=${referenceAngle}`,
                 "height": `${$("#contentWell").outerHeight(true)}px`,
                 "width": "100%"
             });
+
+            hideInfoMessage();
+            hideErrorMessage();
 
             $("#graphDataWindow").modal("show");
         }
