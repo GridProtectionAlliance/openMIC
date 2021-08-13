@@ -109,10 +109,8 @@ function SectionMapBuilder(instanceName) {
     };
 
     self.clearZeroValue = (target, type) => {
-        if (!zeroFieldTypes.includes(type) || target[0].hasAttribute("zero-cleared"))
+        if (!zeroFieldTypes.includes(type))
             return;
-
-        target.attr("zero-cleared", "");
 
         // Show zero values from config as blank
         if (parseFloat(target.val()) === 0.0)
@@ -258,7 +256,6 @@ function SectionMapBuilder(instanceName) {
     self.selectBankItem = (bankTargetID) => {
         $(`[bank="${bankTargetID}"]`).each(function () {
             try {
-                this.removeAttribute("zero-cleared");
                 eval(this.getAttribute("update-expr"));
             } catch (e) {
                 console.error(e);
@@ -312,7 +309,7 @@ function SectionMapBuilder(instanceName) {
             return PropDefType[typeName];
 
         throw new Error(`@TYPE attribute "${typeName}" is undefined`);
-    }
+    };
 
     self.buildListElements = (list, type, defaultVal) => {
         const html = [];
@@ -371,36 +368,43 @@ function SectionMapBuilder(instanceName) {
         const readOnly = parseInt(self.getProperty(propDef, "@RO", "0"), 10) > 0;
         const map = self.getProperty(propDef, "@MAP") || `${instanceName}._unmapped`;
 
-        const applyInstanceGetValue = value => value
+        const applyMappingSubstitutions = value => value
+            .replaceAll("{configRoot}", self._configRoot, true)
+            .replaceAll("{bankTarget}", bankTarget, true)
+            .replaceAll("#bankIndex", `${instanceName}.getValue('${bankTarget}')`, true)
             .replaceAll("#val(", `${instanceName}.getValue(`, true)
             .replaceAll("#keyVal(", `${instanceName}.getKeyValue(`, true);
 
-        const mapExpr = applyInstanceGetValue(String.format(map.startsWith(".") ? `${mapRoot}${map}` : map, bankTarget));
+        const mapExpr = applyMappingSubstitutions(map.startsWith(".") || map.startsWith("[") ? `${mapRoot}${map}` : map);
         const sectionName = self.getProperty(propDef, "@SECTIONNAME");
         const rootName = `${sectionName}${bankTarget && bankTarget.length ? `_${bankTarget}` : ""}`;
 
-        const applySubstitutions = value => applyInstanceGetValue(value
-            .replaceAll("{configRoot}", self._configRoot, true)
-            .replaceAll("{name}", name, true)
-            .replaceAll("{sectionName}", sectionName, true)
-            .replaceAll("{rootName}", rootName, true)
-            .replaceAll("{value}", getPropVal, true)
-            .replaceAll("{mapExpr}", mapExpr, true)
-            .replaceAll("{mapRoot}", mapRoot, true)
-            .replaceAll("{bankTarget}", bankTarget, true));
+        const applyExpressionSubstitutions = value => applyMappingSubstitutions(value
+            .replaceAll("{name}", name, true)                   // Current element name, e.g., inputSection_bankInput_channelName
+            .replaceAll("{sectionName}", sectionName, true)     // Current section name, e.g., inputSection (from <SECTION NAME="input"/>)
+            .replaceAll("{rootName}", rootName, true)           // Root name of current element, e.g., inputSection_bankInput
+            .replaceAll("{mapExpr}", mapExpr, true)             // Fully qualified mapping expression, e.g., viewModel.deviceConfig().inputSection.channelName
+            .replaceAll("{mapRoot}", mapRoot, true)             // Map expression root, e.g., viewModel.deviceConfig().inputSection
+            .replaceAll("{value}", getPropVal, true)            // Javascript expression that results in DOM element value
+            .replaceAll("{keyValue}",                           // Gets selected key-value attribute from drop-down (from <ITEM KEYVALUE="altValue"/>)
+                `${instanceName}.getKeyValue('${name}')`, true)
+        );
 
-        const readExpr = propDef["@READ"] ? applySubstitutions(propDef["@READ"]) : undefined;
-        const writeExpr = propDef["@WRITE"] ? applySubstitutions(propDef["@WRITE"]) : undefined;
-        const preReadExpr = propDef["@PREREAD"] ? `${applySubstitutions(propDef["@PREREAD"])}; ` : "";
-        const postReadExpr = propDef["@POSTREAD"] ? ` ${applySubstitutions(propDef["@POSTREAD"])};` : "";
-        const preWriteExpr = propDef["@PREWRITE"] ? `${applySubstitutions(propDef["@PREWRITE"])}; ` : "";
-        const postWriteExpr = propDef["@POSTWRITE"] ? ` ${applySubstitutions(propDef["@POSTWRITE"])};` : "";
+        const readExpr = propDef["@READ"] ? applyExpressionSubstitutions(propDef["@READ"]) : undefined;
+        const writeExpr = propDef["@WRITE"] ? applyExpressionSubstitutions(propDef["@WRITE"]) : undefined;
+        const preReadExpr = propDef["@PREREAD"] ? `${applyExpressionSubstitutions(propDef["@PREREAD"])}; ` : "";
+        const postReadExpr = propDef["@POSTREAD"] ? ` ${applyExpressionSubstitutions(propDef["@POSTREAD"])};` : "";
+        const preWriteExpr = propDef["@PREWRITE"] ? `${applyExpressionSubstitutions(propDef["@PREWRITE"])}; ` : "";
+        const postWriteExpr = propDef["@POSTWRITE"] ? ` ${applyExpressionSubstitutions(propDef["@POSTWRITE"])};` : "";
         const updatesConfigExpr = enabled && parseInt(self.getProperty(propDef, "@UPDATESCONFIG", "1"), 10) !== 0 && self.modelChangedExpr ? ` ${self.modelChangedExpr};` : "";
 
         const updateFunction = `const update_{0} = new Function("${readOnly ? "" : `${preReadExpr}{1};${postReadExpr}`}");`;
         const changedFunction = `const {0}_changed = new Function("${preWriteExpr}{1};${postWriteExpr}${updatesConfigExpr}");`;
 
         const placeHolderText = propDef["@PLACEHOLDER"] ? ` placeholder="${propDef["@PLACEHOLDER"]}"` : "";
+        const trueValue = propDef["@TRUE"] || "1";
+        const falseValue = propDef["@FALSE"] || "0";
+        const precision = propDef["@PRECISION"] || "6";
         const min = self.getProperty(propDef.PARAM, "@MIN");
         const max = self.getProperty(propDef.PARAM, "@MAX");
         const minMaxText = `${min ? ` min="${min}"` : ``}${max ? ` max="${max}"` : ``}`;
@@ -420,29 +424,29 @@ function SectionMapBuilder(instanceName) {
 
         switch (type) {
             case PropDefType.CHECKBOX:
-                script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : `parseInt(${mapExpr}, 10) !== 0`}`)}`));
-                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? String.format(writeExpr, getPropVal) : `${getPropVal} ? '1' : '0'`}`));
+                script.push(String.format(updateFunction, name, String.format(setPropVal, readExpr ? readExpr : `${mapExpr} !== '${falseValue}'`)));
+                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${writeExpr}).toString()` : `${getPropVal} ? '${trueValue}' : '${falseValue}'`}`));
                 html.push(`<input type="checkbox" class="smb-input" ${inputAttributes}/>`);
                 break;
             case PropDefType.NUMERIC:
-                script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
-                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
+                script.push(String.format(updateFunction, name, String.format(setPropVal, readExpr || mapExpr)));
+                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${writeExpr}).toString()` : getPropVal}`));
                 html.push(`<input type="number" class="form-control smb-input" ${inputAttributes}/>`);
                 break;
             case PropDefType.FLOAT:
-                script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? `(${String.format(readExpr, mapExpr)})` : `parseFloat(${mapExpr})`}.toFixed(4)`)}`));
-                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
+                script.push(String.format(updateFunction, name, String.format(setPropVal, readExpr ? readExpr : `parseFloat(${mapExpr}).toFixed(${precision})`)));
+                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${writeExpr}).toString()` : getPropVal}`));
                 html.push(`<input type="number" class="form-control smb-input" ${inputAttributes}/>`);
                 break;
             case PropDefType.TEXT:
             case PropDefType.PASSWORD:
-                script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
-                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
+                script.push(String.format(updateFunction, name, String.format(setPropVal, readExpr || mapExpr)));
+                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${writeExpr}).toString()` : getPropVal}`));
                 html.push(`<input type="${type === PropDefType.TEXT ? "text" : "password"}" class="form-control smb-input" ${inputAttributes}/>`);
                 break;
             case PropDefType.SELECT:
-                script.push(String.format(updateFunction, name, `${String.format(setPropVal, `${readExpr ? String.format(readExpr, mapExpr) : mapExpr}`)}`));
-                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${String.format(writeExpr, getPropVal)}).toString()` : getPropVal}`));
+                script.push(String.format(updateFunction, name, String.format(setPropVal, readExpr || mapExpr)));
+                script.push(String.format(changedFunction, name, `${mapExpr} = ${writeExpr ? `(${writeExpr}).toString()` : getPropVal}`));
                 html.push(`<select class="form-control smb-input" ${inputAttributes}>`);
                 html.push(self.buildListElements(propDef.PARAM.LIST, self.getType(propDef.PARAM, PropDefType.NUMERIC), propDef["@DEFAULT"])[0]);
                 html.push(`</select>`);
@@ -470,7 +474,7 @@ function SectionMapBuilder(instanceName) {
         const mapRootValue = self.getProperty(definition, "@MAPROOT");
 
         if (mapRootValue)
-            bankMapRoot = mapRootValue.startsWith(".") ? `${mapRoot}${mapRootValue}` : `${self._configRoot}.${mapRootValue}`;
+            bankMapRoot = mapRootValue.startsWith(".") || mapRootValue.startsWith("[") ? `${mapRoot}${mapRootValue}` : `${self._configRoot}.${mapRootValue}`;
 
         html.push(`<tr${hidden}><th class="smb-header${definition.order > 0 ? "-section-row" : ""} smb-bank-header"><div class="smb-header">${self.getAlias(definition)}</div></th></tr>`);
         html.push(`<tr class="smb-bank-group"${hidden}><td class="smb-bank-group">`);
@@ -655,10 +659,10 @@ function SectionMapBuilder(instanceName) {
                                 const mapRootValue = self.getProperty(definition, "@MAPROOT");
 
                                 groupMapRoot = mapRootValue ?
-                                    (mapRootValue.startsWith(".") ? `${sectionMapRoot}${mapRootValue}` : `${self._configRoot}.${mapRootValue}`) :
+                                    (mapRootValue.startsWith(".") || mapRootValue.startsWith("[") ? `${sectionMapRoot}${mapRootValue}` : `${self._configRoot}.${mapRootValue}`) :
                                     undefined;
 
-                                html.push(`<tr><th class="smb-header${definition.order > 0 ? "-section-row" : ""}"><div class="smb-header">${self.getAlias(definition)}</div></th></tr>`);
+                                html.push(`<tr><th class="smb-header${definition.order > 0 ? "-section-row" : ""}"><div class="smb-header">${self.getAlias(definition) || ""}</div></th></tr>`);
                             }
                         }
                         else {
