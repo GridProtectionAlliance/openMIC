@@ -15,7 +15,7 @@
 	<PROPDEF ALIAS="Current Harmonics" TYPE="HEADER"/>
 	<PROPDEF NAME="recordTDD" ALIAS="Record TDD" TYPE="CHECKBOX" DEFAULT="ON" MAP="viewModel.deviceConfig().Channel_Recordings.Record_Current_TDD" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="currentHarmonicsDistortion" ALIAS="Current Harmonics Distortion" TYPE="SELECT" DEFAULT="Current_Distortion_TDD" MAP=".Current_Harmonics_Distortion" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
-		<PARAM TYPE="FLOAT">
+		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="TDD" VALUE="Current_Distortion_TDD"/>
 				<ITEM NAME="THDi" VALUE="Current_Distortion_THDi"/>
