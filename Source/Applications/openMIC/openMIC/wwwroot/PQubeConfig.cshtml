@@ -1431,17 +1431,17 @@
             });
 
             $("#headerArea").on("shown.bs.collapse", function() {
-                resizePageElements();
                 $("#config-header").addClass("config-header-expanded");
                 $("#config-header").removeClass("config-header-collapsed");
                 $("#right-buttons").removeClass("right-buttons-collapsed");
+                resizePageElements();
             });
 
             $("#headerArea").on("hidden.bs.collapse", function() {
-                resizePageElements();
                 $("#config-header").removeClass("config-header-expanded");
                 $("#config-header").addClass("config-header-collapsed");
                 $("#right-buttons").addClass("right-buttons-collapsed");
+                resizePageElements();
             });
 
             $("#deviceConfiguration").on("shown.bs.collapse", function () {
