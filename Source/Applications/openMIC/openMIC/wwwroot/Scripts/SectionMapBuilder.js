@@ -27,7 +27,7 @@ if (typeof jQuery === "undefined") {
     throw new Error("SectionMapBuilder script requires jQuery - make sure jquery.js is loaded first");
 }
 
-if (!String.prototype) {
+if (!String.prototype.replaceAll) {
     String.prototype.replaceAll = function (findText, replaceWith, ignoreCase) {
         const findVal = typeof findText === "string" ? findText : String(findText);
         const replaceVal = typeof replaceWith === "string" ? replaceWith.replace(/\$/g, "$$$$") : replaceWith;
