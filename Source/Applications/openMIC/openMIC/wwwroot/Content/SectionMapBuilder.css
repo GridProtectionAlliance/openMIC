@@ -68,6 +68,20 @@ th.smb-bank-header {
     padding-bottom: 0;
 }
 
+th.smb-bank-header-row {
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bolder;
+    padding-bottom: 5px;
+    padding-top: 10px;
+}
+
+div.smb-bank-header-row {
+    border-bottom: 2px solid;
+    margin: -1px -2px 0 -2px;
+}
+
 th.smb-bank-footer {
     width: 100%;
     padding-bottom: 5px;

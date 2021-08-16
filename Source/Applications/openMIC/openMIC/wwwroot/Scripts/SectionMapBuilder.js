@@ -458,7 +458,7 @@ function SectionMapBuilder(instanceName) {
         return [html.join(""), script.join("\r\n")];
     };
 
-    self.buildBankElement = (definition, mapRoot, sectionName) => {
+    self.buildBankElement = (definition, mapRoot) => {
         const bankName = self.getProperty(definition, "@NAME");
         const enabled = self.elementIsEnabled(definition);
         const hidden = enabled ? "" : " hidden";
@@ -470,6 +470,7 @@ function SectionMapBuilder(instanceName) {
         let sizeAttribute = "";
         let propDefsStarted = false;
         let bankMapRoot = mapRoot;
+        let groupMapRoot = undefined;
 
         const mapRootValue = self.getProperty(definition, "@MAPROOT");
 
@@ -497,21 +498,32 @@ function SectionMapBuilder(instanceName) {
 
         const addPropDef = (propDef) => {
             if (self.getType(propDef) === PropDefType.HEADER) {
-                console.warn(`Unexpected header property definition encountered in section "${sectionName}" bank "${bankName}"`);
-                return;
+                if (self.elementIsEnabled(propDef)) {
+                    const headerMapRoot = self.getProperty(propDef, "@MAPROOT");
+
+                    groupMapRoot = headerMapRoot ?
+                        (headerMapRoot.startsWith(".") || headerMapRoot.startsWith("[") ? `${bankMapRoot}${headerMapRoot}` : `${self._configRoot}.${headerMapRoot}`) :
+                        undefined;
+
+                    const name = self.getProperty(propDef, "@NAME");
+                    const rowID = name ? ` id="row-${bankName}_${name}"` : "";
+
+                    html.push(`<tr${rowID}><th class="smb-bank-header-row" colspan="2"><div class="smb-bank-header-row">${self.getAlias(propDef) || ""}</div></th></tr>`);
+                }
             }
+            else {
+                const name = self.getProperty(propDef, "@NAME");
 
-            const name = self.getProperty(propDef, "@NAME");
+                if (name)
+                    propDef["@NAME"] = `${bankName}_${name}`;
 
-            if (name)
-                propDef["@NAME"] = `${bankName}_${name}`;
+                const [propDefHtml, propDefScript] = self.buildPropDefElement(propDef, groupMapRoot || bankMapRoot, bankName);
 
-            const [propDefHtml, propDefScript] = self.buildPropDefElement(propDef, bankMapRoot, bankName);
+                html.push(propDefHtml);
 
-            html.push(propDefHtml);
-
-            if (propDefScript.length > 0)
-                script.push(propDefScript);
+                if (propDefScript.length > 0)
+                    script.push(propDefScript);
+            }
         }
 
         for (let key in definition) {
@@ -641,7 +653,7 @@ function SectionMapBuilder(instanceName) {
             switch (definition.elementType) {
                 case "BANK":
                     {
-                        const [bankHtml, bankScript] = self.buildBankElement(definition, sectionMapRoot, sectionName);
+                        const [bankHtml, bankScript] = self.buildBankElement(definition, sectionMapRoot);
 
                         closePropDefs();
                         html.push(bankHtml);
@@ -656,10 +668,10 @@ function SectionMapBuilder(instanceName) {
                             if (self.elementIsEnabled(definition)) {
                                 closePropDefs();
 
-                                const mapRootValue = self.getProperty(definition, "@MAPROOT");
+                                const headerMapRoot = self.getProperty(definition, "@MAPROOT");
 
-                                groupMapRoot = mapRootValue ?
-                                    (mapRootValue.startsWith(".") || mapRootValue.startsWith("[") ? `${sectionMapRoot}${mapRootValue}` : `${self._configRoot}.${mapRootValue}`) :
+                                groupMapRoot = headerMapRoot ?
+                                    (headerMapRoot.startsWith(".") || headerMapRoot.startsWith("[") ? `${sectionMapRoot}${headerMapRoot}` : `${self._configRoot}.${headerMapRoot}`) :
                                     undefined;
 
                                 html.push(`<tr><th class="smb-header${definition.order > 0 ? "-section-row" : ""}"><div class="smb-header">${self.getAlias(definition) || ""}</div></th></tr>`);
