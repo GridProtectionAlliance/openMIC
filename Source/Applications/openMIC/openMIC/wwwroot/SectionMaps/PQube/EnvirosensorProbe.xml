@@ -8,6 +8,25 @@
 	<PROPDEF NAME="probeAOvertemperatureThreshold" ALIAS="Overtemperature Threshold" TYPE="NUMERIC" DEFAULT="50" MAP=".Probe_A_Overtemperature_Threshold_in_Deg_C"/>
 	<PROPDEF NAME="probeAUndertemperatureEvent" ALIAS="Undertemperature Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_A_Undertemperature_Events" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="probeAUndertemperatureThreshold" ALIAS="Undertemperature Threshold" TYPE="NUMERIC" DEFAULT="0" MAP=".Probe_A_Undertemperature_Threshold_in_Deg_C"/>
+	<PROPDEF NAME="probeATemperatureEventHysteresis" ALIAS="Temperature Event Hysteresis" TYPE="NUMERIC" DEFAULT="2" MAP=".Probe_A_Temperature_Event_Hysteresis_in_Deg_C"/>
 	<PROPDEF NAME="probeAHighHumidityEvent" ALIAS="High Humidity Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_A_High_Humidity_Events" TRUE="ON" FALSE="OFF"/>
-	
+	<PROPDEF NAME="probeAHighHumidityThreshold" ALIAS="High Humidity Threshold" TYPE="NUMERIC" DEFAULT="90" MAP=".Probe_A_High_Humidity_Threshold_in_Percent_RH"/>
+	<PROPDEF NAME="probeALowHumidityEvent" ALIAS="Low Humidity Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_A_Low_Humidity_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="probeALowHumidityThreshold" ALIAS="Low Humidity Threshold" TYPE="NUMERIC" DEFAULT="5" MAP=".Probe_A_Low_Humidity_Threshold_in_Percent_RH"/>
+	<PROPDEF NAME="probeAHumidityEventHysteresis" ALIAS="Humidity Event Hysteresis" TYPE="NUMERIC" DEFAULT="2" MAP=".Probe_A_Humidity_Event_Hysteresis_in_Percent_RH"/>
+	<PROPDEF ALIAS="Probe B" TYPE="HEADER"/>
+	<PROPDEF ALIAS="Probe Configuration" TYPE="HEADER" MAPROOT="EnviroSensor_Probe_Setup"/>
+	<PROPDEF NAME="probeBSerialNumber" ALIAS="Serial Number" TYPE="TEXT" DEFAULT="" MAP=".Probe_B_Serial_Number" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="probeBChannelName" ALIAS="Channel Name" TYPE="TEXT" DEFAULT="" MAP=".Probe_B_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF ALIAS="External Probe Events" TYPE="HEADER" MAPROOT="EnviroSensor_Probe_Events"/>
+	<PROPDEF NAME="probeBOvertemperatureEvent" ALIAS="Overtemperature Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_B_Overtemperature_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="probeBOvertemperatureThreshold" ALIAS="Overtemperature Threshold" TYPE="NUMERIC" DEFAULT="50" MAP=".Probe_B_Overtemperature_Threshold_in_Deg_C"/>
+	<PROPDEF NAME="probeBUndertemperatureEvent" ALIAS="Undertemperature Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_B_Undertemperature_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="probeBUndertemperatureThreshold" ALIAS="Undertemperature Threshold" TYPE="NUMERIC" DEFAULT="0" MAP=".Probe_B_Undertemperature_Threshold_in_Deg_C"/>
+	<PROPDEF NAME="probeBTemperatureEventHysteresis" ALIAS="Temperature Event Hysteresis" TYPE="NUMERIC" DEFAULT="2" MAP=".Probe_B_Temperature_Event_Hysteresis_in_Deg_C"/>
+	<PROPDEF NAME="probeBHighHumidityEvent" ALIAS="High Humidity Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_B_High_Humidity_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="probeBHighHumidityThreshold" ALIAS="High Humidity Threshold" TYPE="NUMERIC" DEFAULT="90" MAP=".Probe_B_High_Humidity_Threshold_in_Percent_RH"/>
+	<PROPDEF NAME="probeBLowHumidityEvent" ALIAS="Low Humidity Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_B_Low_Humidity_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="probeBLowHumidityThreshold" ALIAS="Low Humidity Threshold" TYPE="NUMERIC" DEFAULT="5" MAP=".Probe_B_Low_Humidity_Threshold_in_Percent_RH"/>
+	<PROPDEF NAME="probeBHumidityEventHysteresis" ALIAS="Humidity Event Hysteresis" TYPE="NUMERIC" DEFAULT="2" MAP=".Probe_B_Humidity_Event_Hysteresis_in_Percent_RH"/>
 </SECTION>
