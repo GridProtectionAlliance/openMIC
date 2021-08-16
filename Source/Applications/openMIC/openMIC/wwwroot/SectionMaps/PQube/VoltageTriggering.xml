@@ -91,7 +91,7 @@
 	<PROPDEF NAME="rvcThreshold" ALIAS="RVC Threshold" TYPE="NUMERIC" DEFAULT="6" MAP=".Phase_To_Neutral_RVC_Threshold_In_Percent">
 		<PARAM MIN="1" MAX="100"/>
 	</PROPDEF>
-	<PROPDEF NAME="swellThreshold" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="2" MAP=".Phase_To_Neutral_RVC_Hysteresis_In_Percent">
+	<PROPDEF NAME="eventHysteresisRVCEvents" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="2" MAP=".Phase_To_Neutral_RVC_Hysteresis_In_Percent">
 		<PARAM MIN=".01" MAX="100"/>
 	</PROPDEF>
 	<PROPDEF ALIAS="Phase To Phase RVC Events" TYPE="HEADER" MAPROOT="Phase_To_Phase_RVC_Events"/>
