@@ -1,94 +1,53 @@
 ﻿<SECTION NAME="accelerometer" ALIAS="Accelerometer" MAPROOT="EnviroSensor_Probe_Setup">
-	<PROPDEF ALIAS="Probe A" TYPE="HEADER"/>
-	<PROPDEF ALIAS="Accelerometer Configuration" TYPE="HEADER"/>
-	<PROPDEF NAME="probeALEDActivity" ALIAS="LED Activity" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Probe_A_LED_Activity" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="probeAAccelerationRange" ALIAS="Acceleration Range" TYPE="SELECT" DEFAULT="2" MAP=".Probe_A_Acceleration_Range_in_g">
-		<PARAM TYPE="NUMERIC">
-			<LIST>
-				<ITEM NAME="2" VALUE="2"/>
-				<ITEM NAME="4" VALUE="4"/>
-				<ITEM NAME="8" VALUE="8"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<PROPDEF NAME="probeARecording" ALIAS="Recording" TYPE="SELECT" DEFAULT="32" MAP=".Probe_A_Acceleration_Samples_Per_Second">
-		<PARAM TYPE="NUMERIC">
-			<LIST>
-				<ITEM NAME="32" VALUE="32"/>
-				<ITEM NAME="16" VALUE="16"/>
-				<ITEM NAME="8" VALUE="8"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<PROPDEF NAME="probeAAccelerationDisplayUnit" ALIAS="Accleration Display Unit" TYPE="SELECT" DEFAULT="g" MAP=".Probe_A_Acceleration_Display_Unit">
-		<PARAM TYPE="TEXT">
-			<LIST>
-				<ITEM NAME="g" VALUE="g"/>
-				<ITEM NAME="m/s2" VALUE="METERS_PER_SECOND_SQUARED"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<PROPDEF ALIAS="Accelerometer Events" TYPE="HEADER"/>
-	<PROPDEF NAME="probeAMechanicalShockEvents" ALIAS="Mechanical Shock Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_Probe_A_Mechanical_Shock_Events" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="probeAMechanicalShockThreshold" ALIAS="Mechanical Shock Threshold" TYPE="NUMERIC" DEFAULT="0.050" MAP=".Probe_A_Mechanical_Shock_Threshold_in_g_per_millisecond">
-		<PARAM MIN=".003" MAX=".800"/>
-	</PROPDEF>
-	<PROPDEF NAME="probeASeismicDisturbance" ALIAS="Seismic Disturbance" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_Probe_A_Seismic_Events" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="probeASeismicThreshold" ALIAS="Seismic Threshold" TYPE="NUMERIC" DEFAULT="0.0200" MAP=".Probe_A_Seismic_Threshold_in_g">
-		<PARAM MIN="0.001" MAX="1.24"/>
-	</PROPDEF>
-	<PROPDEF NAME="probeAVibrationEvents" ALIAS="Vibration Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_Probe_A_Vibration_Events" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="probeAVibrationThreshold" ALIAS="Vibration Threshold" TYPE="NUMERIC" DEFAULT="0.010" MAP=".Probe_A_Vibration_Threshold_in_g">
-		<PARAM MIN="0.002" MAX="2.000"/>
-	</PROPDEF>
-	<PROPDEF NAME="probeADebounce" ALIAS="Debounce" TYPE="NUMERIC" DEFAULT="2" MAP=".Probe_A_Vibration_minimum_duration_in_Seconds">
-		<PARAM MIN="1" MAX="5"/>
-	</PROPDEF>
-	<PROPDEF NAME="probeANormalCondition" ALIAS="Normal Condition" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_A_Vibration_Normal_Condition" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF ALIAS="Probe B" TYPE="HEADER"/>
-	<PROPDEF ALIAS="Accelerometer Configuration" TYPE="HEADER"/>
-	<PROPDEF NAME="probeBLEDActivity" ALIAS="LED Activity" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Probe_B_LED_Activity" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="probeBAccelerationRange" ALIAS="Acceleration Range" TYPE="SELECT" DEFAULT="2" MAP=".Probe_B_Acceleration_Range_in_g">
-		<PARAM TYPE="NUMERIC">
-			<LIST>
-				<ITEM NAME="2" VALUE="2"/>
-				<ITEM NAME="4" VALUE="4"/>
-				<ITEM NAME="8" VALUE="8"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<PROPDEF NAME="probeBRecording" ALIAS="Recording" TYPE="SELECT" DEFAULT="32" MAP=".Probe_B_Acceleration_Samples_Per_Second">
-		<PARAM TYPE="NUMERIC">
-			<LIST>
-				<ITEM NAME="32" VALUE="32"/>
-				<ITEM NAME="16" VALUE="16"/>
-				<ITEM NAME="8" VALUE="8"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<PROPDEF NAME="probeBAccelerationDisplayUnit" ALIAS="Accleration Display Unit" TYPE="SELECT" DEFAULT="g" MAP=".Probe_B_Acceleration_Display_Unit">
-		<PARAM TYPE="TEXT">
-			<LIST>
-				<ITEM NAME="g" VALUE="g"/>
-				<ITEM NAME="m/s2" VALUE="METERS_PER_SECOND_SQUARED"/>
-			</LIST>
-		</PARAM>
-	</PROPDEF>
-	<PROPDEF ALIAS="Accelerometer Events" TYPE="HEADER"/>
-	<PROPDEF NAME="probeBMechanicalShockEvents" ALIAS="Mechanical Shock Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_Probe_B_Mechanical_Shock_Events" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="probeBMechanicalShockThreshold" ALIAS="Mechanical Shock Threshold" TYPE="NUMERIC" DEFAULT="0.050" MAP=".Probe_B_Mechanical_Shock_Threshold_in_g_per_millisecond">
-		<PARAM MIN=".003" MAX=".800"/>
-	</PROPDEF>
-	<PROPDEF NAME="probeBSeismicDisturbance" ALIAS="Seismic Disturbance" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_Probe_B_Seismic_Events" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="probeBSeismicThreshold" ALIAS="Seismic Threshold" TYPE="NUMERIC" DEFAULT="0.0200" MAP=".Probe_B_Seismic_Threshold_in_g">
-		<PARAM MIN="0.001" MAX="1.24"/>
-	</PROPDEF>
-	<PROPDEF NAME="probeBVibrationEvents" ALIAS="Vibration Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_Probe_B_Vibration_Events" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="probeBVibrationThreshold" ALIAS="Vibration Threshold" TYPE="NUMERIC" DEFAULT="0.010" MAP=".Probe_B_Vibration_Threshold_in_g">
-		<PARAM MIN="0.002" MAX="2.000"/>
-	</PROPDEF>
-	<PROPDEF NAME="probeBDebounce" ALIAS="Debounce" TYPE="NUMERIC" DEFAULT="2" MAP=".Probe_B_Vibration_minimum_duration_in_Seconds">
-		<PARAM MIN="1" MAX="5"/>
-	</PROPDEF>
-	<PROPDEF NAME="probeBNormalCondition" ALIAS="Normal Condition" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Probe_B_Vibration_Normal_Condition" TRUE="ON" FALSE="OFF"/>
+	<BANK NAME="probeSelect" ALIAS="Select Probe">
+		<LIST>
+			<ITEM NAME="Probe A"/>
+			<ITEM NAME="Probe B"/>
+		</LIST>
+		<PROPDEF ALIAS="Accelerometer Configuration" TYPE="HEADER"/>
+		<PROPDEF NAME="ProbeLEDActivity" ALIAS="LED Activity" TYPE="CHECKBOX" DEFAULT="ON" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_LED_Activity`]" TRUE="ON" FALSE="OFF"/>
+		<PROPDEF NAME="probeAccelerationRange" ALIAS="Acceleration Range" TYPE="SELECT" DEFAULT="2" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Acceleration_Range_in_g`]">
+			<PARAM TYPE="NUMERIC">
+				<LIST>
+					<ITEM NAME="2" VALUE="2"/>
+					<ITEM NAME="4" VALUE="4"/>
+					<ITEM NAME="8" VALUE="8"/>
+				</LIST>
+			</PARAM>
+		</PROPDEF>
+		<PROPDEF NAME="probeRecording" ALIAS="Recording" TYPE="SELECT" DEFAULT="32" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Acceleration_Samples_Per_Second`]">
+			<PARAM TYPE="NUMERIC">
+				<LIST>
+					<ITEM NAME="32" VALUE="32"/>
+					<ITEM NAME="16" VALUE="16"/>
+					<ITEM NAME="8" VALUE="8"/>
+				</LIST>
+			</PARAM>
+		</PROPDEF>
+		<PROPDEF NAME="probeAccelerationDisplayUnit" ALIAS="Accleration Display Unit" TYPE="SELECT" DEFAULT="g" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Acceleration_Display_Unit`]">
+			<PARAM TYPE="TEXT">
+				<LIST>
+					<ITEM NAME="g" VALUE="g"/>
+					<ITEM NAME="m/s2" VALUE="METERS_PER_SECOND_SQUARED"/>
+				</LIST>
+			</PARAM>
+		</PROPDEF>
+		<PROPDEF ALIAS="Accelerometer Events" TYPE="HEADER"/>
+		<PROPDEF NAME="probeMechanicalShockEvents" ALIAS="Mechanical Shock Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`Enable_Probe_${String.fromCharCode(65 + #bankIndex)}_Mechanical_Shock_Events`]" TRUE="ON" FALSE="OFF"/>
+		<PROPDEF NAME="probeMechanicalShockThreshold" ALIAS="Mechanical Shock Threshold" TYPE="NUMERIC" DEFAULT="0.050" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Mechanical_Shock_Threshold_in_g_per_millisecond`]">
+			<PARAM MIN=".003" MAX=".800"/>
+		</PROPDEF>
+		<PROPDEF NAME="probeSeismicDisturbance" ALIAS="Seismic Disturbance" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`Enable_Probe_${String.fromCharCode(65 + #bankIndex)}_Seismic_Events`]" TRUE="ON" FALSE="OFF"/>
+		<PROPDEF NAME="probeSeismicThreshold" ALIAS="Seismic Threshold" TYPE="NUMERIC" DEFAULT="0.0200" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Seismic_Threshold_in_g`]">
+			<PARAM MIN="0.001" MAX="1.24"/>
+		</PROPDEF>
+		<PROPDEF NAME="probeVibrationEvents" ALIAS="Vibration Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`Enable_Probe_${String.fromCharCode(65 + #bankIndex)}_Vibration_Events`]" TRUE="ON" FALSE="OFF"/>
+		<PROPDEF NAME="probeVibrationThreshold" ALIAS="Vibration Threshold" TYPE="NUMERIC" DEFAULT="0.010" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Vibration_Threshold_in_g`]">
+			<PARAM MIN="0.002" MAX="2.000"/>
+		</PROPDEF>
+		<PROPDEF NAME="probeDebounce" ALIAS="Debounce" TYPE="NUMERIC" DEFAULT="2" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Vibration_minimum_duration_in_Seconds`]">
+			<PARAM MIN="1" MAX="5"/>
+		</PROPDEF>
+		<PROPDEF NAME="probeNormalCondition" ALIAS="Normal Condition" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Vibration_Normal_Condition`]" TRUE="ON" FALSE="OFF"/>
+	</BANK>
 </SECTION>
