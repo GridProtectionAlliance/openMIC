@@ -323,6 +323,11 @@ function SectionMapBuilder(instanceName) {
         else
             items.push(list.ITEM);
 
+        if (type === PropDefType.NUMERIC)
+            defaultVal = defaultVal ? parseInt(defaultVal, 10) : -1;
+        else
+            defaultVal = defaultVal || null;
+
         for (let i = 0; i < items.length; i++) {
             const value = items[i];
             const keyVal = value["@KEYVALUE"] ? ` key-value="${value["@KEYVALUE"]}"` : "";
@@ -331,18 +336,12 @@ function SectionMapBuilder(instanceName) {
 
             let optVal;
             
-            if (type === PropDefType.NUMERIC) {
+            if (type === PropDefType.NUMERIC)
                 optVal = parseInt(self.getProperty(value, "@VALUE", index), 10);
-                defaultVal = defaultVal ? parseInt(defaultVal, 10) : -1;
-            }
-            else if (type === PropDefType.TEXT) {
+            else if (type === PropDefType.TEXT)
                 optVal = self.getProperty(value, "@VALUE", "");
-                defaultVal = defaultVal || null;
-            }
-            else {
+            else
                 optVal = self.getProperty(value, "@VALUE", index);
-                defaultVal = defaultVal || null;
-            }
 
             const selected = optVal === defaultVal || !defaultVal && enabled && totalOptions === 0 ? " selected" : "";
 
