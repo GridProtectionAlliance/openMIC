@@ -1,2 +1,12 @@
 ﻿<SECTION NAME="email" ALIAS="E-Mail">
+	<PROPDEF ALIAS="Email Provider Settings" TYPE="HEADER" MAPROOT=""/>
+	<PROPDEF NAME="selectEmailProvider" ALIAS="Select Email Provider" TYPE="SELECT" DEFAULT="PSL" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="PSL" VALUE="PSL"/>
+				<ITEM NAME="GMAIL" VALUE="GMAIL"/>
+				<ITEM NAME="OTHER" VALUE="GMAIL"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 </SECTION>

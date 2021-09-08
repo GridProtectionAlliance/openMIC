@@ -1,2 +1,18 @@
 ﻿<SECTION NAME="dualVoltageMode" ALIAS="Dual Voltage Mode">
+	<PROPDEF NAME="dualVoltageSetupMode" ALIAS="Dual Voltage Setup Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="dualPowerSetupMode" ALIAS="Dual Power Setup Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="vatModuleConnected" ALIAS="VAT Module Connected" TYPE="SELECT" DEFAULT="None" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="NONE"/>
+				<ITEM NAME="VAT1-600" VALUE="VAT1-600"/>
+				<ITEM NAME="VAT2-600_Current" VALUE="VAT2-600_Current"/>
+				<ITEM NAME="VAT2-600_Analog" VALUE="VAT2-600_Analog"/>
+				<ITEM NAME="VAT2-020_Current" VALUE="VAT2-020_Current"/>
+				<ITEM NAME="VAT2-020_Analog" VALUE="VAT2-020_Analog"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ALIAS="Parameters" TYPE="HEADER" MAPROOT=""/>
+	<PROPDEF NAME="an1eChannelRatio" ALIAS="AN1-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN1_E_Channel_Ratio"/>
 </SECTION>
