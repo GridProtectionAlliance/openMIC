@@ -1,2 +1,184 @@
-﻿<SECTION NAME="adInputs" ALIAS="Analog/Digital Inputs">
+﻿<SECTION NAME="adInputs" ALIAS="Analog/Digital Inputs" MAPROOT="Channel_Recordings">
+	<PROPDEF ALIAS="Analog Inputs Connections" TYPE="HEADER" MAPROOT="Analog_Channel_Setup"/>
+	<PROPDEF NAME="an12MeasurementMode" ALIAS="AN1 AN2 Meausrement Mode" TYPE="SELECT" DEFAULT="DC" MAP=".AN1_and_AN2_Meausrement_Mode">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="DC" VALUE="DC"/>
+				<ITEM NAME="AC" VALUE="AC"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an12UsingATT1Module" ALIAS="Using ATT1 Module" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an12UsingATT2Module" ALIAS="Using ATT2 Module" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an1XAn2EnergyMode" ALIAS="AN1xAN2 Energy Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN1xAN2_Energy_Mode" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an1eChannelRatio" ALIAS="AN1-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN1_E_Channel_Ratio"/>
+	<PROPDEF NAME="an2eChannelRatio" ALIAS="AN2-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN2_E_Channel_Ratio"/>
+	<PROPDEF NAME="analog1Range" ALIAS="Analog 1 Range:" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN1_E_Range">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="HIGH" VALUE="HIGH"/>
+				<ITEM NAME="LOW" VALUE="LOW"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="analog2Range" ALIAS="Analog 2 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN2_E_Range">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="HIGH" VALUE="HIGH"/>
+				<ITEM NAME="LOW" VALUE="LOW"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an1eChannelOffset" ALIAS="AN1-E Channel Offset" TYPE="TEXT" DEFAULT="0" MAP=".AN1_E_Channel_Offset"/>
+	<PROPDEF NAME="an2eChannelOffset" ALIAS="AN2-E Channel Offset" TYPE="TEXT" DEFAULT="0" MAP=".AN2_E_Channel_Offset"/>
+	<PROPDEF NAME="an34MeasurementMode" ALIAS="AN3 AN4 Meausrement Mode" TYPE="SELECT" DEFAULT="DC" MAP=".AN3_and_AN4_Measurement_Mode">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="DC" VALUE="DC"/>
+				<ITEM NAME="AC" VALUE="AC"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an34UsingATT1Module" ALIAS="Using ATT1 Module" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an34UsingATT2Module" ALIAS="Using ATT2 Module" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an3XAn4EnergyMode" ALIAS="AN3xAN4 Energy Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN3xAN4_Energy_Mode" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an3eChannelRatio" ALIAS="AN3-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN3_E_Channel_Ratio"/>
+	<PROPDEF NAME="an4eChannelRatio" ALIAS="AN4-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN4_E_Channel_Ratio"/>
+	<PROPDEF NAME="analog3Range" ALIAS="Analog 3 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN3_E_Range">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="HIGH" VALUE="HIGH"/>
+				<ITEM NAME="LOW" VALUE="LOW"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="analog4Range" ALIAS="Analog 4 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN4_E_Range">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="HIGH" VALUE="HIGH"/>
+				<ITEM NAME="LOW" VALUE="LOW"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an3eChannelOffset" ALIAS="AN3-E Channel Offset" TYPE="TEXT" DEFAULT="0" MAP=".AN3_E_Channel_Offset"/>
+	<PROPDEF NAME="an4eChannelOffset" ALIAS="AN4-E Channel Offset" TYPE="TEXT" DEFAULT="0" MAP=".AN4_E_Channel_OFfset"/>
+	<PROPDEF NAME="recordDIG1Channel" ALIAS="Record DIG1 Channel" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().Channel_Recordings.Record_DIG1_Channel">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ALIAS="Analog Inputs Recordings" TYPE="HEADER" MAPROOT="Analog_Channel_Setup"/>
+	<PROPDEF NAME="recordAn1eChannel" ALIAS="Record AN1-E Channel" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().Channel_Recordings.Record_AN1_E_Channel">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordAn2eChannel" ALIAS="Record AN2-E Channel" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().Channel_Recordings.Record_AN2_E_Channel">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordAn1An2Channel" ALIAS="Record AN1-AN2 Channel" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().Channel_Recordings.Record_AN1_AN2_Differential_Channel">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an1ChannelName" ALIAS="AN1 Channel Name" TYPE="TEXT" DEFAULT="AN1-E" MAP=".AN1_E_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="an1ChannelUnit" ALIAS="AN1 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN1_E_Channel_Unit">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="V" VALUE="V"/>
+				<ITEM NAME="A" VALUE="A"/>
+				<ITEM NAME="W" VALUE="W"/>
+				<ITEM NAME="DEG" VALUE="DEG"/>
+				<ITEM NAME="%" VALUE="%"/>
+				<ITEM NAME="[no-unit]" VALUE=""/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an2ChannelName" ALIAS="AN2 Channel Name" TYPE="TEXT" DEFAULT="AN2-E" MAP=".AN2_E_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="an2ChannelUnit" ALIAS="AN2 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN2_E_Channel_Unit">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="V" VALUE="V"/>
+				<ITEM NAME="A" VALUE="A"/>
+				<ITEM NAME="W" VALUE="W"/>
+				<ITEM NAME="DEG" VALUE="DEG"/>
+				<ITEM NAME="%" VALUE="%"/>
+				<ITEM NAME="[no-unit]" VALUE=""/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an1An2ChannelName" ALIAS="AN1-AN2 Channel Name" TYPE="TEXT" DEFAULT="AN1-AN2" MAP=".AN1_AN2_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+
+	<PROPDEF NAME="recordAn3eChannel" ALIAS="Record AN3-E Channel" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().Channel_Recordings.Record_AN3_E_Channel">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordAn4eChannel" ALIAS="Record AN4-E Channel" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().Channel_Recordings.Record_AN4_E_Channel">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordAn3An4Channel" ALIAS="Record AN3-AN4 Channel" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().Channel_Recordings.Record_AN3_AN4_Differential_Channel">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an3ChannelName" ALIAS="AN3 Channel Name" TYPE="TEXT" DEFAULT="AN3-E" MAP=".AN3_E_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="an3ChannelUnit" ALIAS="AN3 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN3_E_Channel_Unit">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="V" VALUE="V"/>
+				<ITEM NAME="A" VALUE="A"/>
+				<ITEM NAME="W" VALUE="W"/>
+				<ITEM NAME="DEG" VALUE="DEG"/>
+				<ITEM NAME="%" VALUE="%"/>
+				<ITEM NAME="[no-unit]" VALUE=""/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an4ChannelName" ALIAS="AN4 Channel Name" TYPE="TEXT" DEFAULT="AN4-E" MAP=".AN4_E_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="an4ChannelUnit" ALIAS="AN4 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN4_E_Channel_Unit">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="V" VALUE="V"/>
+				<ITEM NAME="A" VALUE="A"/>
+				<ITEM NAME="W" VALUE="W"/>
+				<ITEM NAME="DEG" VALUE="DEG"/>
+				<ITEM NAME="%" VALUE="%"/>
+				<ITEM NAME="[no-unit]" VALUE=""/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an3An4ChannelName" ALIAS="AN3-AN4 Channel Name" TYPE="TEXT" DEFAULT="AN3-AN4" MAP=".AN3_AN4_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
 </SECTION>
