@@ -627,6 +627,11 @@
             return true;
         }
 
+        function toggleVatModuleConnected(rootName, sectionName, value) {
+            $(`#row-${rootName}_upsMinutes`).toggle(value !== 'None'); // Hides the row
+            $(`#${sectionName}_upsTest`).prop('disabled', value === 'None'); // Enables / disables the element
+        }
+
         function addQuotes(value) {
             value = (value || "").trim();
 

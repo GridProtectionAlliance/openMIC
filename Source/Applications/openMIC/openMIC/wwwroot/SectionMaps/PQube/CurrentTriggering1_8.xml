@@ -1,2 +1,21 @@
 ﻿<SECTION NAME="currentTriggering1_8" ALIAS="Current Triggering (I1-I8)">
+	<BANK NAME="currentEventInput" ALIAS="Current Events">
+		<LIST>
+			<ITEM NAME="Phase Current Events" KEYVALUE="Phase_Current"/>
+			<ITEM NAME="Neutral Current Events" KEYVALUE="Neutral_Current"/>
+			<ITEM NAME="Earth Current Events" KEYVALUE="Earth_Current"/>
+			<ITEM NAME="I6 Current Events" KEYVALUE="Current_I6"/>
+			<ITEM NAME="I7 Current Events" KEYVALUE="Current_I7"/>
+			<ITEM NAME="I8 Current Events" KEYVALUE="Current_I8"/>
+		</LIST>
+		<PROPDEF NAME="currentEvents" ALIAS="Current Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`${#keyVal('{bankTarget}')}_Events`]" TRUE="ON" FALSE="OFF"/>
+		<PROPDEF NAME="levelThresholdAmps" ALIAS="Level Threshold in Amps" TYPE="NUMERIC" DEFAULT="1" MAP="">
+			<PARAM MIN=".0001"/>
+		</PROPDEF>
+		<PROPDEF NAME="levelHysteresisAmps" ALIAS="Level Hysteresis in Amps" TYPE="NUMERIC" DEFAULT=".5" MAP=""/>
+		<PROPDEF NAME="inrushThresholdAmps" ALIAS="Inrush Threshold in Amps" TYPE="NUMERIC" DEFAULT="1" MAP="">
+			<PARAM MIN=".0001"/>
+		</PROPDEF>
+		<PROPDEF NAME="inrushThresholdCycles" ALIAS="Inrush Threshold in Cycles" TYPE="NUMERIC" DEFAULT=".5" MAP=""/>
+	</BANK>
 </SECTION>

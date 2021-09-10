@@ -14,5 +14,38 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF ALIAS="Parameters" TYPE="HEADER" MAPROOT=""/>
-	<PROPDEF NAME="an1eChannelRatio" ALIAS="AN1-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN1_E_Channel_Ratio"/>
+	<PROPDEF NAME="voltageMainsLabel" ALIAS="Voltage Mains Label" TYPE="TEXT" DEFAULT="Upstream Voltage" MAP=""/>
+	<PROPDEF NAME="dualVoltageLabel" ALIAS="Dual Voltage Label" TYPE="TEXT" DEFAULT="Downstream Voltage" MAP=""/>
+	<PROPDEF NAME="nominalPhasetoNeutralV" ALIAS="Nominal Phase to Neutral Voltage" TYPE="NUMERIC" DEFAULT="120" MAP="">
+		<PARAM MIN="1"/>
+	</PROPDEF>
+	<PROPDEF NAME="voltagePTRatio" ALIAS="Voltage PT Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=""/>
+	<PROPDEF NAME="neutralVRatio" ALIAS="Neutral Voltage Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=""/>
+	<PROPDEF NAME="voltageRange" ALIAS="Voltage Range" TYPE="SELECT" DEFAULT="HIGH" MAP="">
+		<PARAM TYPE="TEXT">
+		  <LIST>
+			<ITEM NAME="HIGH" VALUE="HIGH"/>
+			<ITEM NAME="LOW" VALUE="LOW"/>
+		  </LIST>
+		</PARAM>
+	</PROPDEF>  
+	<PROPDEF NAME="neutralVoltageRange" ALIAS="Neutral Voltage Range" TYPE="SELECT" DEFAULT="HIGH" MAP="">
+		<PARAM TYPE="TEXT">
+		  <LIST>
+			<ITEM NAME="HIGH" VALUE="HIGH"/>
+			<ITEM NAME="LOW" VALUE="LOW"/>
+		  </LIST>
+		</PARAM>
+	</PROPDEF>  
+	<PROPDEF NAME="dualVoltageCablingConfiguration" ALIAS="Dual Voltage Cabling Configuration" TYPE="SELECT" DEFAULT="Wye" MAP="">
+		<PARAM TYPE="TEXT">
+		  <LIST>
+			<ITEM NAME="Wye" VALUE="Wye"/>
+			<ITEM NAME="Delta" VALUE="Delta"/>
+		    <ITEM NAME="Single_Phase_L1_N" VALUE="Single_Phase_L1_N"/>
+			<ITEM NAME="2_Differential_Channels" VALUE="2_Differential_Channels"/>
+		  </LIST>
+		</PARAM>
+	</PROPDEF>  
+	<PROPDEF ALIAS="Parameters" TYPE="HEADER" MAPROOT=""/>
 </SECTION>
