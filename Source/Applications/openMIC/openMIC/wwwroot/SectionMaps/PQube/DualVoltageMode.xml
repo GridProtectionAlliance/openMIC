@@ -1,6 +1,6 @@
 ﻿<SECTION NAME="dualVoltageMode" ALIAS="Dual Voltage Mode" MAPROOT="Dual_Voltage_Measurement">
 	<PROPDEF ALIAS="Setup" TYPE="HEADER"/>
-	<PROPDEF NAME="dualVoltageSetupMode" ALIAS="Dual Voltage Setup Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Dual_Voltage_Mode" TRUE="ON" FALSE="OFF" POSTREAD="toggleDualPower('{sectionName}', {value})" POSTWRITE="$('#{sectionName}_dualPowerSetupMode').prop('disabled', {value} === 'OFF'); $('#{sectionName}_voltageMainsLabel').prop('disabled', {value} === 'OFF')"/>
+	<PROPDEF NAME="dualVoltageSetupMode" ALIAS="Dual Voltage Setup Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Dual_Voltage_Mode" TRUE="ON" FALSE="OFF" POSTREAD="toggleDualPower('{sectionName}', {value})" POSTWRITE="toggleDualPower('{sectionName}', {value})"/>
 	<PROPDEF NAME="dualPowerSetupMode" ALIAS="Dual Power Setup Mode" CONFIG="3e" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Dual_Power_Mode" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="vatModuleConnected" ALIAS="VAT Module Connected" TYPE="SELECT" DEFAULT="None" MAP="">
 		<PARAM TYPE="TEXT">

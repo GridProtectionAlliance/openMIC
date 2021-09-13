@@ -633,8 +633,8 @@
         }
 
         function toggleDualPower(sectionName, value) {
-            $(`#${sectionName}_dualPowerSetupMode`).prop('disabled', value === 'OFF');
-            $(`#${sectionName}_voltageMainsLabel`).prop('disabled', value === 'OFF');  // Enables / disables the element
+            $(`#${sectionName}_dualPowerSetupMode`).prop('disabled', !value);
+            $(`#${sectionName}_voltageMainsLabel`).prop('disabled', !value);
         }
 
         function addQuotes(value) {
