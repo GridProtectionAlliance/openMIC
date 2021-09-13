@@ -1,2 +1,59 @@
 ﻿<SECTION NAME="additionalProtocols" ALIAS="Additional Protocols">
+	<PROPDEF ALIAS="Modbus Settings" TYPE="HEADER"/>
+	<PROPDEF NAME="enableModbus" ALIAS="Enable Modbus Server" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Modbus" TRUE="ON" FALSE="OFF" POSTREAD="toggleModbusSetting('{sectionName}', {value})" POSTWRITE="toggleModbusSetting('{sectionName}', {value})"/>
+	<PROPDEF NAME="modbusSlaveAddress" ALIAS="Modbus Slave Device Address" TYPE="Numeric" DEFAULT="1" MAP=".Modbus_Slave_Device_Address"/>
+	<PROPDEF NAME="modbusTCPPort" ALIAS="Modbus TCP Port" TYPE="Numeric" DEFAULT="502" MAP=".Modbus_TCP_Port"/>
+	<PROPDEF NAME="modbusRegisterStartAddress" ALIAS="Modbus Register Start Address" TYPE="Numeric" DEFAULT="7000" MAP=".Modbus_Register_Start_Address"/>
+	<PROPDEF NAME="modbusByteOrder" ALIAS="Modbus Byte Order" TYPE="SELECT" DEFAULT="BIG_ENDIAN" MAP=".Modbus_Byte_Order">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="BIG_ENDIAN" VALUE="BIG_ENDIAN"/>
+				<ITEM NAME="LITTLE_ENDIAN" VALUE="LITTLE_ENDIAN"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ALIAS="SNMP Settings" TYPE="HEADER" MAPROOT="SNMP_Settings"/>
+	<PROPDEF NAME="enableSNMPPollingServer" ALIAS="Enable SNMP Polling Server" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".SNMPD_Polling" TRUE="ON" FALSE="OFF" POSTREAD="toggleSNMPSettings('{sectionName}', {value})" POSTWRITE="toggleSNMPSettings('{sectionName}', {value})"/>
+	<PROPDEF NAME="snmpPort" ALIAS="SNMP Port" TYPE="Numeric" DEFAULT="161" MAP=".SNMP_Port"/>
+	<PROPDEF NAME="enableSNMPTrapAgent" ALIAS="Enable SNMP Trap Agent" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".SNMPD_Traps" TRUE="ON" FALSE="OFF" POSTREAD="toggleSNMPTrapSettings('{sectionName}', {value})" POSTWRITE="toggleSNMPTrapSettings('{sectionName}', {value})"/>
+	<PROPDEF NAME="snmpTrapManagerIP" ALIAS="SNMP Trap Manager IP Address" TYPE="TEXT" MAP=".SNMP_Trap_Server"/>
+	<PROPDEF NAME="snmpVersion" ALIAS="SNMP Version" TYPE="SELECT" DEFAULT="v3" MAP=".SNMP_Trap_Version">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="v3" VALUE="v3"/>
+				<ITEM NAME="v2c" VALUE="v2c"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="snmpV1V2Name" ALIAS="SNMP V1/V2 Community Name" TYPE="TEXT" MAP=".SNMP_V1_V2_Community_Name"/>
+	<PROPDEF NAME="snmpSystemName" ALIAS="SNMP System Name" TYPE="TEXT" DEFAULT="localhost.localdomain" MAP=".SNMP_SysName"/>
+	<PROPDEF NAME="snmpSystemLocation" ALIAS="SNMP System Location" TYPE="TEXT" DEFAULT="pqube-1" MAP=".SNMP_SysLocation"/>
+	<PROPDEF NAME="snmpV3SecurityLevel" ALIAS="SNMP V3 Security Level" TYPE="SELECT" DEFAULT="noAuthNoPriv" MAP=".SNMP_V3_Security_Level">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="noAuthNoPriv" VALUE="noAuthNoPriv"/>
+				<ITEM NAME="authNoPriv" VALUE="authNoPriv"/>
+				<ITEM NAME="authPriv" VALUE="authPriv"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="snmpV3UserName" ALIAS="SNMP V3 User Name" TYPE="TEXT" DEFAULT="MD5DESUser" MAP=".SNMP_V3_User_Name"/>
+	<PROPDEF NAME="snmpV3AuthProtocol" ALIAS="SNMP V3 Auth Protocol" TYPE="SELECT" DEFAULT="MD5" MAP=".SNMP_V3_Auth_Protocol">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="MD5" VALUE="MD5"/>
+				<ITEM NAME="SHA" VALUE="SHA"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="snmpV3AuthPassword" ALIAS="SNMP V3 Auth Password" TYPE="TEXT" DEFAULT="MD5UserPassword" MAP=".SNMP_V3_Auth_Password"/>
+	<PROPDEF NAME="snmpV3PrivProtocol" ALIAS="SNMP V3 Priv Protocol" TYPE="SELECT" DEFAULT="DES" MAP=".SNMP_V3_Priv_Protocol">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="DES" VALUE="DES"/>
+				<ITEM NAME="AES" VALUE="AES"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="snmpV3PrivPassword" ALIAS="SNMP V3 Priv Password" TYPE="TEXT" DEFAULT="DESUserPassword" MAP=".SNMP_V3_Priv_Password"/>
 </SECTION>

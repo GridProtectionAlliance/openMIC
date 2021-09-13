@@ -637,6 +637,29 @@
             $(`#${sectionName}_voltageMainsLabel`).prop('disabled', !value);
         }
 
+        function toggleModbusSetting(sectionName, value) {
+            $(`#${sectionName}_modbusSlaveAddress`).prop('disabled', !value); // Enables / disables the element
+            $(`#${sectionName}_modbusTCPPort`).prop('disabled', !value);
+            $(`#${sectionName}_modbusRegisterStartAddress`).prop('disabled', !value);
+            $(`#${sectionName}_modbusByteOrder`).prop('disabled', !value);
+        }
+
+        function toggleSNMPSettings(sectionName, value) {
+            $(`#${sectionName}_snmpPort`).prop('disabled', !value);
+            $(`#${sectionName}_snmpVersion`).prop('disabled', !value);
+            $(`#${sectionName}_snmpSystemName`).prop('disabled', !value);
+            $(`#${sectionName}_snmpSystemLocation`).prop('disabled', !value);
+            $(`#${sectionName}_snmpV3SecurityLevel`).prop('disabled', !value);
+            $(`#${sectionName}_snmpV3UserName`).prop('disabled', !value);
+        }
+
+        function toggleSNMPTrapSettings(sectionName, value) {
+            $(`#${sectionName}_snmpTrapManagerIP`).prop('disabled', !value);
+            $(`#${sectionName}_snmpVersion`).prop('disabled', !value);
+            $(`#${sectionName}_snmpV3SecurityLevel`).prop('disabled', !value);
+            $(`#${sectionName}_snmpV3UserName`).prop('disabled', !value);
+        }
+
         function addQuotes(value) {
             value = (value || "").trim();
 
