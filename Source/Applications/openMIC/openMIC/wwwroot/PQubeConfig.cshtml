@@ -632,6 +632,11 @@
             $(`#${sectionName}_upsTest`).prop('disabled', value === 'None'); // Enables / disables the element
         }
 
+        function toggleDualPower(sectionName, value) {
+            $(`#${sectionName}_dualPowerSetupMode`).prop('disabled', value === 'OFF');
+            $(`#${sectionName}_voltageMainsLabel`).prop('disabled', value === 'OFF');  // Enables / disables the element
+        }
+
         function addQuotes(value) {
             value = (value || "").trim();
 

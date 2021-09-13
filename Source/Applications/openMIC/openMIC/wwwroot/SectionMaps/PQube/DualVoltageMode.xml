@@ -1,6 +1,7 @@
-﻿<SECTION NAME="dualVoltageMode" ALIAS="Dual Voltage Mode">
-	<PROPDEF NAME="dualVoltageSetupMode" ALIAS="Dual Voltage Setup Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="dualPowerSetupMode" ALIAS="Dual Power Setup Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+﻿<SECTION NAME="dualVoltageMode" ALIAS="Dual Voltage Mode" MAPROOT="Dual_Voltage_Measurement">
+	<PROPDEF ALIAS="Setup" TYPE="HEADER"/>
+	<PROPDEF NAME="dualVoltageSetupMode" ALIAS="Dual Voltage Setup Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Dual_Voltage_Mode" TRUE="ON" FALSE="OFF" POSTREAD="toggleDualPower('{sectionName}', {value})" POSTWRITE="$('#{sectionName}_dualPowerSetupMode').prop('disabled', {value} === 'OFF'); $('#{sectionName}_voltageMainsLabel').prop('disabled', {value} === 'OFF')"/>
+	<PROPDEF NAME="dualPowerSetupMode" ALIAS="Dual Power Setup Mode" CONFIG="3e" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Dual_Power_Mode" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="vatModuleConnected" ALIAS="VAT Module Connected" TYPE="SELECT" DEFAULT="None" MAP="">
 		<PARAM TYPE="TEXT">
 			<LIST>
@@ -13,8 +14,8 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF ALIAS="Parameters" TYPE="HEADER" MAPROOT=""/>
-	<PROPDEF NAME="voltageMainsLabel" ALIAS="Voltage Mains Label" TYPE="TEXT" DEFAULT="Upstream Voltage" MAP=""/>
+	<PROPDEF ALIAS="Parameters" TYPE="HEADER"/>
+	<PROPDEF NAME="voltageMainsLabel" ALIAS="Voltage Mains Label" TYPE="TEXT" DEFAULT="Upstream Voltage" MAP=".Voltage_Mains_Label"/>
 	<PROPDEF NAME="dualVoltageLabel" ALIAS="Dual Voltage Label" TYPE="TEXT" DEFAULT="Downstream Voltage" MAP=""/>
 	<PROPDEF NAME="nominalPhasetoNeutralV" ALIAS="Nominal Phase to Neutral Voltage" TYPE="NUMERIC" DEFAULT="120" MAP="">
 		<PARAM MIN="1"/>
