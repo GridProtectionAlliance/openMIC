@@ -17,7 +17,7 @@
 	<PROPDEF NAME="snmpPort" ALIAS="SNMP Port" TYPE="Numeric" DEFAULT="161" MAP=".SNMP_Port"/>
 	<PROPDEF NAME="enableSNMPTrapAgent" ALIAS="Enable SNMP Trap Agent" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".SNMPD_Traps" TRUE="ON" FALSE="OFF" POSTREAD="toggleSNMPTrapSettings('{sectionName}', {value})" POSTWRITE="toggleSNMPTrapSettings('{sectionName}', {value})"/>
 	<PROPDEF NAME="snmpTrapManagerIP" ALIAS="SNMP Trap Manager IP Address" TYPE="TEXT" MAP=".SNMP_Trap_Server"/>
-	<PROPDEF NAME="snmpVersion" ALIAS="SNMP Version" TYPE="SELECT" DEFAULT="v3" MAP=".SNMP_Trap_Version">
+	<PROPDEF NAME="snmpVersion" ALIAS="SNMP Version" TYPE="SELECT" DEFAULT="v3" MAP=".SNMP_Trap_Version" POSTREAD="toggleSNMPCommunityName('{sectionName}', {value})" POSTWRITE="toggleSNMPCommunityName('{sectionName}', {value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="v3" VALUE="v3"/>
@@ -28,7 +28,7 @@
 	<PROPDEF NAME="snmpV1V2Name" ALIAS="SNMP V1/V2 Community Name" TYPE="TEXT" MAP=".SNMP_V1_V2_Community_Name"/>
 	<PROPDEF NAME="snmpSystemName" ALIAS="SNMP System Name" TYPE="TEXT" DEFAULT="localhost.localdomain" MAP=".SNMP_SysName"/>
 	<PROPDEF NAME="snmpSystemLocation" ALIAS="SNMP System Location" TYPE="TEXT" DEFAULT="pqube-1" MAP=".SNMP_SysLocation"/>
-	<PROPDEF NAME="snmpV3SecurityLevel" ALIAS="SNMP V3 Security Level" TYPE="SELECT" DEFAULT="noAuthNoPriv" MAP=".SNMP_V3_Security_Level">
+	<PROPDEF NAME="snmpV3SecurityLevel" ALIAS="SNMP V3 Security Level" TYPE="SELECT" DEFAULT="noAuthNoPriv" MAP=".SNMP_V3_Security_Level" POSTREAD="toggleSNMPAuthPriv('{sectionName}', {value})" POSTWRITE="toggleSNMPAuthPriv('{sectionName}', {value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="noAuthNoPriv" VALUE="noAuthNoPriv"/>
@@ -56,4 +56,20 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF NAME="snmpV3PrivPassword" ALIAS="SNMP V3 Priv Password" TYPE="TEXT" DEFAULT="DESUserPassword" MAP=".SNMP_V3_Priv_Password"/>
+	<PROPDEF ALIAS="DNP3 Settings" TYPE="HEADER" MAPROOT="DNP3"/>
+	<PROPDEF NAME="enableDNP3Server" ALIAS="Enable DNP3 Server" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_DNP3" TRUE="ON" FALSE="OFF" POSTREAD="toggleDNP3Settings('{sectionName}', {value})" POSTWRITE="toggleDNP3Settings('{sectionName}', {value})"/>
+	<PROPDEF NAME="dnp3Port" ALIAS="DNP3 Port" TYPE="Numeric" DEFAULT="20000" MAP=".DNP3_Port"/>
+	<PROPDEF NAME="dnp3SourceID" ALIAS="DNP3 Source ID" TYPE="TEXT" MAP=".DNP3_Source_Id"/>
+	<PROPDEF NAME="enableDNP3Auth" ALIAS="SNMP Version" TYPE="SELECT" DEFAULT="OFF" MAP=".DNP3_Enable_Secure_Authentication">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="1" VALUE="1"/>
+				<ITEM NAME="2" VALUE="2"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ALIAS="BACnet Settings" TYPE="HEADER" MAPROOT="BACnet_Settings"/>
+	<PROPDEF NAME="enableBacnetServer" ALIAS="Enable BACnet Server" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_BACnet" TRUE="ON" FALSE="OFF" POSTREAD="toggleBACnetSettings('{sectionName}', {value})" POSTWRITE="toggleBACnetSettings('{sectionName}', {value})"/>
+	<PROPDEF NAME="bacnetPort" ALIAS="BACnet Port" TYPE="TEXT" MAP=".BACnet_Port"/>
 </SECTION>

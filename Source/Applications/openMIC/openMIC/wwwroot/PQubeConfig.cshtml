@@ -660,6 +660,29 @@
             $(`#${sectionName}_snmpV3UserName`).prop('disabled', !value);
         }
 
+        function toggleSNMPCommunityName(sectionName, value) {
+            $(`#${sectionName}_snmpV1V2Name`).prop('disabled', value === 'v3');
+            $(`#${sectionName}_snmpV3SecurityLevel`).prop('disabled', value === 'v2c');
+            $(`#${sectionName}_snmpV3UserName`).prop('disabled', value === 'v2c');
+        }
+
+        function toggleSNMPAuthPriv(sectionName, value) {
+            $(`#${sectionName}_snmpV3AuthProtocol`).prop('disabled', value === 'noAuthNoPriv');
+            $(`#${sectionName}_snmpV3AuthPassword`).prop('disabled', value === 'noAuthNoPriv');
+            $(`#${sectionName}_snmpV3PrivProtocol`).prop('disabled', value !== 'authPriv');
+            $(`#${sectionName}_snmpV3PrivPassword`).prop('disabled', value !== 'authPriv');
+        }
+
+        function toggleDNP3Settings(sectionName, value) {
+            $(`#${sectionName}_dnp3Port`).prop('disabled', !value);
+            $(`#${sectionName}_dnp3SourceID`).prop('disabled', !value);
+            $(`#${sectionName}_enableDNP3Auth`).prop('disabled', !value);
+        }
+
+        function toggleBACnetSettings(sectionName, value) {
+            $(`#${sectionName}_bacnetPort`).prop('disabled', !value);
+        }
+
         function addQuotes(value) {
             value = (value || "").trim();
 
