@@ -1,6 +1,6 @@
 ﻿<SECTION NAME="adInputs" ALIAS="Analog/Digital Inputs" MAPROOT="Channel_Recordings">
 	<PROPDEF ALIAS="Analog Inputs Connections" TYPE="HEADER" MAPROOT="Analog_Channel_Setup"/>
-	<PROPDEF NAME="an12MeasurementMode" ALIAS="AN1 AN2 Meausrement Mode" TYPE="SELECT" DEFAULT="DC" MAP=".AN1_and_AN2_Meausrement_Mode">
+	<PROPDEF NAME="an12MeasurementMode" ALIAS="AN1 AN2 Meausrement Mode" TYPE="SELECT" DEFAULT="DC" MAP=".AN1_and_AN2_Meausrement_Mode" POSTREAD="toggleATTModules('{sectionName}', {value})" POSTWRITE="toggleATTModules('{sectionName}', {value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="DC" VALUE="DC"/>
@@ -8,12 +8,42 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="an12UsingATT1Module" ALIAS="Using ATT1 Module" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="an12UsingATT2Module" ALIAS="Using ATT2 Module" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an12UsingATT1Module" ALIAS="Using ATT1 Module" TYPE="CHECKBOX" DEFAULT="OFF" TRUE="ON" FALSE="OFF" MAP="" POSTREAD="toggleATT1List('{sectionName}', {value})" POSTWRITE="toggleATT1List('{sectionName}', {value})"/>
+	<PROPDEF NAME="an12UsingATT2Module" ALIAS="Using ATT2 Module" TYPE="CHECKBOX" DEFAULT="OFF" TRUE="ON" FALSE="OFF" MAP="" POSTREAD="toggleATT2List('{sectionName}', {value})" POSTWRITE="toggleATT2List('{sectionName}', {value})"/>
+	<PROPDEF NAME="att1Options" ALIAS="ATT1" TYPE="SELECT" DEFAULT="ATT1_0600V" MAP=".AN1_and_AN2_Measurement_Mode">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ATT1_0600V" VALUE="DC_ATT1_0600V"/>
+				<ITEM NAME="ATT1_1200V" VALUE="DC_ATT1_1200V"/>
+				<ITEM NAME="ATT1_2400V" VALUE="DC_ATT1_2400V"/>
+				<ITEM NAME="ATT1_4800V" VALUE="DC_ATT1_4800V"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="att2Options" ALIAS="ATT2" TYPE="SELECT" DEFAULT="ATT2_0600V" MAP=".AN1_and_AN2_Measurement_Mode">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ATT2_0600V" VALUE="DC_ATT1_0600V"/>
+				<ITEM NAME="ATT2_1200V" VALUE="DC_ATT1_1200V"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="dcCurrentSensor" ALIAS="DC Current Sensor" TYPE="SELECT" DEFAULT="CSDC-O-CL-0001A:5V" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="CSDC-O-CL-0001A:5V" VALUE="CSDC-O-CL-0001A:5V"/>
+				<ITEM NAME="CSDC-O-CL-0050A:4V" VALUE="CSDC-O-CL-0050A:4V"/>
+				<ITEM NAME="CSDC-O-CL-0100A:4V" VALUE="DC_ATT1_2400V"/>
+				<ITEM NAME="CSDC-O-CL-0200A:4V" VALUE="DC_ATT1_4800V"/>
+				<ITEM NAME="CSDC-O-CL-0400A:4V" VALUE="DC_ATT1_2400V"/>
+				<ITEM NAME="CSDC-O-CL-0600A:4V" VALUE="DC_ATT1_4800V"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 	<PROPDEF NAME="an1XAn2EnergyMode" ALIAS="AN1xAN2 Energy Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN1xAN2_Energy_Mode" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="an1eChannelRatio" ALIAS="AN1-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN1_E_Channel_Ratio"/>
 	<PROPDEF NAME="an2eChannelRatio" ALIAS="AN2-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN2_E_Channel_Ratio"/>
-	<PROPDEF NAME="analog1Range" ALIAS="Analog 1 Range:" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN1_E_Range">
+	<PROPDEF NAME="analog1Range" ALIAS="Analog 1 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN1_E_Range">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -31,6 +61,8 @@
 	</PROPDEF>
 	<PROPDEF NAME="an1eChannelOffset" ALIAS="AN1-E Channel Offset" TYPE="TEXT" DEFAULT="0" MAP=".AN1_E_Channel_Offset"/>
 	<PROPDEF NAME="an2eChannelOffset" ALIAS="AN2-E Channel Offset" TYPE="TEXT" DEFAULT="0" MAP=".AN2_E_Channel_Offset"/>
+	
+	
 	<PROPDEF NAME="an34MeasurementMode" ALIAS="AN3 AN4 Meausrement Mode" TYPE="SELECT" DEFAULT="DC" MAP=".AN3_and_AN4_Measurement_Mode">
 		<PARAM TYPE="TEXT">
 			<LIST>
@@ -71,6 +103,8 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
+	
+	
 	<PROPDEF ALIAS="Analog Inputs Recordings" TYPE="HEADER" MAPROOT="Analog_Channel_Setup"/>
 	<PROPDEF NAME="recordAn1eChannel" ALIAS="Record AN1-E Channel" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().Channel_Recordings.Record_AN1_E_Channel">
 		<PARAM TYPE="TEXT">

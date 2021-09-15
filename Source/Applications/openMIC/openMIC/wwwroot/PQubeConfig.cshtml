@@ -683,6 +683,28 @@
             $(`#${sectionName}_bacnetPort`).prop('disabled', !value);
         }
 
+        function toggleATTModules(sectionName, value) {
+            $(`#${sectionName}_an12UsingATT1Module`).prop('disabled', value === "AC");
+            $(`#${sectionName}_an12UsingATT2Module`).prop('disabled', value === "AC");
+        }
+
+        function toggleATT1List(sectionName, value) {
+            $(`#${sectionName}_att1Options`).prop('disabled', !value);
+            $(`#${sectionName}_an1eChannelRatio`).prop('disabled', value);
+            $(`#${sectionName}_an2eChannelRatio`).prop('disabled', value);
+            $(`#${sectionName}_analog1Range`).prop('disabled', value);
+            $(`#${sectionName}_analog2Range`).prop('disabled', value);
+
+        }
+
+        function toggleATT2List(sectionName, value) {
+            $(`#${sectionName}_att2Options`).prop('disabled', !value);
+            $(`#${sectionName}_an1eChannelRatio`).prop('disabled', value);
+            $(`#${sectionName}_an2eChannelRatio`).prop('disabled', value);
+            $(`#${sectionName}_analog1Range`).prop('disabled', value);
+            $(`#${sectionName}_analog2Range`).prop('disabled', value);
+        }
+
         function addQuotes(value) {
             value = (value || "").trim();
 
