@@ -1,18 +1,42 @@
 ﻿<SECTION NAME="adTriggering" ALIAS="Analog/Digital Triggering">
 	<BANK NAME="anEvents" ALIAS="AN1-AN4 Events">
 		<LIST>
-			<ITEM NAME="AN1-E Events"/>
-			<ITEM NAME="AN2-E Events"/>
-			<ITEM NAME="AN1-AN2 Events"/>
-			<ITEM NAME="AN3-E Events"/>
-			<ITEM NAME="AN4-E Events"/>
-			<ITEM NAME="AN3-AN4 Events"/>
+			<ITEM NAME="AN1_E Events"/>
+			<ITEM NAME="AN2_E Events"/>
+			<ITEM NAME="AN3_E Events"/>
+			<ITEM NAME="AN4_E Events"/>
 		</LIST>
-		<PROPDEF NAME="anEDipEvents" ALIAS="AN-E Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
-		<PROPDEF NAME="anESwellEvents" ALIAS="AN-E Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
-		<PROPDEF NAME="adDipThreshold" ALIAS="Dip Threshold" TYPE="NUMERIC" DEFAULT="2.00" MAP=""/>
-		<PROPDEF NAME="swellThreshold" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="60.00" MAP=""/>
-		<PROPDEF NAME="eventHysteresis" ALIAS="Event Hysteresis" TYPE="NUMERIC" DEFAULT=".50" MAP=""/>
+		<PROPDEF NAME="anEEvents" ALIAS="AN_E_Events" TYPE="HEADER" MAPROOT="[`AN{String.fromCharCode(49 + #bankIndex)}_E_Events`]"/>
+		<PROPDEF NAME="anEDipEvents" ALIAS="AN_E Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Dip_Events`]" TRUE="ON" FALSE="OFF"/>
+		<PROPDEF NAME="anESwellEvents" ALIAS="AN_E Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Swell_Events`]" TRUE="ON" FALSE="OFF"/>
+		<PROPDEF NAME="adDipThreshold" ALIAS="Dip Threshold" TYPE="NUMERIC" DEFAULT="2.00" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Dip_Threshold_In_Volts`]"/>
+		<PROPDEF NAME="swellThreshold" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="60.00" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Swell_Threshold_In_Volts`]"/>
+		<PROPDEF NAME="eventHysteresis" ALIAS="Event Hysteresis" TYPE="NUMERIC" DEFAULT=".50" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Event_Hysteresis_In_Volts`]"/>
+	</BANK>
+	<BANK NAME="an12Events" ALIAS="AN1-AN2/AN3-AN4 Events">
+		 <LIST>
+			<ITEM NAME="AN1_AN2 Events"/>
+			<ITEM NAME="AN3_AN4 Events"/>
+		</LIST>
+		<PROPDEF NAME="an12AN34DipEvents" ALIAS="AN1-AN2 Dip Events" TYPE="SELECT" DEFAULT="OFF" MAP="">
+			<PARAM TYPE="TEXT">
+				<LIST>
+					<ITEM NAME="OFF" VALUE="OFF"/>
+					<ITEM NAME="ON" VALUE="ON"/>
+				</LIST>
+			</PARAM>
+		</PROPDEF>
+		<PROPDEF NAME="an12AN34SwellEvents" ALIAS="AN1-AN2 Swell Events" TYPE="SELECT" DEFAULT="OFF" MAP="">
+			<PARAM TYPE="TEXT">
+				<LIST>
+					<ITEM NAME="OFF" VALUE="OFF"/>
+					<ITEM NAME="ON" VALUE="ON"/>
+				</LIST>
+			</PARAM>
+		</PROPDEF>
+		<PROPDEF NAME="an12AN34DipThreshold" ALIAS="Dip Threshold" TYPE="NUMERIC" DEFAULT="2.00" MAP=""/>
+		<PROPDEF NAME="an12AN34SwellThreshold" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="60.00" MAP=""/>
+		<PROPDEF NAME="an12AN34EventHysteresis" ALIAS="Event Hysteresis" TYPE="NUMERIC" DEFAULT="0.50" MAP=""/>
 	</BANK>
 	<PROPDEF NAME="enableDig1Events" ALIAS="Enable DIG1 Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="dig1NormalState" ALIAS="DIG1 Normal State" TYPE="SELECT" DEFAULT="NC" MAP="" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">

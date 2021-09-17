@@ -1,2 +1,69 @@
 ﻿<SECTION NAME="acCurrents1_8" ALIAS="AC Currents (I1-I8)">
+	<PROPDEF ALIAS="Current Connections" TYPE="HEADER"/>
+	<PROPDEF ALIAS="Ultra-precise CT/CTI-5A Calibration Information" TYPE="HEADER"/>
+	
+	<PROPDEF ALIAS="Power/Energy" TYPE="HEADER"/>
+	<PROPDEF ALIAS="Fix Connection Errors" TYPE="HEADER"/>
+	
+	<PROPDEF ALIAS="Current Recordings" TYPE="HEADER"/>
+	<PROPDEF NAME="recordPhaseCurrent" ALIAS="Record Phase Current" TYPE="SELECT" DEFAULT="AUTO" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="AUTO" VALUE="UPS"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordNeutralCurrent" ALIAS="Record Neutral Current" TYPE="SELECT" DEFAULT="AUTO" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="AUTO" VALUE="UPS"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordEarthCurrent" ALIAS="Record Earth Current" TYPE="SELECT" DEFAULT="AUTO" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="AUTO" VALUE="UPS"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordI6Current" ALIAS="Record I6 Current" TYPE="SELECT" DEFAULT="OFF" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordI7Current" ALIAS="Record I7 Current" TYPE="SELECT" DEFAULT="OFF" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordI8Current" ALIAS="Record I8 Current" TYPE="SELECT" DEFAULT="OFF" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="recordCurrentUnbalance" ALIAS="Record Current Unbalance" TYPE="CHECKBOX" DEFAULT="ON" MAP="" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF ALIAS="Current Computation" TYPE="HEADER"/>
+	<PROPDEF NAME="calculateRemaingingCurrent" ALIAS="Calculate Remainging Current Channel" TYPE="SELECT" DEFAULT="OFF" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 </SECTION>
