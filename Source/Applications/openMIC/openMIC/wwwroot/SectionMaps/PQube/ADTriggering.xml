@@ -1,3 +1,27 @@
 ﻿<SECTION NAME="adTriggering" ALIAS="Analog/Digital Triggering">
+	<BANK NAME="anEvents" ALIAS="AN1-AN4 Events">
+		<LIST>
+			<ITEM NAME="AN1-E Events"/>
+			<ITEM NAME="AN2-E Events"/>
+			<ITEM NAME="AN1-AN2 Events"/>
+			<ITEM NAME="AN3-E Events"/>
+			<ITEM NAME="AN4-E Events"/>
+			<ITEM NAME="AN3-AN4 Events"/>
+		</LIST>
+		<PROPDEF NAME="anEDipEvents" ALIAS="AN-E Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+		<PROPDEF NAME="anESwellEvents" ALIAS="AN-E Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+		<PROPDEF NAME="adDipThreshold" ALIAS="Dip Threshold" TYPE="NUMERIC" DEFAULT="2.00" MAP=""/>
+		<PROPDEF NAME="swellThreshold" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="60.00" MAP=""/>
+		<PROPDEF NAME="eventHysteresis" ALIAS="Event Hysteresis" TYPE="NUMERIC" DEFAULT=".50" MAP=""/>
+	</BANK>
+	<PROPDEF NAME="enableDig1Events" ALIAS="Enable DIG1 Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="dig1NormalState" ALIAS="DIG1 Normal State" TYPE="SELECT" DEFAULT="NC" MAP="" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="NC"/>
+				<ITEM NAME="NO" VALUE="NO"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 </SECTION>
 
