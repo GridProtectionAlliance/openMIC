@@ -55,7 +55,7 @@
 		<PARAM MIN=".01" MAX="100"/>
 	</PROPDEF>
 	<PROPDEF ALIAS="Major Dip - Sensitivity Curves - Ride Through Curves" TYPE="HEADER" MAPROOT="Major_Dip_Events"/>
-	<PROPDEF NAME="majorDipThresholdSettings" ALIAS="Major Dip Threshold Settings" TYPE="SELECT" DEFAULT="OFF" MAP=".Major_Dip_Threshold_Settings">
+	<PROPDEF NAME="majorDipThresholdSettings" ALIAS="Major Dip Threshold Settings" TYPE="SELECT" DEFAULT="OFF" MAP=".Major_Dip_Threshold_Settings" POSTREAD="toggleMajorDipOptions('{rootName}', {value})" POSTWRITE="toggleMajorDipOptions('{rootName}', {value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="OFF" VALUE="OFF"/>
@@ -70,6 +70,22 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
+	<PROPDEF NAME="thresholdLevel1" ALIAS="Threshold Level 1" TYPE="NUMERIC" DEFAULT="OFF" MAP=".Major_Dip_Threshold_Level_1_in_Percent">
+		<PARAM MIN="1" MAX="200"/>
+	</PROPDEF>
+	<PROPDEF NAME="thresholdLevel1Duration" ALIAS="Threshold Level 1 Duration (s)" TYPE="NUMERIC" DEFAULT="0" MAP=".Major_Dip_Threshold_Level_1_Duration_in_Seconds"/>
+	<PROPDEF NAME="thresholdLevel2" ALIAS="Threshold Level 2" TYPE="NUMERIC" DEFAULT="OFF" MAP=".Major_Dip_Threshold_Level_2_in_Percent">
+		<PARAM MIN="1" MAX="200"/>
+	</PROPDEF>
+	<PROPDEF NAME="thresholdLevel2Duration" ALIAS="Threshold Level 2 Duration (s)" TYPE="NUMERIC" DEFAULT="0" MAP=".Major_Dip_Threshold_Level_2_Duration_in_Seconds"/>
+	<PROPDEF NAME="thresholdLevel3" ALIAS="Threshold Level 3" TYPE="NUMERIC" DEFAULT="OFF" MAP=".Major_Dip_Threshold_Level_3_in_Percent">
+		<PARAM MIN="1" MAX="200"/>
+	</PROPDEF>
+	<PROPDEF NAME="thresholdLevel3Duration" ALIAS="Threshold Level 3 Duration (s)" TYPE="NUMERIC" DEFAULT="0" MAP=".Major_Dip_Threshold_Level_3_Duration_in_Seconds"/>
+	<PROPDEF NAME="thresholdLevel4" ALIAS="Threshold Level 4" TYPE="NUMERIC" DEFAULT="OFF" MAP=".Major_Dip_Threshold_Level_4_in_Percent">
+		<PARAM MIN="1" MAX="200"/>
+	</PROPDEF>
+	<PROPDEF NAME="thresholdLevel4Duration" ALIAS="Threshold Level 4 Duration (s)" TYPE="NUMERIC" DEFAULT="0" MAP=".Major_Dip_Threshold_Level_4_Duration_in_Seconds"/>
 	<PROPDEF ALIAS="Waveshape Change Events" TYPE="HEADER" MAPROOT="Waveshape_Change_Events"/>
 	<PROPDEF NAME="waveshapeChangeEvents" ALIAS="Waveshape Change Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Waveshape_Change_Events" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="voltageThresholdPercentNominal" ALIAS="Voltage Threshold In Percent Of Nominal" TYPE="NUMERIC" DEFAULT="20.0" MAP=".Voltage_Threshold_In_Percent_Of_Nominal">

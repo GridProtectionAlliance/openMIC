@@ -705,6 +705,17 @@
             $(`#${sectionName}_analog2Range`).prop('disabled', value);
         }
 
+        function toggleMajorDipOptions(rootName, value) {
+            $(`#row-${rootName}_thresholdLevel1`).toggle(value === 'CUSTOM');
+            $(`#row-${rootName}_thresholdLevel1Duration`).toggle(value === 'CUSTOM');
+            $(`#row-${rootName}_thresholdLevel2`).toggle(value === 'CUSTOM');
+            $(`#row-${rootName}_thresholdLevel2Duration`).toggle(value === 'CUSTOM');
+            $(`#row-${rootName}_thresholdLevel3`).toggle(value === 'CUSTOM');
+            $(`#row-${rootName}_thresholdLevel3Duration`).toggle(value === 'CUSTOM');
+            $(`#row-${rootName}_thresholdLevel4`).toggle(value === 'CUSTOM');
+            $(`#row-${rootName}_thresholdLevel4Duration`).toggle(value === 'CUSTOM');
+        }
+
         function addQuotes(value) {
             value = (value || "").trim();
 
