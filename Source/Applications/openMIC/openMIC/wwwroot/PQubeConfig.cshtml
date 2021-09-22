@@ -716,6 +716,16 @@
             $(`#row-${rootName}_thresholdLevel4Duration`).toggle(value === 'CUSTOM');
         }
 
+        function toggleNTPTimeSync(sectionName, value) {
+            $(`#${sectionName}_ntpServer`).prop('disabled', !value);
+            $(`#${sectionName}_ntpUpdateInterval`).prop('disabled', !value);
+        }
+
+        function toggleSNTPTimeSync(sectionName, value) {
+            $(`#${sectionName}_sntpServer`).prop('disabled', !value);
+            $(`#${sectionName}_sntpUpdateInterval`).prop('disabled', !value);
+        }
+
         function addQuotes(value) {
             value = (value || "").trim();
 

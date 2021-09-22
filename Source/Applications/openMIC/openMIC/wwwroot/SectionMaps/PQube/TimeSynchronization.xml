@@ -1,14 +1,14 @@
 ﻿<SECTION NAME="timeSynchronization" ALIAS="Time Synchronization">
 	<PROPDEF ALIAS="NTP Settings" TYPE="HEADER" MAPROOT="NTP_Settings"/>
-	<PROPDEF NAME="enableNTP" ALIAS="Enable NTP" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_NTP" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="enableNTP" ALIAS="Enable NTP" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_NTP" TRUE="ON" FALSE="OFF" POSTREAD="toggleNTPTimeSync('{sectionName}', {value})" POSTWRITE="toggleNTPTimeSync('{sectionName}', {value})"/>
 	<PROPDEF NAME="ntpServer" ALIAS="NTP Server" TYPE="TEXT" DEFAULT="north-america.pool.ntp.org" MAP=".NTP_Server" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
-	<PROPDEF NAME="ntpUpdateInteveral" ALIAS="NTP Update Interval (Hours)" TYPE="NUMERIC" DEFAULT="1" MAP=".NTP_Update_Interval_In_Hours">
+	<PROPDEF NAME="ntpUpdateInterval" ALIAS="NTP Update Interval (Hours)" TYPE="NUMERIC" DEFAULT="1" MAP=".NTP_Update_Interval_In_Hours">
 		<PARAM MIN="1" MAX="168"/>
 	</PROPDEF>
 	<PROPDEF ALIAS="SNTP Settings" TYPE="HEADER" MAPROOT="SNTP_Settings"/>
-	<PROPDEF NAME="enableSNTP" ALIAS="Enable SNTP" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_SNTP" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="enableSNTP" ALIAS="Enable SNTP" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_SNTP" TRUE="ON" FALSE="OFF" POSTREAD="toggleSNTPTimeSync('{sectionName}', {value})" POSTWRITE="toggleSNTPTimeSync('{sectionName}', {value})"/>
 	<PROPDEF NAME="sntpServer" ALIAS="SNTP Server" TYPE="TEXT" DEFAULT="2.pool.ntp.org" MAP=".SNTP_Server" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
-	<PROPDEF NAME="sntpUpdateInteveral" ALIAS="SNTP Update Interval (Hours)" TYPE="NUMERIC" DEFAULT="1" MAP=".SNTP_Update_Interval_In_Hours">
+	<PROPDEF NAME="sntpUpdateInterval" ALIAS="SNTP Update Interval (Hours)" TYPE="NUMERIC" DEFAULT="1" MAP=".SNTP_Update_Interval_In_Hours">
 		<PARAM MIN="1" MAX="168"/>
 	</PROPDEF>
 </SECTION>
