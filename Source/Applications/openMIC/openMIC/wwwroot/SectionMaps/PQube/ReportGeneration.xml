@@ -14,4 +14,17 @@
 				</LIST>
 			</PARAM>
 		</PROPDEF>
+	<PROPDEF NAME="majorDipThresholdSettingsReport" ALIAS="Major Dip Setting" TYPE="SELECT" DEFAULT="ITIC" MAP=".Embedded_Major_Sag_Report_Setting" POSTREAD="toggleMajorDipOptions('{rootName}', {value})" POSTWRITE="toggleMajorDipOptions('{rootName}', {value})">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ITIC" VALUE="ITIC"/>
+				<ITEM NAME="CBEMA" VALUE="CBEMA"/>
+				<ITEM NAME="SEMI_F47" VALUE="SEMI_F47"/>
+				<ITEM NAME="STANDARD" VALUE="STANDARD"/>
+				<ITEM NAME="SAMSUNG_POWER_VACCINE" VALUE="SAMSUNG_POWER_VACCINE"/>
+				<ITEM NAME="MIL_STD_704E" VALUE="MIL_STD_704E"/>
+				<ITEM NAME="MIL_STD_1399" VALUE="MIL_STD_1399"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 </SECTION>

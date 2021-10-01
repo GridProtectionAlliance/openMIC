@@ -4,7 +4,15 @@
 	<PROPDEF ALIAS="Web Server (Web Pages) Protection" TYPE="HEADER"/>
 	<PROPDEF NAME="requireHTTPS" ALIAS="Require HTTPS" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_WebServer_Security" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF ALIAS="FTP Server (File Transfer) Protection" TYPE="HEADER"/>
-	<PROPDEF NAME="requireFTPS" ALIAS="Require FTPS" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_FTP_Security" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="requireFTPS" ALIAS="Require FTPS" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_FTP_Security" TRUE="ON" FALSE="OFF" POSTREAD="toggleFTPSOptions('{rootName}', {value})" POSTWRITE="toggleFTPSOptions('{rootName}', {value})"/>
+	<PROPDEF NAME="ftpsImplicitExplicit" ALIAS="Implicit/Explicit" TYPE="SELECT" DEFAULT="EXPLICIT" MAP=".Require_FTP_Security" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="EXPLICIT" VALUE="EXPLICIT"/>
+				<ITEM NAME="IMPLICIT" VALUE="IMPLICIT"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 	<PROPDEF ALIAS="Lock Screen On Display" TYPE="HEADER"/>
 	<PROPDEF NAME="enableDisplayPass" ALIAS="Enable Display Passcode" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Display_Passcode" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="displayPasscode" ALIAS="Display Passcode" TYPE="NUMERIC" DEFAULT="0000" MAP=".Display_Passcode">

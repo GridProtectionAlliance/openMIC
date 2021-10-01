@@ -1,6 +1,6 @@
 ﻿<SECTION NAME="acVoltages" ALIAS="AC Voltages" MAPROOT="Channel_Recordings">
 	<PROPDEF ALIAS="Power Configuration" TYPE="HEADER" MAPROOT="Nominal_Inputs"/>
-	<PROPDEF NAME="powerConfiguration" ALIAS="Power Configuration" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().PQube_Information.Power_Configuration">
+	<PROPDEF NAME="powerConfiguration" ALIAS="Power Configuration" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().PQube_Information.Power_Configuration" POSTREAD="togglePowerConfiguration('{sectionName}', {value})" POSTWRITE="togglePowerConfiguration('{sectionName}', {value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="AUTO" VALUE="Auto"/>
