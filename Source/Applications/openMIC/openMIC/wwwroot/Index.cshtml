@@ -86,6 +86,7 @@
     bool useRemoteScheduler = Model.Global.UseRemoteScheduler;
     bool primaryScheduler = poolMachines != null && poolMachines.Length > 0;
     string functionalIdentity = useRemoteScheduler ? "Subordinate" : primaryScheduler ? "Primary Scheduler" : "Independent";
+    bool showRestartButton = !Model.Global.HideRestartButton;
     Uri requestUri = ViewBag.Request.RequestUri;
 }
 @section StyleSheets {
@@ -261,7 +262,9 @@
                     <a href="ModbusConfig.cshtml" role="button" class="btn btn-default">Add Modbus Mapping</a>
                     <a href="IGridConfig.cshtml" role="button" class="btn btn-default">Manage I-Grid Connections</a>
                     <a href="GraphMeasurements.cshtml" role="button" class="btn btn-default">Real-time Measurements</a>
-                    <button type="button" class="btn btn-default@(requiresAdmin)" id="restartButton"@requiresAdmin hub-dependent>Restart Service</button>
+                    @if (showRestartButton) {
+                        <button type="button" class="btn btn-default@(requiresAdmin)" id="restartButton"@requiresAdmin hub-dependent>Restart Service</button>
+                    }
                 </div>
             </div>
         </div>

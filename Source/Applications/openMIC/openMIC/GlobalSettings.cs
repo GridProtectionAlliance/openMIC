@@ -27,214 +27,76 @@ namespace openMIC
 {
     public class GlobalSettings
     {
-        public string CompanyName
-        {
-            get;
-            set;
-        }
+        public string CompanyName { get; set; }
 
-        public string CompanyAcronym
-        {
-            get;
-            set;
-        }
+        public string CompanyAcronym { get; set; }
 
-        public Guid NodeID
-        {
-            get;
-            set;
-        }
+        public Guid NodeID { get; set; }
 
 
-        public string SubscriptionConnectionString
-        {
-            get;
-            set;
-        }
+        public string SubscriptionConnectionString { get; set; }
 
-        public string ApplicationName
-        {
-            get;
-            set;
-        }
+        public string ApplicationName { get; set; }
 
-        public string ApplicationDescription
-        {
-            get;
-            set;
-        }
+        public string ApplicationDescription { get; set; }
 
-        public string ApplicationKeywords
-        {
-            get;
-            set;
-        }
+        public string ApplicationKeywords { get; set; }
 
-        public string DateFormat
-        {
-            get;
-            set;
-        }
+        public string DateFormat { get; set; }
 
-        public string TimeFormat
-        {
-            get;
-            set;
-        }
+        public string TimeFormat { get; set; }
 
-        public string DateTimeFormat
-        {
-            get;
-            set;
-        }
+        public string DateTimeFormat { get; set; }
 
-        public string PasswordRequirementsRegex
-        {
-            get;
-            set;
-        }
+        public string PasswordRequirementsRegex { get; set; }
 
-        public string PasswordRequirementsError
-        {
-            get;
-            set;
-        }
+        public string PasswordRequirementsError { get; set; }
 
-        public string BootstrapTheme
-        {
-            get;
-            set;
-        }
+        public string BootstrapTheme { get; set; }
 
-        public int DefaultDialUpRetries
-        {
-            get;
-            set;
-        }
+        public int DefaultDialUpRetries { get; set; }
 
-        public int DefaultDialUpTimeout
-        {
-            get;
-            set;
-        }
+        public int DefaultDialUpTimeout { get; set; }
 
-        public string DefaultFTPUserName
-        {
-            get;
-            set;
-        }
+        public string DefaultFTPUserName { get; set; }
 
-        public string DefaultFTPPassword
-        {
-            get;
-            set;
-        }
+        public string DefaultFTPPassword { get; set; }
 
-        public string DefaultRemotePath
-        {
-            get;
-            set;
-        }
+        public string DefaultRemotePath { get; set; }
 
-        public string DefaultLocalPath
-        {
-            get;
-            set;
-        }
+        public string DefaultLocalPath { get; set; }
 
-        public int MaxRemoteFileAge
-        {
-            get;
-            set;
-        }
+        public int MaxRemoteFileAge { get; set; }
 
-        public int MaxLocalFileAge
-        {
-            get;
-            set;
-        }
+        public int MaxLocalFileAge { get; set; }
 
-        public string DefaultAppPath
-        {
-            get;
-            set;
-        }
+        public string DefaultAppPath { get; set; }
 
-        public string SmtpServer
-        {
-            get;
-            set;
-        }
+        public string SmtpServer { get; set; }
 
-        public string FromAddress
-        {
-            get;
-            set;
-        }
+        public string FromAddress { get; set; }
 
-        public string SmtpUserName
-        {
-            get;
-            set;
-        }
+        public string SmtpUserName { get; set; }
 
-        public string SmtpPassword
-        {
-            get;
-            set;
-        }
+        public string SmtpPassword { get; set; }
 
-        public string WebRootPath
-        {
-            get;
-            set;
-        }
-        public string DefaultCorsOrigins
-        {
-            get;
-            set;
-        }
+        public string WebRootPath { get; set; }
+        public string DefaultCorsOrigins { get; set; }
 
-        public string DefaultCorsHeaders
-        {
-            get;
-            set;
-        }
+        public string DefaultCorsHeaders { get; set; }
 
-        public string DefaultCorsMethods
-        {
-            get;
-            set;
-        }
+        public string DefaultCorsMethods { get; set; }
 
-        public bool DefaultCorsSupportsCredentials
-        {
-            get;
-            set;
-        }
+        public bool DefaultCorsSupportsCredentials { get; set; }
 
-        public string[] PoolMachines
-        {
-            get;
-            set;
-        }
+        public string[] PoolMachines { get; set; }
 
-        public bool UseRemoteScheduler
-        {
-            get;
-            set;
-        }
+        public bool UseRemoteScheduler { get; set; }
 
-        public Uri WebHostUri
-        {
-            get;
-            set;
-        }
+        public Uri WebHostUri { get; set; }
 
-        public string SystemName
-        {
-            get;
-            set;
-        }
+        public string SystemName { get; set; }
+
+        public bool HideRestartButton { get ; set; }
     }
 }

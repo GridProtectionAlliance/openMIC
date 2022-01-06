@@ -228,6 +228,7 @@ namespace openMIC
             systemSettings.Add("PoolMachines", "", "Comma separated list of openMIC pooled load-balancing machines. Should be blank when UseRemoteScheduler is true.");
             systemSettings.Add("UseRemoteScheduler", false, "Flag that determines if scheduling is handled locally or managed by a remote scheduling system");
             systemSettings.Add("SystemName", "", "Name of system that will be prefixed to system level tags, when defined. Value should follow tag naming conventions, e.g., no spaces and all upper case.");
+            systemSettings.Add("HideRestartButton", false, "Flag that determines if restart button should be displayed on the home page. Set to false for clustered environments.");
 
             DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
@@ -271,6 +272,7 @@ namespace openMIC
             Model.Global.DefaultCorsMethods = systemSettings["DefaultCorsMethods"].Value;
             Model.Global.DefaultCorsSupportsCredentials = systemSettings["DefaultCorsSupportsCredentials"].ValueAsBoolean(true);
             Model.Global.SystemName = systemSettings["SystemName"].Value;
+            Model.Global.HideRestartButton = systemSettings["HideRestartButton"].ValueAsBoolean(false);
 
             // Setup pooled machine configuration
             string poolMachines = systemSettings["PoolMachines"].Value;
