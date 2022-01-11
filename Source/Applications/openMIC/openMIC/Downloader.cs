@@ -1987,10 +1987,11 @@ namespace openMIC
                         if (string.IsNullOrWhiteSpace(processArgs.Data))
                             return;
 
+                        lastUpdate = DateTime.UtcNow;
+
                         if (HandleExternalOperationMessage(processArgs.Data, out _))
                             return;
 
-                        lastUpdate = DateTime.UtcNow;
                         OnStatusMessage(MessageLevel.Info, processArgs.Data);
                         OnProgressUpdated(this, new ProgressUpdate { Message = processArgs.Data });
                     };
