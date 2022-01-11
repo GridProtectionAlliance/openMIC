@@ -85,14 +85,16 @@ CREATE TABLE IONWaveformCheckpoint(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     Device VARCHAR(200) NOT NULL,
     TimeRecorded DATETIME NOT NULL,
-    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE (Device ASC)
+    LogPositions TEXT NOT NULL DEFAULT '[]',
+    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE (Device ASC, TimeRecorded ASC)
 );
 
 CREATE TABLE IONTrendingCheckpoint(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     Device VARCHAR(200) NOT NULL,
     TimeRecorded DATETIME NOT NULL,
-    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC)
+    LogPositions TEXT NOT NULL DEFAULT '[]',
+    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC, TimeRecorded ASC)
 );
 
 CREATE TABLE DranetzWaveformCheckpoint(

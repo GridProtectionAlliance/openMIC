@@ -161,16 +161,20 @@ GO
 CREATE TABLE IONWaveformCheckpoint
 (
     ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
-    Device VARCHAR(200) NOT NULL UNIQUE,
-    TimeRecorded DATETIME2 NOT NULL
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME2 NOT NULL,
+    LogPositions VARCHAR(MAX) NOT NULL DEFAULT '[]',
+    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE (Device ASC, TimeRecorded ASC)
 )
 GO
 
 CREATE TABLE IONTrendingCheckpoint
 (
     ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
-    Device VARCHAR(200) NOT NULL UNIQUE,
-    TimeRecorded DATETIME NOT NULL
+    Device VARCHAR(200) NOT NULL,
+    TimeRecorded DATETIME NOT NULL,
+    LogPositions VARCHAR(MAX) NOT NULL DEFAULT '[]',
+    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC, TimeRecorded ASC)
 )
 GO
 
