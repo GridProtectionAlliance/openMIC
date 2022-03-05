@@ -1955,16 +1955,18 @@ CREATE TABLE IONWaveformCheckpoint(
     ID INT AUTO_INCREMENT NOT NULL,
     Device VARCHAR(200) NOT NULL,
     TimeRecorded DATETIME NOT NULL,
+    LogPositions VARCHAR(MAX) NOT NULL DEFAULT '[]',
     CONSTRAINT PK_IONWaveformCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
-    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE KEY (Device ASC)
+    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE KEY (Device ASC, TimeRecorded ASC)
 );
 
 CREATE TABLE IONTrendingCheckpoint(
     ID INT AUTO_INCREMENT NOT NULL,
     Device VARCHAR(200) NOT NULL,
     TimeRecorded DATETIME NOT NULL,
+    LogPositions VARCHAR(MAX) NOT NULL DEFAULT '[]',
     CONSTRAINT PK_IONTrendingCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
-    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE KEY (Device ASC)
+    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE KEY (Device ASC, TimeRecorded ASC)
 );
 
 CREATE TABLE DranetzWaveformCheckpoint(

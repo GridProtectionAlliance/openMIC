@@ -2977,11 +2977,11 @@ CREATE TABLE IONWaveformCheckpoint(
     ID NUMBER NOT NULL,
     Device VARCHAR2(200) NOT NULL,
     TimeRecorded DATE NOT NULL,
-    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE (Device ASC)
+    LogPositions VARCHAR2(MAX) DEFAULT '[]' NOT NULL
 );
 
 CREATE UNIQUE INDEX IX_IONWaveformCheckpoint_ID ON IONWaveformCheckpoint (ID ASC) TABLESPACE openMIC_INDEX;
-CREATE UNIQUE INDEX IX_IONWaveformCheckpoint_Dev ON IONWaveformCheckpoint (Device ASC)  TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_IONWaveformCheckpoint_Dev ON IONWaveformCheckpoint (Device ASC, TimeRecorded ASC)  TABLESPACE openMIC_INDEX;
 
 ALTER TABLE IONWaveformCheckpoint ADD CONSTRAINT PK_IONWaveformCheckpoint PRIMARY KEY (ID);
 
@@ -2996,11 +2996,11 @@ CREATE TABLE IONTrendingCheckpoint(
     ID NUMBER NOT NULL,
     Device VARCHAR2(200) NOT NULL,
     TimeRecorded DATE NOT NULL,
-    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC)
+    LogPositions VARCHAR2(MAX) DEFAULT '[]' NOT NULL
 );
 
 CREATE UNIQUE INDEX IX_IONTrendingCheckpoint_ID ON IONTrendingCheckpoint (ID ASC) TABLESPACE openMIC_INDEX;
-CREATE UNIQUE INDEX IX_IONTrendingCheckpoint_Dev ON IONTrendingCheckpoint (Device ASC)  TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_IONTrendingCheckpoint_Dev ON IONTrendingCheckpoint (Device ASC, TimeRecorded ASC)  TABLESPACE openMIC_INDEX;
 
 ALTER TABLE IONTrendingCheckpoint ADD CONSTRAINT PK_IONTrendingCheckpoint PRIMARY KEY (ID);
 
