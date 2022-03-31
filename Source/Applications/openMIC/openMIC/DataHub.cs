@@ -530,7 +530,7 @@ namespace openMIC
         public int QueryConnectionProfileTaskCount(int parentID, string filterText)
         {
             TableOperations<ConnectionProfileTask> connectionProfileTaskTable = DataContext.Table<ConnectionProfileTask>();
-            connectionProfileTaskTable.RootQueryRestriction[0] = parentID;
+            connectionProfileTaskTable.RootQueryRestriction = ConnectionProfileTask.CreateFilter(parentID);
             return connectionProfileTaskTable.QueryRecordCount(filterText);
         }
 
@@ -538,7 +538,7 @@ namespace openMIC
         public IEnumerable<ConnectionProfileTask> QueryConnectionProfileTasks(int parentID, string sortField, bool ascending, int page, int pageSize, string filterText)
         {
             TableOperations<ConnectionProfileTask> connectionProfileTaskTable = DataContext.Table<ConnectionProfileTask>();
-            connectionProfileTaskTable.RootQueryRestriction[0] = parentID;
+            connectionProfileTaskTable.RootQueryRestriction = ConnectionProfileTask.CreateFilter(parentID);
             return connectionProfileTaskTable.QueryRecords(sortField, ascending, page, pageSize, filterText);
         }
 

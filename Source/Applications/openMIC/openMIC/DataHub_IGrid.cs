@@ -121,8 +121,8 @@ namespace openMIC
                 profile.ID = GetDefaultIGridConnectionProfileID();
 
                 TableOperations<ConnectionProfileTask> profileTaskTable = DataContext.Table<ConnectionProfileTask>();
-                profileTaskTable.RootQueryRestriction[0] = profile.ID;
-                int taskCount = profileTaskTable.QueryRecordCount();
+                RecordRestriction filter = ConnectionProfileTask.CreateFilter(profile.ID);
+                int taskCount = profileTaskTable.QueryRecordCount(filter);
 
                 if (taskCount == 0)
                 {

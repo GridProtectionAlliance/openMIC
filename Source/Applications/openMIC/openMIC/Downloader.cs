@@ -919,8 +919,8 @@ namespace openMIC
                 m_deviceRecord = deviceTable.QueryRecordWhere("Acronym = {0}", Name);
                 m_connectionProfile = connectionProfileTable.LoadRecord(ConnectionProfileID);
 
-                connectionProfileTaskTable.RootQueryRestriction.Parameters[0] = ConnectionProfileID;
-                ConnectionProfileTask[] tasks = connectionProfileTaskTable.QueryRecords("LoadOrder").ToArray();
+                RecordRestriction filter = ConnectionProfileTask.CreateFilter(ConnectionProfileID);
+                ConnectionProfileTask[] tasks = connectionProfileTaskTable.QueryRecords("LoadOrder", filter).ToArray();
 
                 if (taskQueue == null && m_connectionProfile.DefaultTaskQueueID != null)
                     taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("ID = {0}", m_connectionProfile.DefaultTaskQueueID.GetValueOrDefault());

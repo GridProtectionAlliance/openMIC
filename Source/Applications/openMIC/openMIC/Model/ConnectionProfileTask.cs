@@ -162,7 +162,6 @@ namespace openMIC.Model
     }
 
     [PrimaryLabel("Name")]
-    [RootQueryRestriction("ConnectionProfileID = {0}", 0)]
     public class ConnectionProfileTask
     {
         #region [ Members ]
@@ -253,6 +252,14 @@ namespace openMIC.Model
             Success = false;
             m_failMessage.AppendLine(message);
         }
+
+        #endregion
+
+        #region [ Static ]
+
+        // Static Methods
+        public static RecordRestriction CreateFilter(int connectionProfileID) =>
+            new RecordRestriction("ConnectionProfileID = {0}", connectionProfileID);
 
         #endregion
     }
