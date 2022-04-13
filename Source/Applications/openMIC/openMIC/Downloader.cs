@@ -31,7 +31,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
-using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -42,7 +41,7 @@ using GSF.Data;
 using GSF.Data.Model;
 using GSF.Diagnostics;
 using GSF.IO;
-using GSF.Net.Ftp;
+using GSF.Net.VirtualFtpClient;
 using GSF.Net.Smtp;
 using GSF.Scheduling;
 using GSF.Threading;
@@ -70,7 +69,7 @@ namespace openMIC;
 [EditorBrowsable(EditorBrowsableState.Advanced)] // Normally defined as an input device protocol
 public class Downloader : InputAdapterBase
 {
-#region [ Members ]
+    #region [ Members ]
 
     // Nested Types
 
@@ -173,9 +172,9 @@ public class Downloader : InputAdapterBase
     private long m_startDialUpTime;
     private bool m_disposed;
 
-#endregion
+    #endregion
 
-#region [ Constructors ]
+    #region [ Constructors ]
 
     public Downloader()
     {
@@ -187,9 +186,17 @@ public class Downloader : InputAdapterBase
         m_taskArrayLock = new();
     }
 
-#endregion
+    #endregion
 
-#region [ Properties ]
+    #region [ Properties ]
+
+    /// <summary>
+    /// Gets or sets the FTP type to use, e.g., FTP or TFTP.
+    /// </summary>
+    [ConnectionStringParameter]
+    [Description("Defines the FTP type to use, e.g., FTP or TFTP.")]
+    [DefaultValue(typeof(FtpType), nameof(FtpType.Ftp))]
+    public FtpType FTPType { get; set; }
 
     /// <summary>
     /// Gets or sets connection host name or IP for transport.
@@ -358,7 +365,7 @@ public class Downloader : InputAdapterBase
     /// Gets or sets last failed connection time.
     /// </summary>
     public DateTime? LastFailedConnectionTime { get; set; }
-        
+
     /// <summary>
     /// Gets or sets last failed connection reason.
     /// </summary>
@@ -464,66 +471,40 @@ public class Downloader : InputAdapterBase
             bool primaryScheduler = poolMachines?.Length > 0;
 
             status.Append(base.Status);
-            status.AppendFormat("      Connection host name: {0}", ConnectionHostName.ToNonNullNorWhiteSpace("undefined"));
-            status.AppendLine();
-            status.AppendFormat("      Connection user name: {0} - with {1} password", ConnectionUserName.ToNonNullNorWhiteSpace("undefined"), string.IsNullOrWhiteSpace(ConnectionPassword) ? "no" : "a");
-            status.AppendLine();
-            status.AppendFormat("     Connection profile ID: {0} - {1}", ConnectionProfileID, m_connectionProfile?.Name ?? "undefined");
-            status.AppendLine();
-            status.AppendFormat("         Download schedule: {0} - managed {1}", Schedule, useRemoteScheduler ? "remotely" : "locally");
-            status.AppendLine();
-            status.AppendFormat("       Functional identity: {0}", useRemoteScheduler ? "Subordinate" : primaryScheduler ? "Primary Scheduler" : "Independent");
-            status.AppendLine();
+            status.AppendLine($"           Target FTP type: {FTPType.GetDescription()}");
+            status.AppendLine($"      Connection host name: {ConnectionHostName.ToNonNullNorWhiteSpace("undefined")}");
+            status.AppendLine($"      Connection user name: {ConnectionUserName.ToNonNullNorWhiteSpace("undefined")} - with {(string.IsNullOrWhiteSpace(ConnectionPassword) ? "no" : "a")} password");
+            status.AppendLine($"     Connection profile ID: {ConnectionProfileID} - {m_connectionProfile?.Name ?? "undefined"}");
+            status.AppendLine($"         Download schedule: {Schedule} - managed {(useRemoteScheduler ? "remotely" : "locally")}");
+            status.AppendLine($"       Functional identity: {(useRemoteScheduler ? "Subordinate" : primaryScheduler ? "Primary Scheduler" : "Independent")}");
 
             if (primaryScheduler)
-            {
-                status.AppendFormat("    Download pool machines: {0}", string.Join(", ", poolMachines));
-                status.AppendLine();
-            }
+                status.AppendLine($"    Download pool machines: {string.Join(", ", poolMachines)}");
 
-            status.AppendFormat("   Log connection messages: {0}", LogConnectionMessages);
-            status.AppendLine();
-            status.AppendFormat("     Attempted connections: {0}", AttemptedConnections);
-            status.AppendLine();
-            status.AppendFormat("    Successful connections: {0}", SuccessfulConnections);
-            status.AppendLine();
-            status.AppendFormat("        Failed connections: {0}", FailedConnections);
-            status.AppendLine();
-            status.AppendFormat("     Total processed files: {0}", TotalProcessedFiles);
-            status.AppendLine();
-            status.AppendFormat("      Total connected time: {0}", new Ticks(TotalConnectedTime).ToElapsedTimeString(3));
-            status.AppendLine();
-            status.AppendFormat("               Use dial-up: {0}", UseDialUp);
-            status.AppendLine();
+            status.AppendLine($"   Log connection messages: {LogConnectionMessages}");
+            status.AppendLine($"     Attempted connections: {AttemptedConnections}");
+            status.AppendLine($"    Successful connections: {SuccessfulConnections}");
+            status.AppendLine($"        Failed connections: {FailedConnections}");
+            status.AppendLine($"     Total processed files: {TotalProcessedFiles}");
+            status.AppendLine($"      Total connected time: {new Ticks(TotalConnectedTime).ToElapsedTimeString(3)}");
+            status.AppendLine($"               Use dial-up: {UseDialUp}");
 
             if (UseDialUp)
             {
-                status.AppendFormat("        Dial-up entry name: {0}", DialUpEntryName);
-                status.AppendLine();
-                status.AppendFormat("            Dial-up number: {0}", DialUpNumber);
-                status.AppendLine();
-                status.AppendFormat("         Dial-up user name: {0} - with {1} password", DialUpUserName.ToNonNullNorWhiteSpace("undefined"), string.IsNullOrWhiteSpace(DialUpPassword) ? "no" : "a");
-                status.AppendLine();
-                status.AppendFormat("           Dial-up retries: {0}", DialUpRetries);
-                status.AppendLine();
-                status.AppendFormat("          Dial-up time-out: {0}", DialUpTimeout);
-                status.AppendLine();
-                status.AppendFormat("        Attempted dial-ups: {0}", AttemptedDialUps);
-                status.AppendLine();
-                status.AppendFormat("       Successful dial-ups: {0}", SuccessfulDialUps);
-                status.AppendLine();
-                status.AppendFormat("           Failed dial-ups: {0}", FailedDialUps);
-                status.AppendLine();
-                status.AppendFormat("        Total dial-up time: {0}", new Ticks(TotalDialUpTime).ToElapsedTimeString(3));
-                status.AppendLine();
+                status.AppendLine($"        Dial-up entry name: {DialUpEntryName}");
+                status.AppendLine($"            Dial-up number: {DialUpNumber}");
+                status.AppendLine($"         Dial-up user name: {DialUpUserName.ToNonNullNorWhiteSpace("undefined")} - with {(string.IsNullOrWhiteSpace(DialUpPassword) ? "no" : "a")} password");
+                status.AppendLine($"           Dial-up retries: {DialUpRetries}");
+                status.AppendLine($"          Dial-up time-out: {DialUpTimeout}");
+                status.AppendLine($"        Attempted dial-ups: {AttemptedDialUps}");
+                status.AppendLine($"       Successful dial-ups: {SuccessfulDialUps}");
+                status.AppendLine($"           Failed dial-ups: {FailedDialUps}");
+                status.AppendLine($"        Total dial-up time: {new Ticks(TotalDialUpTime).ToElapsedTimeString(3)}");
             }
 
-            status.AppendFormat(" Connection profiles tasks: {0}", AllTasks.Length);
-            status.AppendLine();
-            status.AppendFormat("          Files downloaded: {0}", FilesDownloaded);
-            status.AppendLine();
-            status.AppendFormat("          Bytes downloaded: {0:N3} MB", BytesDownloaded / (double)SI2.Mega);
-            status.AppendLine();
+            status.AppendLine($" Connection profiles tasks: {AllTasks.Length}");
+            status.AppendLine($"          Files downloaded: {FilesDownloaded}");
+            status.AppendLine($"          Bytes downloaded: {BytesDownloaded / (double)SI2.Mega:N3} MB");
 
             return status.ToString();
         }
@@ -612,9 +593,9 @@ public class Downloader : InputAdapterBase
         }
     }
 
-#endregion
+    #endregion
 
-#region [ Methods ]
+    #region [ Methods ]
 
     /// <summary>
     /// Releases the unmanaged resources used by the <see cref="Downloader"/> object and optionally releases the managed resources.
@@ -720,8 +701,8 @@ public class Downloader : InputAdapterBase
     /// A short one-line summary of the current status of this adapter.
     /// </returns>
     public override string GetShortStatus(int maxLength) =>
-        Enabled ? 
-            $"Downloading enabled for schedule: {Schedule}".CenterText(maxLength) : 
+        Enabled ?
+            $"Downloading enabled for schedule: {Schedule}".CenterText(maxLength) :
             "Downloading for is paused...".CenterText(maxLength);
 
     /// <summary>
@@ -768,7 +749,7 @@ public class Downloader : InputAdapterBase
     /// <param name="taskName">Name of task.</param>
     /// <param name="task">Value will be set to found task, if any; otherwise, value will be set to <c>null</c>.</param>
     /// <returns><c>true</c> if <paramref name="taskName"/> was found; otherwise, <c>false</c>.</returns>
-    public bool TryGetConnectionProfileTask(string taskName, out ConnectionProfileTask task) => 
+    public bool TryGetConnectionProfileTask(string taskName, out ConnectionProfileTask task) =>
         AllTasks.ToDictionary(t => t.Name, StringComparer.OrdinalIgnoreCase).TryGetValue(taskName, out task);
 
     /// <summary>
@@ -784,7 +765,7 @@ public class Downloader : InputAdapterBase
     /// Queues all tasks for immediate, highest priority, execution to local machine.
     /// </summary>
     [AdapterCommand("Queues all tasks for immediate, highest priority, execution to local machine.", "Administrator", "Editor")]
-    public void QueueTasksLocally() => 
+    public void QueueTasksLocally() =>
         QueueTasksByID(AllTasksGroupID, QueuePriority.Urgent);
 
     /// <summary>
@@ -982,7 +963,7 @@ public class Downloader : InputAdapterBase
         }
     }
 
-#region [ Task Execution Operations ]
+    #region [ Task Execution Operations ]
 
     // Execute a single task with an overridden schedule. This method exists in addition
     // to ExecuteGroupedTasks to provide custom feedback for a single task with a defined
@@ -1345,8 +1326,8 @@ public class Downloader : InputAdapterBase
                 }
             }
 
-            OnStatusMessage(MessageLevel.Info, deletedCount > 0 ? 
-                                $"Deleted {deletedCount} files during local file age limit processing." : 
+            OnStatusMessage(MessageLevel.Info, deletedCount > 0 ?
+                                $"Deleted {deletedCount} files during local file age limit processing." :
                                 "No files deleted during local file age limit processing.");
         }
         catch (Exception ex)
@@ -1381,7 +1362,7 @@ public class Downloader : InputAdapterBase
 
     private FtpClient ConnectFTPClient()
     {
-        FtpClient ftpClient = new();
+        FtpClient ftpClient = new(FTPType);
 
         ftpClient.CommandSent += FtpClient_CommandSent;
         ftpClient.ResponseReceived += FtpClient_ResponseReceived;
@@ -1544,9 +1525,9 @@ public class Downloader : InputAdapterBase
         return substitutions.Aggregate(settings.RemotePath, (path, sub) => path.Replace(sub.Key, sub.Value));
     }
 
-#endregion
+    #endregion
 
-#region [ FTP Task Operations ]
+    #region [ FTP Task Operations ]
 
     private void ExecuteFTPTask(ConnectionProfileTask task, FtpClient ftpClient, DateTime localTime)
     {
@@ -1589,7 +1570,7 @@ public class Downloader : InputAdapterBase
 
         OnStatusMessage(MessageLevel.Info, $"Enumerating remote files in \"{remotePathDirectory}\"{(timeConstraintApplied ? $" with time constraint from {settings.StartTimeConstraint.Value:yyyy-MM-dd HH:mm.ss.fff} to {settings.EndTimeConstraint.Value:yyyy-MM-dd HH:mm.ss.fff}" : "")}...");
 
-        foreach (FtpFile file in client.CurrentDirectory.Files)
+        foreach (FtpFile file in client.CurrentDirectory.Files.Values)
         {
             if (m_cancellationToken.IsCancelled)
                 return;
@@ -1653,7 +1634,7 @@ public class Downloader : InputAdapterBase
         try
         {
             OnStatusMessage(MessageLevel.Info, $"Enumerating remote directories in \"{remotePathDirectory}\"...");
-            directories = client.CurrentDirectory.SubDirectories.ToArray();
+            directories = client.CurrentDirectory.SubDirectories.Values.ToArray();
         }
         catch (Exception ex)
         {
@@ -1850,9 +1831,9 @@ public class Downloader : InputAdapterBase
         }
     }
 
-#endregion
+    #endregion
 
-#region [ External Task Operations ]
+    #region [ External Task Operations ]
 
     private bool TestExternalOperationConnection(ConnectionProfileTask task)
     {
@@ -2048,7 +2029,7 @@ public class Downloader : InputAdapterBase
 
             FilesDownloaded++;
             TotalFilesDownloaded++;
-                
+
             OnProgressUpdated(this, new() { Summary = $"{FilesDownloaded:N0} Files Downloaded ({TotalFilesDownloaded:N0} Total)" });
             return true;
         }
@@ -2090,9 +2071,9 @@ public class Downloader : InputAdapterBase
         return false;
     }
 
-#endregion
+    #endregion
 
-#region [ Task Logging Handlers ]
+    #region [ Task Logging Handlers ]
 
     private int LogDownloadedFile(string filePath)
     {
@@ -2103,7 +2084,7 @@ public class Downloader : InputAdapterBase
             TableOperations<DownloadedFile> downloadedFileTable = new(connection);
 
             DownloadedFile downloadedFile = new()
-            { 
+            {
                 DeviceID = m_deviceRecord.ID,
                 FilePath = filePath,
                 Timestamp = DateTime.UtcNow,
@@ -2131,11 +2112,11 @@ public class Downloader : InputAdapterBase
             using AdoDataConnection connection = new("systemSettings");
             TableOperations<StatusLog> statusLogTable = new(connection);
             StatusLog log = statusLogTable.QueryRecordWhere("DeviceID = {0}", m_deviceRecord.ID) ?? statusLogTable.NewRecord();
-                    
+
             log.DeviceID = m_deviceRecord.ID;
             log.LastOutcome = outcome.ToString();
             log.LastRun = DateTime.UtcNow;
-                    
+
             statusLogTable.AddNewOrUpdateRecord(log);
         }
         catch (Exception ex)
@@ -2151,11 +2132,11 @@ public class Downloader : InputAdapterBase
             using AdoDataConnection connection = new("systemSettings");
             TableOperations<StatusLog> statusLogTable = new(connection);
             StatusLog log = statusLogTable.QueryRecordWhere("DeviceID = {0}", m_deviceRecord.ID) ?? statusLogTable.NewRecord();
-                    
+
             log.DeviceID = m_deviceRecord.ID;
             log.LastFailure = DateTime.UtcNow;
             log.LastErrorMessage = message;
-                    
+
             statusLogTable.AddNewOrUpdateRecord(log);
         }
         catch (Exception ex)
@@ -2171,13 +2152,13 @@ public class Downloader : InputAdapterBase
             using AdoDataConnection connection = new("systemSettings");
             TableOperations<StatusLog> statusLogTable = new(connection);
             StatusLog log = statusLogTable.QueryRecordWhere("DeviceID = {0}", m_deviceRecord.ID) ?? statusLogTable.NewRecord();
-                    
+
             log.DeviceID = m_deviceRecord.ID;
             log.LastDownloadedFileID = lastDownloadedFileID;
             log.LastDownloadStartTime = startTime;
             log.LastDownloadEndTime = endTime;
             log.LastDownloadFileCount = (int)FilesDownloaded;
-                    
+
             statusLogTable.AddNewOrUpdateRecord(log);
         }
         catch (Exception ex)
@@ -2186,11 +2167,11 @@ public class Downloader : InputAdapterBase
         }
     }
 
-#endregion
+    #endregion
 
-#region [ Event Handlers ]
+    #region [ Event Handlers ]
 
-    private void RasDialer_Error(object sender, ErrorEventArgs e) => 
+    private void RasDialer_Error(object sender, ErrorEventArgs e) =>
         OnProcessException(MessageLevel.Warning, e.GetException());
 
     private void FtpClient_CommandSent(object sender, EventArgs<string> e)
@@ -2217,14 +2198,14 @@ public class Downloader : InputAdapterBase
         });
     }
 
-    private void FtpClient_FileTransferNotification(object sender, EventArgs<FtpAsyncResult> e) => 
+    private void FtpClient_FileTransferNotification(object sender, EventArgs<FtpTransferResult> e) =>
         OnStatusMessage(MessageLevel.Info, $"FTP File Transfer: {e.Argument.Message}, response code = {e.Argument.ResponseCode}");
 
-#endregion
+    #endregion
 
-#endregion
+    #endregion
 
-#region [ Static ]
+    #region [ Static ]
 
     // Static Fields
     private static readonly ScheduleManager s_scheduleManager;
@@ -2401,7 +2382,7 @@ public class Downloader : InputAdapterBase
         return path;
     }
 
-#region [ Statistic Methods ]
+    #region [ Statistic Methods ]
 
 #pragma warning disable IDE0051 // These methods are accessed via reflection
 
@@ -2517,7 +2498,7 @@ public class Downloader : InputAdapterBase
 
 #pragma warning restore IDE0051
 
-#endregion
+    #endregion
 
-#endregion
+    #endregion
 }

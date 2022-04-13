@@ -24,6 +24,7 @@
 @* ReSharper disable UnknownCssClass *@
 @using System.Net.Http
 @using GSF.Data.Model
+@using GSF.Net.VirtualFtpClient
 @using GSF.Security.Model
 @using GSF.Web
 @using GSF.Web.Model
@@ -90,18 +91,18 @@
 }
 @helper AddNewEditDialog(DataContext dataContext)
 {
-    <div class="col-md-6">
-        @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus: true, enableHotLinks: false))
-        @Raw(dataContext.AddInputField<Device>("Name", enableHotLinks: false))
-        @Raw(dataContext.AddInputField<Device>("OriginalSource", enableHotLinks: false)) @* Used to allow custom target folder name when Acronym is not desired *@
-        @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP [ <em>:port</em> ]", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddInputField("get('connectionusername')", false, fieldLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddInputField("get('connectionpassword')", false, inputType: "password", fieldLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddInputField("get('connectiontimeout')", false, fieldLabel: "Connection Timeout", fieldID: "inputConnectionTimeout", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
-        @Raw(dataContext.AddInputField("get('schedule')", true, fieldLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
-        @Raw(dataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name"))
-    </div>
+<div class="col-md-6">
+    @Raw(dataContext.AddInputField<Device>("Acronym", initialFocus: true, enableHotLinks: false))
+    @Raw(dataContext.AddInputField<Device>("Name", enableHotLinks: false))
+    @Raw(dataContext.AddInputField<Device>("OriginalSource", enableHotLinks: false)) @* Used to allow custom target folder name when Acronym is not desired *@
+    @Raw(dataContext.AddSelectFieldFromEnum<FtpType>("get('ftptype')", true, "FTP Type", "ftpType", groupDataBinding: "with: $root.connectionString"))
+    @Raw(dataContext.AddInputField("get('connectionhostname')", false, fieldLabel: "Connection Host Name/IP [ <em>:port</em> ]", fieldID: "inputConnectionHostName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+    @Raw(dataContext.AddInputField("get('connectionusername')", false, fieldLabel: "Connection User Name", fieldID: "inputConnectionUserName", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+    @Raw(dataContext.AddInputField("get('connectionpassword')", false, inputType: "password", fieldLabel: "Connection Password", fieldID: "inputConnectionPassword", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+    @Raw(dataContext.AddInputField("get('connectiontimeout')", false, fieldLabel: "Connection Timeout", fieldID: "inputConnectionTimeout", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+    @Raw(dataContext.AddSelectField<ConnectionProfile>("get('connectionprofileid')", true, "ID", "Name", fieldLabel: "Connection Profile<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"ConnectionProfiles.cshtml\"><small><em>Edit Connection Profiles</em></small></a></span>", fieldID: "selectConnectionProfile", groupDataBinding: "with: $root.connectionString"))
+    @Raw(dataContext.AddInputField("get('schedule')", true, fieldLabel: "Schedule Cron<span class=\"pull-right\">&nbsp;&nbsp;<a href=\"#\" data-toggle=\"modal\" data-target=\"#cronHelpDialog\" data-backdrop=\"static\"><small><em>Syntax Help</em></small></a></span>", fieldID: "inputSchedule", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+</div>
     <div class="col-md-6">
         <div class="panel panel-default" data-bind="css: {'panel-readonly': $root.recordMode()===RecordMode.View, 'panel-primary': $root.connectionString.get('usedialup')}">
             <div class="panel-heading">
@@ -117,6 +118,7 @@
             </div>
         </div>
         @Raw(dataContext.AddSelectField<Device, Company>("CompanyID", "ID", "Name"))
+        @Raw(dataContext.AddSelectField<Device, VendorDevice>("VendorDeviceID", "ID", "Name"))
         @Raw(dataContext.AddCheckBoxField("get('logconnectionmessages')", "Log Detailed Connection Messages", "checkLogConnectionMessages", "with: $root.connectionString", toolTip: "When enabled, logs detailed connection level messages, e.g.,  FTP commands and responses"))
         @Raw(dataContext.AddCheckBoxField<Device>("Enabled"))
     </div>
@@ -218,6 +220,7 @@
         // Define default connection string keys needed for binding
         const defaultConnectionString = new Dictionary();
 
+        defaultConnectionString.set("ftpType", "0");
         defaultConnectionString.set("connectionHostName", "");
         defaultConnectionString.set("connectionUserName", "@Raw(Model.Global.DefaultFTPUserName.JavaScriptEncode())");
         defaultConnectionString.set("connectionPassword", "@Raw(Model.Global.DefaultFTPPassword.JavaScriptEncode())");
