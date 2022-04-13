@@ -29,77 +29,79 @@ using GSF.Console;
 using GSF.Threading;
 using GSF.TimeSeries;
 
-namespace openMIC
+// ReSharper disable NotAccessedField.Local
+#pragma warning disable IDE0052 // Remove unread private members
+
+namespace openMIC;
+
+public static class Program
 {
-    public static class Program
+    /// <summary>
+    /// The service host instance for the application.
+    /// </summary>
+    public static readonly ServiceHost Host = new();
+
+    private static readonly Mutex s_singleInstanceMutex;
+
+    static Program()
     {
-        /// <summary>
-        /// The service host instance for the application.
-        /// </summary>
-        public static readonly ServiceHost Host = new ServiceHost();
+        s_singleInstanceMutex = InterprocessLock.GetNamedMutex(false);
+    }
 
-        private static readonly Mutex s_singleInstanceMutex;
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    private static void Main()
+    {
+        Arguments args = new(Environment.CommandLine, true);
 
-        static Program()
-        {
-            s_singleInstanceMutex = InterprocessLock.GetNamedMutex(false);
-        }
-
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        static void Main()
-        {
-            Arguments args = new Arguments(Environment.CommandLine, true);
-
-        #if !DEBUG
+    #if !DEBUG
             if (!args.Exists("NoMutex") && !s_singleInstanceMutex.WaitOne(0, true))
                 Environment.Exit(1);
-        #endif
+    #endif
 
-            bool runAsService;
-            bool runAsApplication;
+        bool runAsService;
+        bool runAsApplication;
 
-            if (args.Count == 0)
-            {
-            #if DEBUG
-                runAsService = false;
-                runAsApplication = true;
-            #else
+        if (args.Count == 0)
+        {
+        #if DEBUG
+            runAsService = false;
+            runAsApplication = true;
+        #else
                 runAsService = true;
                 runAsApplication = false;
-            #endif
-            }
-            else
-            {
-                runAsService = args.Exists("RunAsService");
-                runAsApplication = args.Exists("RunAsApplication");
+        #endif
+        }
+        else
+        {
+            runAsService = args.Exists("RunAsService");
+            runAsApplication = args.Exists("RunAsApplication");
 
-                if (!runAsService && !runAsApplication && !args.Exists("RunAsConsole"))
-                {
-                    MessageBox.Show("Invalid argument. If specified, argument must be one of: -RunAsService, -RunAsApplication or -RunAsConsole.");
-                    Environment.Exit(1);
-                }
+            if (!runAsService && !runAsApplication && !args.Exists("RunAsConsole"))
+            {
+                MessageBox.Show("Invalid argument. If specified, argument must be one of: -RunAsService, -RunAsApplication or -RunAsConsole.");
+                Environment.Exit(1);
             }
+        }
 
-            if (runAsService)
-            {
-                // Run as Windows Service.
-                ServiceBase.Run(new ServiceBase[] { Host });
-            }
-            else if (runAsApplication)
-            {
-                // Run as Windows Application.
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new DebugHost(Host));
-            }
-            else
-            {
-                ConsoleHost consoleHost = new ConsoleHost(Host);
-                consoleHost.Run();
-                Environment.Exit(0);
-            }
+        if (runAsService)
+        {
+            // Run as Windows Service.
+            ServiceBase.Run(new ServiceBase[] { Host });
+        }
+        else if (runAsApplication)
+        {
+            // Run as Windows Application.
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new DebugHost(Host));
+        }
+        else
+        {
+            ConsoleHost consoleHost = new(Host);
+            consoleHost.Run();
+            Environment.Exit(0);
         }
     }
 }

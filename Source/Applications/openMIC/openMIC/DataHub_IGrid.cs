@@ -27,122 +27,121 @@ using GSF;
 using GSF.Data.Model;
 using openMIC.Model;
 
-namespace openMIC
+namespace openMIC;
+
+public partial class DataHub
 {
-    public partial class DataHub
+    public const string DefaultIGridConnectionProfileName = "I-Grid Connection Profile";
+    public const string DefaultIGridConnectionProfileTaskQueueName = "I-Grid Connection Profile Task Queue";
+
+    public int GetDefaultIGridProfileID() => DataContext.Connection.ExecuteScalar<int?>("SELECT ID FROM ConnectionProfile WHERE Name={0}", DefaultIGridConnectionProfileName) ?? 0;
+
+    public IEnumerable<IGridDevice> QueryIGridDevices(string baseURL)
     {
-        public const string DefaultIGridConnectionProfileName = "I-Grid Connection Profile";
-        public const string DefaultIGridConnectionProfileTaskQueueName = "I-Grid Connection Profile Task Queue";
+        TableOperations<Device> deviceTable = DataContext.Table<Device>();
+        XDocument document = XDocument.Load($"{baseURL}&action=getMonitorList");
 
-        public int GetDefaultIGridProfileID() => DataContext.Connection.ExecuteScalar<int?>("SELECT ID FROM ConnectionProfile WHERE Name={0}", DefaultIGridConnectionProfileName) ?? 0;
-
-        public IEnumerable<IGridDevice> QueryIGridDevices(string baseURL)
+        foreach (XElement monitor in document.Descendants("monitor"))
         {
-            TableOperations<Device> deviceTable = DataContext.Table<Device>();
-            XDocument document = XDocument.Load($"{baseURL}&action=getMonitorList");
+            XElement location = monitor.Element("location");
+            XElement identification = monitor.Element("identification");
+            XElement model = monitor.Element("model");
 
-            foreach (XElement monitor in document.Descendants("monitor"))
+            string serialNumber = identification?.Element("serialNumber")?.Value;
+            string modelNumber = model?.Element("number")?.Value;
+            string monitorName = identification?.Element("monitorName")?.Value;
+
+            if (string.IsNullOrWhiteSpace(serialNumber) || string.IsNullOrWhiteSpace(modelNumber))
+                continue;
+
+            Device deviceRecord = deviceTable.QueryRecordWhere("OriginalSource = {0}", serialNumber);
+
+            if (deviceRecord is null)
             {
-                XElement location = monitor.Element("location");
-                XElement identification = monitor.Element("identification");
-                XElement model = monitor.Element("model");
+                deviceRecord = deviceTable.NewRecord();
 
-                string serialNumber = identification?.Element("serialNumber")?.Value;
-                string modelNumber = model?.Element("number")?.Value;
-                string monitorName = identification?.Element("monitorName")?.Value;
+                string acronym = monitorName ?? modelNumber;
 
-                if (string.IsNullOrWhiteSpace(serialNumber) || string.IsNullOrWhiteSpace(modelNumber))
-                    continue;
+                // Get a clean acronym
+                acronym = acronym
+                          .ToUpperInvariant()
+                          .ReplaceCharacters(' ', s_isInvalidAcronymChar)
+                          .RemoveDuplicateWhiteSpace();
 
-                Device deviceRecord = deviceTable.QueryRecordWhere("OriginalSource = {0}", serialNumber);
+                // Truncate at any numbers in the acronym, note this is based on sample data naming convention
+                int index = acronym.IndexOfAny(s_digits);
 
-                if (deviceRecord is null)
-                {
-                    deviceRecord = deviceTable.NewRecord();
+                if (index > 0)
+                    acronym = acronym.Substring(0, index);
 
-                    string acronym = monitorName ?? modelNumber;
+                acronym = acronym.Trim().ReplaceWhiteSpace('-');
 
-                    // Get a clean acronym
-                    acronym = acronym
-                        .ToUpperInvariant()
-                        .ReplaceCharacters(' ', s_isInvalidAcronymChar)
-                        .RemoveDuplicateWhiteSpace();
+                deviceRecord.Acronym = $"{acronym}${serialNumber}";
+            }
 
-                    // Truncate at any numbers in the acronym, note this is based on sample data naming convention
-                    int index = acronym.IndexOfAny(s_digits);
+            decimal.TryParse(location?.Element("longitude")?.Value, out decimal longitude);
+            decimal.TryParse(location?.Element("latitude")?.Value, out decimal latitude);
 
-                    if (index > 0)
-                        acronym = acronym.Substring(0, index);
+            yield return new()
+            {
+                DeviceID = deviceRecord.ID,
+                Acronym = deviceRecord.Acronym,
+                SerialNumber = serialNumber,
+                Name = monitorName,
+                Description = model.Element("description")?.Value,
+                ModelNumber = modelNumber,
+                Longitude = longitude,
+                Latitude = latitude,
+                Selected = deviceRecord.ID == 0
+            };
+        }
+    }
 
-                    acronym = acronym.Trim().ReplaceWhiteSpace('-');
+    public int GetDefaultIGridConnectionProfileID()
+    {
+        TableOperations<ConnectionProfileTaskQueue> profileTaskQueueTable = DataContext.Table<ConnectionProfileTaskQueue>();
+        TableOperations<ConnectionProfile> profileTable = DataContext.Table<ConnectionProfile>();
+        ConnectionProfile profile = profileTable.QueryRecordWhere("Name = {0}", DefaultIGridConnectionProfileName);
 
-                    deviceRecord.Acronym = $"{acronym}${serialNumber}";
-                }
+        if (profile is null)
+        {
+            ConnectionProfileTaskQueue profileTaskQueue = profileTaskQueueTable.NewRecord();
+            profileTaskQueue.Name = DefaultIGridConnectionProfileTaskQueueName;
+            profileTaskQueue.MaxThreadCount = 4;
+            profileTaskQueue.UseBackgroundThreads = false;
+            profileTaskQueue.Description = "Connection Profile Task for I-Grid Devices";
+            profileTaskQueueTable.AddNewRecord(profileTaskQueue);
+            profileTaskQueue = profileTaskQueueTable.QueryRecordWhere("Name = {0}", DefaultIGridConnectionProfileTaskQueueName);
 
-                decimal.TryParse(location?.Element("longitude")?.Value, out decimal longitude);
-                decimal.TryParse(location?.Element("latitude")?.Value, out decimal latitude);
+            profile = profileTable.NewRecord();
+            profile.Name = DefaultIGridConnectionProfileName;
+            profile.Description = "Connection Profile for I-Grid Devices";
+            profile.DefaultTaskQueueID = profileTaskQueue.ID;
+            profileTable.AddNewRecord(profile);
+            profile.ID = GetDefaultIGridConnectionProfileID();
 
-                yield return new IGridDevice
-                {
-                    DeviceID = deviceRecord.ID,
-                    Acronym = deviceRecord.Acronym,
-                    SerialNumber = serialNumber,
-                    Name = monitorName,
-                    Description = model.Element("description")?.Value,
-                    ModelNumber = modelNumber,
-                    Longitude = longitude,
-                    Latitude = latitude,
-                    Selected = deviceRecord.ID == 0
-                };
+            TableOperations<ConnectionProfileTask> profileTaskTable = DataContext.Table<ConnectionProfileTask>();
+            RecordRestriction filter = ConnectionProfileTask.CreateFilter(profile.ID);
+            int taskCount = profileTaskTable.QueryRecordCount(filter);
+
+            if (taskCount == 0)
+            {
+                ConnectionProfileTask profileTask = profileTaskTable.NewRecord();
+                ConnectionProfileTaskSettings profileTaskSettings = profileTask.Settings;
+
+                profileTask.ConnectionProfileID = profile.ID;
+                profileTask.Name = "I-Grid Default Downloader Task";
+
+                profileTaskSettings.FileExtensions = "*.*";
+                profileTaskSettings.RemotePath = "/";
+                profileTaskSettings.LocalPath = Program.Host.Model.Global.DefaultLocalPath;
+                profileTaskSettings.ExternalOperation = "IGridDownloader.exe <DeviceID> <TaskID>";
+                profileTaskSettings.DirectoryNamingExpression = @"<YYYY><MM>\<DeviceFolderName>";
+
+                profileTaskTable.AddNewRecord(profileTask);
             }
         }
 
-        public int GetDefaultIGridConnectionProfileID()
-        {
-            TableOperations<ConnectionProfileTaskQueue> profileTaskQueueTable = DataContext.Table<ConnectionProfileTaskQueue>();
-            TableOperations<ConnectionProfile> profileTable = DataContext.Table<ConnectionProfile>();
-            ConnectionProfile profile = profileTable.QueryRecordWhere("Name = {0}", DefaultIGridConnectionProfileName);
-
-            if (profile is null)
-            {
-                ConnectionProfileTaskQueue profileTaskQueue = profileTaskQueueTable.NewRecord();
-                profileTaskQueue.Name = DefaultIGridConnectionProfileTaskQueueName;
-                profileTaskQueue.MaxThreadCount = 4;
-                profileTaskQueue.UseBackgroundThreads = false;
-                profileTaskQueue.Description = "Connection Profile Task for I-Grid Devices";
-                profileTaskQueueTable.AddNewRecord(profileTaskQueue);
-                profileTaskQueue = profileTaskQueueTable.QueryRecordWhere("Name = {0}", DefaultIGridConnectionProfileTaskQueueName);
-
-                profile = profileTable.NewRecord();
-                profile.Name = DefaultIGridConnectionProfileName;
-                profile.Description = "Connection Profile for I-Grid Devices";
-                profile.DefaultTaskQueueID = profileTaskQueue.ID;
-                profileTable.AddNewRecord(profile);
-                profile.ID = GetDefaultIGridConnectionProfileID();
-
-                TableOperations<ConnectionProfileTask> profileTaskTable = DataContext.Table<ConnectionProfileTask>();
-                RecordRestriction filter = ConnectionProfileTask.CreateFilter(profile.ID);
-                int taskCount = profileTaskTable.QueryRecordCount(filter);
-
-                if (taskCount == 0)
-                {
-                    ConnectionProfileTask profileTask = profileTaskTable.NewRecord();
-                    ConnectionProfileTaskSettings profileTaskSettings = profileTask.Settings;
-
-                    profileTask.ConnectionProfileID = profile.ID;
-                    profileTask.Name = "I-Grid Default Downloader Task";
-
-                    profileTaskSettings.FileExtensions = "*.*";
-                    profileTaskSettings.RemotePath = "/";
-                    profileTaskSettings.LocalPath = Program.Host.Model.Global.DefaultLocalPath;
-                    profileTaskSettings.ExternalOperation = "IGridDownloader.exe <DeviceID> <TaskID>";
-                    profileTaskSettings.DirectoryNamingExpression = @"<YYYY><MM>\<DeviceFolderName>";
-
-                    profileTaskTable.AddNewRecord(profileTask);
-                }
-            }
-
-            return profile.ID;
-        }
+        return profile.ID;
     }
 }

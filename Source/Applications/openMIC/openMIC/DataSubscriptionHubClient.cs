@@ -32,429 +32,429 @@ using GSF.TimeSeries.Transport;
 using GSF.Web.Hubs;
 using openMIC.Model;
 
-namespace openMIC
+namespace openMIC;
+
+/// <summary>
+/// Represents a client instance of a <see cref="DataHub"/> for GEP data subscriptions.
+/// </summary>
+public class DataSubscriptionHubClient : HubClientBase
 {
+#region [ Members ]
+
+    // Fields
+    private DataSubscriber m_dataSubscription;
+    private DataSubscriber m_statisticSubscription;
+    private readonly UnsynchronizedSubscriptionInfo m_dataSubscriptionInfo;
+    private readonly UnsynchronizedSubscriptionInfo m_statisticSubscriptionInfo;
+    private readonly List<MeasurementValue> m_measurements;
+    private readonly List<MeasurementValue> m_statistics;
+    private readonly List<StatusLight> m_statusLights;
+    private readonly List<DeviceDetail> m_deviceDetails;
+    private readonly List<MeasurementDetail> m_measurementDetails;
+    private readonly List<PhasorDetail> m_phasorDetails;
+    private readonly List<SchemaVersion> m_schemaVersion;
+    private readonly object m_measurementLock;
+    private bool m_disposed;
+
+#endregion
+
+#region [ Constructors ]
+
     /// <summary>
-    /// Represents a client instance of a <see cref="DataHub"/> for GEP data subscriptions.
+    /// Creates a new <see cref="DataSubscriptionHubClient"/> instance.
     /// </summary>
-    public class DataSubscriptionHubClient : HubClientBase
+    public DataSubscriptionHubClient()
     {
-        #region [ Members ]
+        m_statisticSubscriptionInfo = new(false);
+        m_dataSubscriptionInfo = new(false);
+        m_measurements = new();
+        m_statistics = new();
+        m_statusLights = new();
+        m_deviceDetails = new();
+        m_measurementDetails = new();
+        m_phasorDetails = new();
+        m_schemaVersion = new();
+        m_measurementLock = new();
+    }
 
-        // Fields
-        private DataSubscriber m_dataSubscription;
-        private DataSubscriber m_statisticSubscription;
-        private readonly UnsynchronizedSubscriptionInfo m_dataSubscriptionInfo;
-        private readonly UnsynchronizedSubscriptionInfo m_statisticSubscriptionInfo;
-        private readonly List<MeasurementValue> m_measurements;
-        private readonly List<MeasurementValue> m_statistics;
-        private readonly List<StatusLight> m_statusLights;
-        private readonly List<DeviceDetail> m_deviceDetails;
-        private readonly List<MeasurementDetail> m_measurementDetails;
-        private readonly List<PhasorDetail> m_phasorDetails;
-        private readonly List<SchemaVersion> m_schemaVersion;
-        private readonly object m_measurementLock;
-        private bool m_disposed;
+#endregion
 
-        #endregion
+#region [ Properties ]
 
-        #region [ Constructors ]
-
-        /// <summary>
-        /// Creates a new <see cref="DataSubscriptionHubClient"/> instance.
-        /// </summary>
-        public DataSubscriptionHubClient()
+    public DataSubscriber DataSubscription
+    {
+        get
         {
-            m_statisticSubscriptionInfo = new UnsynchronizedSubscriptionInfo(false);
-            m_dataSubscriptionInfo = new UnsynchronizedSubscriptionInfo(false);
-            m_measurements = new List<MeasurementValue>();
-            m_statistics = new List<MeasurementValue>();
-            m_statusLights = new List<StatusLight>();
-            m_deviceDetails = new List<DeviceDetail>();
-            m_measurementDetails = new List<MeasurementDetail>();
-            m_phasorDetails = new List<PhasorDetail>();
-            m_schemaVersion = new List<SchemaVersion>();
-            m_measurementLock = new object();
-        }
-
-        #endregion
-
-        #region [ Properties ]
-
-        public DataSubscriber DataSubscription
-        {
-            get
-            {
-                if (m_dataSubscription == null)
-                {
-                    try
-                    {
-                        LogStatusMessage("Initializing data subscriptions...");
-
-                        m_dataSubscription = new DataSubscriber();
-
-                        m_dataSubscription.StatusMessage += DataSubscriptionStatusMessage;
-                        m_dataSubscription.ProcessException += DataSubscriptionProcessException;
-                        m_dataSubscription.ConnectionTerminated += DataSubscriptionConnectionTerminated;
-                        m_dataSubscription.NewMeasurements += DataSubscriptionNewMeasurements;
-
-                        m_dataSubscription.ConnectionString = Program.Host.Model.Global.SubscriptionConnectionString;
-                        m_dataSubscription.AutoSynchronizeMetadata = false;
-                        m_dataSubscription.OperationalModes |= OperationalModes.UseCommonSerializationFormat | OperationalModes.CompressMetadata | OperationalModes.CompressSignalIndexCache;
-                        m_dataSubscription.CompressionModes = CompressionModes.GZip;
-                        m_dataSubscription.ReceiveInternalMetadata = true;
-                        m_dataSubscription.ReceiveExternalMetadata = true;
-
-                        m_dataSubscription.Initialize();
-                        m_dataSubscription.Start();
-                    }
-                    catch (Exception ex)
-                    {
-                        LogException(new InvalidOperationException($"Failed to initialize and start primary data subscription: {ex.Message}", ex));
-                    }
-                }
-
-                return m_dataSubscription;
-            }
-        }
-
-        public DataSubscriber StatisticSubscription
-        {
-            get
-            {
-                if (m_statisticSubscription == null)
-                {
-                    try
-                    {
-                        m_statisticSubscription = new DataSubscriber();
-
-                        m_statisticSubscription.StatusMessage += StatisticSubscriptionStatusMessage;
-                        m_statisticSubscription.ProcessException += StatisticSubscriptionProcessException;
-                        m_statisticSubscription.ConnectionEstablished += StatisticSubscriptionConnectionEstablished;
-                        m_statisticSubscription.ConnectionTerminated += StatisticSubscriptionConnectionTerminated;
-                        m_statisticSubscription.NewMeasurements += StatisticSubscriptionNewMeasurements;
-                        m_statisticSubscription.MetaDataReceived += StatisticSubscriptionMetaDataReceived;
-
-                        m_statisticSubscription.ConnectionString = Program.Host.Model.Global.SubscriptionConnectionString;
-                        m_statisticSubscription.AutoSynchronizeMetadata = false;
-                        m_statisticSubscription.DataLossInterval = 60.0D;
-                        m_statisticSubscription.OperationalModes |= OperationalModes.UseCommonSerializationFormat | OperationalModes.CompressMetadata | OperationalModes.CompressSignalIndexCache;
-                        m_statisticSubscription.CompressionModes = CompressionModes.GZip;
-                        m_statisticSubscription.ReceiveInternalMetadata = true;
-                        m_statisticSubscription.ReceiveExternalMetadata = true;
-
-                        m_statisticSubscription.Initialize();
-                        m_statisticSubscription.Start();
-                    }
-                    catch (Exception ex)
-                    {
-                        LogException(new InvalidOperationException($"Failed to initialize and start statistic data subscription: {ex.Message}", ex));
-                    }
-                }
-
-                return m_statisticSubscription;
-            }
-        }
-
-        #endregion
-
-        #region [ Methods ]
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the <see cref="DataSubscriptionHubClient"/> object and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (!m_disposed)
+            if (m_dataSubscription == null)
             {
                 try
                 {
-                    if (disposing)
-                    {
-                        m_dataSubscription?.Dispose();
-                        m_statisticSubscription?.Dispose();
-                    }
+                    LogStatusMessage("Initializing data subscriptions...");
+
+                    m_dataSubscription = new();
+
+                    m_dataSubscription.StatusMessage += DataSubscriptionStatusMessage;
+                    m_dataSubscription.ProcessException += DataSubscriptionProcessException;
+                    m_dataSubscription.ConnectionTerminated += DataSubscriptionConnectionTerminated;
+                    m_dataSubscription.NewMeasurements += DataSubscriptionNewMeasurements;
+
+                    m_dataSubscription.ConnectionString = Program.Host.Model.Global.SubscriptionConnectionString;
+                    m_dataSubscription.AutoSynchronizeMetadata = false;
+                    m_dataSubscription.OperationalModes |= OperationalModes.UseCommonSerializationFormat | OperationalModes.CompressMetadata | OperationalModes.CompressSignalIndexCache;
+                    m_dataSubscription.CompressionModes = CompressionModes.GZip;
+                    m_dataSubscription.ReceiveInternalMetadata = true;
+                    m_dataSubscription.ReceiveExternalMetadata = true;
+
+                    m_dataSubscription.Initialize();
+                    m_dataSubscription.Start();
                 }
-                finally
+                catch (Exception ex)
                 {
-                    m_disposed = true;          // Prevent duplicate dispose.
-                    base.Dispose(disposing);    // Call base class Dispose().
+                    LogException(new InvalidOperationException($"Failed to initialize and start primary data subscription: {ex.Message}", ex));
                 }
             }
+
+            return m_dataSubscription;
         }
+    }
 
-        public List<MeasurementValue> GetMeasurements()
+    public DataSubscriber StatisticSubscription
+    {
+        get
         {
-            List<MeasurementValue> currentMeasurements;
-
-            lock (m_measurementLock)
+            if (m_statisticSubscription == null)
             {
-                currentMeasurements = new List<MeasurementValue>(m_measurements);
-                m_measurements.Clear();
+                try
+                {
+                    m_statisticSubscription = new();
+
+                    m_statisticSubscription.StatusMessage += StatisticSubscriptionStatusMessage;
+                    m_statisticSubscription.ProcessException += StatisticSubscriptionProcessException;
+                    m_statisticSubscription.ConnectionEstablished += StatisticSubscriptionConnectionEstablished;
+                    m_statisticSubscription.ConnectionTerminated += StatisticSubscriptionConnectionTerminated;
+                    m_statisticSubscription.NewMeasurements += StatisticSubscriptionNewMeasurements;
+                    m_statisticSubscription.MetaDataReceived += StatisticSubscriptionMetaDataReceived;
+
+                    m_statisticSubscription.ConnectionString = Program.Host.Model.Global.SubscriptionConnectionString;
+                    m_statisticSubscription.AutoSynchronizeMetadata = false;
+                    m_statisticSubscription.DataLossInterval = 60.0D;
+                    m_statisticSubscription.OperationalModes |= OperationalModes.UseCommonSerializationFormat | OperationalModes.CompressMetadata | OperationalModes.CompressSignalIndexCache;
+                    m_statisticSubscription.CompressionModes = CompressionModes.GZip;
+                    m_statisticSubscription.ReceiveInternalMetadata = true;
+                    m_statisticSubscription.ReceiveExternalMetadata = true;
+
+                    m_statisticSubscription.Initialize();
+                    m_statisticSubscription.Start();
+                }
+                catch (Exception ex)
+                {
+                    LogException(new InvalidOperationException($"Failed to initialize and start statistic data subscription: {ex.Message}", ex));
+                }
             }
 
-            return currentMeasurements;
+            return m_statisticSubscription;
         }
+    }
 
-        public List<MeasurementValue> GetStatistics() => m_statistics;
+#endregion
 
-        public List<StatusLight> GetStatusLights()
+#region [ Methods ]
+
+    /// <summary>
+    /// Releases the unmanaged resources used by the <see cref="DataSubscriptionHubClient"/> object and optionally releases the managed resources.
+    /// </summary>
+    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+    protected override void Dispose(bool disposing)
+    {
+        if (!m_disposed)
         {
-            foreach (StatusLight statusLight in m_statusLights)
+            try
             {
-                DateTime now = DateTime.UtcNow;
-
-                if ((now - statusLight.Timestamp).TotalSeconds > 30)
-                    statusLight.GoodData = false;
+                if (disposing)
+                {
+                    m_dataSubscription?.Dispose();
+                    m_statisticSubscription?.Dispose();
+                }
             }
-
-            return m_statusLights;
-        }
-
-        public List<DeviceDetail> GetDeviceDetails() => m_deviceDetails;
-
-        public List<MeasurementDetail> GetMeasurementDetails() => m_measurementDetails;
-
-        public List<PhasorDetail> GetPhasorDetails() => m_phasorDetails;
-
-        public List<SchemaVersion> GetSchemaVersion() => m_schemaVersion;
-
-        public void InitializeSubscriptions()
-        {
-            DataSubscription.Enabled = true;
-            StatisticSubscription.Enabled = true;
-        }
-
-        public void TerminateSubscriptions()
-        {
-            DataSubscription.Unsubscribe();
-            StatisticSubscription.Unsubscribe();
-        }
-
-        public void ClearMeasurements()
-        {
-            lock (m_measurementLock)
-                m_measurements.Clear();
-        }
-
-        public void UpdatePrimaryDataSubscription(string filterExpression)
-        {
-            ClearMeasurements();
-
-            m_dataSubscriptionInfo.FilterExpression = filterExpression;
-            DataSubscription.UnsynchronizedSubscribe(m_dataSubscriptionInfo);
-        }
-
-        public void UpdateStatisticsDataSubscription(string filterExpression)
-        {
-            m_statisticSubscriptionInfo.FilterExpression = filterExpression;
-            StatisticSubscription.UnsynchronizedSubscribe(m_statisticSubscriptionInfo);
-        }
-
-        private void DataSubscriptionStatusMessage(object sender, EventArgs<string> e)
-        {
-            LogStatusMessage(e.Argument, logToClient: false);
-        }
-
-        private void DataSubscriptionNewMeasurements(object sender, EventArgs<ICollection<IMeasurement>> e)
-        {
-            lock (m_measurementLock)
+            finally
             {
-                foreach (IMeasurement measurement in e.Argument)
-                {
-                    MeasurementValue value = new MeasurementValue();
-                    value.Timestamp = GetUnixMilliseconds(measurement.Timestamp);
-                    value.Value = measurement.Value;
-                    value.ID = measurement.ID;
-                    m_measurements.Add(value);
-                }
+                m_disposed = true;       // Prevent duplicate dispose.
+                base.Dispose(disposing); // Call base class Dispose().
             }
         }
+    }
 
-        private void DataSubscriptionConnectionTerminated(object sender, EventArgs e)
+    public List<MeasurementValue> GetMeasurements()
+    {
+        List<MeasurementValue> currentMeasurements;
+
+        lock (m_measurementLock)
         {
-            DataSubscription.Start();
-            LogStatusMessage("Connection to publisher was terminated for primary data subscription, restarting connection cycle...");
+            currentMeasurements = new(m_measurements);
+            m_measurements.Clear();
         }
 
-        private void DataSubscriptionProcessException(object sender, EventArgs<Exception> e)
+        return currentMeasurements;
+    }
+
+    public List<MeasurementValue> GetStatistics() => m_statistics;
+
+    public List<StatusLight> GetStatusLights()
+    {
+        foreach (StatusLight statusLight in m_statusLights)
         {
-            Exception ex = e.Argument;
-            LogException(new InvalidOperationException($"Processing exception encountered by primary data subscription: {ex.Message}", ex));
+            DateTime now = DateTime.UtcNow;
+
+            if ((now - statusLight.Timestamp).TotalSeconds > 30)
+                statusLight.GoodData = false;
         }
 
+        return m_statusLights;
+    }
 
-        private void StatisticSubscriptionStatusMessage(object sender, EventArgs<string> e)
-        {
-            LogStatusMessage(e.Argument, logToClient: false);
-        }
+    public List<DeviceDetail> GetDeviceDetails() => m_deviceDetails;
 
-        private void StatisticSubscriptionMetaDataReceived(object sender, EventArgs<DataSet> e)
-        {
-            LogStatusMessage("Loading received meta-data...", logToClient: false);
+    public List<MeasurementDetail> GetMeasurementDetails() => m_measurementDetails;
 
-            DataSet dataSet = e.Argument;
+    public List<PhasorDetail> GetPhasorDetails() => m_phasorDetails;
 
-            m_deviceDetails.Clear();
-            m_measurementDetails.Clear();
-            m_phasorDetails.Clear();
-            m_schemaVersion.Clear();
-            m_statusLights.Clear();
+    public List<SchemaVersion> GetSchemaVersion() => m_schemaVersion;
 
-            foreach (DataTable table in dataSet.Tables)
-            {
-                if (table.TableName == "DeviceDetail")
-                {
-                    foreach (DataRow row in table.Rows)
-                    {
-                        DeviceDetail deviceDetail = new DeviceDetail
-                        {
-                            NodeID = row.ConvertField<Guid>("NodeID"),
-                            UniqueID = row.ConvertField<Guid>("UniqueID"),
-                            OriginalSource = row.ConvertField<string>("OriginalSource"),
-                            IsConcentrator = row.ConvertField<bool>("IsConcentrator"),
-                            Acronym = row.ConvertField<string>("Acronym"),
-                            Name = row.ConvertField<string>("Name"),
-                            AccessID = row.ConvertField<int>("AccessID"),
-                            ParentAcronym = row.ConvertField<string>("ParentAcronym"),
-                            ProtocolName = row.ConvertField<string>("ProtocolName"),
-                            FramesPerSecond = row.ConvertField<int>("FramesPerSecond"),
-                            CompanyAcronym = row.ConvertField<string>("CompanyAcronym"),
-                            VendorAcronym = row.ConvertField<string>("VendorAcronym"),
-                            VendorDeviceName = row.ConvertField<string>("VendorDeviceName"),
-                            Longitude = row.ConvertField<decimal>("Longitude"),
-                            Latitude = row.ConvertField<decimal>("Latitude"),
-                            InterconnectionName = row.ConvertField<string>("InterconnectionName"),
-                            ContactList = row.ConvertField<string>("ContactList"),
-                            Enabled = row.ConvertField<bool>("Enabled"),
-                            UpdatedOn = row.ConvertField<DateTime>("UpdatedOn")
-                        };
+    public void InitializeSubscriptions()
+    {
+        DataSubscription.Enabled = true;
+        StatisticSubscription.Enabled = true;
+    }
 
-                        if (row.ConvertField<bool>("Enabled"))
-                        {
-                            StatusLight statusLight = new StatusLight
-                            {
-                                DeviceAcronym = row.ConvertField<string>("Acronym"),
-                                Timestamp = DateTime.MinValue,
-                                GoodData = false
-                            };
+    public void TerminateSubscriptions()
+    {
+        DataSubscription.Unsubscribe();
+        StatisticSubscription.Unsubscribe();
+    }
 
-                            m_statusLights.Add(statusLight);
-                        }
+    public void ClearMeasurements()
+    {
+        lock (m_measurementLock)
+            m_measurements.Clear();
+    }
 
-                        m_deviceDetails.Add(deviceDetail);
-                    }
-                }
-                else if (table.TableName == "MeasurementDetail")
-                {
-                    foreach (DataRow row in table.Rows)
-                    {
-                        MeasurementDetail measurementDetail = new MeasurementDetail
-                        {
-                            DeviceAcronym = row.ConvertField<string>("DeviceAcronym"),
-                            ID = row.ConvertField<string>("ID"),
-                            SignalID = row.ConvertField<Guid>("SignalID"),
-                            PointTag = row.ConvertField<string>("PointTag"),
-                            SignalReference = row.ConvertField<string>("SignalReference"),
-                            SignalAcronym = row.ConvertField<string>("SignalAcronym"),
-                            PhasorSourceIndex = row.ConvertField<int>("PhasorSourceIndex"),
-                            Description = row.ConvertField<string>("Description"),
-                            Internal = row.ConvertField<bool>("Internal"),
-                            Enabled = row.ConvertField<bool>("Enabled"),
-                            UpdatedOn = row.ConvertField<DateTime>("UpdatedOn")
-                        };
+    public void UpdatePrimaryDataSubscription(string filterExpression)
+    {
+        ClearMeasurements();
 
-                        m_measurementDetails.Add(measurementDetail);
-                    }
-                }
-                else if (table.TableName == "PhasorDetail")
-                {
-                    foreach (DataRow row in table.Rows)
-                    {
-                        PhasorDetail phasorDetail = new PhasorDetail
-                        {
-                            DeviceAcronym = row.ConvertField<string>("DeviceAcronym"),
-                            Label = row.ConvertField<string>("Label"),
-                            Type = row.ConvertField<string>("Type"),
-                            Phase = row.ConvertField<string>("Phase"),
-                            SourceIndex = row.ConvertField<int>("SourceIndex"),
-                            UpdatedOn = row.ConvertField<DateTime>("UpdatedOn")
-                        };
+        m_dataSubscriptionInfo.FilterExpression = filterExpression;
+        DataSubscription.UnsynchronizedSubscribe(m_dataSubscriptionInfo);
+    }
 
-                        m_phasorDetails.Add(phasorDetail);
-                    }
-                }
-                else if (table.TableName == "SchemaVersion")
-                {
-                    foreach (DataRow row in table.Rows)
-                    {
-                        SchemaVersion schemaVersion = new SchemaVersion
-                        {
-                            VersionNumber = row.ConvertField<int>("VersionNumber")
-                        };
+    public void UpdateStatisticsDataSubscription(string filterExpression)
+    {
+        m_statisticSubscriptionInfo.FilterExpression = filterExpression;
+        StatisticSubscription.UnsynchronizedSubscribe(m_statisticSubscriptionInfo);
+    }
 
-                        m_schemaVersion.Add(schemaVersion);
-                    }
-                }
-            }
+    private void DataSubscriptionStatusMessage(object sender, EventArgs<string> e)
+    {
+        LogStatusMessage(e.Argument, logToClient: false);
+    }
 
-            ClientScript?.metaDataReceived();
-        }
-
-        private void StatisticSubscriptionNewMeasurements(object sender, EventArgs<ICollection<IMeasurement>> e)
+    private void DataSubscriptionNewMeasurements(object sender, EventArgs<ICollection<IMeasurement>> e)
+    {
+        lock (m_measurementLock)
         {
             foreach (IMeasurement measurement in e.Argument)
             {
-                int index = m_statistics.IndexOf(m => m.ID == measurement.ID);
-
-                if (index < 0)
+                m_measurements.Add(new()
                 {
-                    MeasurementValue statistic = new MeasurementValue
+                    Timestamp = GetUnixMilliseconds(measurement.Timestamp),
+                    Value = measurement.Value,
+                    ID = measurement.ID
+                });
+            }
+        }
+    }
+
+    private void DataSubscriptionConnectionTerminated(object sender, EventArgs e)
+    {
+        DataSubscription.Start();
+        LogStatusMessage("Connection to publisher was terminated for primary data subscription, restarting connection cycle...");
+    }
+
+    private void DataSubscriptionProcessException(object sender, EventArgs<Exception> e)
+    {
+        Exception ex = e.Argument;
+        LogException(new InvalidOperationException($"Processing exception encountered by primary data subscription: {ex.Message}", ex));
+    }
+
+
+    private void StatisticSubscriptionStatusMessage(object sender, EventArgs<string> e)
+    {
+        LogStatusMessage(e.Argument, logToClient: false);
+    }
+
+    private void StatisticSubscriptionMetaDataReceived(object sender, EventArgs<DataSet> e)
+    {
+        LogStatusMessage("Loading received meta-data...", logToClient: false);
+
+        DataSet dataSet = e.Argument;
+
+        m_deviceDetails.Clear();
+        m_measurementDetails.Clear();
+        m_phasorDetails.Clear();
+        m_schemaVersion.Clear();
+        m_statusLights.Clear();
+
+        foreach (DataTable table in dataSet.Tables)
+        {
+            if (table.TableName == "DeviceDetail")
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    DeviceDetail deviceDetail = new()
                     {
-                        ID = measurement.ID,
-                        Value = measurement.Value,
-                        Timestamp = GetUnixMilliseconds(measurement.Timestamp)
+                        NodeID = row.ConvertField<Guid>("NodeID"),
+                        UniqueID = row.ConvertField<Guid>("UniqueID"),
+                        OriginalSource = row.ConvertField<string>("OriginalSource"),
+                        IsConcentrator = row.ConvertField<bool>("IsConcentrator"),
+                        Acronym = row.ConvertField<string>("Acronym"),
+                        Name = row.ConvertField<string>("Name"),
+                        AccessID = row.ConvertField<int>("AccessID"),
+                        ParentAcronym = row.ConvertField<string>("ParentAcronym"),
+                        ProtocolName = row.ConvertField<string>("ProtocolName"),
+                        FramesPerSecond = row.ConvertField<int>("FramesPerSecond"),
+                        CompanyAcronym = row.ConvertField<string>("CompanyAcronym"),
+                        VendorAcronym = row.ConvertField<string>("VendorAcronym"),
+                        VendorDeviceName = row.ConvertField<string>("VendorDeviceName"),
+                        Longitude = row.ConvertField<decimal>("Longitude"),
+                        Latitude = row.ConvertField<decimal>("Latitude"),
+                        InterconnectionName = row.ConvertField<string>("InterconnectionName"),
+                        ContactList = row.ConvertField<string>("ContactList"),
+                        Enabled = row.ConvertField<bool>("Enabled"),
+                        UpdatedOn = row.ConvertField<DateTime>("UpdatedOn")
                     };
 
-                    m_statistics.Add(statistic);
+                    if (row.ConvertField<bool>("Enabled"))
+                    {
+                        StatusLight statusLight = new()
+                        {
+                            DeviceAcronym = row.ConvertField<string>("Acronym"),
+                            Timestamp = DateTime.MinValue,
+                            GoodData = false
+                        };
+
+                        m_statusLights.Add(statusLight);
+                    }
+
+                    m_deviceDetails.Add(deviceDetail);
                 }
-                else
+            }
+            else if (table.TableName == "MeasurementDetail")
+            {
+                foreach (DataRow row in table.Rows)
                 {
-                    m_statistics[index].Value = measurement.Value;
-                    m_statistics[index].Timestamp = GetUnixMilliseconds(measurement.Timestamp);
+                    MeasurementDetail measurementDetail = new()
+                    {
+                        DeviceAcronym = row.ConvertField<string>("DeviceAcronym"),
+                        ID = row.ConvertField<string>("ID"),
+                        SignalID = row.ConvertField<Guid>("SignalID"),
+                        PointTag = row.ConvertField<string>("PointTag"),
+                        SignalReference = row.ConvertField<string>("SignalReference"),
+                        SignalAcronym = row.ConvertField<string>("SignalAcronym"),
+                        PhasorSourceIndex = row.ConvertField<int>("PhasorSourceIndex"),
+                        Description = row.ConvertField<string>("Description"),
+                        Internal = row.ConvertField<bool>("Internal"),
+                        Enabled = row.ConvertField<bool>("Enabled"),
+                        UpdatedOn = row.ConvertField<DateTime>("UpdatedOn")
+                    };
+
+                    m_measurementDetails.Add(measurementDetail);
+                }
+            }
+            else if (table.TableName == "PhasorDetail")
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    PhasorDetail phasorDetail = new()
+                    {
+                        DeviceAcronym = row.ConvertField<string>("DeviceAcronym"),
+                        Label = row.ConvertField<string>("Label"),
+                        Type = row.ConvertField<string>("Type"),
+                        Phase = row.ConvertField<string>("Phase"),
+                        SourceIndex = row.ConvertField<int>("SourceIndex"),
+                        UpdatedOn = row.ConvertField<DateTime>("UpdatedOn")
+                    };
+
+                    m_phasorDetails.Add(phasorDetail);
+                }
+            }
+            else if (table.TableName == "SchemaVersion")
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    SchemaVersion schemaVersion = new()
+                    {
+                        VersionNumber = row.ConvertField<int>("VersionNumber")
+                    };
+
+                    m_schemaVersion.Add(schemaVersion);
                 }
             }
         }
 
-        private void StatisticSubscriptionConnectionEstablished(object sender, EventArgs e)
-        {
-            StatisticSubscription.SendServerCommand(ServerCommand.MetaDataRefresh);
-        }
-
-        private void StatisticSubscriptionConnectionTerminated(object sender, EventArgs e)
-        {
-            StatisticSubscription.Start();
-            LogStatusMessage("Connection to publisher was terminated for statistic data subscription, restarting connection cycle...");
-        }
-
-        private void StatisticSubscriptionProcessException(object sender, EventArgs<Exception> e)
-        {
-            Exception ex = e.Argument;
-            LogException(new InvalidOperationException($"Processing exception encountered by statistic data subscription: {ex.Message}", ex));
-        }
-
-        #endregion
-
-        #region [ Static ]
-
-        // Static Methods
-
-        private static double GetUnixMilliseconds(long ticks)
-        {
-            return new DateTime(ticks).Subtract(new DateTime(UnixTimeTag.BaseTicks)).TotalMilliseconds;
-        }
-
-        #endregion
+        ClientScript?.metaDataReceived();
     }
+
+    private void StatisticSubscriptionNewMeasurements(object sender, EventArgs<ICollection<IMeasurement>> e)
+    {
+        foreach (IMeasurement measurement in e.Argument)
+        {
+            int index = m_statistics.IndexOf(m => m.ID == measurement.ID);
+
+            if (index < 0)
+            {
+                MeasurementValue statistic = new()
+                {
+                    ID = measurement.ID,
+                    Value = measurement.Value,
+                    Timestamp = GetUnixMilliseconds(measurement.Timestamp)
+                };
+
+                m_statistics.Add(statistic);
+            }
+            else
+            {
+                m_statistics[index].Value = measurement.Value;
+                m_statistics[index].Timestamp = GetUnixMilliseconds(measurement.Timestamp);
+            }
+        }
+    }
+
+    private void StatisticSubscriptionConnectionEstablished(object sender, EventArgs e)
+    {
+        StatisticSubscription.SendServerCommand(ServerCommand.MetaDataRefresh);
+    }
+
+    private void StatisticSubscriptionConnectionTerminated(object sender, EventArgs e)
+    {
+        StatisticSubscription.Start();
+        LogStatusMessage("Connection to publisher was terminated for statistic data subscription, restarting connection cycle...");
+    }
+
+    private void StatisticSubscriptionProcessException(object sender, EventArgs<Exception> e)
+    {
+        Exception ex = e.Argument;
+        LogException(new InvalidOperationException($"Processing exception encountered by statistic data subscription: {ex.Message}", ex));
+    }
+
+#endregion
+
+#region [ Static ]
+
+    // Static Methods
+
+    private static double GetUnixMilliseconds(long ticks)
+    {
+        return new DateTime(ticks).Subtract(new DateTime(UnixTimeTag.BaseTicks)).TotalMilliseconds;
+    }
+
+#endregion
 }

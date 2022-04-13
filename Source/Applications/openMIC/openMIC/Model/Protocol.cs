@@ -1,69 +1,68 @@
 using System.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
-namespace openMIC.Model
+namespace openMIC.Model;
+
+public class Protocol
 {
-    public class Protocol
+    [PrimaryKey(true)]
+    public int ID
     {
-        [PrimaryKey(true)]
-        public int ID
-        {
-            get;
-            set;
-        }
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        public string Acronym
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    public string Acronym
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        public string Name
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    public string Name
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        public string Type
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    public string Type
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        public string Category
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    public string Category
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(1024)]
-        public string AssemblyName
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(1024)]
+    public string AssemblyName
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        public string TypeName
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    public string TypeName
+    {
+        get;
+        set;
+    }
 
-        public int LoadOrder
-        {
-            get;
-            set;
-        }
+    public int LoadOrder
+    {
+        get;
+        set;
     }
 }

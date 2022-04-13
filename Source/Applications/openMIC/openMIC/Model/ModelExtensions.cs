@@ -24,16 +24,15 @@
 using System;
 using System.Reflection;
 
-namespace openMIC.Model
-{
-    static class ModelExtensions
-    {
-        public static void CopyProperties<T>(this T source, T target)
-        {
-            Type type = typeof(T);
+namespace openMIC.Model;
 
-            foreach (PropertyInfo property in type.GetProperties())
-                property.SetValue(target, property.GetValue(source, null), null);
-        }
+internal static class ModelExtensions
+{
+    public static void CopyProperties<T>(this T source, T target)
+    {
+        Type type = typeof(T);
+
+        foreach (PropertyInfo property in type.GetProperties())
+            property.SetValue(target, property.GetValue(source, null), null);
     }
 }

@@ -1,103 +1,102 @@
 using System.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
-namespace openMIC.Model
+namespace openMIC.Model;
+
+public class Statistic
 {
-    public class Statistic
+    [PrimaryKey(true)]
+    public int ID
     {
-        [PrimaryKey(true)]
-        public int ID
-        {
-            get;
-            set;
-        }
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(20)]
-        public string Source
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(20)]
+    public string Source
+    {
+        get;
+        set;
+    }
 
-        public int SignalIndex
-        {
-            get;
-            set;
-        }
+    public int SignalIndex
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        public string Name
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    public string Name
+    {
+        get;
+        set;
+    }
 
-        public string Description
-        {
-            get;
-            set;
-        }
+    public string Description
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        public string AssemblyName
-        {
-            get;
-            set;
-        }
+    [Required]
+    public string AssemblyName
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        public string TypeName
-        {
-            get;
-            set;
-        }
+    [Required]
+    public string TypeName
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        public string MethodName
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    public string MethodName
+    {
+        get;
+        set;
+    }
 
-        public string Arguments
-        {
-            get;
-            set;
-        }
+    public string Arguments
+    {
+        get;
+        set;
+    }
 
-        public bool Enabled
-        {
-            get;
-            set;
-        }
+    public bool Enabled
+    {
+        get;
+        set;
+    }
 
-        [StringLength(200)]
-        public string DataType
-        {
-            get;
-            set;
-        }
+    [StringLength(200)]
+    public string DataType
+    {
+        get;
+        set;
+    }
 
-        [StringLength(200)]
-        public string DisplayFormat
-        {
-            get;
-            set;
-        }
+    [StringLength(200)]
+    public string DisplayFormat
+    {
+        get;
+        set;
+    }
 
-        public bool IsConnectedState
-        {
-            get;
-            set;
-        }
+    public bool IsConnectedState
+    {
+        get;
+        set;
+    }
 
-        public int LoadOrder
-        {
-            get;
-            set;
-        }
+    public int LoadOrder
+    {
+        get;
+        set;
     }
 }

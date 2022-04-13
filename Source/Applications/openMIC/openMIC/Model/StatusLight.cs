@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace openMIC.Model
+namespace openMIC.Model;
+
+public class StatusLight
 {
-    public class StatusLight
-    {
-        public string DeviceAcronym { get; set; }
-        public DateTime Timestamp { get; set; }
-        public bool GoodData { get; set; }
-    }
+    public string DeviceAcronym { get; set; }
+    public DateTime Timestamp { get; set; }
+    public bool GoodData { get; set; }
 }

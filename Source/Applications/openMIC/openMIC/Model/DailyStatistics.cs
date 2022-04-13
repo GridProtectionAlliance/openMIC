@@ -23,22 +23,21 @@
 
 using System;
 
-namespace openMIC.Model
+namespace openMIC.Model;
+
+public class DailyStatistics
 {
-    public class DailyStatistics
-    {
-        public DateTime StartTime;
-        public DateTime EndTime;
+    public DateTime StartTime;
+    public DateTime EndTime;
 
-        public string Meter { get; set; }
-        public DateTime? LastSuccessfulConnection { get; set; }
-        public DateTime? LastUnsuccessfulConnection { get; set; }
-        public string LastUnsuccessfulConnectionExplanation { get; set; }
+    public string Meter { get; set; }
+    public DateTime? LastSuccessfulConnection { get; set; }
+    public DateTime? LastUnsuccessfulConnection { get; set; }
+    public string LastUnsuccessfulConnectionExplanation { get; set; }
 
-        public int TotalConnections => TotalSuccessfulConnections + TotalUnsuccessfulConnections;
-        public int TotalUnsuccessfulConnections { get; set; }
-        public int TotalSuccessfulConnections { get; set; }
+    public int TotalConnections => TotalSuccessfulConnections + TotalUnsuccessfulConnections;
+    public int TotalUnsuccessfulConnections { get; set; }
+    public int TotalSuccessfulConnections { get; set; }
 
-        public static DailyStatistics Default = new DailyStatistics();
-    }
+    public static DailyStatistics Default = new();
 }

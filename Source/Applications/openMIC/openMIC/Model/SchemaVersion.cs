@@ -1,7 +1,6 @@
-﻿namespace openMIC.Model
+﻿namespace openMIC.Model;
+
+public class SchemaVersion
 {
-    public class SchemaVersion
-    {
-        public  int VersionNumber { get; set; }
-    }
+    public  int VersionNumber { get; set; }
 }
