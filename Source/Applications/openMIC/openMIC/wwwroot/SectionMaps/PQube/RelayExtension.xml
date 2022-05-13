@@ -1,0 +1,272 @@
+﻿<SECTION NAME="relayExtension" ALIAS="Relay Extension" MAPROOT="Relay_Configuration">
+	<PROPDEF ALIAS="Relay Extension (RM8)" TYPE="HEADER" MAPROOT="Relay_Configuration"/>
+	<PROPDEF NAME="loadsTriggeringSource" ALIAS="Select Triggering Source" TYPE="SELECT" DEFAULT="WATTS" MAP=".Loads_Triggering_Source">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="WATTS" VALUE="WATTS"/>
+				<ITEM NAME="VOLT-AMPS" VALUE="VOLT-AMPS"/>
+				<ITEM NAME="AMPS" VALUE="AMPS"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="averagingPeriod" ALIAS="Averaging Period" TYPE="NUMERIC" DEFAULT="1" MAP=".RM8_Averaging_Period_in_Seconds">
+		<PARAM MIN="1" MAX="10"/>
+	</PROPDEF>
+	
+	<PROPDEF ALIAS="R1" TYPE="HEADER"/>
+	<PROPDEF NAME="rm1Load" ALIAS="Select Load" TYPE="SELECT" DEFAULT="None" MAP=".RM8_P1_R01_Parameter">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Load_1" VALUE="Load_1"/>
+				<ITEM NAME="Load_2" VALUE="Load_2"/>
+				<ITEM NAME="Load_3"	VALUE="Load_3"/>
+				<ITEM NAME="Load_4" VALUE="Load_4"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm1Threshold" ALIAS="Threshold (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R01_Threshold"/>
+	<PROPDEF NAME="rm1Hysteresis" ALIAS="Hysteresis (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R01_Hysteresis"/>
+	<PROPDEF NAME="rm1TriggerCondition" ALIAS="Activate When" TYPE="SELECT" DEFAULT="High" MAP=".RM8_P1_R01_Trigger_Condition">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="High" VALUE="High"/>
+				<ITEM NAME="Low" VALUE="Low"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm1Latch" ALIAS="Latch Setting" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".RM8_P1_R01_Enable_Latching" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="rm1NormalState" ALIAS="Normal State" TYPE="SELECT" DEFAULT="Normally_Closed" MAP=".RM8_P1_R01_Normal_State">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="Normally_Closed"/>
+				<ITEM NAME="NO" VALUE="Normally_Open"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+
+	<PROPDEF ALIAS="R2" TYPE="HEADER"/>
+	<PROPDEF NAME="rm2Load" ALIAS="Select Load" TYPE="SELECT" DEFAULT="None" MAP=".RM8_P1_R02_Parameter">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Load_1" VALUE="Load_1"/>
+				<ITEM NAME="Load_2" VALUE="Load_2"/>
+				<ITEM NAME="Load_3"	VALUE="Load_3"/>
+				<ITEM NAME="Load_4" VALUE="Load_4"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm2Threshold" ALIAS="Threshold (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R02_Threshold"/>
+	<PROPDEF NAME="rm2Hysteresis" ALIAS="Hysteresis (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R02_Hysteresis"/>
+	<PROPDEF NAME="rm2TriggerCondition" ALIAS="Activate When" TYPE="SELECT" DEFAULT="High" MAP=".RM8_P1_R02_Trigger_Condition">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="High" VALUE="High"/>
+				<ITEM NAME="Low" VALUE="Low"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm2Latch" ALIAS="Latch Setting" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".RM8_P1_R02_Enable_Latching" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="rm2NormalState" ALIAS="Normal State" TYPE="SELECT" DEFAULT="Normally_Closed" MAP=".RM8_P1_R02_Normal_State">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="Normally_Closed"/>
+				<ITEM NAME="NO" VALUE="Normally_Open"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+
+	<PROPDEF ALIAS="R3" TYPE="HEADER"/>
+	<PROPDEF NAME="rm3Load" ALIAS="Select Load" TYPE="SELECT" DEFAULT="None" MAP=".RM8_P1_R03_Parameter">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Load_1" VALUE="Load_1"/>
+				<ITEM NAME="Load_2" VALUE="Load_2"/>
+				<ITEM NAME="Load_3"	VALUE="Load_3"/>
+				<ITEM NAME="Load_4" VALUE="Load_4"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm3Threshold" ALIAS="Threshold (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R03_Threshold"/>
+	<PROPDEF NAME="rm3Hysteresis" ALIAS="Hysteresis (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R03_Hysteresis"/>
+	<PROPDEF NAME="rm3TriggerCondition" ALIAS="Activate When" TYPE="SELECT" DEFAULT="High" MAP=".RM8_P1_R03_Trigger_Condition">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="High" VALUE="High"/>
+				<ITEM NAME="Low" VALUE="Low"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm3Latch" ALIAS="Latch Setting" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".RM8_P1_R03_Enable_Latching" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="rm3NormalState" ALIAS="Normal State" TYPE="SELECT" DEFAULT="Normally_Closed" MAP=".RM8_P1_R03_Normal_State">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="Normally_Closed"/>
+				<ITEM NAME="NO" VALUE="Normally_Open"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+
+	<PROPDEF ALIAS="R4" TYPE="HEADER"/>
+	<PROPDEF NAME="rm4Load" ALIAS="Select Load" TYPE="SELECT" DEFAULT="None" MAP=".RM8_P1_R04_Parameter">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Load_1" VALUE="Load_1"/>
+				<ITEM NAME="Load_2" VALUE="Load_2"/>
+				<ITEM NAME="Load_3"	VALUE="Load_3"/>
+				<ITEM NAME="Load_4" VALUE="Load_4"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm4Threshold" ALIAS="Threshold (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R04_Threshold"/>
+	<PROPDEF NAME="rm4Hysteresis" ALIAS="Hysteresis (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R04_Hysteresis"/>
+	<PROPDEF NAME="rm4TriggerCondition" ALIAS="Activate When" TYPE="SELECT" DEFAULT="High" MAP=".RM8_P1_R04_Trigger_Condition">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="High" VALUE="High"/>
+				<ITEM NAME="Low" VALUE="Low"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm4Latch" ALIAS="Latch Setting" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".RM8_P1_R04_Enable_Latching" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="rm4NormalState" ALIAS="Normal State" TYPE="SELECT" DEFAULT="Normally_Closed" MAP=".RM8_P1_R04_Normal_State">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="Normally_Closed"/>
+				<ITEM NAME="NO" VALUE="Normally_Open"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+
+	<PROPDEF ALIAS="R5" TYPE="HEADER"/>
+	<PROPDEF NAME="rm5Load" ALIAS="Select Load" TYPE="SELECT" DEFAULT="None" MAP=".RM8_P1_R05_Parameter">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Load_1" VALUE="Load_1"/>
+				<ITEM NAME="Load_2" VALUE="Load_2"/>
+				<ITEM NAME="Load_3"	VALUE="Load_3"/>
+				<ITEM NAME="Load_4" VALUE="Load_4"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm5Threshold" ALIAS="Threshold (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R05_Threshold"/>
+	<PROPDEF NAME="rm5Hysteresis" ALIAS="Hysteresis (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R05_Hysteresis"/>
+	<PROPDEF NAME="rm5TriggerCondition" ALIAS="Activate When" TYPE="SELECT" DEFAULT="High" MAP=".RM8_P1_R05_Trigger_Condition">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="High" VALUE="High"/>
+				<ITEM NAME="Low" VALUE="Low"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm5Latch" ALIAS="Latch Setting" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".RM8_P1_R05_Enable_Latching" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="rm5NormalState" ALIAS="Normal State" TYPE="SELECT" DEFAULT="Normally_Closed" MAP=".RM8_P1_R05_Normal_State">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="Normally_Closed"/>
+				<ITEM NAME="NO" VALUE="Normally_Open"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+
+	<PROPDEF ALIAS="R6" TYPE="HEADER"/>
+	<PROPDEF NAME="rm6Load" ALIAS="Select Load" TYPE="SELECT" DEFAULT="None" MAP=".RM8_P1_R06_Parameter">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Load_1" VALUE="Load_1"/>
+				<ITEM NAME="Load_2" VALUE="Load_2"/>
+				<ITEM NAME="Load_3"	VALUE="Load_3"/>
+				<ITEM NAME="Load_4" VALUE="Load_4"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm6Threshold" ALIAS="Threshold (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R06_Threshold"/>
+	<PROPDEF NAME="rm6Hysteresis" ALIAS="Hysteresis (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R06_Hysteresis"/>
+	<PROPDEF NAME="rm6TriggerCondition" ALIAS="Activate When" TYPE="SELECT" DEFAULT="High" MAP=".RM8_P1_R06_Trigger_Condition">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="High" VALUE="High"/>
+				<ITEM NAME="Low" VALUE="Low"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm6Latch" ALIAS="Latch Setting" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".RM8_P1_R06_Enable_Latching" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="rm6NormalState" ALIAS="Normal State" TYPE="SELECT" DEFAULT="Normally_Closed" MAP=".RM8_P1_R06_Normal_State">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="Normally_Closed"/>
+				<ITEM NAME="NO" VALUE="Normally_Open"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+
+	<PROPDEF ALIAS="R7" TYPE="HEADER"/>
+	<PROPDEF NAME="rm7Load" ALIAS="Select Load" TYPE="SELECT" DEFAULT="None" MAP=".RM8_P1_R07_Parameter">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Load_1" VALUE="Load_1"/>
+				<ITEM NAME="Load_2" VALUE="Load_2"/>
+				<ITEM NAME="Load_3"	VALUE="Load_3"/>
+				<ITEM NAME="Load_4" VALUE="Load_4"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm7Threshold" ALIAS="Threshold (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R07_Threshold"/>
+	<PROPDEF NAME="rm7Hysteresis" ALIAS="Hysteresis (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R07_Hysteresis"/>
+	<PROPDEF NAME="rm7TriggerCondition" ALIAS="Activate When" TYPE="SELECT" DEFAULT="High" MAP=".RM8_P1_R07_Trigger_Condition">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="High" VALUE="High"/>
+				<ITEM NAME="Low" VALUE="Low"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm7Latch" ALIAS="Latch Setting" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".RM8_P1_R07_Enable_Latching" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="rm7NormalState" ALIAS="Normal State" TYPE="SELECT" DEFAULT="Normally_Closed" MAP=".RM8_P1_R07_Normal_State">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="Normally_Closed"/>
+				<ITEM NAME="NO" VALUE="Normally_Open"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+
+	<PROPDEF ALIAS="R8" TYPE="HEADER"/>
+	<PROPDEF NAME="rm8Load" ALIAS="Select Load" TYPE="SELECT" DEFAULT="None" MAP=".RM8_P1_R08_Parameter">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Load_1" VALUE="Load_1"/>
+				<ITEM NAME="Load_2" VALUE="Load_2"/>
+				<ITEM NAME="Load_3"	VALUE="Load_3"/>
+				<ITEM NAME="Load_4" VALUE="Load_4"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm8Threshold" ALIAS="Threshold (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R08_Threshold"/>
+	<PROPDEF NAME="rm8Hysteresis" ALIAS="Hysteresis (W)" TYPE="TEXT" DEFAULT="" MAP=".RM8_P1_R08_Hysteresis"/>
+	<PROPDEF NAME="rm8TriggerCondition" ALIAS="Activate When" TYPE="SELECT" DEFAULT="High" MAP=".RM8_P1_R08_Trigger_Condition">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="High" VALUE="High"/>
+				<ITEM NAME="Low" VALUE="Low"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="rm8Latch" ALIAS="Latch Setting" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".RM8_P1_R08_Enable_Latching" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="rm8NormalState" ALIAS="Normal State" TYPE="SELECT" DEFAULT="Normally_Closed" MAP=".RM8_P1_R08_Normal_State">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="Normally_Closed"/>
+				<ITEM NAME="NO" VALUE="Normally_Open"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	
+</SECTION>

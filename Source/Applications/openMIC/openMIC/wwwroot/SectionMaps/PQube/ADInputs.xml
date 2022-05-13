@@ -1,6 +1,6 @@
 ﻿<SECTION NAME="adInputs" ALIAS="Analog/Digital Inputs" MAPROOT="Channel_Recordings">
 	<PROPDEF ALIAS="Analog Inputs Connections" TYPE="HEADER" MAPROOT="Analog_Channel_Setup"/>
-	<PROPDEF NAME="an12MeasurementMode" ALIAS="AN1 AN2 Meausrement Mode" TYPE="SELECT" DEFAULT="DC" MAP=".AN1_and_AN2_Meausrement_Mode" POSTREAD="toggleATTModules('{sectionName}', {value})" POSTWRITE="toggleATTModules('{sectionName}', {value})">
+	<PROPDEF NAME="an12MeasurementMode" ALIAS="AN1 AN2 Measurement Mode" TYPE="SELECT" DEFAULT="DC" MAP=".AN1_and_AN2_Measurement_Mode" POSTREAD="toggleATTModules('{sectionName}', {value})" POSTWRITE="toggleATTModules('{sectionName}', {value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="DC" VALUE="DC"/>
@@ -43,7 +43,7 @@
 	<PROPDEF NAME="an1XAn2EnergyMode" ALIAS="AN1xAN2 Energy Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN1xAN2_Energy_Mode" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="an1eChannelRatio" ALIAS="AN1-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN1_E_Channel_Ratio"/>
 	<PROPDEF NAME="an2eChannelRatio" ALIAS="AN2-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN2_E_Channel_Ratio"/>
-	<PROPDEF NAME="analog1Range" ALIAS="Analog 1 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN1_E_Range">
+	<PROPDEF NAME="analog1Range" ALIAS="Analog 1 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN1_E_Range" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -51,7 +51,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="analog2Range" ALIAS="Analog 2 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN2_E_Range">
+	<PROPDEF NAME="analog2Range" ALIAS="Analog 2 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN2_E_Range" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -76,7 +76,7 @@
 	<PROPDEF NAME="an3XAn4EnergyMode" ALIAS="AN3xAN4 Energy Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN3xAN4_Energy_Mode" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="an3eChannelRatio" ALIAS="AN3-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN3_E_Channel_Ratio"/>
 	<PROPDEF NAME="an4eChannelRatio" ALIAS="AN4-E Channel Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=".AN4_E_Channel_Ratio"/>
-	<PROPDEF NAME="analog3Range" ALIAS="Analog 3 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN3_E_Range">
+	<PROPDEF NAME="analog3Range" ALIAS="Analog 3 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN3_E_Range" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -84,7 +84,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="analog4Range" ALIAS="Analog 4 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN4_E_Range">
+	<PROPDEF NAME="analog4Range" ALIAS="Analog 4 Range" TYPE="SELECT" DEFAULT="HIGH" MAP=".AN4_E_Range" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -147,7 +147,7 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF NAME="an2ChannelName" ALIAS="AN2 Channel Name" TYPE="TEXT" DEFAULT="AN2-E" MAP=".AN2_E_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
-	<PROPDEF NAME="an2ChannelUnit" ALIAS="AN2 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN2_E_Channel_Unit">
+	<PROPDEF NAME="an2ChannelUnit" ALIAS="AN2 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN2_E_Channel_Unit" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="V" VALUE="V"/>
@@ -189,7 +189,7 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF NAME="an3ChannelName" ALIAS="AN3 Channel Name" TYPE="TEXT" DEFAULT="AN3-E" MAP=".AN3_E_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
-	<PROPDEF NAME="an3ChannelUnit" ALIAS="AN3 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN3_E_Channel_Unit">
+	<PROPDEF NAME="an3ChannelUnit" ALIAS="AN3 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN3_E_Channel_Unit" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="V" VALUE="V"/>
@@ -202,7 +202,7 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF NAME="an4ChannelName" ALIAS="AN4 Channel Name" TYPE="TEXT" DEFAULT="AN4-E" MAP=".AN4_E_Channel_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
-	<PROPDEF NAME="an4ChannelUnit" ALIAS="AN4 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN4_E_Channel_Unit">
+	<PROPDEF NAME="an4ChannelUnit" ALIAS="AN4 Channel Unit" TYPE="SELECT" DEFAULT="V" MAP=".AN4_E_Channel_Unit" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="V" VALUE="V"/>

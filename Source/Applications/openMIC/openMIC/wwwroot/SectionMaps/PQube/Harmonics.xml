@@ -4,7 +4,7 @@
 	<PROPDEF NAME="enableSnapshotHarmonicsPower" ALIAS="Enable Snapshot Harmonics Power" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Snapshot_Harmonics_Power" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF ALIAS="Voltage Harmonics" TYPE="HEADER"/>
 	<PROPDEF NAME="recordVoltageTHD" ALIAS="Record THD" TYPE="CHECKBOX" DEFAULT="ON" MAP="viewModel.deviceConfig().Channel_Recordings.Record_Voltage_THD" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="harmonicsUnit" ALIAS="Harmonics Unit" TYPE="SELECT" DEFAULT="Volts_and_THD" MAP=".Voltage_Harmonics_Unit" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+	<PROPDEF NAME="harmonicsUnit" ALIAS="Harmonics Unit" TYPE="SELECT" DEFAULT="Volts_and_THD" MAP="viewModel.deviceConfig().Voltage_Harmonics_Unit" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="Volts" VALUE="Volts_and_THD"/>
@@ -12,9 +12,9 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF ALIAS="Current Harmonics" TYPE="HEADER"/>
-	<PROPDEF NAME="recordTDD" ALIAS="Record TDD" TYPE="CHECKBOX" DEFAULT="ON" MAP="viewModel.deviceConfig().Channel_Recordings.Record_Current_TDD" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="currentHarmonicsDistortion" ALIAS="Current Harmonics Distortion" TYPE="SELECT" DEFAULT="Current_Distortion_TDD" MAP=".Current_Harmonics_Distortion" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+	<PROPDEF ALIAS="Current Harmonics" TYPE="HEADER" CONFIG="3, 3e, 3r"/>
+	<PROPDEF NAME="recordTDD" ALIAS="Record TDD" TYPE="CHECKBOX" DEFAULT="ON" MAP="viewModel.deviceConfig().Measurement_Setup.Channel_Recordings.Record_Current_TDD" CONFIG="3, 3e, 3r" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="currentHarmonicsDistortion" ALIAS="Current Harmonics Distortion" TYPE="SELECT" DEFAULT="Current_Distortion_TDD" MAP=".Current_Harmonics_Distortion" CONFIG="3, 3e, 3r" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="TDD" VALUE="Current_Distortion_TDD"/>
@@ -22,8 +22,8 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="tddDemandCurrentIL" ALIAS="TDD Demand Current IL (A)" TYPE="NUMERIC" DEFAULT="AUTO" MAP=".TDD_Available_Current_In_Amps">
+	<PROPDEF NAME="tddDemandCurrentIL" ALIAS="TDD Demand Current IL (A)" TYPE="NUMERIC" DEFAULT="AUTO" CONFIG="3, 3e, 3r" MAP=".TDD_Available_Current_In_Amps">
 		<PARAM MIN="0" MAX="9999"/>
 	</PROPDEF>
-	<PROPDEF NAME="individualPercentIL" ALIAS="Individual In % Of IL" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Individual_Harmonics_in_Percent_of_IL" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="individualPercentIL" ALIAS="Individual In % Of IL" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Individual_Harmonics_in_Percent_of_IL" CONFIG="3, 3e, 3r" TRUE="ON" FALSE="OFF"/>
 </SECTION>

@@ -494,15 +494,16 @@
                 EnvirosensorProbe:     { index: 10, name: "Envirosensor Probe" },
                 Accelerometer:         { index: 11, name: "Accelerometer" },
                 RelayOutput:           { index: 12, name: "Relay Output" },
-                Events:                { index: 13, name: "Events" },
-                TrendRecording:        { index: 14, name: "Trend Recording" },
-                MainsSignaling:        { index: 15, name: "Mains Signaling" },
-                Network:               { index: 16, name: "Network" },
-                Security:              { index: 17, name: "Security" },
-                TimeSynchronization:   { index: 18, name: "Time Synchronization" },
-                AdditionalProtocols:   { index: 19, name: "Additional Protocols" },
-                EMail:                 { index: 20, name: "E-Mail" },
-                ReportGeneration:      { index: 21, name: "Report Generation" }
+                RelayExtension:        { index: 13, name: "Relay Extension" }, 
+                Events:                { index: 14, name: "Events" },
+                TrendRecording:        { index: 15, name: "Trend Recording" },
+                MainsSignaling:        { index: 16, name: "Mains Signaling" },
+                Network:               { index: 17, name: "Network" },
+                Security:              { index: 18, name: "Security" },
+                TimeSynchronization:   { index: 19, name: "Time Synchronization" },
+                AdditionalProtocols:   { index: 20, name: "Additional Protocols" },
+                EMail:                 { index: 21, name: "E-Mail" },
+                ReportGeneration:      { index: 22, name: "Report Generation" }
             },
             {
                 // [1] PQube3e
@@ -521,15 +522,16 @@
                 EnvirosensorProbe:     { index: 12, name: "Envirosensor Probe" },
                 Accelerometer:         { index: 13, name: "Accelerometer" },
                 RelayOutput:           { index: 14, name: "Relay Output" },
-                Events:                { index: 15, name: "Events" },
-                TrendRecording:        { index: 16, name: "Trend Recording" },
-                MainsSignaling:        { index: 17, name: "Mains Signaling" },
-                Network:               { index: 18, name: "Network" },
-                Security:              { index: 19, name: "Security" },
-                TimeSynchronization:   { index: 10, name: "Time Synchronization" },
-                AdditionalProtocols:   { index: 20, name: "Additional Protocols" },
-                EMail:                 { index: 21, name: "E-Mail" },
-                ReportGeneration:      { index: 22, name: "Report Generation" }
+                RelayExtension:        { index: 15, name: "Relay Extension" },
+                Events:                { index: 16, name: "Events" },
+                TrendRecording:        { index: 17, name: "Trend Recording" },
+                MainsSignaling:        { index: 18, name: "Mains Signaling" },
+                Network:               { index: 19, name: "Network" },
+                Security:              { index: 20, name: "Security" },
+                TimeSynchronization:   { index: 21, name: "Time Synchronization" },
+                AdditionalProtocols:   { index: 22, name: "Additional Protocols" },
+                EMail:                 { index: 23, name: "E-Mail" },
+                ReportGeneration:      { index: 24, name: "Report Generation" }
             },
             {
                 // [2] PQube3v
@@ -628,13 +630,333 @@
         }
 
         function toggleVatModuleConnected(rootName, sectionName, value) {
-            $(`#row-${rootName}_upsMinutes`).toggle(value !== 'None'); // Hides the row
-            $(`#${sectionName}_upsTest`).prop('disabled', value === 'None'); // Enables / disables the element
+            $(`#row-${rootName}_upsMinutes`).hide();
+            $(`#row-${rootName}_upsBatteryPacks`).hide();
+            if (value === 'UPS1') {
+                $(`#row-${rootName}_upsMinutes`).show();
+            }
+            else if (value === 'UPS2' || value === 'UPS3')
+            {
+                $(`#row-${rootName}_upsMinutes`).show();
+                $(`#row-${rootName}_upsBatteryPacks`).show();
+            }
+        }
+
+        function toggleNetworkIPSettings(sectionName, value)
+        {
+            $(`#${sectionName}_networkIPAddress`).prop('disabled', value !== 'Use_Fixed_IP');
+            $(`#${sectionName}_networkIPMask`).prop('disabled', value !== 'Use_Fixed_IP');
+            $(`#${sectionName}_networkIPGateway`).prop('disabled', value !== 'Use_Fixed_IP');
+            $(`#${sectionName}_networkIPDNS1`).prop('disabled', value !== 'Use_Fixed_IP');
+            $(`#${sectionName}_networkIPDNS2`).prop('disabled', value !== 'Use_Fixed_IP');
+        }
+
+        function toggleMainsSignaling(sectionName, value)
+        {
+            $(`#${sectionName}_mainsSignalingThreshold`).prop('disabled', !value);
+            $(`#${sectionName}_mainsSignalingHarmonic`).prop('disabled', !value);
+        }
+
+        function toggleDisplayPasscode(sectionName, value)
+        {
+            $(`#${sectionName}_displayPasscode`).prop('disabled', !value);
+        }
+
+        function toggleIncomingEmail(sectionName, value)
+        {
+            $(`#${sectionName}_emailPOPServer`).prop('disabled', true);
+            $(`#${sectionName}_incomingEmailPort`).prop('disabled', true);
+            $(`#${sectionName}_incomingEmailProtocol`).prop('disabled', true);
+            $(`#${sectionName}_checkEveryNSeconds`).prop('disabled', !value);
+            $(`#${sectionName}_incomingEmailSSL`).prop('disabled', !value);
+        }
+
+        function toggleI9Module(sectionName, value)
+        {
+            $(`#${sectionName}_ctModelI13`).prop('disabled', value);
+        }
+
+        function toggleDig1(sectionName, value)
+        {
+            $(`#${sectionName}_dig1NormalState`).prop('disabled', value);
+        }
+
+        function toggleCurrentInputRange(rootName, sectionName, value)
+        {
+            $(`#row-${rootName}_I1I2I3Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I4Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I5Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I6Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I7Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I8Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+        }
+
+        function toggleCurrentInputRangeI9(rootName, sectionName, value)
+        {
+            $(`#row-${rootName}_I9Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I10Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I11Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I12Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I13Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+            $(`#row-${rootName}_I14Range`).toggle(value === 'INDIVIDUAL_BY_CHANNEL');
+        }
+
+        function toggleUltraPreciseI9(sectionName, value)
+        {
+            $(`#${sectionName}_I9Module`).prop('disabled', !value);
+            $(`#${sectionName}_I9SN`).prop('disabled', !value);
+            $(`#${sectionName}_I9Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I10Module`).prop('disabled', !value);
+            $(`#${sectionName}_I10SN`).prop('disabled', !value);
+            $(`#${sectionName}_I10Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I11Module`).prop('disabled', !value);
+            $(`#${sectionName}_I11SN`).prop('disabled', !value);
+            $(`#${sectionName}_I11Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I12Module`).prop('disabled', !value);
+            $(`#${sectionName}_I12SN`).prop('disabled', !value);
+            $(`#${sectionName}_I12Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I13Module`).prop('disabled', !value);
+            $(`#${sectionName}_I13SN`).prop('disabled', !value);
+            $(`#${sectionName}_I13Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I14Module`).prop('disabled', !value);
+            $(`#${sectionName}_I14SN`).prop('disabled', !value);
+            $(`#${sectionName}_I14Channel`).prop('disabled', !value);
+        }
+
+        function toggleCTIChannel(rootName, value)
+        {
+            $(`#row-${rootName}CTIChannel`).hide();
+            if (value === 'CTI')
+            {
+                $(`#row-${rootName}_CTIChannel`).show();
+            }
+        }
+
+        function toggleFTPSOptions(rootName, sectionName, value)
+        {
+            $(`#row-${rootName}_ftpsImplicitExplicit`).toggle(value);
+        }
+
+        function toggleOutgoingEventSummary(sectionName, value)
+        {
+            $(`#${sectionName}_enableEventSummaryEmail`).prop('disabled', !value);
+        }
+
+        function toggleOutgoingEmailText(sectionName, value)
+        {
+            $(`#${sectionName}_eventSummaryEmail1`).prop('disabled', !value);
+            $(`#${sectionName}_eventSummaryEmail2`).prop('disabled', !value);
+            $(`#${sectionName}_eventSummaryEmail3`).prop('disabled', !value);
+            $(`#${sectionName}_eventSummaryEmailCC1`).prop('disabled', !value);
+            $(`#${sectionName}_eventSummaryEmailCC2`).prop('disabled', !value);
+            $(`#${sectionName}_eventSummaryEmailCC3`).prop('disabled', !value);
+            $(`#${sectionName}_eventSummaryEmailBCC1`).prop('disabled', !value);
+            $(`#${sectionName}_eventSummaryEmailBCC2`).prop('disabled', !value);
+            $(`#${sectionName}_eventSummaryEmailBCC3`).prop('disabled', !value);
+        }
+
+        function toggleFTPPassword(sectionName, value)
+        {
+            $(`#${sectionName}_FTPPassword1`).prop('disabled', value);
+            $(`#${sectionName}_FTPPassword2`).prop('disabled', value);
+            $(`#${sectionName}_FTPPassword3`).prop('disabled', value);
+            $(`#${sectionName}_ftpConfig`).prop('disabled', value);
+            $(`#${sectionName}_FTPUPDPassword`).prop('disabled', value);
+        }
+
+        function toggleGeneralAccess(sectionName, value)
+        {
+            $(`#${sectionName}_webServerUserName`).prop('disabled', !value);
+            $(`#${sectionName}_webServerPassword`).prop('disabled', !value);
+        }
+
+        function toggleServerAuthentication(sectionName, value)
+        {
+            $(`#${sectionName}_commandPageUserName`).prop('disabled', !value);
+            $(`#${sectionName}_commandPagePassword`).prop('disabled', !value);
+        }
+
+        function toggleUltraPrecise(sectionName, value)
+        {
+            $(`#${sectionName}_I1Module`).prop('disabled', !value);
+            $(`#${sectionName}_I1SN`).prop('disabled', !value);
+            $(`#${sectionName}_I1Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I2Module`).prop('disabled', !value);
+            $(`#${sectionName}_I2SN`).prop('disabled', !value);
+            $(`#${sectionName}_I2Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I3Module`).prop('disabled', !value);
+            $(`#${sectionName}_I3SN`).prop('disabled', !value);
+            $(`#${sectionName}_I3Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I4Module`).prop('disabled', !value);
+            $(`#${sectionName}_I4SN`).prop('disabled', !value);
+            $(`#${sectionName}_I4Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I5Module`).prop('disabled', !value);
+            $(`#${sectionName}_I5SN`).prop('disabled', !value);
+            $(`#${sectionName}_I5Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I6Module`).prop('disabled', !value);
+            $(`#${sectionName}_I6SN`).prop('disabled', !value);
+            $(`#${sectionName}_I6Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I7Module`).prop('disabled', !value);
+            $(`#${sectionName}_I7SN`).prop('disabled', !value);
+            $(`#${sectionName}_I7Channel`).prop('disabled', !value);
+            $(`#${sectionName}_I8Module`).prop('disabled', !value);
+            $(`#${sectionName}_I8SN`).prop('disabled', !value);
+            $(`#${sectionName}_I8Channel`).prop('disabled', !value);
+        }
+
+        function toggleDataBackup(sectionName, value) {
+            $(`#${sectionName}_dataBackupTarget`).prop('disabled', !value);
+        }
+
+        function togglePowerConfiguration(sectionName, value) {
+            $(`#${sectionName}_nominalPhaseToPhase`).prop('disabled', value === 'Single_Phase_L1_N');
+            $(`#${sectionName}_recordPhaseToPhase`).prop('disabled', value === 'Single_Phase_L1_N');
+            $(`#${sectionName}_nominalPhaseToNeutral`).prop('disabled', value === 'Single_Phase_L1_L2' || value === 'Delta');
+            $(`#${sectionName}_recordPhaseToNeutral`).prop('disabled', value === 'Single_Phase_L1_L2' || value === 'Delta');
+        }
+
+        function toggleDualOptions(rootName, sectionName, value) {
+
+            $(`#row-${rootName}_voltagePTRatio`).show();
+            $(`#row-${rootName}_neutralVRatio`).show();
+            $(`#row-${rootName}_voltageRange`).show();
+            $(`#row-${rootName}_neutralVoltageRange`).show();
+            $(`#row-${rootName}_nominalPhasetoNeutralV`).show();
+            $(`#row-${rootName}_dualVL1DipEvents`).show();
+            $(`#row-${rootName}_dualVL1SwellEvents`).show();
+            $(`#row-${rootName}_dualVL1DipThreshold`).show();
+            $(`#row-${rootName}_dualVL1SwellThreshold`).show();
+            $(`#row-${rootName}_dualVL1EventHysteresis`).show();
+            $(`#row-${rootName}_dualVL2DipEvents`).show();
+            $(`#row-${rootName}_dualVL2SwellEvents`).show();
+            $(`#row-${rootName}_dualVL2DipThreshold`).show();
+            $(`#row-${rootName}_dualVL2SwellThreshold`).show();
+            $(`#row-${rootName}_dualVL2EventHysteresis`).show();
+            $(`#row-${rootName}_dualVL3DipEvents`).show();
+            $(`#row-${rootName}_dualVL3SwellEvents`).show();
+            $(`#row-${rootName}_dualVL3DipThreshold`).show();
+            $(`#row-${rootName}_dualVL3SwellThreshold`).show();
+            $(`#row-${rootName}_dualVL3EventHysteresis`).show();
+
+            $(`#${sectionName}_voltagePTRatio`).prop('disabled', value !== 'NONE');
+            $(`#${sectionName}_neutralVRatio`).prop('disabled', value !== 'NONE');
+            $(`#${sectionName}_voltageRange`).prop('disabled', value !== 'NONE');
+            $(`#${sectionName}_neutralVoltageRange`).prop('disabled', value !== 'NONE');
+            $(`#row-${rootName}_AN1Ratio`).hide();
+            $(`#row-${rootName}_AN2Ratio`).hide();
+            $(`#row-${rootName}_AN3Ratio`).hide();
+            $(`#row-${rootName}_AN4Ratio`).hide();
+            $(`#row-${rootName}_AN1Range`).hide();
+            $(`#row-${rootName}_AN2Range`).hide();
+            $(`#row-${rootName}_AN3Range`).hide();
+            $(`#row-${rootName}_AN4Range`).hide();
+            $(`#row-${rootName}_AN1AN2Measurement`).hide();
+            $(`#row-${rootName}_AN3AN4Measurement`).hide();
+            $(`#row-${rootName}_AN1DipEvents`).hide();
+            $(`#row-${rootName}_AN1SwellEvents`).hide();
+            $(`#row-${rootName}_AN1DipThreshold`).hide();
+            $(`#row-${rootName}_AN1SwellThreshold`).hide();
+            $(`#row-${rootName}_AN1EventHysteresis`).hide();
+            $(`#row-${rootName}_AN2DipEvents`).hide();
+            $(`#row-${rootName}_AN2SwellEvents`).hide();
+            $(`#row-${rootName}_AN2DipThreshold`).hide();
+            $(`#row-${rootName}_AN2SwellThreshold`).hide();
+            $(`#row-${rootName}_AN2EventHysteresis`).hide();
+            $(`#row-${rootName}_AN3DipEvents`).hide();
+            $(`#row-${rootName}_AN3SwellEvents`).hide();
+            $(`#row-${rootName}_AN3DipThreshold`).hide();
+            $(`#row-${rootName}_AN3SwellThreshold`).hide();
+            $(`#row-${rootName}_AN3EventHysteresis`).hide();
+            $(`#row-${rootName}_AN4DipEvents`).hide();
+            $(`#row-${rootName}_AN4SwellEvents`).hide();
+            $(`#row-${rootName}_AN4DipThreshold`).hide();
+            $(`#row-${rootName}_AN4SwellThreshold`).hide();
+            $(`#row-${rootName}_AN4EventHysteresis`).hide();
+
+            if (value === 'VAT2-600_Analog' || value === 'VAT2-020_Analog')
+            {
+                $(`#row-${rootName}_voltagePTRatio`).hide();
+                $(`#row-${rootName}_neutralVRatio`).hide();
+                $(`#row-${rootName}_voltageRange`).hide();
+                $(`#row-${rootName}_neutralVoltageRange`).hide();
+                $(`#row-${rootName}_nominalPhasetoNeutralV`).hide();
+                $(`#row-${rootName}_dualVL1DipEvents`).hide();
+                $(`#row-${rootName}_dualVL1SwellEvents`).hide();
+                $(`#row-${rootName}_dualVL1DipThreshold`).hide();
+                $(`#row-${rootName}_dualVL1SwellThreshold`).hide();
+                $(`#row-${rootName}_dualVL1EventHysteresis`).hide();
+                $(`#row-${rootName}_dualVL2DipEvents`).hide();
+                $(`#row-${rootName}_dualVL2SwellEvents`).hide();
+                $(`#row-${rootName}_dualVL2DipThreshold`).hide();
+                $(`#row-${rootName}_dualVL2SwellThreshold`).hide();
+                $(`#row-${rootName}_dualVL2EventHysteresis`).hide();
+                $(`#row-${rootName}_dualVL3DipEvents`).hide();
+                $(`#row-${rootName}_dualVL3SwellEvents`).hide();
+                $(`#row-${rootName}_dualVL3DipThreshold`).hide();
+                $(`#row-${rootName}_dualVL3SwellThreshold`).hide();
+                $(`#row-${rootName}_dualVL3EventHysteresis`).hide();
+
+                $(`#row-${rootName}_AN1Ratio`).show();
+                $(`#row-${rootName}_AN2Ratio`).show();
+                $(`#row-${rootName}_AN3Ratio`).show();
+                $(`#row-${rootName}_AN4Ratio`).show();
+                $(`#row-${rootName}_AN1Range`).show();
+                $(`#row-${rootName}_AN2Range`).show();
+                $(`#row-${rootName}_AN3Range`).show();
+                $(`#row-${rootName}_AN4Range`).show();
+                $(`#row-${rootName}_AN1AN2Measurement`).show();
+                $(`#row-${rootName}_AN3AN4Measurement`).show();
+                $(`#row-${rootName}_AN1DipEvents`).show();
+                $(`#row-${rootName}_AN1SwellEvents`).show();
+                $(`#row-${rootName}_AN1DipThreshold`).show();
+                $(`#row-${rootName}_AN1SwellThreshold`).show();
+                $(`#row-${rootName}_AN1EventHysteresis`).show();
+                $(`#row-${rootName}_AN2DipEvents`).show();
+                $(`#row-${rootName}_AN2SwellEvents`).show();
+                $(`#row-${rootName}_AN2DipThreshold`).show();
+                $(`#row-${rootName}_AN2SwellThreshold`).show();
+                $(`#row-${rootName}_AN2EventHysteresis`).show();
+                $(`#row-${rootName}_AN3DipEvents`).show();
+                $(`#row-${rootName}_AN3SwellEvents`).show();
+                $(`#row-${rootName}_AN3DipThreshold`).show();
+                $(`#row-${rootName}_AN3SwellThreshold`).show();
+                $(`#row-${rootName}_AN3EventHysteresis`).show();
+                $(`#row-${rootName}_AN4DipEvents`).show();
+                $(`#row-${rootName}_AN4SwellEvents`).show();
+                $(`#row-${rootName}_AN4DipThreshold`).show();
+                $(`#row-${rootName}_AN4SwellThreshold`).show();
+                $(`#row-${rootName}_AN4EventHysteresis`).show();
+            }
         }
 
         function toggleDualPower(sectionName, value) {
             $(`#${sectionName}_dualPowerSetupMode`).prop('disabled', !value);
             $(`#${sectionName}_voltageMainsLabel`).prop('disabled', !value);
+            $(`#${sectionName}_vatModuleConnected`).prop('disabled', !value);
+            $(`#${sectionName}_dualVoltageLabel`).prop('disabled', !value);
+            $(`#${sectionName}_nominalPhasetoNeutralV`).prop('disabled', !value);
+            $(`#${sectionName}_voltagePTRatio`).prop('disabled', !value);
+            $(`#${sectionName}_neutralVRatio`).prop('disabled', !value);
+            $(`#${sectionName}_voltageRange`).prop('disabled', !value);
+            $(`#${sectionName}_neutralVoltageRange`).prop('disabled', !value);
+            $(`#${sectionName}_dualVoltageCablingConfiguration`).prop('disabled', !value);
+            $(`#${sectionName}_dualVInterestMin`).prop('disabled', !value);
+            $(`#${sectionName}_dualVInterestMax`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL1DipEvents`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL1SwellEvents`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL1DipThreshold`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL1SwellThreshold`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL1EventHysteresis`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL2DipEvents`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL2SwellEvents`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL2DipThreshold`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL2SwellThreshold`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL2EventHysteresis`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL3DipEvents`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL3SwellEvents`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL3DipThreshold`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL3SwellThreshold`).prop('disabled', !value);
+            $(`#${sectionName}_dualVL3EventHysteresis`).prop('disabled', !value);
         }
 
         function toggleModbusSetting(sectionName, value) {

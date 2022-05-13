@@ -1,136 +1,271 @@
 ﻿<SECTION NAME="generalInfo" ALIAS="General Info" MAPROOT="PQube_Information">
-  <PROPDEF ALIAS="PQube Information" TYPE="HEADER"/>
-  <PROPDEF NAME="deviceType" ALIAS="Device Type" TYPE="SELECT" DEFAULT="0" MAP="deviceTypeIndex" PREREAD="deviceTypeIndex = viewModel.deviceTypeIndex()" POSTWRITE="updateDeviceType({mapExpr})">
-    <PARAM TYPE="NUMERIC">
-      <LIST>
-        <ITEM NAME="PQube 3" VALUE="0"/>
-        <ITEM NAME="PQube 3e" VALUE="1"/>
-        <ITEM NAME="PQube 3v" VALUE="2"/>
-        <ITEM NAME="PQube 3r" VALUE="3"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
-  <PROPDEF NAME="pqubeID" ALIAS="PQube ID" TYPE="TEXT" DEFAULT="(PQube_ID not set)" MAP=".PQube_ID" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
-  <PROPDEF NAME="locationName" ALIAS="Location Name" TYPE="TEXT" DEFAULT="(location not set)" MAP=".Location_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
-  <PROPDEF NAME="note1" ALIAS="Note 1" TYPE="TEXT" DEFAULT="(note not set)" MAP=".Note_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
-  <PROPDEF NAME="note2" ALIAS="Note 2" TYPE="TEXT" DEFAULT="(note not set)" MAP=".Note_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF ALIAS="PQube Information" TYPE="HEADER"/>
+	<PROPDEF NAME="deviceType" ALIAS="Device Type" TYPE="SELECT" DEFAULT="0" MAP="deviceTypeIndex" PREREAD="deviceTypeIndex = viewModel.deviceTypeIndex()" POSTWRITE="updateDeviceType({mapExpr})">
+		<PARAM TYPE="NUMERIC">
+			<LIST>
+				<ITEM NAME="PQube 3" VALUE="0"/>
+				<ITEM NAME="PQube 3e" VALUE="1"/>
+				<ITEM NAME="PQube 3v" VALUE="2"/>
+				<ITEM NAME="PQube 3r" VALUE="3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="pqubeID" ALIAS="PQube ID" TYPE="TEXT" DEFAULT="(PQube_ID not set)" MAP=".PQube_ID" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="locationName" ALIAS="Location Name" TYPE="TEXT" DEFAULT="(location not set)" MAP=".Location_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="note1" ALIAS="Note 1" TYPE="TEXT" DEFAULT="(note not set)" MAP=".Note_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="note2" ALIAS="Note 2" TYPE="TEXT" DEFAULT="(note not set)" MAP=".Note_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
 
-  <PROPDEF ALIAS="Time Zone (automatic daylight savings time)" TYPE="HEADER"/>
-  <PROPDEF NAME="timeZoneRegion" ALIAS="Time zone (automatic daylight savings time)" TYPE="SELECT" DEFAULT="America/Los_Angeles" MAP=".Time_Zone_Region">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME="(UTC-10:00) Hawaii" VALUE="Hawaiian Standard Time"/>
-        <ITEM NAME="(UTC-09:00) Alaska" VALUE="Alaskan Standard Time"/>
-        <ITEM NAME="(UTC-08:00) Pacific Time (US &amp; Canada)" VALUE="America/Los_Angeles"/>
-        <ITEM NAME="(UTC-07:00) Mountain Time (US &amp; Canada)" VALUE="Mountain Standard Time"/>
-        <ITEM NAME="(UTC-06:00) Central Time (US &amp; Canada)" VALUE="Central Standard Time"/>
-        <ITEM NAME="(UTC-05:00) Eastern Time (US &amp; Canada)" VALUE="Eastern Standard Time"/>
-        <ITEM NAME="(UTC-04:00) Atlantic Time (Canada)" VALUE="Atlantic Standard Time"/>
-        <ITEM NAME="(UTC) Coordinated Universal Time" VALUE="Coordinated Universal Time"/>
-        <TODO TEXT="!! Add proper remaining items !!"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
+	<PROPDEF ALIAS="Time Zone (automatic daylight savings time)" TYPE="HEADER"/>
+	<PROPDEF NAME="timeZoneRegion" ALIAS="Time zone (automatic daylight savings time)" TYPE="SELECT" DEFAULT="America/Los_Angeles" MAP=".Time_Zone_Region">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="(UTC-11:00) Midway Islands, Somoa" VALUE="Pacific/Midway"/>
+				<ITEM NAME="(UTC-10:00) Hawaii" VALUE="Pacific/Honolulu"/>
+				<ITEM NAME="(UTC-09:00) Alaska" VALUE="America/Anchorage"/>
+				<ITEM NAME="(UTC-08:00) Pacific Time (US &amp; Canada)" VALUE="America/Los_Angeles"/>
+				<ITEM NAME="(UTC-07:00) Mountain Time (US &amp; Canada)" VALUE="America/Denver"/>
+				<ITEM NAME="(UTC-07:00) Chihuahua, La Paz, Mazatlan" VALUE="America/La_Paz"/>
+				<ITEM NAME="(UTC-07:00) Arizona" VALUE="America/Phoenix"/>
+				<ITEM NAME="(UTC-06:00) Central Time (US &amp; Canada)" VALUE="America/Chicago"/>
+				<ITEM NAME="(UTC-06:00) Saskatchewan" VALUE="America/Regina"/>
+				<ITEM NAME="(UTC-06:00) Guadalajara, Mexico City, Monterrey" VALUE="America/Monterrey"/>
+				<ITEM NAME="(UTC-06:00) Central America" VALUE="America/Costa_Rica"/>
+				<ITEM NAME="(UTC-05:00) Eastern Time (US &amp; Canada)" VALUE="America/New_York"/>
+				<ITEM NAME="(UTC-05:00) Indiana (East)" VALUE="America/Indiana/Indianapolis"/>
+				<ITEM NAME="(UTC-05:00) Bogota, Lima, Quito" VALUE="America/Bogota"/>
+				<ITEM NAME="(UTC-04:00) Atlantic Time (Canada)" VALUE="America/Goose_Bay"/>
+				<ITEM NAME="(UTC-04:00) Georgetown, La Paz, Caracas" VALUE="America/Caracas"/>
+				<ITEM NAME="(UTC-04:00) Santiago" VALUE="America/Santiago"/>
+				<ITEM NAME="(UTC-03:30) Newfoundland and Labrador" VALUE="America/St_Johns"/>
+				<ITEM NAME="(UTC-03:00) Brasilia" VALUE="America/Recife"/>
+				<ITEM NAME="(UTC-03:00) Buenos Aires, Cayenne" VALUE="America/Argentina/Buenos_Aires"/>
+				<ITEM NAME="(UTC-03:00) Greenland" VALUE="America/Godthab"/>
+				<ITEM NAME="(UTC 02:00) Mid-Atlantic" VALUE="Atlantic/South_Georgia"/>
+				<ITEM NAME="(UTC-01:00) Azores" VALUE="Atlantic/Azores"/>
+				<ITEM NAME="(UTC-01:00) Cape Verde Islands" VALUE="Atlantic/Cape_Verde"/>
+				<ITEM NAME="(UTC) Coordinated Universal Time" VALUE="Etc/UTC"/>
+				<ITEM NAME="(UTC+00:00) Dublin, Edinburgh, Lisbon, London" VALUE="Europe/London"/>
+				<ITEM NAME="(UTC+00:00) Casablanca, Monrovia" VALUE="Africa/Casablanca"/>
+				<ITEM NAME="(UTC+01:00) Belgrade, Bratislava, Budapest, Ljublj" VALUE="Europe/Budapest"/>
+				<ITEM NAME="(UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb" VALUE="Europe/Zagreb"/>
+				<ITEM NAME="(UTC+01:00) Brussels, Copenhagen, Madrid, Paris" VALUE="Europe/Brussels"/>
+				<ITEM NAME="(UTC+01:00) Amsterdam, Berlin, Bern, Rome" VALUE="Europe/Amsterdam"/>
+				<ITEM NAME="(UTC+01:00) West Central Africa" VALUE="Africa/Kinshasa"/>
+				<ITEM NAME="(UTC+02:00) Athens" VALUE="Europe/Athens"/>
+				<ITEM NAME="(UTC+02:00) Bucharest" VALUE="Europe/Bucharest"/>
+				<ITEM NAME="(UTC+02:00) Cairo" VALUE="Africa/Cairo"/>
+				<ITEM NAME="(UTC+02:00) Harare, Pretoria" VALUE="Africa/Johannesburg"/>
+				<ITEM NAME="(UTC+02:00) Helsinki, Kiev, Riga, Sofia, Tallinn" VALUE="Europe/Helsinki"/>
+				<ITEM NAME="(UTC+02:00) Jerusalem" VALUE="Asia/Jerusalem"/>
+				<ITEM NAME="(UTC+03:00) Baghdad" VALUE="Asia/Baghdad"/>
+				<ITEM NAME="(UTC+03:00) Istanbul" VALUE="Asia/Istanbul"/>
+				<ITEM NAME="(UTC+03:00) Kuwait, Riyadh" VALUE="Asia/Kuwait"/>
+				<ITEM NAME="(UTC+03:00) Minsk" VALUE="Europe/Minsk"/>
+				<ITEM NAME="(UTC+03:00) Moscow, St. Petersburg, Volgograd" VALUE="Europe/Moscow"/>
+				<ITEM NAME="(UTC+03:00) Nairobi" VALUE="Africa/Nairobi"/>
+				<ITEM NAME="(UTC+03:00) Tehran" VALUE="Asia/Tehran"/>
+				<ITEM NAME="(UTC+04:00) Abu Dhabi, Muscat" VALUE="Asia/Muscat"/>
+				<ITEM NAME="(UTC+04:00) Baku, Tbilisi, Yerevan" VALUE="Asia/Baku"/>
+				<ITEM NAME="(UTC+04:30) Kabul" VALUE="Asia/Kabul"/>
+				<ITEM NAME="(UTC+05:00) Yekaterinburg" VALUE="Asia/Yekaterinburg"/>
+				<ITEM NAME="(UTC+05:00) Islamabad, Karachi, Tashkent" VALUE="Asia/Karachi"/>
+				<ITEM NAME="(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi" VALUE="Asia/Colombo"/>
+				<ITEM NAME="(UTC+05:45) Kathmandu" VALUE="Asia/Kathmandu"/>
+				<ITEM NAME="(UTC+06:00) Astana, Dhaka" VALUE="Asia/Dhaka"/>
+				<ITEM NAME="(UTC+06:00) Sri Jayawardenepura" VALUE="Asia/Colombo"/>
+				<ITEM NAME="(UTC+06:00) Almaty" VALUE="Asia/Almaty"/>
+				<ITEM NAME="(UTC+06:30) Yangon Rangoon" VALUE="Asia/Rangoon"/>
+				<ITEM NAME="(UTC+07:00) Bangkok, Hanoi, Jakarta" VALUE="Asia/Bangkok"/>
+				<ITEM NAME="(UTC+07:00) Krasnoyarsk" VALUE="Asia/Krasnoyarsk"/>
+				<ITEM NAME="(UTC+08:00) Beijing, Chongqing, Hong Kong SAR" VALUE="Asia/Hong_Kong"/>
+				<ITEM NAME="(UTC+08:00) Kuala Lumpur" VALUE="Asia/Kuala_Lumpur"/>
+				<ITEM NAME="(UTC+08:00) Singapore" VALUE="Asia/Singapore"/>
+				<ITEM NAME="(UTC+08:00) Taipei" VALUE="Asia/Taipei"/>
+				<ITEM NAME="(UTC+08:00) Perth" VALUE="Australia/Perth"/>
+				<ITEM NAME="(UTC+08:00) Irkutsk, Ulaanaatar" VALUE="Asia/Irkutsk"/>
+				<ITEM NAME="(UTC+09:00) Seoul" VALUE="Asia/Seoul"/>
+				<ITEM NAME="(UTC+09:00) Osaka, Sapporo, Tokyo" VALUE="Asia/Tokyo"/>
+				<ITEM NAME="(UTC+09:30) Darwin" VALUE="Australia/Darwin"/>
+				<ITEM NAME="(UTC+09:30) Adelaide" VALUE="Australia/Adelaide"/>
+				<ITEM NAME="(UTC+10:00) Canberra, Melbourne, Sydney" VALUE="Australia/Melbourne"/>
+				<ITEM NAME="(UTC+10:00) Brisbane" VALUE="Australia/Brisbane"/>
+				<ITEM NAME="(UTC+10:00) Hobart" VALUE="Australia/Hobart"/>
+				<ITEM NAME="(UTC+10:00) Vladivostok" VALUE="Asia/Vladivostok"/>
+				<ITEM NAME="(UTC+10:00) Guam, Port Moresby" VALUE="Pacific/Guam"/>
+				<ITEM NAME="(UTC+11:00) Magadan, Solomon Islands" VALUE="Pacific/Noumea"/>
+				<ITEM NAME="(UTC+12:00) Fiji Islands, Kamchatka, Marshall Islands" VALUE="Asia/Kamchatka"/>
+				<ITEM NAME="(UTC+12:00) Auckland, Wellington" VALUE="Pacific/Nauru"/>
+				<ITEM NAME="(UTC+13:00) Nuku'alofa" VALUE="Pacific/Tongatapu"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 
-  <PROPDEF ALIAS="Language" TYPE="HEADER"/>
-  <PROPDEF NAME="primaryLanguage" ALIAS="Primary Language" TYPE="SELECT" DEFAULT="English-American" MAP=".PQube_Primary_Language">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME="None" VALUE="None"/>
-        <ITEM NAME="English-American" VALUE="English-American"/>
-        <TODO TEXT="!! Add remaining items !!"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
-  <PROPDEF NAME="secondaryLanguage" ALIAS="Secondary Language" TYPE="SELECT" DEFAULT="None" MAP=".PQube_Secondary_Language">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME="None" VALUE="None"/>
-        <ITEM NAME="English-American" VALUE="English-American"/>
-        <TODO TEXT="!! Add remaining items !!"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
+	<PROPDEF ALIAS="Language" TYPE="HEADER"/>
+	<PROPDEF NAME="primaryLanguage" ALIAS="Primary Language" TYPE="SELECT" DEFAULT="English-American" MAP=".PQube_Primary_Language">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Arabic-Standard" VALUE="Arabic-Standard"/>
+				<ITEM NAME="Chinese-Simplified" VALUE="Chinese-Simplified"/>
+				<ITEM NAME="Croatian" VALUE="Croatian"/>
+				<ITEM NAME="Czech" VALUE="Czech"/>
+				<ITEM NAME="Danish" VALUE="Danish"/>
+				<ITEM NAME="Dutch" VALUE="Dutch"/>
+				<ITEM NAME="English-American" VALUE="English-American"/>
+				<ITEM NAME="English-British" VALUE="English-British"/>
+				<ITEM NAME="Finnish" VALUE="Finnish"/>
+				<ITEM NAME="French-Canada" VALUE="French-Canada"/>
+				<ITEM NAME="French-France" VALUE="French-France"/>
+				<ITEM NAME="German" VALUE="German"/>
+				<ITEM NAME="Hebrew" VALUE="Hebrew"/>
+				<ITEM NAME="Italian" VALUE="Italian"/> 
+				<ITEM NAME="Japanese" VALUE="Japanese"/>
+				<ITEM NAME="Korean" VALUE="Korean"/>
+				<ITEM NAME="Magyar" VALUE="Magyar"/>
+				<ITEM NAME="Malaysian-Bahasa" VALUE="Malaysian-Bahasa"/>
+				<ITEM NAME="Norwegian" VALUE="Norwegian"/>
+				<ITEM NAME="Polish" VALUE="Polish"/>
+				<ITEM NAME="Portuguese-Brazil" VALUE="Portuguese-Brazil"/>
+				<ITEM NAME="Portuguese-Portugal" VALUE="Portuguese-Portugal"/>
+				<ITEM NAME="Romanian" VALUE="Romanian"/>
+				<ITEM NAME="Russian" VALUE="Russian"/>
+				<ITEM NAME="Slovakian" VALUE="Slovakian"/>
+				<ITEM NAME="Slovenian" VALUE="Slovenian"/>
+				<ITEM NAME="Spanish-LatinAmerica" VALUE="Spanish-LatinAmerica"/>
+				<ITEM NAME="Spanish-Mexico" VALUE="Spanish-Mexico"/>
+				<ITEM NAME="Spanish-Spain" VALUE="Spanish-Spain"/>
+				<ITEM NAME="Swedish" VALUE="Swedish"/>
+				<ITEM NAME="Thai" VALUE="Thai"/>
+				<ITEM NAME="Turkish" VALUE="Turkish"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="secondaryLanguage" ALIAS="Secondary Language" TYPE="SELECT" DEFAULT="None" MAP=".PQube_Secondary_Language">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="Arabic-Standard" VALUE="Arabic-Standard"/>
+				<ITEM NAME="Chinese-Simplified" VALUE="Chinese-Simplified"/>
+				<ITEM NAME="Croatian" VALUE="Croatian"/>
+				<ITEM NAME="Czech" VALUE="Czech"/>
+				<ITEM NAME="Danish" VALUE="Danish"/>
+				<ITEM NAME="Dutch" VALUE="Dutch"/>
+				<ITEM NAME="English-American" VALUE="English-American"/>
+				<ITEM NAME="English-British" VALUE="English-British"/>
+				<ITEM NAME="Finnish" VALUE="Finnish"/>
+				<ITEM NAME="French-Canada" VALUE="French-Canada"/>
+				<ITEM NAME="French-France" VALUE="French-France"/>
+				<ITEM NAME="German" VALUE="German"/>
+				<ITEM NAME="Hebrew" VALUE="Hebrew"/>
+				<ITEM NAME="Italian" VALUE="Italian"/>
+				<ITEM NAME="Japanese" VALUE="Japanese"/>
+				<ITEM NAME="Korean" VALUE="Korean"/>
+				<ITEM NAME="Magyar" VALUE="Magyar"/>
+				<ITEM NAME="Malaysian-Bahasa" VALUE="Malaysian-Bahasa"/>
+				<ITEM NAME="Norwegian" VALUE="Norwegian"/>
+				<ITEM NAME="Polish" VALUE="Polish"/>
+				<ITEM NAME="Portuguese-Brazil" VALUE="Portuguese-Brazil"/>
+				<ITEM NAME="Portuguese-Portugal" VALUE="Portuguese-Portugal"/>
+				<ITEM NAME="Romanian" VALUE="Romanian"/>
+				<ITEM NAME="Russian" VALUE="Russian"/>
+				<ITEM NAME="Slovakian" VALUE="Slovakian"/>
+				<ITEM NAME="Slovenian" VALUE="Slovenian"/>
+				<ITEM NAME="Spanish-LatinAmerica" VALUE="Spanish-LatinAmerica"/>
+				<ITEM NAME="Spanish-Mexico" VALUE="Spanish-Mexico"/>
+				<ITEM NAME="Spanish-Spain" VALUE="Spanish-Spain"/>
+				<ITEM NAME="Swedish" VALUE="Swedish"/>
+				<ITEM NAME="Thai" VALUE="Thai"/>
+				<ITEM NAME="Turkish" VALUE="Turkish"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 
-  <PROPDEF ALIAS="Output Formatting" TYPE="HEADER" MAPROOT="Output_Formatting"/>
-  <PROPDEF NAME="decimalSeparator" ALIAS="Decimal Separator" TYPE="SELECT" DEFAULT="." MAP=".Decimal_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME="." VALUE="."/>
-        <ITEM NAME="," VALUE=","/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
-  <PROPDEF NAME="dateSeparator" ALIAS="Date Separator" TYPE="SELECT" DEFAULT="/" MAP=".Date_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME="/" VALUE="/"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
-  <PROPDEF NAME="timeSeparator" ALIAS="Time Separator" TYPE="SELECT" DEFAULT=":" MAP=".Time_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME=":" VALUE=":"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
-  <PROPDEF NAME="csvSeparator" ALIAS="CSV Separator" TYPE="SELECT" DEFAULT="," MAP=".CSV_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME="," VALUE=","/>
-        <ITEM NAME=";" VALUE=";"/>
-        <ITEM NAME="[tab]" VALUE="[tab]"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
+	<PROPDEF ALIAS="Output Formatting" TYPE="HEADER" MAPROOT="Output_Formatting"/>
+	<PROPDEF NAME="decimalSeparator" ALIAS="Decimal Separator" TYPE="SELECT" DEFAULT="." MAP=".Decimal_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="." VALUE="."/>
+				<ITEM NAME="," VALUE=","/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="dateSeparator" ALIAS="Date Separator" TYPE="SELECT" DEFAULT="/" MAP=".Date_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="/" VALUE="/"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="timeSeparator" ALIAS="Time Separator" TYPE="SELECT" DEFAULT=":" MAP=".Time_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME=":" VALUE=":"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="csvSeparator" ALIAS="CSV Separator" TYPE="SELECT" DEFAULT="," MAP=".CSV_Separator" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="," VALUE=","/>
+				<ITEM NAME=";" VALUE=";"/>
+				<ITEM NAME="[tab]" VALUE="[tab]"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 
-  <PROPDEF ALIAS="Recordings" TYPE="HEADER" MAPROOT="Channel_Recordings"/>
-  <PROPDEF NAME="gifGraphs" ALIAS="GIF Graphs" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Generate_GIF_Graphs" TRUE="ON" FALSE="OFF"/>
-  <PROPDEF NAME="pqdifFiles" ALIAS="PQDIF Files" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Generate_PQDIF_Files" TRUE="ON" FALSE="OFF"/>
-  <PROPDEF NAME="pqdifTimeAsUTC" ALIAS="Set PQDIF Timestamp to UTC" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_PQVIEW_Compatibility_Mode" TRUE="ON" FALSE="OFF"/>
-  <PROPDEF NAME="pqdif1MinIndex" ALIAS="Include 1-Min Data for PQView" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_1_Min_PQDIF_Indexing" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF ALIAS="Recordings" TYPE="HEADER" MAPROOT="Channel_Recordings"/>
+	<PROPDEF NAME="gifGraphs" ALIAS="GIF Graphs" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Generate_GIF_Graphs" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="pqdifFiles" ALIAS="PQDIF Files" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Generate_PQDIF_Files" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="pqdifTimeAsUTC" ALIAS="Set PQDIF Timestamp to UTC" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_PQVIEW_Compatibility_Mode" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="pqdif1MinIndex" ALIAS="Include 1-Min Data for PQView" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_1_Min_PQDIF_Indexing" TRUE="ON" FALSE="OFF"/>
 
-  <PROPDEF ALIAS="Data Backup" TYPE="HEADER" MAPROOT="Data_Backup"/>
-  <PROPDEF NAME="enableDataBackup" ALIAS="Enable Data Backup" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Data_Backup" TRUE="ON" FALSE="OFF"/>
-  <PROPDEF NAME="dataBackupTarget" ALIAS="Data Backup To" TYPE="SELECT" DEFAULT="SDCARD" MAP=".Data_Backup_to">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME="" VALUE=""/>
-        <ITEM NAME="USB" VALUE="USB"/>
-        <ITEM NAME="SDCARD" VALUE="SDCARD"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
+	<PROPDEF ALIAS="Data Backup" TYPE="HEADER" MAPROOT="Data_Backup"/>
+	<PROPDEF NAME="enableDataBackup" ALIAS="Enable Data Backup" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Data_Backup" TRUE="ON" FALSE="OFF" POSTREAD="toggleDataBackup('{sectionName}', {value})" POSTWRITE="toggleDataBackup('{sectionName}', {value})"/>
+	<PROPDEF NAME="dataBackupTarget" ALIAS="Data Backup To" TYPE="SELECT" DEFAULT="SDCARD" MAP=".Data_Backup_to">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="" VALUE=""/>
+				<ITEM NAME="USB" VALUE="USB"/>
+				<ITEM NAME="SDCARD" VALUE="SDCARD"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF TYPE="HEADER"/>
+	<PROPDEF NAME="fanTempThreshold" ALIAS="Fan Temperature Threshold (&#176;C)" TYPE="NUMERIC" DEFAULT="45" MAP=".Fan_Temperature_Threshold_in_DegC">
+		<PARAM MIN="40" MAX="60"/>
+	</PROPDEF>
 
-  <PROPDEF TYPE="HEADER"/>
-  <PROPDEF NAME="fanTempThreshold" ALIAS="Fan Temperature Threshold (&#176;C)" TYPE="NUMERIC" DEFAULT="45" MAP=".Fan_Temperature_Threshold_in_DegC">
-    <PARAM MIN="40" MAX="60"/>
-  </PROPDEF>
-
-  <PROPDEF ALIAS="UPS Battery" TYPE="HEADER"/>
-  <PROPDEF NAME="upsModel" ALIAS="UPS Battery" TYPE="SELECT" DEFAULT="None" MAP=".UPS_Model" POSTREAD="$('#row-{rootName}_upsMinutes').toggle({value} !== 'None')" POSTWRITE="$('#row-{rootName}_upsMinutes').toggle({value} !== 'None')">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME="None" VALUE="None"/>
-        <ITEM NAME="UPS1" VALUE="UPS1"/>
-        <ITEM NAME="UPS2" VALUE="UPS2"/>
-        <ITEM NAME="UPS3" VALUE="UPS3"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
-  <PROPDEF NAME="upsMinutes" ALIAS="UPS Battery Backup Time" TYPE="NUMERIC" DEFAULT="5" MAP=".UPS_Time_In_Minutes">
-    <PARAM MIN="3" MAX="30"/>
-  </PROPDEF>
-
-  <PROPDEF ALIAS="Power Module" TYPE="HEADER"/>
-  <PROPDEF NAME="auxOutput" ALIAS="AUX Output" TYPE="SELECT" DEFAULT="UPS" MAP=".PM_AUX_Output_Cntl">
-    <PARAM TYPE="TEXT">
-      <LIST>
-        <ITEM NAME="ON" VALUE="ON"/>
-        <ITEM NAME="OFF" VALUE="OFF"/>
-        <ITEM NAME="AUTO" VALUE="UPS"/>
-      </LIST>
-    </PARAM>
-  </PROPDEF>
+	<PROPDEF ALIAS="UPS Battery" TYPE="HEADER"/>
+	<PROPDEF NAME="upsModel" ALIAS="UPS Battery" TYPE="SELECT" DEFAULT="None" MAP=".UPS_Model" POSTREAD="toggleVatModuleConnected('{rootName}', '{sectionName}', {value})" POSTWRITE="toggleVatModuleConnected('{rootName}', '{sectionName}', {value})">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="UPS1" VALUE="UPS1"/>
+				<ITEM NAME="UPS2" VALUE="UPS2"/>
+				<ITEM NAME="UPS3" VALUE="UPS3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="upsMinutes" ALIAS="UPS Battery Backup Time" TYPE="NUMERIC" DEFAULT="5" MAP=".UPS_Time_In_Minutes">
+		<PARAM MIN="3" MAX="30"/>
+	</PROPDEF>
+	<PROPDEF NAME="upsBatteryPacks" ALIAS="Number Of Battery Packs" TYPE="SELECT" DEFAULT="1" MAP=".UPS_MODEL">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="1" VALUE="1"/>
+				<ITEM NAME="2" VALUE="2"/>
+				<ITEM NAME="3" VALUE="3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ALIAS="Power Module" TYPE="HEADER"/>
+	<PROPDEF NAME="auxOutput" ALIAS="AUX Output" TYPE="SELECT" DEFAULT="UPS" MAP=".PM_AUX_Output_Cntl">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="AUTO" VALUE="UPS"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
 </SECTION>

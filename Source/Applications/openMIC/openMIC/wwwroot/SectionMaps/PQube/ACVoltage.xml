@@ -1,4 +1,4 @@
-﻿<SECTION NAME="acVoltages" ALIAS="AC Voltages" MAPROOT="Channel_Recordings">
+﻿<SECTION NAME="acVoltages" ALIAS="AC Voltages">
 	<PROPDEF ALIAS="Power Configuration" TYPE="HEADER" MAPROOT="Nominal_Inputs"/>
 	<PROPDEF NAME="powerConfiguration" ALIAS="Power Configuration" TYPE="SELECT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().PQube_Information.Power_Configuration" POSTREAD="togglePowerConfiguration('{sectionName}', {value})" POSTWRITE="togglePowerConfiguration('{sectionName}', {value})">
 		<PARAM TYPE="TEXT">
@@ -26,7 +26,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF ALIAS="Voltage Recordings" TYPE="HEADER"/>
+	<PROPDEF ALIAS="Voltage Recordings" TYPE="HEADER" MAPROOT="Channel_Recordings"/>
 	<PROPDEF NAME="recordPhaseToPhase" ALIAS="Record Phase to Phase Channels" TYPE="SELECT" DEFAULT="AUTO" MAP=".Record_Phase_To_Phase_Channels">
 		<PARAM TYPE="TEXT">
 			<LIST>
@@ -71,7 +71,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF ALIAS="Flicker" TYPE="HEADER"/>
+	<PROPDEF ALIAS="Flicker" TYPE="HEADER" MAPROOT="Channel_Recordings"/>
 	<PROPDEF NAME="recordFlicker" ALIAS="Record Flicker" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Record_Flicker" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="flickerFrequencyFilter" ALIAS="Flicker Frequency Filter" TYPE="SELECT" DEFAULT="60Hz" MAP="viewModel.deviceConfig().Measurement_Setup.Flicker_Lamp_Voltage">
 		<PARAM TYPE="NUMERIC">

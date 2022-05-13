@@ -4,7 +4,7 @@
 	<PROPDEF NAME="reportCoveragePctReq" ALIAS="Report Coverage Percentage Requirement" TYPE="NUMERIC" DEFAULT="80" MAP=".Report_Coverage_Percentage_Requirement">
 		<PARAM MIN="0" MAX="100"/>
 	</PROPDEF>
-		<PROPDEF NAME="en50160Type" ALIAS="EN50160 Report Type" TYPE="SELECT" DEFAULT="EN50160_Low_Voltage_Sync" MAP=".Report_Template">
+		<PROPDEF NAME="en50160Type" ALIAS="EN50160 Report Type" TYPE="SELECT" DEFAULT="EN50160_Low_Voltage_Sync" MAP=".Report_Template" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 			<PARAM TYPE="TEXT">
 				<LIST>
 					<ITEM NAME="Low Voltage, interconnected" VALUE="EN50160_Low_Voltage_Sync"/>

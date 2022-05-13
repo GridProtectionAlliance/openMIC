@@ -1,2 +1,170 @@
-﻿<SECTION NAME="loadDefinition" ALIAS="Load Definition">
+﻿<SECTION NAME="loadDefinition" ALIAS="Load Definition" MAPROOT="Energy_Metering_Setup">
+	<PROPDEF ALIAS="I1" TYPE="HEADER"/>
+	<PROPDEF NAME="I1Load" ALIAS="I1 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I1_associated_to_Voltage">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I1LoadName" ALIAS="I1 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_1"/>
+	<PROPDEF ALIAS="I2" TYPE="HEADER"/>
+	<PROPDEF NAME="I2Load" ALIAS="I2 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I2_associated_to_Voltage">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I2LoadName" ALIAS="I2 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_2"/>
+	<PROPDEF ALIAS="I3" TYPE="HEADER"/>
+	<PROPDEF NAME="I3Load" ALIAS="I3 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I3_associated_to_Voltage">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I3LoadName" ALIAS="I3 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_3"/>
+	<PROPDEF ALIAS="I4" TYPE="HEADER"/>
+	<PROPDEF NAME="I4Load" ALIAS="I4 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I4_associated_to_Voltage">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I4LoadName" ALIAS="I4 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_4"/>
+	<PROPDEF ALIAS="I5" TYPE="HEADER"/>
+	<PROPDEF NAME="I5Load" ALIAS="I5 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I5_associated_to_Voltage">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I5LoadName" ALIAS="I5 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_5"/>
+	<PROPDEF ALIAS="I6" TYPE="HEADER"/>
+	<PROPDEF NAME="I6Load" ALIAS="I6 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I6_associated_to_Voltage">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I6LoadName" ALIAS="I6 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_6"/>
+	<PROPDEF ALIAS="I7" TYPE="HEADER"/>
+	<PROPDEF NAME="I7Load" ALIAS="I7 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I7_associated_to_Voltage">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I7LoadName" ALIAS="I7 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_7"/>
+	<PROPDEF ALIAS="I8" TYPE="HEADER"/>
+	<PROPDEF NAME="I8Load" ALIAS="I8 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I8_associated_to_Voltage">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I8LoadName" ALIAS="I8 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_8"/>
+	<PROPDEF ALIAS="I9" TYPE="HEADER" CONFIG="3e"/>
+	<PROPDEF NAME="I9Load" ALIAS="I9 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I9_associated_to_Voltage" CONFIG="3e">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I9LoadName" ALIAS="I9 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_9" CONFIG="3e"/>
+	<PROPDEF ALIAS="I10" TYPE="HEADER" CONFIG="3e"/>
+	<PROPDEF NAME="I10Load" ALIAS="I10 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I10_associated_to_Voltage" CONFIG="3e">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I10LoadName" ALIAS="I10 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_10" CONFIG="3e"/>
+	<PROPDEF ALIAS="I11" TYPE="HEADER" CONFIG="3e"/>
+	<PROPDEF NAME="I11Load" ALIAS="I11 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I11_associated_to_Voltage" CONFIG="3e">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I11LoadName" ALIAS="I11 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_11" CONFIG="3e"/>
+	<PROPDEF ALIAS="I12" TYPE="HEADER" CONFIG="3e"/>
+	<PROPDEF NAME="I12Load" ALIAS="I12 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I12_associated_to_Voltage" CONFIG="3e">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I12LoadName" ALIAS="I12 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_12" CONFIG="3e"/>
+	<PROPDEF ALIAS="I13" TYPE="HEADER" CONFIG="3e"/>
+	<PROPDEF NAME="I13Load" ALIAS="I13 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I13_associated_to_Voltage" CONFIG="3e">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I13LoadName" ALIAS="I13 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_13" CONFIG="3e"/>
+	<PROPDEF ALIAS="I14" TYPE="HEADER" CONFIG="3e"/>
+	<PROPDEF NAME="I14Load" ALIAS="I14 Associated To Voltage" TYPE="SELECT" DEFAULT="None" MAP=".Current_I14_associated_to_Voltage" CONFIG="3e">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="None" VALUE="None"/>
+				<ITEM NAME="L1" VALUE="L1"/>
+				<ITEM NAME="L2" VALUE="L2"/>
+				<ITEM NAME="L3" VALUE="L3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="I14LoadName" ALIAS="I14 Load Name" TYPE="TEXT" DEFAULT="LD0" MAP=".Name_of_1Phase_Load_14" CONFIG="3e"/>
 </SECTION>

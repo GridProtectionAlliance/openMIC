@@ -1,49 +1,82 @@
 ﻿<SECTION NAME="adTriggering" ALIAS="Analog/Digital Triggering">
-	<BANK NAME="anEvents" ALIAS="AN1-AN4 Events">
-		<LIST>
-			<ITEM NAME="AN1_E Events"/>
-			<ITEM NAME="AN2_E Events"/>
-			<ITEM NAME="AN3_E Events"/>
-			<ITEM NAME="AN4_E Events"/>
-		</LIST>
-		<PROPDEF NAME="anEEvents" ALIAS="AN_E_Events" TYPE="HEADER" MAPROOT="[`AN{String.fromCharCode(49 + #bankIndex)}_E_Events`]"/>
-		<PROPDEF NAME="anEDipEvents" ALIAS="AN_E Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Dip_Events`]" TRUE="ON" FALSE="OFF"/>
-		<PROPDEF NAME="anESwellEvents" ALIAS="AN_E Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Swell_Events`]" TRUE="ON" FALSE="OFF"/>
-		<PROPDEF NAME="adDipThreshold" ALIAS="Dip Threshold" TYPE="NUMERIC" DEFAULT="2.00" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Dip_Threshold_In_Volts`]"/>
-		<PROPDEF NAME="swellThreshold" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="60.00" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Swell_Threshold_In_Volts`]"/>
-		<PROPDEF NAME="eventHysteresis" ALIAS="Event Hysteresis" TYPE="NUMERIC" DEFAULT=".50" MAP="[`AN${String.fromCharCode(49 + #bankIndex)}_E_Event_Hysteresis_In_Volts`]"/>
-	</BANK>
-	<BANK NAME="an12Events" ALIAS="AN1-AN2/AN3-AN4 Events">
-		 <LIST>
-			<ITEM NAME="AN1_AN2 Events"/>
-			<ITEM NAME="AN3_AN4 Events"/>
-		</LIST>
-		<PROPDEF NAME="an12AN34DipEvents" ALIAS="AN1-AN2 Dip Events" TYPE="SELECT" DEFAULT="OFF" MAP="">
-			<PARAM TYPE="TEXT">
-				<LIST>
-					<ITEM NAME="OFF" VALUE="OFF"/>
-					<ITEM NAME="ON" VALUE="ON"/>
-				</LIST>
-			</PARAM>
-		</PROPDEF>
-		<PROPDEF NAME="an12AN34SwellEvents" ALIAS="AN1-AN2 Swell Events" TYPE="SELECT" DEFAULT="OFF" MAP="">
-			<PARAM TYPE="TEXT">
-				<LIST>
-					<ITEM NAME="OFF" VALUE="OFF"/>
-					<ITEM NAME="ON" VALUE="ON"/>
-				</LIST>
-			</PARAM>
-		</PROPDEF>
-		<PROPDEF NAME="an12AN34DipThreshold" ALIAS="Dip Threshold" TYPE="NUMERIC" DEFAULT="2.00" MAP=""/>
-		<PROPDEF NAME="an12AN34SwellThreshold" ALIAS="Swell Threshold" TYPE="NUMERIC" DEFAULT="60.00" MAP=""/>
-		<PROPDEF NAME="an12AN34EventHysteresis" ALIAS="Event Hysteresis" TYPE="NUMERIC" DEFAULT="0.50" MAP=""/>
-	</BANK>
-	<PROPDEF NAME="enableDig1Events" ALIAS="Enable DIG1 Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="dig1NormalState" ALIAS="DIG1 Normal State" TYPE="SELECT" DEFAULT="NC" MAP="" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+	
+	<PROPDEF ALIAS="AN1-E Events" TYPE="HEADER" MAPROOT="AN1_E_Events"/>
+	<PROPDEF NAME="an1DipEvents" ALIAS="AN1-E Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN1_E_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an1SwellEvents" ALIAS="AN1-E Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN1_E_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an1DipThreshold" ALIAS="Dip Threshold (V)" TYPE="TEXT" DEFAULT="2.00" MAP=".AN1_E_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="an1SwellThreshold" ALIAS="Swell Threshold (V)" TYPE="TEXT" DEFAULT="60.00" MAP=".AN1_E_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="an1EventHysteresis" ALIAS="Event Hysteresis (V)" TYPE="TEXT" DEFAULT="0.50" MAP=".AN1_E_Event_Hysteresis_In_Volts"/>
+	
+	<PROPDEF ALIAS="AN2-E Events" TYPE="HEADER" MAPROOT="AN2_E_Events"/>
+	<PROPDEF NAME="an2DipEvents" ALIAS="AN2-E Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN2_E_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an2SwellEvents" ALIAS="AN2-E Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN2_E_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an2DipThreshold" ALIAS="Dip Threshold (V)" TYPE="TEXT" DEFAULT="2.00" MAP=".AN2_E_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="an2SwellThreshold" ALIAS="Swell Threshold (V)" TYPE="TEXT" DEFAULT="60.00" MAP=".AN2_E_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="an2EventHysteresis" ALIAS="Event Hysteresis (V)" TYPE="TEXT" DEFAULT="0.50" MAP=".AN2_E_Event_Hysteresis_In_Volts"/>
+
+	<PROPDEF ALIAS="AN1-AN2 Events" TYPE="HEADER" MAPROOT="AN1_AN2_Events"/>
+	<PROPDEF NAME="an1an2DipEvents" ALIAS="AN1-AN2 Dip Events" TYPE="SELECT" DEFAULT="OFF" MAP=".AN1_AN2_Dip_Events">
 		<PARAM TYPE="TEXT">
 			<LIST>
-				<ITEM NAME="NC" VALUE="NC"/>
-				<ITEM NAME="NO" VALUE="NO"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an1an2SwellEvents" ALIAS="AN1-AN2 Swell Events" TYPE="SELECT" DEFAULT="OFF" MAP=".AN1_AN2_Swell_Events">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an1an2DipThreshold" ALIAS="Dip Threshold (V)" TYPE="TEXT" DEFAULT="2.00" MAP=".AN1_AN2_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="an1an2SwellThreshold" ALIAS="Swell Threshold (V)" TYPE="TEXT" DEFAULT="60.00" MAP=".AN1_AN2_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="an1an2EventHysteresis" ALIAS="Event Hysteresis (V)" TYPE="TEXT" DEFAULT="0.50" MAP=".AN1_AN2_Event_Hysteresis_In_Volts"/>
+
+	<PROPDEF ALIAS="AN3-E Events" TYPE="HEADER" MAPROOT="AN3_E_Events"/>
+	<PROPDEF NAME="an3DipEvents" ALIAS="AN3-E Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN3_E_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an3SwellEvents" ALIAS="AN3-E Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN3_E_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an3DipThreshold" ALIAS="Dip Threshold (V)" TYPE="TEXT" DEFAULT="2.00" MAP=".AN3_E_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="an3SwellThreshold" ALIAS="Swell Threshold (V)" TYPE="TEXT" DEFAULT="60.00" MAP=".AN3_E_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="an3EventHysteresis" ALIAS="Event Hysteresis (V)" TYPE="TEXT" DEFAULT="0.50" MAP=".AN3_E_Event_Hysteresis_In_Volts"/>
+
+	<PROPDEF ALIAS="AN4-E Events" TYPE="HEADER" MAPROOT="AN4_E_Events"/>
+	<PROPDEF NAME="an4DipEvents" ALIAS="AN4-E Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN4_E_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an4SwellEvents" ALIAS="AN4-E Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".AN4_E_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="an4DipThreshold" ALIAS="Dip Threhsold (V)" TYPE="TEXT" DEFAULT="10.00" MAP=".AN4_E_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="an4SwellThreshold" ALIAS="Swell Threshold (V)" TYPE="TEXT" DEFAULT="50.00" MAP=".AN4_E_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="an4EventHysteresis" ALIAS="Event Hysteresis (V)" TYPE="TEXT" DEFAULT="0.50" MAP=".AN4_E_Event_Hysteresis_In_Volts"/>
+
+	<PROPDEF ALIAS="AN3-AN4 Events" TYPE="HEADER" MAPROOT="AN3_AN4_Events"/>
+	<PROPDEF NAME="an3an4DipEvents" ALIAS="AN3-AN4 Dip Events" TYPE="SELECT" DEFAULT="OFF" MAP=".AN3_AN4_Dip_Events">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an3an4SwellEvents" ALIAS="AN3-AN4 Swell Events" TYPE="SELECT" DEFAULT="OFF" MAP=".AN3_AN4_Swell_Events">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="an3an4DipThreshold" ALIAS="Dip Threshold (V)" TYPE="TEXT" DEFAULT="2.00" MAP=".AN3_AN4_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="an3an4SwellThreshold" ALIAS="Swell Threshold (V)" TYPE="TEXT" DEFAULT="60.00" MAP=".AN3_AN4_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="an3an4EventHysteresis" ALIAS="Event Hysteresis (V)" TYPE="TEXT" DEFAULT="0.50" MAP=".AN3_AN4_Event_Hysteresis_In_Volts"/>
+	
+	<PROPDEF ALIAS="DIG1 Events" TYPE="HEADER" MAPROOT="DIG1_Events"/>
+	<PROPDEF NAME="enableDig1Events" ALIAS="Enable DIG1 Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_DIG1_Events" TRUE="ON" FALSE="OFF" POSTREAD="toggleDig1('{sectionName}', {value})" POSTWRITE="toggleDig1('{sectionName}', {value})"/>
+	<PROPDEF NAME="dig1NormalState" ALIAS="DIG1 Normal State" TYPE="SELECT" DEFAULT="NC" MAP=".DIG1_Normal_State" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="NC" VALUE="Normally_Closed"/>
+				<ITEM NAME="NO" VALUE="Normally_Open"/>
 			</LIST>
 		</PARAM>
 	</PROPDEF>

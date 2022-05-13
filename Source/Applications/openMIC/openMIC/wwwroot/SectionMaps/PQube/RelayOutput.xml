@@ -1,2 +1,43 @@
-﻿<SECTION NAME="relayOutput" ALIAS="Relay Output">
-</SECTION>
+﻿<SECTION NAME="relayOutput" ALIAS="Relay Output" MAPROOT="Event_Relay_Trigger">
+	<PROPDEF ALIAS="Relay Outputs" TYPE="HEADER"/>
+	<PROPDEF NAME="relayOutputsSnapshot" ALIAS="Snapshot" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Snapshot" TRUE="1" FALSE="OFF"/>
+
+	<PROPDEF ALIAS="Voltage" TYPE="HEADER"/>
+	<PROPDEF NAME="triggerRelayDip" ALIAS="Dip" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Dip" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayMajorDip" ALIAS="Major Dip" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Major_Dip" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelaySwell" ALIAS="Swell" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Swell" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayInterruption" ALIAS="Interruption" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Interruption" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayUnderfrequency" ALIAS="Underfrequency" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Underfrequency" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayOverfrequency" ALIAS="Overfrequency" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Overfrequency" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayWaveshapeChange" ALIAS="Waveshape Change" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Waveshape_Change" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayHighFreqImpulse" ALIAS="High Frequency Impulse" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Impulse" TRUE="1" FALSE="OFF"/>
+
+	<PROPDEF ALIAS="Level And Inrush Current" TYPE="HEADER"/>
+	<PROPDEF NAME="triggerRelayPhase" ALIAS="Phase" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Phase_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayNeutral" ALIAS="Neutral" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Neutral_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayEarth" ALIAS="Earth" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_Earth_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayI6" ALIAS="I6" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_I6_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayI7" ALIAS="I7" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_I7_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayI8" ALIAS="I8" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_I8_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayI9" ALIAS="I9" TYPE="CHECKBOX" CONFIG="3e" DEFAULT="OFF" MAP=".Trigger_Relay_On_I9_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayI10" ALIAS="I10" TYPE="CHECKBOX" CONFIG="3e" DEFAULT="OFF" MAP=".Trigger_Relay_On_I10_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayI11" ALIAS="I11" TYPE="CHECKBOX" CONFIG="3e" DEFAULT="OFF" MAP=".Trigger_Relay_On_I11_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayI12" ALIAS="I12" TYPE="CHECKBOX" CONFIG="3e" DEFAULT="OFF" MAP=".Trigger_Relay_On_I12_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayI13" ALIAS="I13" TYPE="CHECKBOX" CONFIG="3e" DEFAULT="OFF" MAP=".Trigger_Relay_On_I13_Current" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayI14" ALIAS="I14" TYPE="CHECKBOX" CONFIG="3e" DEFAULT="OFF" MAP=".Trigger_Relay_On_I14_Current" TRUE="1" FALSE="OFF"/>
+
+	<PROPDEF ALIAS="Analog/Digital" TYPE="HEADER"/>
+	<PROPDEF NAME="triggerRelayAN1Dip" ALIAS="AN1-E Dip" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN1_Dip" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN1Swell" ALIAS="AN1-E Swell" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN1_Swell" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN2Dip" ALIAS="AN2-E Dip" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN2_Dip" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN2Swell" ALIAS="AN2-E Swell" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN2_Swell" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN1AN2Dip" ALIAS="AN1-AN2 Dip" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN1_AN2_Dip" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN1AN2Swell" ALIAS="AN1-AN2 Swell" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN1_AN2_Swell" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN3Dip" ALIAS="AN3-E Dip" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN3_Dip" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN3Swell" ALIAS="AN3-E Swell" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN3_Swell" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN4Dip" ALIAS="AN4-E Dip" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN4_Dip" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN4Swell" ALIAS="AN4-E Swell" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN4_Swell" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN3AN4Dip" ALIAS="AN3-AN4 Dip" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN3_AN4_Dip" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayAN3AN4Swell" ALIAS="AN3-AN4 Swell" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_AN3_AN4_Swell" TRUE="1" FALSE="OFF"/>
+	<PROPDEF NAME="triggerRelayDig1Dip" ALIAS="DIG1 Dip" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Trigger_Relay_On_DIG1_Dip" TRUE="1" FALSE="OFF"/>
+ </SECTION>

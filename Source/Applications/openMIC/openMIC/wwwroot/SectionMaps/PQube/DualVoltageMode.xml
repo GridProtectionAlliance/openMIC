@@ -2,7 +2,7 @@
 	<PROPDEF ALIAS="Setup" TYPE="HEADER"/>
 	<PROPDEF NAME="dualVoltageSetupMode" ALIAS="Dual Voltage Setup Mode" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Dual_Voltage_Mode" TRUE="ON" FALSE="OFF" POSTREAD="toggleDualPower('{sectionName}', {value})" POSTWRITE="toggleDualPower('{sectionName}', {value})"/>
 	<PROPDEF NAME="dualPowerSetupMode" ALIAS="Dual Power Setup Mode" CONFIG="3e" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Dual_Power_Mode" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="vatModuleConnected" ALIAS="VAT Module Connected" TYPE="SELECT" DEFAULT="None" MAP="">
+	<PROPDEF NAME="vatModuleConnected" ALIAS="VAT Module Connected" TYPE="SELECT" DEFAULT="None" MAP="viewModel.deviceConfig().PQube_Information.Attenuator_Model_DualVoltageMode" POSTREAD="toggleDualOptions('{rootName}', '{sectionName}', {value})" POSTWRITE="toggleDualOptions('{rootName}', '{sectionName}', {value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="None" VALUE="NONE"/>
@@ -15,14 +15,14 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF ALIAS="Parameters" TYPE="HEADER"/>
-	<PROPDEF NAME="voltageMainsLabel" ALIAS="Voltage Mains Label" TYPE="TEXT" DEFAULT="Upstream Voltage" MAP=".Voltage_Mains_Label"/>
-	<PROPDEF NAME="dualVoltageLabel" ALIAS="Dual Voltage Label" TYPE="TEXT" DEFAULT="Downstream Voltage" MAP=""/>
-	<PROPDEF NAME="nominalPhasetoNeutralV" ALIAS="Nominal Phase to Neutral Voltage" TYPE="NUMERIC" DEFAULT="120" MAP="">
+	<PROPDEF NAME="voltageMainsLabel" ALIAS="Voltage Mains Label" TYPE="TEXT" DEFAULT="Upstream Voltage" MAP=".Voltage_Mains_Label" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="dualVoltageLabel" ALIAS="Dual Voltage Label" TYPE="TEXT" DEFAULT="Downstream Voltage" MAP=".Voltage_2_Label" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="nominalPhasetoNeutralV" ALIAS="Nominal Phase to Neutral Voltage" TYPE="NUMERIC" DEFAULT="120" MAP=".Voltage_2_Nominal_Voltage">
 		<PARAM MIN="1"/>
 	</PROPDEF>
-	<PROPDEF NAME="voltagePTRatio" ALIAS="Voltage PT Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=""/>
-	<PROPDEF NAME="neutralVRatio" ALIAS="Neutral Voltage Ratio" TYPE="TEXT" DEFAULT="1:1" MAP=""/>
-	<PROPDEF NAME="voltageRange" ALIAS="Voltage Range" TYPE="SELECT" DEFAULT="HIGH" MAP="">
+	<PROPDEF NAME="voltagePTRatio" ALIAS="Voltage PT Ratio" TYPE="TEXT" DEFAULT="1:1" MAP="viewModel.deviceConfig().Current_Transformers.Current_Transformer_Ratio"/>
+	<PROPDEF NAME="neutralVRatio" ALIAS="Neutral Voltage Ratio" TYPE="TEXT" DEFAULT="1:1" MAP="viewModel.deviceConfig().Current_Transformers.Neutral_Current_Transformer_Ratio"/>
+	<PROPDEF NAME="voltageRange" ALIAS="Voltage Range" TYPE="SELECT" DEFAULT="HIGH" MAP="viewModel.deviceConfig().Measurement_Setup.Current_I1_Range">
 		<PARAM TYPE="TEXT">
 		  <LIST>
 			<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -30,15 +30,67 @@
 		  </LIST>
 		</PARAM>
 	</PROPDEF>  
-	<PROPDEF NAME="neutralVoltageRange" ALIAS="Neutral Voltage Range" TYPE="SELECT" DEFAULT="HIGH" MAP="">
+	<PROPDEF NAME="neutralVoltageRange" ALIAS="Neutral Voltage Range" TYPE="SELECT" DEFAULT="HIGH" MAP="viewModel.deviceConfig().Measurement_Setup.Current_I4_Range">
 		<PARAM TYPE="TEXT">
 		  <LIST>
 			<ITEM NAME="HIGH" VALUE="HIGH"/>
 			<ITEM NAME="LOW" VALUE="LOW"/>
 		  </LIST>
 		</PARAM>
-	</PROPDEF>  
-	<PROPDEF NAME="dualVoltageCablingConfiguration" ALIAS="Dual Voltage Cabling Configuration" TYPE="SELECT" DEFAULT="Wye" MAP="">
+	</PROPDEF>
+	<PROPDEF NAME="AN1Ratio" ALIAS="AN1 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP=""/>
+	<PROPDEF NAME="AN2Ratio" ALIAS="AN2 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP=""/>
+	<PROPDEF NAME="AN3Ratio" ALIAS="AN3 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP=""/>
+	<PROPDEF NAME="AN4Ratio" ALIAS="AN4 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP=""/>
+	<PROPDEF NAME="AN1Range" ALIAS="AN1 Range" TYPE="SELECT" DEFAULT="LOW" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="HIGH" VALUE="HIGH"/>
+				<ITEM NAME="LOW" VALUE="LOW"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="AN2Range" ALIAS="AN2 Range" TYPE="SELECT" DEFAULT="LOW" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="HIGH" VALUE="HIGH"/>
+				<ITEM NAME="LOW" VALUE="LOW"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="AN3Range" ALIAS="AN3 Range" TYPE="SELECT" DEFAULT="LOW" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="HIGH" VALUE="HIGH"/>
+				<ITEM NAME="LOW" VALUE="LOW"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="AN4Range" ALIAS="AN4 Range" TYPE="SELECT" DEFAULT="LOW" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="HIGH" VALUE="HIGH"/>
+				<ITEM NAME="LOW" VALUE="LOW"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="AN1AN2Measurement" ALIAS="AN1 AN2 Measurement Mode" TYPE="SELECT" DEFAULT="DC" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="DC" VALUE="DC"/>
+				<ITEM NAME="AC" VALUE="AC"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="AN3AN4Measurement" ALIAS="AN3 AN4 Measurement Mode" TYPE="SELECT" DEFAULT="DC" MAP="">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="DC" VALUE="DC"/>
+				<ITEM NAME="AC" VALUE="AC"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="dualVoltageCablingConfiguration" ALIAS="Dual Voltage Cabling Configuration" TYPE="SELECT" DEFAULT="Wye" MAP=".Voltage_2_Cabling_Configuration">
 		<PARAM TYPE="TEXT">
 		  <LIST>
 			<ITEM NAME="Wye" VALUE="Wye"/>
@@ -48,5 +100,44 @@
 		  </LIST>
 		</PARAM>
 	</PROPDEF>  
-	<PROPDEF ALIAS="Parameters" TYPE="HEADER" MAPROOT=""/>
+	<PROPDEF NAME="dualVInterestMin" ALIAS="Dual Voltage Of Interest Min" TYPE="TEXT" DEFAULT="0" MAP="viewModel.deviceConfig().Trend_Settings.Min_Current_of_Interest_in_Amps, viewModel.deviceConfig().Trend_Settings.Min_Neutral_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="dualVInterestMax" ALIAS="Dual Voltage Of Interest Max" TYPE="TEXT" DEFAULT="AUTO" MAP="viewModel.deviceConfig().Trend_Settings.Max_Current_of_Interest_in_Amps, viewModel.deviceConfig().Trend_Settings.Max_Neutral_Current_of_Interest_in_Amps"/>
+	
+	<PROPDEF ALIAS="Events" TYPE="HEADER"/>
+	<PROPDEF NAME="dualVL1DipEvents" ALIAS="Enable Dip Events L1" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Voltage_2_L1_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="dualVL1SwellEvents" ALIAS="Enable Swell Events L1" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Voltage_2_L1_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="dualVL1DipThreshold" ALIAS="L1 Dip Threshold" TYPE="TEXT" DEFAULT="90" MAP=".Voltage_2_L1_Dip_Thresholds_In_Percent_of_Voltage_2_Nominal"/>
+	<PROPDEF NAME="dualVL1SwellThreshold" ALIAS="L1 Swell Threshold" TYPE="TEXT" DEFAULT="110" MAP=".Voltage_2_L1_Swell_Thresholds_In_Percent_of_Voltage_2_Nominal"/>
+	<PROPDEF NAME="dualVL1EventHysteresis" ALIAS="L1 Event Hysteresis" TYPE="TEXT" DEFAULT="2" MAP=".Voltage_2_L1_Hysteresis_Thresholds_In_Percent_of_Voltage_2_Nominal"/>
+	<PROPDEF NAME="dualVL2DipEvents" ALIAS="Enable Dip Events L2" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Voltage_2_L2_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="dualVL2SwellEvents" ALIAS="Enable Swell Events L2" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Voltage_2_L2_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="dualVL2DipThreshold" ALIAS="L2 Dip Threshold" TYPE="TEXT" DEFAULT="90" MAP=".Voltage_2_L2_Dip_Thresholds_In_Percent_of_Voltage_2_Nominal"/>
+	<PROPDEF NAME="dualVL2SwellThreshold" ALIAS="L2 Swell Threshold" TYPE="TEXT" DEFAULT="110" MAP=".Voltage_2_L2_Swell_Thresholds_In_Percent_of_Voltage_2_Nominal"/>
+	<PROPDEF NAME="dualVL2EventHysteresis" ALIAS="L2 Event Hysteresis" TYPE="TEXT" DEFAULT="2" MAP=".Voltage_2_L2_Hysteresis_Thresholds_In_Percent_of_Voltage_2_Nominal"/>
+	<PROPDEF NAME="dualVL3DipEvents" ALIAS="Enable Dip Events L3" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Voltage_2_L3_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="dualVL3SwellEvents" ALIAS="Enable Swell Events L3" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Voltage_2_L3_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="dualVL3DipThreshold" ALIAS="L3 Dip Threshold" TYPE="TEXT" DEFAULT="90" MAP=".Voltage_2_L3_Dip_Thresholds_In_Percent_of_Voltage_2_Nominal"/>
+	<PROPDEF NAME="dualVL3SwellThreshold" ALIAS="L3 Swell Threshold" TYPE="TEXT" DEFAULT="110" MAP=".Voltage_2_L3_Swell_Thresholds_In_Percent_of_Voltage_2_Nominal"/>
+	<PROPDEF NAME="dualVL3EventHysteresis" ALIAS="L3 Event Hysteresis" TYPE="TEXT" DEFAULT="2" MAP=".Voltage_2_L3_Hysteresis_Thresholds_In_Percent_of_Voltage_2_Nominal"/>
+
+	<PROPDEF NAME="AN1DipEvents" ALIAS="AN1 Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="viewModel.deviceConfig().AN1_E_Events.AN1_E_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="AN1SwellEvents" ALIAS="AN1 Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="viewModel.deviceConfig().AN1_E_Events.AN1_E_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="AN1DipThreshold" ALIAS="Dip Threshold" TYPE="TEXT" DEFAULT="2.00" MAP="viewModel.deviceConfig().AN1_E_Events.AN1_E_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="AN1SwellThreshold" ALIAS="Swell Threshold" TYPE="TEXT" DEFAULT="60.00" MAP="viewModel.deviceConfig().AN1_E_Events.AN1_E_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="AN1EventHysteresis" ALIAS="Event Hysteresis" TYPE="TEXT" DEFAULT="0.50" MAP="viewModel.deviceConfig().AN1_E_Events.AN1_E_Event_Hysteresis_In_Volts"/>
+	<PROPDEF NAME="AN2DipEvents" ALIAS="AN2 Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="viewModel.deviceConfig().AN2_E_Events.AN2_E_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="AN2SwellEvents" ALIAS="AN2 Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="viewModel.deviceConfig().AN2_E_Events.AN2_E_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="AN2DipThreshold" ALIAS="Dip Threshold" TYPE="TEXT" DEFAULT="10.00" MAP="viewModel.deviceConfig().AN2_E_Events.AN2_E_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="AN2SwellThreshold" ALIAS="Swell Threshold" TYPE="TEXT" DEFAULT="50.00" MAP="viewModel.deviceConfig().AN2_E_Events.AN2_E_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="AN2EventHysteresis" ALIAS="Event Hysteresis" TYPE="TEXT" DEFAULT="0.50" MAP="viewModel.deviceConfig().AN2_E_Events.AN2_E_Event_Hysteresis_In_Volts"/>
+	<PROPDEF NAME="AN3DipEvents" ALIAS="AN3 Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="viewModel.deviceConfig().AN3_E_Events.AN3_E_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="AN3SwellEvents" ALIAS="AN3 Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="viewModel.deviceConfig().AN3_E_Events.AN3_E_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="AN3DipThreshold" ALIAS="Dip Threshold" TYPE="TEXT" DEFAULT="2.00" MAP="viewModel.deviceConfig().AN3_E_Events.AN3_E_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="AN3SwellThreshold" ALIAS="Swell Threshold" TYPE="TEXT" DEFAULT="60.00" MAP="viewModel.deviceConfig().AN3_E_Events.AN3_E_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="AN3EventHysteresis" ALIAS="Event Hysteresis" TYPE="TEXT" DEFAULT="0.50" MAP="viewModel.deviceConfig().AN3_E_Events.AN3_E_Event_Hysteresis_In_Volts"/>
+	<PROPDEF NAME="AN4DipEvents" ALIAS="AN4 Dip Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="viewModel.deviceConfig().AN4_E_Events.AN4_E_Dip_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="AN4SwellEvents" ALIAS="AN4 Swell Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="viewModel.deviceConfig().AN4_E_Events.AN4_E_Swell_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="AN4DipThreshold" ALIAS="Dip Threshold" TYPE="TEXT" DEFAULT="10.00" MAP="viewModel.deviceConfig().AN4_E_Events.AN4_E_Dip_Threshold_In_Volts"/>
+	<PROPDEF NAME="AN4SwellThreshold" ALIAS="Swell Threshold" TYPE="TEXT" DEFAULT="50.00" MAP="viewModel.deviceConfig().AN4_E_Events.AN4_E_Swell_Threshold_In_Volts"/>
+	<PROPDEF NAME="AN4EventHysteresis" ALIAS="Event Hysteresis" TYPE="TEXT" DEFAULT="0.50" MAP="viewModel.deviceConfig().AN4_E_Events.AN4_E_Event_Hysteresis_In_Volts"/>
 </SECTION>

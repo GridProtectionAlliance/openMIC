@@ -1,21 +1,43 @@
-﻿<SECTION NAME="currentTriggering1_8" ALIAS="Current Triggering (I1-I8)">
-	<BANK NAME="currentEventInput" ALIAS="Current Events">
-		<LIST>
-			<ITEM NAME="Phase Current Events" KEYVALUE="Phase_Current"/>
-			<ITEM NAME="Neutral Current Events" KEYVALUE="Neutral_Current"/>
-			<ITEM NAME="Earth Current Events" KEYVALUE="Earth_Current"/>
-			<ITEM NAME="I6 Current Events" KEYVALUE="Current_I6"/>
-			<ITEM NAME="I7 Current Events" KEYVALUE="Current_I7"/>
-			<ITEM NAME="I8 Current Events" KEYVALUE="Current_I8"/>
-		</LIST>
-		<PROPDEF NAME="currentEvents" ALIAS="Current Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP="[`${#keyVal('{bankTarget}')}_Events`]" TRUE="ON" FALSE="OFF"/>
-		<PROPDEF NAME="levelThresholdAmps" ALIAS="Level Threshold in Amps" TYPE="NUMERIC" DEFAULT="1" MAP="">
-			<PARAM MIN=".0001"/>
-		</PROPDEF>
-		<PROPDEF NAME="levelHysteresisAmps" ALIAS="Level Hysteresis in Amps" TYPE="NUMERIC" DEFAULT=".5" MAP=""/>
-		<PROPDEF NAME="inrushThresholdAmps" ALIAS="Inrush Threshold in Amps" TYPE="NUMERIC" DEFAULT="1" MAP="">
-			<PARAM MIN=".0001"/>
-		</PROPDEF>
-		<PROPDEF NAME="inrushThresholdCycles" ALIAS="Inrush Threshold in Cycles" TYPE="NUMERIC" DEFAULT=".5" MAP=""/>
-	</BANK>
+﻿<SECTION NAME="currentTriggering1_8" ALIAS="Current Triggering (I1-I8)" MAPROOT="Phase_Current_Events">
+	<PROPDEF ALIAS="Phase Current Events" TYPE="HEADER"/>
+	<PROPDEF NAME="phaseCurrentEvents" ALIAS="Phase Current Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Phase_Current_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="phaseCurrentLevelThreshold" ALIAS="Level Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Phase_Current_Level_Threshold_In_Amps"/>
+	<PROPDEF NAME="phaseCurrentLevelHysteresis" ALIAS="Level Hysteresis In Amps" TYPE="TEXT" DEFAULT="0.5" MAP=".Phase_Current_Level_Hysteresis_In_Amps"/>
+	<PROPDEF NAME="phaseCurrentInrushThreshold" ALIAS="Inrush Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Phase_Current_Inrush_Threshold_In_Amps"/>
+	<PROPDEF NAME="phaseCurrentInrushThresholdCycles" ALIAS="Inrush Threshold In Cycles" TYPE="TEXT" DEFAULT="0.5" MAP=".Phase_Current_Inrush_Threshold_In_Cycles"/>
+
+	<PROPDEF ALIAS="Neutral Current Events" TYPE="HEADER" MAPROOT="Neutral_Current_Events"/>
+	<PROPDEF NAME="neutralCurrentEvents" ALIAS="Neutral Current Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Neutral_Current_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="neutralCurrentLevelThreshold" ALIAS="Level Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Neutral_Current_Level_Threshold_In_Amps"/>
+	<PROPDEF NAME="neutralCurrentLevelHysteresis" ALIAS="Level Hysteresis In Amps" TYPE="TEXT" DEFAULT="0.5" MAP=".Neutral_Current_Level_Hysteresis_In_Amps"/>
+	<PROPDEF NAME="neutralCurrentInrushThreshold" ALIAS="Inrush Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Neutral_Current_Inrush_Threshold_In_Amps"/>
+	<PROPDEF NAME="neutralCurrentInrushThresholdCycles" ALIAS="Inrush Threshold In Cycles" TYPE="TEXT" DEFAULT="0.5" MAP=".Neutral_Current_Inrush_Threshold_In_Cycles"/>
+	
+	<PROPDEF ALIAS="Earth Current Events" TYPE="HEADER" MAPROOT="Earth_Current_Events"/>
+	<PROPDEF NAME="earthCurrentEvents" ALIAS="Earth Current Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Earth_Current_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="earthCurrentLevelThreshold" ALIAS="Level Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Earth_Current_Level_Threshold_In_Amps"/>
+	<PROPDEF NAME="earthCurrentLevelHysteresis" ALIAS="Level Hysteresis In Amps" TYPE="TEXT" DEFAULT="0.5" MAP=".Earth_Current_Level_Hysteresis_In_Amps"/>
+	<PROPDEF NAME="earthCurrentInrushThreshold" ALIAS="Inrush Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Earth_Current_Inrush_Threshold_In_Amps"/>
+	<PROPDEF NAME="earthCurrentInrushThresholdCycles" ALIAS="Inrush Threshold In Cycles" TYPE="TEXT" DEFAULT="0.5" MAP=".Earth_Current_Inrush_Threshold_In_Cycles"/>
+
+	<PROPDEF ALIAS="I6 Current Events" TYPE="HEADER" MAPROOT="Phase_Current_Events"/>
+	<PROPDEF NAME="I6CurrentEvents" ALIAS="I6 Current Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Current_I6_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="I6CurrentLevelThreshold" ALIAS="Level Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Current_I6_Level_Threshold_In_Amps"/>
+	<PROPDEF NAME="I6CurrentLevelHysteresis" ALIAS="Level Hysteresis In Amps" TYPE="TEXT" DEFAULT="0.5" MAP=".Current_I6_Level_Hysteresis_In_Amps"/>
+	<PROPDEF NAME="I6CurrentInrushThreshold" ALIAS="Inrush Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Current_I6_Inrush_Threshold_In_Amps"/>
+	<PROPDEF NAME="I6CurrentInrushThresholdCycles" ALIAS="Inrush Threshold In Cycles" TYPE="TEXT" DEFAULT="0.5" MAP=".Current_I6_Inrush_Threshold_In_Cycles"/>
+
+	<PROPDEF ALIAS="I7 Current Events" TYPE="HEADER"/>
+	<PROPDEF NAME="I7CurrentEvents" ALIAS="I7 Current Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Current_I7_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="I7CurrentLevelThreshold" ALIAS="Level Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Current_I7_Level_Threshold_In_Amps"/>
+	<PROPDEF NAME="I7CurrentLevelHysteresis" ALIAS="Level Hysteresis In Amps" TYPE="TEXT" DEFAULT="0.5" MAP=".Current_I7_Level_Hysteresis_In_Amps"/>
+	<PROPDEF NAME="I7CurrentInrushThreshold" ALIAS="Inrush Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Current_I7_Inrush_Threshold_In_Amps"/>
+	<PROPDEF NAME="I7CurrentInrushThresholdCycles" ALIAS="Inrush Threshold In Cycles" TYPE="TEXT" DEFAULT="0.5" MAP=".Current_I7_Inrush_Threshold_In_Cycles"/>
+
+	<PROPDEF ALIAS="I8 Current Events" TYPE="HEADER"/>
+	<PROPDEF NAME="I8CurrentEvents" ALIAS="I8 Current Events" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Current_I8_Events" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="I8CurrentLevelThreshold" ALIAS="Level Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Current_I8_Level_Threshold_In_Amps"/>
+	<PROPDEF NAME="I8CurrentLevelHysteresis" ALIAS="Level Hysteresis In Amps" TYPE="TEXT" DEFAULT="0.5" MAP=".Current_I8_Level_Hysteresis_In_Amps"/>
+	<PROPDEF NAME="I8CurrentInrushThreshold" ALIAS="Inrush Threshold In Amps" TYPE="TEXT" DEFAULT="1" MAP=".Current_I8_Inrush_Threshold_In_Amps"/>
+	<PROPDEF NAME="I8CurrentInrushThresholdCycles" ALIAS="Inrush Threshold In Cycles" TYPE="TEXT" DEFAULT="0.5" MAP=".Current_I8_Inrush_Threshold_In_Cycles"/>
 </SECTION>

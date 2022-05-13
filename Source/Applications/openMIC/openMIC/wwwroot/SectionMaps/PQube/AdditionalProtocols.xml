@@ -1,5 +1,5 @@
 ﻿<SECTION NAME="additionalProtocols" ALIAS="Additional Protocols">
-	<PROPDEF ALIAS="Modbus Settings" TYPE="HEADER"/>
+	<PROPDEF ALIAS="Modbus Settings" TYPE="HEADER" MAPROOT="Modbus"/>
 	<PROPDEF NAME="enableModbus" ALIAS="Enable Modbus Server" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Modbus" TRUE="ON" FALSE="OFF" POSTREAD="toggleModbusSetting('{sectionName}', {value})" POSTWRITE="toggleModbusSetting('{sectionName}', {value})"/>
 	<PROPDEF NAME="modbusSlaveAddress" ALIAS="Modbus Slave Device Address" TYPE="Numeric" DEFAULT="1" MAP=".Modbus_Slave_Device_Address"/>
 	<PROPDEF NAME="modbusTCPPort" ALIAS="Modbus TCP Port" TYPE="Numeric" DEFAULT="502" MAP=".Modbus_TCP_Port"/>
@@ -25,9 +25,9 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="snmpV1V2Name" ALIAS="SNMP V1/V2 Community Name" TYPE="TEXT" MAP=".SNMP_V1_V2_Community_Name"/>
+	<PROPDEF NAME="snmpV1V2Name" ALIAS="SNMP V1/V2 Community Name" TYPE="TEXT" MAP=".SNMP_V1_V2_Community_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
 	<PROPDEF NAME="snmpSystemName" ALIAS="SNMP System Name" TYPE="TEXT" DEFAULT="localhost.localdomain" MAP=".SNMP_SysName"/>
-	<PROPDEF NAME="snmpSystemLocation" ALIAS="SNMP System Location" TYPE="TEXT" DEFAULT="pqube-1" MAP=".SNMP_SysLocation"/>
+	<PROPDEF NAME="snmpSystemLocation" ALIAS="SNMP System Location" TYPE="TEXT" DEFAULT="pqube-1" MAP=".SNMP_SysLocation" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
 	<PROPDEF NAME="snmpV3SecurityLevel" ALIAS="SNMP V3 Security Level" TYPE="SELECT" DEFAULT="noAuthNoPriv" MAP=".SNMP_V3_Security_Level" POSTREAD="toggleSNMPAuthPriv('{sectionName}', {value})" POSTWRITE="toggleSNMPAuthPriv('{sectionName}', {value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
@@ -37,7 +37,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="snmpV3UserName" ALIAS="SNMP V3 User Name" TYPE="TEXT" DEFAULT="MD5DESUser" MAP=".SNMP_V3_User_Name"/>
+	<PROPDEF NAME="snmpV3UserName" ALIAS="SNMP V3 User Name" TYPE="TEXT" DEFAULT="MD5DESUser" MAP=".SNMP_V3_User_Name" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
 	<PROPDEF NAME="snmpV3AuthProtocol" ALIAS="SNMP V3 Auth Protocol" TYPE="SELECT" DEFAULT="MD5" MAP=".SNMP_V3_Auth_Protocol">
 		<PARAM TYPE="TEXT">
 			<LIST>
@@ -46,7 +46,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="snmpV3AuthPassword" ALIAS="SNMP V3 Auth Password" TYPE="TEXT" DEFAULT="MD5UserPassword" MAP=".SNMP_V3_Auth_Password"/>
+	<PROPDEF NAME="snmpV3AuthPassword" ALIAS="SNMP V3 Auth Password" TYPE="TEXT" DEFAULT="MD5UserPassword" MAP=".SNMP_V3_Auth_Password" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
 	<PROPDEF NAME="snmpV3PrivProtocol" ALIAS="SNMP V3 Priv Protocol" TYPE="SELECT" DEFAULT="DES" MAP=".SNMP_V3_Priv_Protocol">
 		<PARAM TYPE="TEXT">
 			<LIST>
@@ -55,7 +55,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="snmpV3PrivPassword" ALIAS="SNMP V3 Priv Password" TYPE="TEXT" DEFAULT="DESUserPassword" MAP=".SNMP_V3_Priv_Password"/>
+	<PROPDEF NAME="snmpV3PrivPassword" ALIAS="SNMP V3 Priv Password" TYPE="TEXT" DEFAULT="DESUserPassword" MAP=".SNMP_V3_Priv_Password" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
 	<PROPDEF ALIAS="DNP3 Settings" TYPE="HEADER" MAPROOT="DNP3"/>
 	<PROPDEF NAME="enableDNP3Server" ALIAS="Enable DNP3 Server" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_DNP3" TRUE="ON" FALSE="OFF" POSTREAD="toggleDNP3Settings('{sectionName}', {value})" POSTWRITE="toggleDNP3Settings('{sectionName}', {value})"/>
 	<PROPDEF NAME="dnp3Port" ALIAS="DNP3 Port" TYPE="Numeric" DEFAULT="20000" MAP=".DNP3_Port"/>

@@ -27,7 +27,7 @@
 		</PARAM>
 	</PROPDEF>
 	<PROPDEF NAME="captureEndOfEvent" ALIAS="Capture End Of Event" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Capture_End_Of_Event" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="rmsRecordingDef" ALIAS="Event RMS Recording Definition" TYPE="SELECT" DEFAULT="Urms1/2" MAP=".Event_RMS_Recording_Definition">
+	<PROPDEF NAME="rmsRecordingDef" ALIAS="Event RMS Recording Definition" TYPE="SELECT" DEFAULT="Urms1/2" MAP=".Event_RMS_Recording_Definition" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="Urms1/2" VALUE="Urms1/2"/>

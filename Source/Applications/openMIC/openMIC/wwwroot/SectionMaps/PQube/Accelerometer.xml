@@ -24,7 +24,7 @@
 				</LIST>
 			</PARAM>
 		</PROPDEF>
-		<PROPDEF NAME="probeAccelerationDisplayUnit" ALIAS="Accleration Display Unit" TYPE="SELECT" DEFAULT="g" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Acceleration_Display_Unit`]">
+		<PROPDEF NAME="probeAccelerationDisplayUnit" ALIAS="Accleration Display Unit" TYPE="SELECT" DEFAULT="g" MAP="[`Probe_${String.fromCharCode(65 + #bankIndex)}_Acceleration_Display_Unit`]" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})">
 			<PARAM TYPE="TEXT">
 				<LIST>
 					<ITEM NAME="g" VALUE="g"/>

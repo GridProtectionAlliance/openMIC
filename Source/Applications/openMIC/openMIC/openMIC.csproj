@@ -376,6 +376,7 @@
     <Content Include="wwwroot\SectionMaps\PQube\LoadDefinition.xml" />
     <Content Include="wwwroot\SectionMaps\PQube\MainsSignaling.xml" />
     <Content Include="wwwroot\SectionMaps\PQube\Network.xml" />
+    <Content Include="wwwroot\SectionMaps\PQube\RelayExtension.xml" />
     <Content Include="wwwroot\SectionMaps\PQube\RelayOutput.xml" />
     <Content Include="wwwroot\SectionMaps\PQube\ReportGeneration.xml" />
     <Content Include="wwwroot\SectionMaps\PQube\Security.xml" />

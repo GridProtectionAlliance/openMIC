@@ -1,2 +1,109 @@
-﻿<SECTION NAME="trendRecording" ALIAS="Trend Recording">
+﻿<SECTION NAME="trendRecording" ALIAS="Trend Recording" MAPROOT="Trend_Settings">
+	<PROPDEF ALIAS="Trend Settings" TYPE="HEADER"/>
+	<PROPDEF NAME="enableDailyTrends" ALIAS="Enable Daily Trends" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Daily_Trends" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="enableWeeklyTrends" ALIAS="Enable Weekly Trends" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Weekly_Trends" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="enableMonthlyTrends" ALIAS="Enable Monthly Trends" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Enable_Monthly_Trends" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="omitIECFlagged" ALIAS="Omit IEC Flagged Data From Stats" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Omit_IEC_Flagged_Data_From_Stats" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="trendIndividualPha" ALIAS="Enable Trend Individual Phases" TYPE="SELECT" DEFAULT="AUTO" MAP=".Trend_Individual_Phases">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="AUTO" VALUE="AUTO"/>
+				<ITEM NAME="ON" VALUE="ON"/>
+				<ITEM NAME="OFF" VALUE="OFF"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF ALIAS="Scaling Graphs For Trends And Statistics Recording" TYPE="HEADER"/>
+	<PROPDEF NAME="minVoltsInterest" ALIAS="Min Voltage (% Nominal)" TYPE="TEXT" DEFAULT="95" MAP=".Min_Volts_of_Interest_in_Percent_of_Nominal"/>
+	<PROPDEF NAME="maxVoltsInterest" ALIAS="Max Voltage (% Nominal)" TYPE="TEXT" DEFAULT="105" MAP=".Max_Volts_of_Interest_in_Percent_of_Nominal"/>
+	<PROPDEF NAME="minFreqInterest" ALIAS="Min Frequency (% Nominal)" TYPE="TEXT" DEFAULT="99" MAP=".Min_Frequency_of_Interest_in_Percent_of_Nominal"/>
+	<PROPDEF NAME="maxFreqInterest" ALIAS="Max Frequency (% Nominal)" TYPE="TEXT" DEFAULT="101" MAP=".Max_Frequency_of_Interest_in_Percent_of_Nominal"/>
+	<PROPDEF NAME="minCurrentInterest" ALIAS="Min Current" TYPE="TEXT" DEFAULT="0" CONFIG="3, 3e, 3r" MAP=".Min_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="maxCurrentInterest" ALIAS="Max Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3, 3e, 3r" MAP=".Max_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="minNeutralInterest" ALIAS="Min Neutral" TYPE="TEXT" DEFAULT="0" CONFIG="3, 3e, 3r" MAP=".Min_Neutral_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="maxNeutralInterest" ALIAS="Max Neutral" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3, 3e, 3r" MAP=".Max_Neutral_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="minEarthInterest" ALIAS="Min Earth" TYPE="TEXT" DEFAULT="0" CONFIG="3, 3e, 3r" MAP=".Min_Earth_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="maxEarthInterest" ALIAS="Max Earth" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3, 3e, 3r" MAP=".Max_Earth_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="minI6Interest" ALIAS="Min I6 Current" TYPE="TEXT" DEFAULT="0" CONFIG="3, 3e, 3r" MAP=".Min_I6_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="maxI6Interest" ALIAS="Max I6 Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3, 3e, 3r" MAP=".Max_I6_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="minI7Interest" ALIAS="Min I7 Current" TYPE="TEXT" DEFAULT="0" CONFIG="3, 3e, 3r" MAP=".Min_I7_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="maxI7Interest" ALIAS="Max I7 Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3, 3e, 3r" MAP=".Max_I7_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="minI8Interest" ALIAS="Min I8 Current" TYPE="TEXT" DEFAULT="0" CONFIG="3, 3e, 3r" MAP=".Min_I8_Current_of_Interest_in_Amps"/>
+	<PROPDEF NAME="maxI8Interest" ALIAS="Max I8 Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3, 3e, 3r" MAP=".Max_I8_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="minI9Interest" ALIAS="Min I9 Current" TYPE="TEXT" DEFAULT="0" CONFIG="3e" MAP=".Min_I9_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="maxI9Interest" ALIAS="Max I9 Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3e" MAP=".Max_I9_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="minI10Interest" ALIAS="Min I10 Current" TYPE="TEXT" DEFAULT="0" CONFIG="3e" MAP=".Min_I10_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="maxI10Interest" ALIAS="Max I10 Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3e" MAP=".Max_I10_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="minI11Interest" ALIAS="Min I11 Current" TYPE="TEXT" DEFAULT="0" CONFIG="3e" MAP=".Min_I11_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="maxI11Interest" ALIAS="Max I11 Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3e" MAP=".Max_I11_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="minI12Interest" ALIAS="Min I12 Current" TYPE="TEXT" DEFAULT="0" CONFIG="3e" MAP=".Min_I12_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="maxI12Interest" ALIAS="Max I12 Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3e" MAP=".Max_I12_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="minI13Interest" ALIAS="Min I13 Current" TYPE="TEXT" DEFAULT="0" CONFIG="3e" MAP=".Min_I13_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="maxI13Interest" ALIAS="Max I13 Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3e" MAP=".Max_I13_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="minI14Interest" ALIAS="Min I14 Current" TYPE="TEXT" DEFAULT="0" CONFIG="3e" MAP=".Min_I14_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="maxI14Interest" ALIAS="Max I14 Current" TYPE="TEXT" DEFAULT="AUTO" CONFIG="3e" MAP=".Max_I14_Current_of_Interest_In_Amps"/>
+	<PROPDEF NAME="minAN1Interest" ALIAS="Min AN1-E" TYPE="TEXT" DEFAULT="0" MAP=".Min_AN1_E_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="maxAN1Interest" ALIAS="Max AN1-E" TYPE="TEXT" DEFAULT="10" MAP=".Max_AN1_E_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="minAN2Interest" ALIAS="Min AN2-E" TYPE="TEXT" DEFAULT="0" MAP=".Min_AN2_E_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="maxAN2Interest" ALIAS="Max AN2-E" TYPE="TEXT" DEFAULT="10" MAP=".Max_AN2_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="minAN1AN2Interest" ALIAS="Min AN1-AN2" TYPE="TEXT" DEFAULT="0" MAP=".Min_AN1_AN2_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="maxAN1AN2Interest" ALIAS="Max AN1-AN2" TYPE="TEXT" DEFAULT="10" MAP=".Max_AN1_AN2_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="minAN3Interest" ALIAS="Min AN3-E" TYPE="TEXT" DEFAULT="0" MAP=".Min_AN3_E_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="maxAN3Interest" ALIAS="Max AN3-E" TYPE="TEXT" DEFAULT="10" MAP=".Max_AN3_E_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="minAN4Interest" ALIAS="Min AN4-E" TYPE="TEXT" DEFAULT="0" MAP=".Min_AN4_E_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="maxAN4Interest" ALIAS="Max AN4-E" TYPE="TEXT" DEFAULT="10" MAP=".Max_AN4_E_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="minAN3AN4Interest" ALIAS="Min AN3-AN4" TYPE="TEXT" DEFAULT="0" MAP=".Min_AN3_AN4_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="maxAN3AN4Interest" ALIAS="Max AN3-AN4" TYPE="TEXT" DEFAULT="10" MAP=".Max_AN3_AN4_of_Interest_in_RMS_volts"/>
+	<PROPDEF NAME="minTemperatureInterest" ALIAS="Min Temperature (&#176;C)" TYPE="NUMERIC" DEFAULT="0" MAP=".Min_Temperature_of_Interest_in_DegC">
+		<PARAM MIN="-20" MAX="80"/>
+	</PROPDEF>
+	<PROPDEF NAME="maxTemperatureInterest" ALIAS="Max Temperature (&#176;C)" TYPE="NUMERIC" DEFAULT="50" MAP=".Max_Temperature_of_Interest_in_DegC">
+		<PARAM MIN="-20" MAX="80"/>
+	</PROPDEF>
+	<PROPDEF NAME="minHumidityInterest" ALIAS="Min Humidity (%)" TYPE="NUMERIC" DEFAULT="0" MAP=".Min_Humidity_of_Interest_in_%_RH">
+		<PARAM MIN="0" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="maxHumidityInterest" ALIAS="Max Humidity (%)" TYPE="NUMERIC" DEFAULT="100" MAP=".Max_Humidity_of_Interest_in_%_RH">
+		<PARAM MIN="0" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="minBaroPInterest" ALIAS="Min Pressure (hPa)" TYPE="TEXT" DEFAULT="950" MAP=".Min_Baro_Pressure_of_Interest_in_hPa"/>
+	<PROPDEF NAME="maxBaroPInterest" ALIAS="Max Pressure (hPa)" TYPE="TEXT" DEFAULT="1050" MAP="Max_Baro_Pressure_of_Interest_in_hPa"/>
+	<PROPDEF NAME="minVectorAccInterest" ALIAS="Min Vector Acceleration (m/s2)" TYPE="NUMERIC" DEFAULT="0.0" MAP=".Min_Vector_Acceleration_of_Interest_in_m_per_second2">
+		<PARAM MIN="0" MAX="50"/>
+	</PROPDEF>
+	<PROPDEF NAME="maxVectorAccInterest" ALIAS="Max Vector Acceleration (m/s2)" TYPE="NUMERIC" DEFAULT="O.5" MAP=".Max_Vector_Acceleration_of_Interest_in_m_per_second2">
+		<PARAM MIN="0" MAX="50"/>
+	</PROPDEF>
+	<PROPDEF NAME="powerPolarityInterest" ALIAS="Power Polarity of Interest" TYPE="SELECT" DEFAULT="BOTH" MAP=".Power_Polarity_of_Interest">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="BOTH" VALUE="BOTH"/>
+				<ITEM NAME="POSITIVE" VALUE="POSITIVE"/>
+				<ITEM NAME="NEGATIVE" VALUE="NEGATIVE"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="ANPowerPolarityInterest" ALIAS="AN Power Polarity" TYPE="SELECT" DEFAULT="BOTH" CONFIG="3, 3e, 3r" MAP=".AN_Power_Polarity_of_Interest">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="BOTH" VALUE="BOTH"/>
+				<ITEM NAME="POSITIVE" VALUE="POSITIVE"/>
+				<ITEM NAME="NEGATIVE" VALUE="NEGATIVE"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="maxCurrentTDDInterest" ALIAS="Max Current TDD (%)" TYPE="TEXT" DEFAULT="25" CONFIG="3, 3e, 3r" MAP=".Max_Current_TDD_of_Interest_in_Precent"/>
+	<PROPDEF NAME="maxCurrentUnbalanceInterest" ALIAS="Max Current Unbalance (%)" TYPE="TEXT" DEFAULT="99" CONFIG="3, 3e, 3r" MAP=".Max_Current_Unbalance_of_Interest_in_Percent"/>
+	<PROPDEF NAME="maxVoltageTHDInterest" ALIAS="Max Voltage THD (%)" TYPE="TEXT" DEFAULT="10" MAP=".Max_Voltage_THD_of_Interest_in_Percent"/>
+	<PROPDEF NAME="maxVoltageUnbalanceInterest" ALIAS="Max Voltage Unbalance (%)" TYPE="TEXT" DEFAULT="10" MAP=".Max_Voltage_Unbalance_of_Interest_in_Percent"/>
+	<PROPDEF NAME="maxFlickerInterest" ALIAS="Max Flicker" TYPE="TEXT" DEFAULT="4" MAP=".Max_Flicker_of_Interest"/>
+
+	<PROPDEF ALIAS="Conducted Emissions" TYPE="HEADER"/>
+	<PROPDEF NAME="max150KhzInterest" ALIAS="9kHz-150kHz Darkest Color At (V)" TYPE="NUMERIC" DEFAULT="1.00" MAP=".150kHz_Conducted_Emissions_of_Interest_in_Volt">
+		<PARAM MIN=" 0.01" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="max9KhzInterest" ALIAS="2kHz-9kHz Darkest Color At (V)" TYPE="NUMERIC" DEFAULT="1.00" MAP=".9kHz_Conducted_Emissions_of_Interest_in_Volt">
+		<PARAM MIN="0.01" MAX="100"/>
+	</PROPDEF>
+	<PROPDEF NAME="phaseAggregation" ALIAS="Generate Individual Phase Graphs" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Phase_Aggregation_2-150kHz_GIF" TRUE="ON" FALSE="OFF"/>
 </SECTION>

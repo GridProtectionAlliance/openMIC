@@ -1,6 +1,6 @@
 ﻿<SECTION NAME="email" ALIAS="E-Mail">
-	<PROPDEF ALIAS="Email Provider Settings" TYPE="HEADER" MAPROOT=""/>
-	<PROPDEF NAME="selectEmailProvider" ALIAS="Select Email Provider" TYPE="SELECT" DEFAULT="PSL" MAP="">
+	<PROPDEF ALIAS="Email Provider Settings" TYPE="HEADER" MAPROOT="Email_Server_Settings"/>
+	<PROPDEF NAME="selectEmailProvider" ALIAS="Select Email Provider" TYPE="SELECT" DEFAULT="PSL" MAP=".Email_Address_Provider">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="PSL" VALUE="PSL"/>
@@ -9,4 +9,81 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
+	<PROPDEF NAME="pqubeSerial" ALIAS="PQube3 Serial" TYPE="TEXT" DEFAULT="" MAP=""/>
+	<PROPDEF NAME="emailAddress" ALIAS="PQube Email Address" TYPE="TEXT" DEFAULT="" MAP=".PQube_Email_Account"/>
+	<PROPDEF NAME="emailPassword" ALIAS="PQube Email Password" TYPE="TEXT" DEFAULT="" MAP=".PQube_Email_Password"/>
+	
+	<PROPDEF ALIAS="Incoming Email Settings" TYPE="HEADER" MAPROOT=".Email_Commands_To_PQube3"/>
+	<PROPDEF NAME="emailCommands" ALIAS="Email Commands" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Email_Commands" TRUE="ON" FALSE="OFF" POSTREAD="toggleIncomingEmail('{sectionName}', {value})" POSTWRITE="toggleIncomingEmail('{sectionName}', {value})"/>
+	<PROPDEF NAME="emailPOPServer" ALIAS="POP Server" TYPE="TEXT" DEFAULT="mail.pqube.com" MAP=".POP_Email_Server_Address"/>
+	<PROPDEF NAME="incomingEmailPort" ALIAS="Port" TYPE="TEXT" DEFAULT="110" MAP=".POP_Email_Server_Port"/>
+	<PROPDEF NAME="incomingEmailProtocol" ALIAS="Protocol" TYPE="SELECT" DEFAULT="POP3" MAP=".Incoming_Email_Protocol">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="POP3" VALUE="POP3"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="checkEveryNSeconds" ALIAS="Check Every N Seconds" TYPE="NUMERIC" DEFAULT="300" MAP=".Check_Every_N_Seconds">
+		<PARAM MIN="30" MAX="3600"/>
+	</PROPDEF>
+	<PROPDEF NAME="incomingEmailSSL" ALIAS="Use SSL" TYPE="CHECKBOX" DEFAULT="ON" MAP="Incoming_Email_SSL_Encryption" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF ALIAS="Outgoing Email Settings" TYPE="HEADER" MAPROOT="Email_Server_Settings"/>
+	<PROPDEF NAME="outgoingServerAddress" ALIAS="SMTP Server" TYPE="TEXT" DEFAULT="mail.pqube.com" MAP=".SMTP_Server_Address"/>
+	<PROPDEF NAME="outgoingEmailPort" ALIAS="Port" TYPE="TEXT" DEFAULT="587" MAP=".SMTP_Server_Port"/>
+	<PROPDEF NAME="outgoingEmailSSL" ALIAS="Use SSL" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Outgoing_Email_SSL_Encryption" TRUE="ON" FALSE="OFF"/> 
+	<PROPDEF ALIAS="Incoming Email Filter" TYPE="HEADER" MAPROOT="Email_Commands_To_PQube3"/>
+	<PROPDEF NAME="emailBeginsWith" ALIAS="Email Subject Begins With" TYPE="TEXT" DEFAULT="PQube3" MAP=".Subject_Must_Begin_With" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailMustBeFrom1" ALIAS="1. Email Must Be From" TYPE="TEXT" DEFAULT="" MAP=".Email_Must_Be_From_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailMustBeFrom2" ALIAS="2. Email Must Be From" TYPE="TEXT" DEFAULT="" MAP=".Email_Must_Be_From_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailMustBeFrom3" ALIAS="3. Email Must Be From" TYPE="TEXT" DEFAULT="" MAP=".Email_Must_Be_From_3" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailMustBeFrom4" ALIAS="4. Email Must Be From" TYPE="TEXT" DEFAULT="" MAP=".Email_Must_Be_From_4" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailMustBeFrom5" ALIAS="5. Email Must Be From" TYPE="TEXT" DEFAULT="" MAP=".Email_Must_Be_From_5" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="ignoreSender1" ALIAS="1. Discard Sender Email" TYPE="TEXT" DEFAULT="" MAP=".Ignore_Sender_Containing_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="ignoreSender2" ALIAS="2. Discard Sender Email" TYPE="TEXT" DEFAULT="" MAP=".Ignore_Sender_Containing_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="ignoreSender3" ALIAS="3. Discard Sender Email" TYPE="TEXT" DEFAULT="" MAP=".Ignore_Sender_Containing_3" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="ignoreSender4" ALIAS="4. Discard Sender Email" TYPE="TEXT" DEFAULT="" MAP=".Ignore_Sender_Containing_4" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="ignoreSender5" ALIAS="5. Discard Sender Email" TYPE="TEXT" DEFAULT="" MAP=".Ignore_Sender_Containing_5" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF ALIAS="Outgoing Email" TYPE="HEADER" MAPROOT="Email_Notifications_From_PQube3"/>
+	<PROPDEF NAME="sendResetEmails" ALIAS="Send Reset Emails" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Send_Reset_Emails" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="sendEventsEmails" ALIAS="Send Events Emails" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Send_Events_Emails" TRUE="ON" FALSE="OFF" POSTREAD="toggleOutgoingEventSummary('{sectionName}', {value})" POSTWRITE="toggleOutgoingEventSummary('{sectionName}', {value})"/>
+	<PROPDEF NAME="sendCSVInEmails" ALIAS="Send CSV In Emails" TYPE="CHECKBOX" DEFAULT="ON" MAP=".Send_CSV_in_Emails" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="sendTrendsEmails" ALIAS="Send Trends Emails" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Send_Trends_Emails" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="sendSnapshotEmails" ALIAS="Send Snapshot Emails" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Send_Snapshot_Emails" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="eraseQueueOnRestart" ALIAS="Erase Pending Email Queue On Restart" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Flush_Emails_on_Restart" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="emailBodyType" ALIAS="Email Body Type" TYPE="SELECT" DEFAULT="Human_Readable_HTML" MAP=".Email_Body_Type">
+		<PARAM TYPE="TEXT">
+			<LIST>
+				<ITEM NAME="Human_Readable_HTML" VALUE="Human_Readable_HTML"/>
+				<ITEM NAME="Human_Readable_Text" VALUE="Human_Readable_Text"/>
+				<ITEM NAME="Machine_Readable_XML" VALUE="Machine_Readable_XML"/>
+			</LIST>
+		</PARAM>
+	</PROPDEF>
+	<PROPDEF NAME="emailTo1" ALIAS="1. Email To" TYPE="TEXT" DEFAULT="" MAP=".Email_To_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailTo2" ALIAS="2. Email To" TYPE="TEXT" DEFAULT="" MAP=".Email_To_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailTo3" ALIAS="3. Email To" TYPE="TEXT" DEFAULT="" MAP=".Email_To_3" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailTo4" ALIAS="4. Email To" TYPE="TEXT" DEFAULT="" MAP=".Email_To_4" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailTo5" ALIAS="5. Email To" TYPE="TEXT" DEFAULT="" MAP=".Email_To_5" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailCC1" ALIAS="1. Email CC To" TYPE="TEXT" DEFAULT="" MAP=".Email_CC_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailCC2" ALIAS="2. Email CC To" TYPE="TEXT" DEFAULT="" MAP=".Email_CC_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailCC3" ALIAS="3. Email CC To" TYPE="TEXT" DEFAULT="" MAP=".Email_CC_3" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailCC4" ALIAS="4. Email CC To" TYPE="TEXT" DEFAULT="" MAP=".Email_CC_4" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailCC5" ALIAS="5. Email CC To" TYPE="TEXT" DEFAULT="" MAP=".Email_CC_5" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailBCC1" ALIAS="1. Email BCC To" TYPE="TEXT" DEFAULT="" MAP=".Email_BCC_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailBCC2" ALIAS="2. Email BCC To" TYPE="TEXT" DEFAULT="" MAP=".Email_BCC_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailBCC3" ALIAS="3. Email BCC To" TYPE="TEXT" DEFAULT="" MAP=".Email_BCC_3" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailBCC4" ALIAS="4. Email BCC To" TYPE="TEXT" DEFAULT="" MAP=".Email_BCC_4" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="emailBCC5" ALIAS="5. Email BCC To" TYPE="TEXT" DEFAULT="" MAP=".Email_BCC_5" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF ALIAS="Outgoing Event Summary Email" TYPE="HEADER" MAPROOT="Email_Notifications_From_PQube3"/>
+	<PROPDEF NAME="enableEventSummaryEmail" ALIAS="Enable Event Summary Email" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_Event_Summary_Email" TRUE="ON" FALSE="OFF" POSTREAD="toggleOutgoingEmailText('{sectionName}', {value})" POSTWRITE="toggleOutgoingEmailText('{sectionName}', {value})"/>
+	<PROPDEF NAME="eventSummaryEmail1" ALIAS="1. Event Summary Email To" TYPE="TEXT" DEFAULT="" MAP=".Event_Summary_Email_To_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="eventSummaryEmail2" ALIAS="2. Event Summary Email To" TYPE="TEXT" DEFAULT="" MAP=".Event_Summary_Email_To_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="eventSummaryEmail3" ALIAS="3. Event Summary Email To" TYPE="TEXT" DEFAULT="" MAP=".Event_Summary_Email_To_3" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="eventSummaryEmailCC1" ALIAS="1. Event Summary Email CC" TYPE="TEXT" DEFAULT="" MAP=".Event_Summary_Email_CC_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="eventSummaryEmailCC2" ALIAS="2. Event Summary Email CC" TYPE="TEXT" DEFAULT="" MAP=".Event_Summary_Email_CC_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="eventSummaryEmailCC3" ALIAS="3. Event Summary Email CC" TYPE="TEXT" DEFAULT="" MAP=".Event_Summary_Email_CC_3" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="eventSummaryEmailBCC1" ALIAS="1. Event Summary Email BCC" TYPE="TEXT" DEFAULT="" MAP=".Event_Summary_Email_BCC_1" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="eventSummaryEmailBCC2" ALIAS="2. Event Summary Email BCC" TYPE="TEXT" DEFAULT="" MAP=".Event_Summary_Email_BCC_2" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
+	<PROPDEF NAME="eventSummaryEmailBCC3" ALIAS="3. Event Summary Email BCC" TYPE="TEXT" DEFAULT="" MAP=".Event_Summary_Email_BCC_3" READ="removeQuotes({mapExpr})" WRITE="addQuotes({value})"/>
 </SECTION>

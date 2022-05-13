@@ -1,7 +1,7 @@
 ﻿<SECTION NAME="network" ALIAS="Network">
 	<PROPDEF ALIAS="IP Settings" TYPE="HEADER" MAPROOT="Fixed_IP"/>
 	<PROPDEF NAME="publishIPAddress" ALIAS="Publish IP Address" TYPE="CHECKBOX" DEFAULT="ON" MAP="viewModel.deviceConfig().Network_Setup.Publish_IP_Address" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="ipAddressMethod" ALIAS="IP Address Method" TYPE="SELECT" DEFAULT="Use_DHCP" MAP="viewModel.deviceConfig().Network_Setup.IP_Address_Method" POSTREAD="toggleNetworkIPSettings({'sectionName'}, {value})" POSTWRITE="toggleNetworkIPSettings({'sectionName'}, {value})">
+	<PROPDEF NAME="ipAddressMethod" ALIAS="IP Address Method" TYPE="SELECT" DEFAULT="Use_DHCP" MAP="viewModel.deviceConfig().Network_Setup.IP_Address_Method" POSTREAD="toggleNetworkIPSettings('{sectionName}', {value})" POSTWRITE="toggleNetworkIPSettings('{sectionName}', {value})">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="Use_DHCP" VALUE="Use_DHCP"/>
@@ -16,8 +16,8 @@
 	<PROPDEF NAME="networkIPDNS2" ALIAS="IP DNS2" TYPE="TEXT" DEFAULT="8.8.4.4" MAP=".IP_DNS2"/>
 	<PROPDEF ALIAS="Web Server" TYPE="HEADER" MAPROOT="HTTP_Web_Server_Settings"/>
 	<PROPDEF NAME="webServerPort" ALIAS="Web Server Port" TYPE="NUMERIC" DEFAULT="80" MAP=".HTTP_Web_Server_Port"/>
-	<PROPDEF NAME="restricGeneralAccess" ALIAS="Restrict General Access" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_HTTP_Authorization" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="webServerUserName" ALIAS="User Name" TYPE="TEXT" DEFAULT="" MAP=".HTTP_Uesr_Name"/>
+	<PROPDEF NAME="restricGeneralAccess" ALIAS="Restrict General Access" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_HTTP_Authorization" TRUE="ON" FALSE="OFF" POSTREAD="toggleGeneralAccess('{sectionName}', {value})" POSTWRITE="toggleGeneralAccess('{sectionName}', {value})"/>
+	<PROPDEF NAME="webServerUserName" ALIAS="User Name" TYPE="TEXT" DEFAULT="" MAP=".HTTP_User_Name"/>
 	<PROPDEF NAME="webServerPassword" ALIAS="Password" TYPE="TEXT" DEFAULT="" MAP=".HTTP_Password"/>
 	<PROPDEF NAME="xFrameOptions" ALIAS="X-Frame Options" TYPE="SELECT" DEFAULT="DENY" MAP=".HTTP_X_Frame_Options">
 		<PARAM TYPE="TEXT">
@@ -28,19 +28,25 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
+	<PROPDEF ALIAS="Command Page" TYPE="HEADER" MAPROOT="HTTP_Web_Server_Settings"/>
 	<PROPDEF NAME="enableCommandPage" ALIAS="Enable Command Page" TYPE="CHECKBOX" DEFAULT="ON" MAP=".HTTP_Web_Server_Commands_Page" TRUE="ON" FALSE="OFF"/>
 	<PROPDEF NAME="commandPagePort" ALIAS="Command Page Port" TYPE="TEXT" DEFAULT="8888" MAP=".HTTP_Web_Server_Command_Port"/>
-	<PROPDEF NAME="commandPageRequireAuth" ALIAS="Require Authorization" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_HTTP_Admin_Authorization" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="commandPageUserName" ALIAS="User Name" TYPE="TEXT" DEFAULT="" MAP=".HTTP_Admin_User_Name"/>
-	<PROPDEF NAME="commandPagePassword" ALIAS="Password" TYPE="TEXT" DEFAULT="" MAP=".HTTP_Admin_Password"/>
-	<PROPDEF ALIAS="FTP Download or Upload to PQube3" TYPE="HEADER" MAPROOT=""/>
-	<PROPDEF NAME="ftpControlPort" ALIAS="FTP Control Port" TYPE="NUMERIC" DEFAULT="21" MAP=""/>
-	<PROPDEF NAME="ftpDataPort" ALIAS="FTP Control Port" TYPE="NUMERIC" DEFAULT="20" MAP=""/>
-	<PROPDEF ALIAS="Profiles" TYPE="HEADER" MAPROOT=""/>
-
-	<PROPDEF ALIAS="PQube3 Push to remote FTP Server (BETA)" TYPE="HEADER" MAPROOT=""/>
-	<PROPDEF NAME="enableFTPPush" ALIAS="Enable FTP Push" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF"/>
-	<PROPDEF NAME="distantFTPServerURL" ALIAS="Distant FTP Server URL" TYPE="TEXT" DEFAULT="" MAP=""/>
-	<PROPDEF NAME="pushToRemoteFTPUsername" ALIAS="Username" TYPE="TEXT" DEFAULT="" MAP=""/>
-	<PROPDEF NAME="pushToRemoteFTPPassword" ALIAS="Password" TYPE="TEXT" DEFAULT="" MAP=""/>
+	<PROPDEF NAME="commandPageRequireAuth" ALIAS="Require Authorization" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Require_HTTP_Admin_Authorization" TRUE="ON" FALSE="OFF" POSTREAD="toggleServerAuthentication('{sectionName}', {value})" POSTWRITE="toggleServerAuthentication('{sectionName}', {value})"/>
+	<PROPDEF NAME="commandPageUserName" ALIAS="User Name" TYPE="TEXT" DEFAULT="(note not set)" MAP=".HTTP_Admin_User_Name"/>
+	<PROPDEF NAME="commandPagePassword" ALIAS="Password" TYPE="TEXT" MAP=".HTTP_Admin_Password"/>
+	<PROPDEF ALIAS="FTP Download or Upload to PQube3" TYPE="HEADER" MAPROOT="FTP_Settings"/>
+	<PROPDEF NAME="ftpControlPort" ALIAS="FTP Control Port" TYPE="NUMERIC" DEFAULT="21" MAP=".FTP_Control_Port"/>
+	<PROPDEF NAME="ftpDataPort" ALIAS="FTP Control Port" TYPE="NUMERIC" DEFAULT="20" MAP=".FTP_Data_Port"/>
+	<PROPDEF ALIAS="Profiles" TYPE="HEADER" MAPROOT="FTP_Settings"/>
+	<PROPDEF NAME="enableFTPPasswords" ALIAS="Enable FTP Passwords" TYPE="CHECKBOX" DEFAULT="OFF" MAP="" TRUE="ON" FALSE="OFF" POSTREAD="toggleFTPPassword('{sectionName}', {value})" POSTWRITE="toggleFTPPassword('{sectionName}', {value})"/>
+	<PROPDEF NAME="FTPPassword1" ALIAS="FTP Password 1" TYPE="TEXT" DEFAULT="" MAP=".FTP_Password_1"/>
+	<PROPDEF NAME="FTPPassword2" ALIAS="FTP Password 2" TYPE="TEXT" DEFAULT="" MAP=".FTP_Password_2"/>
+	<PROPDEF NAME="FTPPassword3" ALIAS="FTP Password 3" TYPE="TEXT" DEFAULT="" MAP=".FTP_Password_3"/>
+	<PROPDEF NAME="ftpConfig" ALIAS="FTP Config Password" TYPE="TEXT" DEFAULT="" MAP=".FTP_Password_4"/>
+	<PROPDEF NAME="FTPUPDPassword" ALIAS="FTP UPD Password" TYPE="TEXT" DEFAULT="" MAP=".FTP_Password_5"/> 
+	<PROPDEF ALIAS="PQube3 Push to remote FTP Server (BETA)" TYPE="HEADER" MAPROOT="FTP_Settings"/>
+	<PROPDEF NAME="enableFTPPush" ALIAS="Enable FTP Push" TYPE="CHECKBOX" DEFAULT="OFF" MAP=".Enable_FTP_Push" TRUE="ON" FALSE="OFF"/>
+	<PROPDEF NAME="distantFTPServerURL" ALIAS="Distant FTP Server URL" TYPE="TEXT" DEFAULT="" MAP=".FTP_Push_Server"/>
+	<PROPDEF NAME="pushToRemoteFTPUsername" ALIAS="Username" TYPE="TEXT" DEFAULT="" MAP=".FTP_Push_User_Name"/>
+	<PROPDEF NAME="pushToRemoteFTPPassword" ALIAS="Password" TYPE="TEXT" DEFAULT="" MAP=".FTP_Push_Password"/>
 </SECTION>
