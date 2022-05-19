@@ -28,110 +28,109 @@ using GSF.Web.Hubs;
 using Microsoft.AspNet.SignalR.Hubs;
 using openMIC.Model;
 
-namespace openMIC
+namespace openMIC;
+
+/// <summary>
+/// Defines an interface for using <see cref="DataSubscriptionOperations"/> within a SignalR hub.
+/// </summary>
+/// <remarks>
+/// This interface makes sure all hub methods needed by GraphMeasurements.cshtml get properly defined.
+/// </remarks>
+public interface IDataSubscriptionOperations
+{
+    IEnumerable<MeasurementValue> GetMeasurements();
+
+    IEnumerable<MeasurementValue> GetStats();
+
+    IEnumerable<StatusLight> GetLights();
+
+    IEnumerable<DeviceDetail> GetDeviceDetails();
+
+    IEnumerable<MeasurementDetail> GetMeasurementDetails();
+
+    IEnumerable<PhasorDetail> GetPhasorDetails();
+
+    IEnumerable<SchemaVersion> GetSchemaVersion();
+
+    void InitializeSubscriptions();
+
+    void TerminateSubscriptions();
+
+    void UpdateFilters(string filterExpression);
+
+    void StatSubscribe(string filterExpression);
+}
+
+/// <summary>
+/// Represents hub operations for using <see cref="DataSubscriptionHubClient"/> instances.
+/// </summary>
+/// <remarks>
+/// This hub client operations class makes sure a data subscription is created per SignalR session and only created when needed.
+/// </remarks>
+public class DataSubscriptionOperations : HubClientOperationsBase<DataSubscriptionHubClient>, IDataSubscriptionOperations
 {
     /// <summary>
-    /// Defines an interface for using <see cref="DataSubscriptionOperations"/> within a SignalR hub.
+    /// Creates a new <see cref="DataSubscriptionOperations"/> instance.
     /// </summary>
-    /// <remarks>
-    /// This interface makes sure all hub methods needed by GraphMeasurements.cshtml get properly defined.
-    /// </remarks>
-    public interface IDataSubscriptionOperations
+    /// <param name="hub">Parent hub.</param>
+    /// <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
+    /// <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
+    public DataSubscriptionOperations(IHub hub, Action<string, UpdateType> logStatusMessageFunction = null, Action<Exception> logExceptionFunction = null) : base(hub, logStatusMessageFunction, logExceptionFunction)
     {
-        IEnumerable<MeasurementValue> GetMeasurements();
-
-        IEnumerable<MeasurementValue> GetStats();
-
-        IEnumerable<StatusLight> GetLights();
-
-        IEnumerable<DeviceDetail> GetDeviceDetails();
-
-        IEnumerable<MeasurementDetail> GetMeasurementDetails();
-
-        IEnumerable<PhasorDetail> GetPhasorDetails();
-
-        IEnumerable<SchemaVersion> GetSchemaVersion();
-
-        void InitializeSubscriptions();
-
-        void TerminateSubscriptions();
-
-        void UpdateFilters(string filterExpression);
-
-        void StatSubscribe(string filterExpression);
     }
 
-    /// <summary>
-    /// Represents hub operations for using <see cref="DataSubscriptionHubClient"/> instances.
-    /// </summary>
-    /// <remarks>
-    /// This hub client operations class makes sure a data subscription is created per SignalR session and only created when needed.
-    /// </remarks>
-    public class DataSubscriptionOperations : HubClientOperationsBase<DataSubscriptionHubClient>, IDataSubscriptionOperations
+    public IEnumerable<MeasurementValue> GetMeasurements()
     {
-        /// <summary>
-        /// Creates a new <see cref="DataSubscriptionOperations"/> instance.
-        /// </summary>
-        /// <param name="hub">Parent hub.</param>
-        /// <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
-        /// <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
-        public DataSubscriptionOperations(IHub hub, Action<string, UpdateType> logStatusMessageFunction = null, Action<Exception> logExceptionFunction = null) : base(hub, logStatusMessageFunction, logExceptionFunction)
-        {
-        }
+        return HubClient.GetMeasurements();
+    }
 
-        public IEnumerable<MeasurementValue> GetMeasurements()
-        {
-            return HubClient.GetMeasurements();
-        }
+    public IEnumerable<MeasurementValue> GetStats()
+    {
+        return HubClient.GetStatistics();
+    }
 
-        public IEnumerable<MeasurementValue> GetStats()
-        {
-            return HubClient.GetStatistics();
-        }
+    public IEnumerable<StatusLight> GetLights()
+    {
+        return HubClient.GetStatusLights();
+    }
 
-        public IEnumerable<StatusLight> GetLights()
-        {
-            return HubClient.GetStatusLights();
-        }
+    public IEnumerable<DeviceDetail> GetDeviceDetails()
+    {
+        return HubClient.GetDeviceDetails();
+    }
 
-        public IEnumerable<DeviceDetail> GetDeviceDetails()
-        {
-            return HubClient.GetDeviceDetails();
-        }
+    public IEnumerable<MeasurementDetail> GetMeasurementDetails()
+    {
+        return HubClient.GetMeasurementDetails();
+    }
 
-        public IEnumerable<MeasurementDetail> GetMeasurementDetails()
-        {
-            return HubClient.GetMeasurementDetails();
-        }
+    public IEnumerable<PhasorDetail> GetPhasorDetails()
+    {
+        return HubClient.GetPhasorDetails();
+    }
 
-        public IEnumerable<PhasorDetail> GetPhasorDetails()
-        {
-            return HubClient.GetPhasorDetails();
-        }
+    public IEnumerable<SchemaVersion> GetSchemaVersion()
+    {
+        return HubClient.GetSchemaVersion();
+    }
 
-        public IEnumerable<SchemaVersion> GetSchemaVersion()
-        {
-            return HubClient.GetSchemaVersion();
-        }
+    public void InitializeSubscriptions()
+    {
+        HubClient.InitializeSubscriptions();
+    }
 
-        public void InitializeSubscriptions()
-        {
-            HubClient.InitializeSubscriptions();
-        }
+    public void TerminateSubscriptions()
+    {
+        HubClient.TerminateSubscriptions();
+    }
 
-        public void TerminateSubscriptions()
-        {
-            HubClient.TerminateSubscriptions();
-        }
+    public void UpdateFilters(string filterExpression)
+    {
+        HubClient.UpdatePrimaryDataSubscription(filterExpression);
+    }
 
-        public void UpdateFilters(string filterExpression)
-        {
-            HubClient.UpdatePrimaryDataSubscription(filterExpression);
-        }
-
-        public void StatSubscribe(string filterExpression)
-        {
-            HubClient.UpdateStatisticsDataSubscription(filterExpression);
-        }
+    public void StatSubscribe(string filterExpression)
+    {
+        HubClient.UpdateStatisticsDataSubscription(filterExpression);
     }
 }

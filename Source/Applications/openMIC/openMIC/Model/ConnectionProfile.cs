@@ -27,70 +27,69 @@ using GSF.ComponentModel;
 using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
-namespace openMIC.Model
+namespace openMIC.Model;
+
+[PrimaryLabel("Name")]
+public class ConnectionProfile
 {
-    [PrimaryLabel("Name")]
-    public class ConnectionProfile
+    [PrimaryKey(true)]
+    public int ID
     {
-        [PrimaryKey(true)]
-        public int ID
-        {
-            get;
-            set;
-        }
+        get;
+        set;
+    }
 
-        public int? DefaultTaskQueueID
-        {
-            get;
-            set;
-        }
+    public int? DefaultTaskQueueID
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        public string Name
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    public string Name
+    {
+        get;
+        set;
+    }
 
-        public string Description
-        {
-            get;
-            set;
-        }
+    public string Description
+    {
+        get;
+        set;
+    }
 
-        [DefaultValueExpression("DateTime.UtcNow")]
-        public DateTime CreatedOn
-        {
-            get;
-            set;
-        }
+    [DefaultValueExpression("DateTime.UtcNow")]
+    public DateTime CreatedOn
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        [DefaultValueExpression("UserInfo.CurrentUserID")]
-        public string CreatedBy
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    [DefaultValueExpression("UserInfo.CurrentUserID")]
+    public string CreatedBy
+    {
+        get;
+        set;
+    }
 
-        [DefaultValueExpression("this.CreatedOn", EvaluationOrder = 1)]
-        [UpdateValueExpression("DateTime.UtcNow")]
-        public DateTime UpdatedOn
-        {
-            get;
-            set;
-        }
+    [DefaultValueExpression("this.CreatedOn", EvaluationOrder = 1)]
+    [UpdateValueExpression("DateTime.UtcNow")]
+    public DateTime UpdatedOn
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        [DefaultValueExpression("this.CreatedBy", EvaluationOrder = 1)]
-        [UpdateValueExpression("UserInfo.CurrentUserID")]
-        public string UpdatedBy
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    [DefaultValueExpression("this.CreatedBy", EvaluationOrder = 1)]
+    [UpdateValueExpression("UserInfo.CurrentUserID")]
+    public string UpdatedBy
+    {
+        get;
+        set;
     }
 }

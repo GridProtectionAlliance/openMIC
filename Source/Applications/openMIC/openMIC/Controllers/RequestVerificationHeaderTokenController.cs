@@ -27,19 +27,17 @@ using System.Net.Http;
 using System.Text;
 using System.Web.Http;
 
-namespace openMIC.Controllers
-{
-    [RoutePrefix("api/rvht")]
-    public class RequestVerificationHeaderTokenController : ApiController
-    {
-        [HttpGet, Route("")]
-        public HttpResponseMessage Get()
-        {
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(Request.GenerateRequestVerficationHeaderToken(), Encoding.UTF8, "text/plain")
-            };
-        }
-    }
+namespace openMIC.Controllers;
 
+[RoutePrefix("api/rvht")]
+public class RequestVerificationHeaderTokenController : ApiController
+{
+    [HttpGet, Route("")]
+    public HttpResponseMessage Get()
+    {
+        return new(HttpStatusCode.OK)
+        {
+            Content = new StringContent(Request.GenerateRequestVerficationHeaderToken(), Encoding.UTF8, "text/plain")
+        };
+    }
 }

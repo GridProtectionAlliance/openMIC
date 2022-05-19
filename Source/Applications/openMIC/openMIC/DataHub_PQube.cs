@@ -24,31 +24,31 @@
 using System;
 using GSF.Units;
 
-namespace openMIC
+namespace openMIC;
+
+public partial class DataHub
 {
-    public partial class DataHub
+    public string PQubeLoadConfig(int _) =>
+        // TODO: Load actual device config (FTP?)
+        GetIniAsJson(PQubeGetSampleIni(), false);
+
+    public dynamic PQubeGetDeviceTimeWithError(int _)
     {
-        public string PQubeLoadConfig(int deviceID) =>
-            // TODO: Load actual device config (FTP?)
-            GetIniAsJson(PQubeGetSampleIni(), false);
-
-        public dynamic PQubeGetDeviceTimeWithError(int deviceID)
+        // TODO: Query device for time
+        DateTime parsedTime = DateTime.UtcNow;
+        double totalError = (parsedTime - DateTime.UtcNow).TotalSeconds + 2.0D;
+        return new
         {
-            // TODO: Query device for time
-            DateTime parsedTime = DateTime.UtcNow;
-            double totalError = (parsedTime - DateTime.UtcNow).TotalSeconds + 2.0D;
-            return new
-            {
-                time = parsedTime.ToString(ShortDateTimeFormat),
-                error = totalError,
-                errorText = Time.ToElapsedTimeString(Math.Abs(totalError), 2)
-            };
-        }
+            time = parsedTime.ToString(ShortDateTimeFormat),
+            error = totalError,
+            errorText = Time.ToElapsedTimeString(Math.Abs(totalError), 2)
+        };
+    }
 
-        public string PQubeGetSampleIni()
-        {
-            return 
-              @"; ------ PQube 3 from Powerside.
+    public string PQubeGetSampleIni()
+    {
+        return 
+            @"; ------ PQube 3 from Powerside.
                 ; ------ www.powerside.com
                 ; ------ PQube 3e Version 3.9
 
@@ -1689,6 +1689,5 @@ namespace openMIC
                 IOT_BLE_Cord=""0.0000,0.0000""
                 IOT_BLE_Meas_Point=""Uninitialized""
                 ";
-        }
     }
 }

@@ -21,38 +21,34 @@
 //
 //******************************************************************************************************
 
-namespace openMIC.Model
+namespace openMIC.Model;
+
+/// <summary>
+/// Defines a base application model with convenient global settings and functions.
+/// </summary>
+/// <remarks>
+/// Custom view models should inherit from AppModel because the "Global" property is used by Layout.cshtml.
+/// </remarks>
+public class AppModel
 {
+#region [ Constructors ]
+
     /// <summary>
-    /// Defines a base application model with convenient global settings and functions.
+    /// Creates a new <see cref="AppModel"/>.
     /// </summary>
-    /// <remarks>
-    /// Custom view models should inherit from AppModel because the "Global" property is used by Layout.cshtml.
-    /// </remarks>
-    public class AppModel
+    public AppModel()
     {
-        #region [ Constructors ]
-
-        /// <summary>
-        /// Creates a new <see cref="AppModel"/>.
-        /// </summary>
-        public AppModel()
-        {
-            Global = (object)Program.Host.Model != null ? Program.Host.Model.Global : new GlobalSettings();
-        }
-
-        #endregion
-        
-        #region [ Properties ]
-
-        /// <summary>
-        /// Gets global settings for application.
-        /// </summary>
-        public GlobalSettings Global
-        {
-            get;
-        }
-
-        #endregion
+        Global = Program.Host.Model is null ? new() : Program.Host.Model.Global;
     }
+
+#endregion
+        
+#region [ Properties ]
+
+    /// <summary>
+    /// Gets global settings for application.
+    /// </summary>
+    public GlobalSettings Global { get; }
+
+#endregion
 }

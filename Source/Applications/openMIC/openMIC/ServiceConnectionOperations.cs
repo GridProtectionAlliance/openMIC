@@ -26,48 +26,47 @@ using GSF;
 using GSF.Web.Hubs;
 using Microsoft.AspNet.SignalR.Hubs;
 
-namespace openMIC
+namespace openMIC;
+
+/// <summary>
+/// Defines an interface for using <see cref="ServiceConnectionOperations"/> within a SignalR hub.
+/// </summary>
+/// <remarks>
+/// This interface makes sure all hub methods needed by RemoteConsole.cshtml get properly defined.
+/// </remarks>
+public interface IServiceConnectionOperations
 {
     /// <summary>
-    /// Defines an interface for using <see cref="ServiceConnectionOperations"/> within a SignalR hub.
+    /// Sends a service command.
     /// </summary>
-    /// <remarks>
-    /// This interface makes sure all hub methods needed by RemoteConsole.cshtml get properly defined.
-    /// </remarks>
-    public interface IServiceConnectionOperations
-    {
-        /// <summary>
-        /// Sends a service command.
-        /// </summary>
-        /// <param name="command">Command string.</param>
-        void SendCommand(string command);
+    /// <param name="command">Command string.</param>
+    void SendCommand(string command);
+}
+
+/// <summary>
+/// Represents hub operations for using <see cref="ServiceConnectionHubClient"/> instances.
+/// </summary>
+/// <remarks>
+/// This hub client operations class makes sure a service connection is created per SignalR session and only created when needed.
+/// </remarks>
+public class ServiceConnectionOperations : HubClientOperationsBase<ServiceConnectionHubClient>, IServiceConnectionOperations
+{
+    /// <summary>
+    /// Creates a new <see cref="ServiceConnectionOperations"/> instance.
+    /// </summary>
+    /// <param name="hub">Parent hub.</param>
+    /// <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
+    /// <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
+    public ServiceConnectionOperations(IHub hub, Action<string, UpdateType> logStatusMessageFunction = null, Action<Exception> logExceptionFunction = null) : base(hub, logStatusMessageFunction, logExceptionFunction)
+    {            
     }
 
     /// <summary>
-    /// Represents hub operations for using <see cref="ServiceConnectionHubClient"/> instances.
+    /// Sends a service command.
     /// </summary>
-    /// <remarks>
-    /// This hub client operations class makes sure a service connection is created per SignalR session and only created when needed.
-    /// </remarks>
-    public class ServiceConnectionOperations : HubClientOperationsBase<ServiceConnectionHubClient>, IServiceConnectionOperations
+    /// <param name="command">Command string.</param>
+    public void SendCommand(string command)
     {
-        /// <summary>
-        /// Creates a new <see cref="ServiceConnectionOperations"/> instance.
-        /// </summary>
-        /// <param name="hub">Parent hub.</param>
-        /// <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
-        /// <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
-        public ServiceConnectionOperations(IHub hub, Action<string, UpdateType> logStatusMessageFunction = null, Action<Exception> logExceptionFunction = null) : base(hub, logStatusMessageFunction, logExceptionFunction)
-        {            
-        }
-
-        /// <summary>
-        /// Sends a service command.
-        /// </summary>
-        /// <param name="command">Command string.</param>
-        public void SendCommand(string command)
-        {
-            HubClient.SendCommand(command);
-        }
+        HubClient.SendCommand(command);
     }
 }

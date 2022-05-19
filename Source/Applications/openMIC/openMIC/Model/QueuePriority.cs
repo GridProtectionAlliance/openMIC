@@ -21,28 +21,27 @@
 //
 //******************************************************************************************************
 
-namespace openMIC.Model
+namespace openMIC.Model;
+
+/// <summary>
+/// Represents an enumeration of possible queuing priorities.
+/// </summary>
+/// <remarks>
+/// Priority values are using in conjunction with the <see cref="GSF.Threading.LogicalThreadScheduler"/>
+/// which expects priority values to start at 1.
+/// </remarks>
+public enum QueuePriority
 {
     /// <summary>
-    /// Represents an enumeration of possible queuing priorities.
+    /// Queue task with normal priority.
     /// </summary>
-    /// <remarks>
-    /// Priority values are using in conjunction with the <see cref="GSF.Threading.LogicalThreadScheduler"/>
-    /// which expects priority values to start at 1.
-    /// </remarks>
-    public enum QueuePriority
-    {
-        /// <summary>
-        /// Queue task with normal priority.
-        /// </summary>
-        Normal = 1,
-        /// <summary>
-        /// Queue task with expedited, i.e., higher than normal, priority.
-        /// </summary>
-        Expedited = 2,
-        /// <summary>
-        /// Queue task with urgent, i.e., highest, priority.
-        /// </summary>
-        Urgent = 3
-    }
+    Normal = 1,
+    /// <summary>
+    /// Queue task with expedited, i.e., higher than normal, priority.
+    /// </summary>
+    Expedited = 2,
+    /// <summary>
+    /// Queue task with urgent, i.e., highest, priority.
+    /// </summary>
+    Urgent = 3
 }

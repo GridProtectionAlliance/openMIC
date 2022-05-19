@@ -1,37 +1,36 @@
 using System.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
-namespace openMIC.Model
+namespace openMIC.Model;
+
+public class Interconnection
 {
-    public class Interconnection
+    [PrimaryKey(true)]
+    public int ID
     {
-        [PrimaryKey(true)]
-        public int ID
-        {
-            get;
-            set;
-        }
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(50)]
-        public string Acronym
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(50)]
+    public string Acronym
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(100)]
-        public string Name
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(100)]
+    public string Name
+    {
+        get;
+        set;
+    }
 
-        public int? LoadOrder
-        {
-            get;
-            set;
-        }
+    public int? LoadOrder
+    {
+        get;
+        set;
     }
 }

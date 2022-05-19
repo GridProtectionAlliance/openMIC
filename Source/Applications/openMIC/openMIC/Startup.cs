@@ -38,130 +38,129 @@ using Newtonsoft.Json;
 using Owin;
 using openMIC.Model;
 
-namespace openMIC
+namespace openMIC;
+
+public class HostedExceptionHandler : ExceptionHandler
 {
-    public class HostedExceptionHandler : ExceptionHandler
+    public override void Handle(ExceptionHandlerContext context)
     {
-        public override void Handle(ExceptionHandlerContext context)
-        {
-            Program.Host.LogException(context.Exception);
-            base.Handle(context);
-        }
+        Program.Host.LogException(context.Exception);
+        base.Handle(context);
     }
+}
 
-    public class Startup
+public class Startup
+{
+    public void Configuration(IAppBuilder app)
     {
-        public void Configuration(IAppBuilder app)
+        // Modify the JSON serializer to serialize dates as UTC - otherwise, timezone will not be appended
+        // to date strings and browsers will select whatever timezone suits them
+        JsonSerializerSettings settings = JsonUtility.CreateDefaultSerializerSettings();
+        settings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+        JsonSerializer serializer = JsonSerializer.Create(settings);
+        GlobalHost.DependencyResolver.Register(typeof(JsonSerializer), () => serializer);
+        GlobalHost.Configuration.MaxIncomingWebSocketMessageSize = null;
+        AppModel model = Program.Host.Model;
+
+        // Load data hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
+        try
         {
-            // Modify the JSON serializer to serialize dates as UTC - otherwise, timezone will not be appended
-            // to date strings and browsers will select whatever timezone suits them
-            JsonSerializerSettings settings = JsonUtility.CreateDefaultSerializerSettings();
-            settings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-            JsonSerializer serializer = JsonSerializer.Create(settings);
-            GlobalHost.DependencyResolver.Register(typeof(JsonSerializer), () => serializer);
-            GlobalHost.Configuration.MaxIncomingWebSocketMessageSize = null;
-            AppModel model = Program.Host.Model;
-
-            // Load data hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
-            try
-            {
-                using (new DataHub()) { }
-            }
-            catch (Exception ex)
-            {
-                Program.Host.LogException(new SecurityException($"Failed to load Data Hub, validate database connection string in configuration file: {ex.Message}", ex));
-            }
-
-            // Load security hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
-            try
-            {
-                using (new SecurityHub(
-                    (message, updateType) => Program.Host.LogWebHostStatusMessage(message, updateType),
-                    ex => Program.Host.LogException(ex)
-                )) { }
-            }
-            catch (Exception ex)
-            {
-                Program.Host.LogException(new SecurityException($"Failed to load Security Hub, validate database connection string in configuration file: {ex.Message}", ex));
-            }
-
-            // Load shared hub into application domain, initializing default status and exception handlers
-            try
-            {
-                using (new SharedHub(
-                    (message, updateType) => Program.Host.LogWebHostStatusMessage(message, updateType),
-                    ex => Program.Host.LogException(ex)
-                )) { }
-            }
-            catch (Exception ex)
-            {
-                Program.Host.LogException(new SecurityException($"Failed to load Shared Hub: {ex.Message}", ex));
-            }
-
-            // Load Modbus assembly
-            try
-            {
-                // Make embedded resources of Modbus poller available to web server
-                using (ModbusPoller poller = new ModbusPoller())
-                    WebExtensions.AddEmbeddedResourceAssembly(poller.GetType().Assembly);
-
-                ModbusPoller.RestoreConfigurations(FilePath.GetAbsolutePath("ModbusConfigs"));
-            }
-            catch (Exception ex)
-            {
-                Program.Host.LogException(new InvalidOperationException($"Failed to load Modbus assembly: {ex.Message}", ex));
-            }
-
-            // Configure Windows Authentication for self-hosted web service
-            HubConfiguration hubConfig = new HubConfiguration();
-            HttpConfiguration httpConfig = new HttpConfiguration();
-
-            // Make sure any hosted exceptions get propagated to service error handling
-            httpConfig.Services.Replace(typeof(IExceptionHandler), new HostedExceptionHandler());
-
-            // Enabled detailed client errors
-            hubConfig.EnableDetailedErrors = true;
-
-            // Enable GSF session management
-            httpConfig.EnableSessions(AuthenticationOptions);
-
-            // Enable GSF role-based security authentication
-            app.UseAuthentication(AuthenticationOptions);
-
-            // Enable cross-domain scripting default policy - controllers can manually
-            // apply "EnableCors" attribute to class or an action to override default
-            // policy configured here
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(model.Global.DefaultCorsOrigins))
-                    httpConfig.EnableCors(new EnableCorsAttribute(model.Global.DefaultCorsOrigins, model.Global.DefaultCorsHeaders, model.Global.DefaultCorsMethods) { SupportsCredentials = model.Global.DefaultCorsSupportsCredentials });
-            }
-            catch (Exception ex)
-            {
-                Program.Host.LogException(new InvalidOperationException($"Failed to establish default CORS policy: {ex.Message}", ex));
-            }
-
-            // Load ServiceHub SignalR class
-            app.MapSignalR(hubConfig);
-
-            // Set configuration to use reflection to setup routes
-            httpConfig.MapHttpAttributeRoutes();
-
-            // Load the WebPageController class and assign its routes
-            app.UseWebApi(httpConfig);
-
-            // Setup resolver for web page controller instances
-            app.UseWebPageController(WebServer.Default, Program.Host.DefaultWebPage, model, typeof(AppModel), AuthenticationOptions);
-
-            // Check for configuration issues before first request
-            httpConfig.EnsureInitialized();
+            using (new DataHub()) { }
+        }
+        catch (Exception ex)
+        {
+            Program.Host.LogException(new SecurityException($"Failed to load Data Hub, validate database connection string in configuration file: {ex.Message}", ex));
         }
 
-        // Static Properties
+        // Load security hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
+        try
+        {
+            using (new SecurityHub(
+                       (message, updateType) => Program.Host.LogWebHostStatusMessage(message, updateType),
+                       ex => Program.Host.LogException(ex)
+                   )) { }
+        }
+        catch (Exception ex)
+        {
+            Program.Host.LogException(new SecurityException($"Failed to load Security Hub, validate database connection string in configuration file: {ex.Message}", ex));
+        }
 
-        /// <summary>
-        /// Gets the authentication options used for the hosted web server.
-        /// </summary>
-        public static AuthenticationOptions AuthenticationOptions { get; } = new AuthenticationOptions();
+        // Load shared hub into application domain, initializing default status and exception handlers
+        try
+        {
+            using (new SharedHub(
+                       (message, updateType) => Program.Host.LogWebHostStatusMessage(message, updateType),
+                       ex => Program.Host.LogException(ex)
+                   )) { }
+        }
+        catch (Exception ex)
+        {
+            Program.Host.LogException(new SecurityException($"Failed to load Shared Hub: {ex.Message}", ex));
+        }
+
+        // Load Modbus assembly
+        try
+        {
+            // Make embedded resources of Modbus poller available to web server
+            using (ModbusPoller poller = new())
+                WebExtensions.AddEmbeddedResourceAssembly(poller.GetType().Assembly);
+
+            ModbusPoller.RestoreConfigurations(FilePath.GetAbsolutePath("ModbusConfigs"));
+        }
+        catch (Exception ex)
+        {
+            Program.Host.LogException(new InvalidOperationException($"Failed to load Modbus assembly: {ex.Message}", ex));
+        }
+
+        // Configure Windows Authentication for self-hosted web service
+        HubConfiguration hubConfig = new();
+        HttpConfiguration httpConfig = new();
+
+        // Make sure any hosted exceptions get propagated to service error handling
+        httpConfig.Services.Replace(typeof(IExceptionHandler), new HostedExceptionHandler());
+
+        // Enabled detailed client errors
+        hubConfig.EnableDetailedErrors = true;
+
+        // Enable GSF session management
+        httpConfig.EnableSessions(AuthenticationOptions);
+
+        // Enable GSF role-based security authentication
+        app.UseAuthentication(AuthenticationOptions);
+
+        // Enable cross-domain scripting default policy - controllers can manually
+        // apply "EnableCors" attribute to class or an action to override default
+        // policy configured here
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(model.Global.DefaultCorsOrigins))
+                httpConfig.EnableCors(new EnableCorsAttribute(model.Global.DefaultCorsOrigins, model.Global.DefaultCorsHeaders, model.Global.DefaultCorsMethods) { SupportsCredentials = model.Global.DefaultCorsSupportsCredentials });
+        }
+        catch (Exception ex)
+        {
+            Program.Host.LogException(new InvalidOperationException($"Failed to establish default CORS policy: {ex.Message}", ex));
+        }
+
+        // Load ServiceHub SignalR class
+        app.MapSignalR(hubConfig);
+
+        // Set configuration to use reflection to setup routes
+        httpConfig.MapHttpAttributeRoutes();
+
+        // Load the WebPageController class and assign its routes
+        app.UseWebApi(httpConfig);
+
+        // Setup resolver for web page controller instances
+        app.UseWebPageController(WebServer.Default, Program.Host.DefaultWebPage, model, typeof(AppModel), AuthenticationOptions);
+
+        // Check for configuration issues before first request
+        httpConfig.EnsureInitialized();
     }
+
+    // Static Properties
+
+    /// <summary>
+    /// Gets the authentication options used for the hosted web server.
+    /// </summary>
+    public static AuthenticationOptions AuthenticationOptions { get; } = new();
 }

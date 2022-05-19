@@ -6,7 +6,7 @@
     <OutputType>WinExe</OutputType>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <LangVersion>9</LangVersion>
+    <LangVersion>latest</LangVersion>
     <ProjectGuid>{0BF2447E-252D-4712-B154-E350AF463081}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <AppDesignerFolder>Properties</AppDesignerFolder>

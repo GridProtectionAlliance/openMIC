@@ -1,29 +1,28 @@
 using System.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
-namespace openMIC.Model
+namespace openMIC.Model;
+
+public class Runtime
 {
-    public class Runtime
+    [PrimaryKey(true)]
+    public int ID
     {
-        [PrimaryKey(true)]
-        public int ID
-        {
-            get;
-            set;
-        }
+        get;
+        set;
+    }
 
-        public int SourceID
-        {
-            get;
-            set;
-        }
+    public int SourceID
+    {
+        get;
+        set;
+    }
 
-        [Required]
-        [StringLength(200)]
-        public string SourceTable
-        {
-            get;
-            set;
-        }
+    [Required]
+    [StringLength(200)]
+    public string SourceTable
+    {
+        get;
+        set;
     }
 }

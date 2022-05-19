@@ -25,129 +25,128 @@ using System;
 using System.Threading.Tasks;
 using ModbusAdapters;
 
-namespace openMIC
+namespace openMIC;
+
+public partial class DataHub : IModbusOperations
 {
-    public partial class DataHub : IModbusOperations
+    public Task<bool> ModbusConnect(string connectionString)
     {
-        public Task<bool> ModbusConnect(string connectionString)
-        {
-            return m_modbusOperations.ModbusConnect(connectionString);
-        }
+        return m_modbusOperations.ModbusConnect(connectionString);
+    }
 
-        public void ModbusDisconnect()
-        {
-            m_modbusOperations.ModbusDisconnect();
-        }
+    public void ModbusDisconnect()
+    {
+        m_modbusOperations.ModbusDisconnect();
+    }
 
-        public async Task<bool[]> ReadDiscreteInputs(ushort startAddress, ushort pointCount)
+    public async Task<bool[]> ReadDiscreteInputs(ushort startAddress, ushort pointCount)
+    {
+        try
         {
-            try
-            {
-                return await m_modbusOperations.ReadDiscreteInputs(startAddress, pointCount);
-            }
-            catch (Exception ex)
-            {
-                LogException(new InvalidOperationException($"Exception while reading discrete inputs starting @ {startAddress}: {ex.Message}", ex));
-                return Array.Empty<bool>();
-            }
+            return await m_modbusOperations.ReadDiscreteInputs(startAddress, pointCount);
         }
+        catch (Exception ex)
+        {
+            LogException(new InvalidOperationException($"Exception while reading discrete inputs starting @ {startAddress}: {ex.Message}", ex));
+            return Array.Empty<bool>();
+        }
+    }
 
-        public async Task<bool[]> ReadCoils(ushort startAddress, ushort pointCount)
+    public async Task<bool[]> ReadCoils(ushort startAddress, ushort pointCount)
+    {
+        try
         {
-            try
-            {
-                return await m_modbusOperations.ReadCoils(startAddress, pointCount);
-            }
-            catch (Exception ex)
-            {
-                LogException(new InvalidOperationException($"Exception while reading coil values starting @ {startAddress}: {ex.Message}", ex));
-                return Array.Empty<bool>();
-            }
+            return await m_modbusOperations.ReadCoils(startAddress, pointCount);
         }
+        catch (Exception ex)
+        {
+            LogException(new InvalidOperationException($"Exception while reading coil values starting @ {startAddress}: {ex.Message}", ex));
+            return Array.Empty<bool>();
+        }
+    }
 
-        public async Task<ushort[]> ReadInputRegisters(ushort startAddress, ushort pointCount)
+    public async Task<ushort[]> ReadInputRegisters(ushort startAddress, ushort pointCount)
+    {
+        try
         {
-            try
-            {
-                return await m_modbusOperations.ReadInputRegisters(startAddress, pointCount);
-            }
-            catch (Exception ex)
-            {
-                LogException(new InvalidOperationException($"Exception while reading input registers starting @ {startAddress}: {ex.Message}", ex));
-                return Array.Empty<ushort>();
-            }
+            return await m_modbusOperations.ReadInputRegisters(startAddress, pointCount);
         }
+        catch (Exception ex)
+        {
+            LogException(new InvalidOperationException($"Exception while reading input registers starting @ {startAddress}: {ex.Message}", ex));
+            return Array.Empty<ushort>();
+        }
+    }
 
-        public async Task<ushort[]> ReadHoldingRegisters(ushort startAddress, ushort pointCount)
+    public async Task<ushort[]> ReadHoldingRegisters(ushort startAddress, ushort pointCount)
+    {
+        try
         {
-            try
-            {
-                return await m_modbusOperations.ReadHoldingRegisters(startAddress, pointCount);
-            }
-            catch (Exception ex)
-            {
-                LogException(new InvalidOperationException($"Exception while reading holding registers starting @ {startAddress}: {ex.Message}", ex));
-                return Array.Empty<ushort>();
-            }
+            return await m_modbusOperations.ReadHoldingRegisters(startAddress, pointCount);
         }
+        catch (Exception ex)
+        {
+            LogException(new InvalidOperationException($"Exception while reading holding registers starting @ {startAddress}: {ex.Message}", ex));
+            return Array.Empty<ushort>();
+        }
+    }
 
-        public async Task WriteCoils(ushort startAddress, bool[] data)
+    public async Task WriteCoils(ushort startAddress, bool[] data)
+    {
+        try
         {
-            try
-            {
-                await m_modbusOperations.WriteCoils(startAddress, data);
-            }
-            catch (Exception ex)
-            {
-                LogException(new InvalidOperationException($"Exception while writing coil values starting @ {startAddress}: {ex.Message}", ex));
-            }
+            await m_modbusOperations.WriteCoils(startAddress, data);
         }
+        catch (Exception ex)
+        {
+            LogException(new InvalidOperationException($"Exception while writing coil values starting @ {startAddress}: {ex.Message}", ex));
+        }
+    }
 
-        public async Task WriteHoldingRegisters(ushort startAddress, ushort[] data)
+    public async Task WriteHoldingRegisters(ushort startAddress, ushort[] data)
+    {
+        try
         {
-            try
-            {
-                await m_modbusOperations.WriteHoldingRegisters(startAddress, data);
-            }
-            catch (Exception ex)
-            {
-                LogException(new InvalidOperationException($"Exception while writing holding registers starting @ {startAddress}: {ex.Message}", ex));
-            }
+            await m_modbusOperations.WriteHoldingRegisters(startAddress, data);
         }
+        catch (Exception ex)
+        {
+            LogException(new InvalidOperationException($"Exception while writing holding registers starting @ {startAddress}: {ex.Message}", ex));
+        }
+    }
 
-        public string DeriveString(ushort[] values)
-        {
-            return m_modbusOperations.DeriveString(values);
-        }
+    public string DeriveString(ushort[] values)
+    {
+        return m_modbusOperations.DeriveString(values);
+    }
 
-        public float DeriveSingle(ushort highValue, ushort lowValue)
-        {
-            return m_modbusOperations.DeriveSingle(highValue, lowValue);
-        }
+    public float DeriveSingle(ushort highValue, ushort lowValue)
+    {
+        return m_modbusOperations.DeriveSingle(highValue, lowValue);
+    }
 
-        public double DeriveDouble(ushort b3, ushort b2, ushort b1, ushort b0)
-        {
-            return m_modbusOperations.DeriveDouble(b3, b2, b1, b0);
-        }
+    public double DeriveDouble(ushort b3, ushort b2, ushort b1, ushort b0)
+    {
+        return m_modbusOperations.DeriveDouble(b3, b2, b1, b0);
+    }
 
-        public int DeriveInt32(ushort highValue, ushort lowValue)
-        {
-            return m_modbusOperations.DeriveInt32(highValue, lowValue);
-        }
+    public int DeriveInt32(ushort highValue, ushort lowValue)
+    {
+        return m_modbusOperations.DeriveInt32(highValue, lowValue);
+    }
 
-        public uint DeriveUInt32(ushort highValue, ushort lowValue)
-        {
-            return m_modbusOperations.DeriveUInt32(highValue, lowValue);
-        }
+    public uint DeriveUInt32(ushort highValue, ushort lowValue)
+    {
+        return m_modbusOperations.DeriveUInt32(highValue, lowValue);
+    }
 
-        public long DeriveInt64(ushort b3, ushort b2, ushort b1, ushort b0)
-        {
-            return m_modbusOperations.DeriveInt64(b3, b2, b1, b0);
-        }
+    public long DeriveInt64(ushort b3, ushort b2, ushort b1, ushort b0)
+    {
+        return m_modbusOperations.DeriveInt64(b3, b2, b1, b0);
+    }
 
-        public ulong DeriveUInt64(ushort b3, ushort b2, ushort b1, ushort b0)
-        {
-            return m_modbusOperations.DeriveUInt64(b3, b2, b1, b0);
-        }
+    public ulong DeriveUInt64(ushort b3, ushort b2, ushort b1, ushort b0)
+    {
+        return m_modbusOperations.DeriveUInt64(b3, b2, b1, b0);
     }
 }
