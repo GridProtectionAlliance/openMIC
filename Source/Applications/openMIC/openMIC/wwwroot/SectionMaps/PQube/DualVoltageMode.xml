@@ -38,11 +38,11 @@
 		  </LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="AN1Ratio" ALIAS="AN1 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP=""/>
-	<PROPDEF NAME="AN2Ratio" ALIAS="AN2 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP=""/>
-	<PROPDEF NAME="AN3Ratio" ALIAS="AN3 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP=""/>
-	<PROPDEF NAME="AN4Ratio" ALIAS="AN4 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP=""/>
-	<PROPDEF NAME="AN1Range" ALIAS="AN1 Range" TYPE="SELECT" DEFAULT="LOW" MAP="">
+	<PROPDEF NAME="AN1Ratio" ALIAS="AN1 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN1_E_Channel_Ratio"/>
+	<PROPDEF NAME="AN2Ratio" ALIAS="AN2 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN2_E_Channel_Ratio"/>
+	<PROPDEF NAME="AN3Ratio" ALIAS="AN3 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN3_E_Channel_Ratio"/>
+	<PROPDEF NAME="AN4Ratio" ALIAS="AN4 Ratio" TYPE="TEXT" DEFAULT="100:1" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN4_E_Channel_Ratio"/>
+	<PROPDEF NAME="AN1Range" ALIAS="AN1 Range" TYPE="SELECT" DEFAULT="LOW" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN1_E_Range">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -50,7 +50,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="AN2Range" ALIAS="AN2 Range" TYPE="SELECT" DEFAULT="LOW" MAP="">
+	<PROPDEF NAME="AN2Range" ALIAS="AN2 Range" TYPE="SELECT" DEFAULT="LOW" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN2_E_Range">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -58,7 +58,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="AN3Range" ALIAS="AN3 Range" TYPE="SELECT" DEFAULT="LOW" MAP="">
+	<PROPDEF NAME="AN3Range" ALIAS="AN3 Range" TYPE="SELECT" DEFAULT="LOW" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN3_E_Range">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -66,7 +66,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="AN4Range" ALIAS="AN4 Range" TYPE="SELECT" DEFAULT="LOW" MAP="">
+	<PROPDEF NAME="AN4Range" ALIAS="AN4 Range" TYPE="SELECT" DEFAULT="LOW" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN4_E_Range">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="HIGH" VALUE="HIGH"/>
@@ -74,7 +74,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="AN1AN2Measurement" ALIAS="AN1 AN2 Measurement Mode" TYPE="SELECT" DEFAULT="DC" MAP="">
+	<PROPDEF NAME="AN1AN2Measurement" ALIAS="AN1 AN2 Measurement Mode" TYPE="SELECT" DEFAULT="DC" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN1_and_AN2_Measurement_Mode">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="DC" VALUE="DC"/>
@@ -82,7 +82,7 @@
 			</LIST>
 		</PARAM>
 	</PROPDEF>
-	<PROPDEF NAME="AN3AN4Measurement" ALIAS="AN3 AN4 Measurement Mode" TYPE="SELECT" DEFAULT="DC" MAP="">
+	<PROPDEF NAME="AN3AN4Measurement" ALIAS="AN3 AN4 Measurement Mode" TYPE="SELECT" DEFAULT="DC" MAP="viewModel.deviceConfig().Analog_Channel_Setup.AN3_and_AN4_Measurement_Mode">
 		<PARAM TYPE="TEXT">
 			<LIST>
 				<ITEM NAME="DC" VALUE="DC"/>
