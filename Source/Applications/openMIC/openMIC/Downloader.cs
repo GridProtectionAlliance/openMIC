@@ -1887,13 +1887,13 @@ public class Downloader : InputAdapterBase
             {
                 if (m_cancellationToken.IsCancelled)
                 {
-                    TerminateProcessTree(externalOperation.Id);
+                    TerminateProcessTree(externalOperation);
                     return false;
                 }
 
                 if (timeout > TimeSpan.Zero && DateTime.UtcNow - lastUpdate > timeout)
                 {
-                    TerminateProcessTree(externalOperation.Id);
+                    TerminateProcessTree(externalOperation);
                     return false;
                 }
             }
@@ -1989,7 +1989,7 @@ public class Downloader : InputAdapterBase
                 if (m_cancellationToken.IsCancelled)
                 {
                     task.Fail();
-                    TerminateProcessTree(externalOperation.Id);
+                    TerminateProcessTree(externalOperation);
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: downloader was disabled."));
                     OnProgressUpdated(this, new() { ErrorMessage = "External operation forcefully terminated: downloader was disabled." });
                     return;
@@ -1998,7 +1998,7 @@ public class Downloader : InputAdapterBase
                 if (timeout > TimeSpan.Zero && DateTime.UtcNow - lastUpdate > timeout)
                 {
                     task.Fail();
-                    TerminateProcessTree(externalOperation.Id);
+                    TerminateProcessTree(externalOperation);
                     OnProcessException(MessageLevel.Error, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)."));
                     OnProgressUpdated(this, new() { ErrorMessage = $"External operation forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)." });
                     return;
@@ -2335,32 +2335,62 @@ public class Downloader : InputAdapterBase
         }
     }
 
-    private static void TerminateProcessTree(int ancestorID)
+    private static void TerminateProcessTree(Process ancestor)
     {
         try
         {
-            ManagementObjectSearcher searcher = new($"SELECT * FROM Win32_Process WHERE ParentProcessID = {ancestorID}");
-            ManagementObjectCollection descendantIDs = searcher.Get();
+            ancestor.Refresh();
 
-            foreach (ManagementBaseObject managementObject in descendantIDs)
+            int ancestorID = ancestor.Id;
+            if (!ancestor.HasExited || ancestorID == 0)
+                return;
+
+            Process[] processes = Process.GetProcesses();
+            Dictionary<int, Process> processLookup = processes.ToDictionary(process => process.Id);
+
+            void Kill(int processID)
             {
-                if (managementObject is ManagementObject descendantID)
-                    TerminateProcessTree(Convert.ToInt32(descendantID["ProcessID"]));
+                if (!processLookup.TryGetValue(processID, out Process process))
+                    return;
+
+                try { process.Kill(); }
+                catch (ArgumentException) { /* Process already exited */ }
             }
 
-            try
+            void Descend(int processID)
             {
-                using Process ancestor = Process.GetProcessById(ancestorID);
-                ancestor.Kill();
+                if (processID == 0)
+                    return;
+
+                ManagementObjectSearcher searcher = new($"SELECT ProcessID FROM Win32_Process WHERE ParentProcessID = {processID}");
+                ManagementObjectCollection children = searcher.Get();
+
+                foreach (ManagementBaseObject baseChild in children)
+                {
+                    if (baseChild is ManagementObject child)
+                    {
+                        object obj = child["ProcessID"];
+                        int childID = Convert.ToInt32(obj);
+                        Descend(childID);
+                    }
+                }
+
+                Kill(processID);
             }
-            catch (ArgumentException)
-            {
-                // Process already exited
-            }
+
+            Descend(ancestorID);
         }
         catch (Exception ex)
         {
-            Program.Host.LogException(new InvalidOperationException($"Failed while attempting to terminate process tree with ancestor ID {ancestorID}: {ex.Message}", ex));
+            int ancestorID;
+            try { ancestorID = ancestor.Id; }
+            catch { ancestorID = 0; }
+
+            string ancestorName;
+            try { ancestorName = ancestor.ProcessName; }
+            catch { ancestorName = "Unknown Process"; }
+
+            Program.Host.LogException(new InvalidOperationException($"Failed to terminate process tree with ancestor \"{ancestorName}\" ({ancestorID}): {ex.Message}", ex));
         }
     }
 
