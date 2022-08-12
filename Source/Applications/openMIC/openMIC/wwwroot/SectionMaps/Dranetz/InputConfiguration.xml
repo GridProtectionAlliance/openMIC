@@ -86,7 +86,7 @@
   </PROPDEF>
   <PROPDEF ALIAS="Nominal Values" TYPE="HEADER"/>
   <PROPDEF NAME="nominalV" ALIAS="Nominal voltage (Volts)" TYPE="FLOAT" MAP=".nominal_volts['@value']"/>
-  <PROPDEF NAME="nomnalI" ALIAS="Nominal current (Amps)" TYPE="FLOAT" MAP=".nominal_amps['@value']"/>
+  <PROPDEF NAME="nominalI" ALIAS="Nominal current (Amps)" TYPE="FLOAT" MAP=".nominal_amps['@value']"/>
   <PROPDEF NAME="nominalF" ALIAS="Nominal frequency (Hz)" TYPE="FLOAT" MAP=".nominal_freq['@value']"/>
   <PROPDEF NAME="normalize" ALIAS="Normalize thresholds" TYPE="CHECKBOX" DEFAULT="1" MAP="normalizeThresholdState" POSTWRITE="normalizeThresholdStateUpdated()" UPDATESCONFIG="0"/>
   <PROPDEF ALIAS="Frequency Tracking" TYPE="HEADER"/>

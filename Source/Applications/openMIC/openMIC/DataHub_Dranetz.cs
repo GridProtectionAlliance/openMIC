@@ -200,6 +200,7 @@ public partial class DataHub
         string receivedTime = result.SelectSingleNode("commandresult/characteristics/@current_time")?.Value ?? throw new NullReferenceException("Failed to get device time");
         DateTime parsedTime = DateTime.ParseExact(receivedTime, "yyyy/MM/dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
         double totalError = (parsedTime - DateTime.UtcNow).TotalSeconds;
+
         return new
         {
             time = parsedTime.ToString(ShortDateTimeFormat),
@@ -252,7 +253,7 @@ public partial class DataHub
         {
             Uri rootUri = credential.RootUri;
             string[] cookies = result.Headers.SingleOrDefault(header =>
-                                                                  header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase)).Value?
+                header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase)).Value?
                 .ToArray() ?? Array.Empty<string>();
 
             foreach (string cookie in cookies)
