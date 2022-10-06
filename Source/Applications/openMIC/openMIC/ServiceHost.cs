@@ -55,7 +55,7 @@ namespace openMIC;
 
 public class ServiceHost : ServiceHostBase
 {
-#region [ Members ]
+    #region [ Members ]
 
     // Constants
     private const int DefaultMaximumDiagnosticLogSize = 10;
@@ -79,9 +79,9 @@ public class ServiceHost : ServiceHostBase
     private bool m_serviceStopping;
     private bool m_disposed;
 
-#endregion
+    #endregion
 
-#region [ Constructors ]
+    #region [ Constructors ]
 
     /// <summary>
     /// Creates a new <see cref="ServiceHost"/> instance.
@@ -105,9 +105,9 @@ public class ServiceHost : ServiceHostBase
         }
     }
 
-#endregion
+    #endregion
 
-#region [ Properties ]
+    #region [ Properties ]
 
     /// <summary>
     /// Gets the configured default web page for the application.
@@ -136,9 +136,9 @@ public class ServiceHost : ServiceHostBase
     /// </summary>
     public string PerformanceStatistics => ServiceHelper?.PerformanceMonitor?.Status;
 
-#endregion
+    #endregion
 
-#region [ Methods ]
+    #region [ Methods ]
 
     /// <summary>
     /// Releases the unmanaged resources used by the <see cref="ServiceHost"/> object and optionally releases the managed resources.
@@ -218,6 +218,7 @@ public class ServiceHost : ServiceHostBase
         systemSettings.Add("SmtpUserName", "", "Username to authenticate to the SMTP server, if any.");
         systemSettings.Add("SmtpPassword", "", "Password to authenticate to the SMTP server, if any.");
         systemSettings.Add("PoolMachines", "", "Comma separated list of openMIC pooled load-balancing machines. Should be blank when UseRemoteScheduler is true.");
+        systemSettings.Add("UseHostAsPoolMachine", false, "Flag that determines if host machine should be in load-balanced pool. Set to true to force use the host machine as a pool machine.");
         systemSettings.Add("UseRemoteScheduler", false, "Flag that determines if scheduling is handled locally or managed by a remote scheduling system");
         systemSettings.Add("SystemName", "", "Name of system that will be prefixed to system level tags, when defined. Value should follow tag naming conventions, e.g., no spaces and all upper case.");
         systemSettings.Add("HideRestartButton", false, "Flag that determines if restart button should be displayed on the home page. Set to false for clustered environments.");
@@ -272,9 +273,13 @@ public class ServiceHost : ServiceHostBase
         if (!string.IsNullOrWhiteSpace(poolMachines))
         {
             // Add configured pool machines making sure to also add local machine
-            HashSet<string> poolMachineList = new(poolMachines.Split(',')) { "localhost" };
+            HashSet<string> poolMachineList = new(poolMachines.Split(','));
+
+            if (systemSettings["UseHostAsPoolMachine"].ValueAs(false))
+                poolMachineList.Add("localhost");
+
             Model.Global.PoolMachines = poolMachineList.ToArray();
-                
+
             // An openMIC instance with defined pool machines is considered the schedule master
             Model.Global.UseRemoteScheduler = false;
         }
@@ -374,9 +379,9 @@ public class ServiceHost : ServiceHostBase
                         Thread.Sleep(SleepTime);
                 }
             })
-            {
-                IsBackground = true
-            }
+        {
+            IsBackground = true
+        }
             .Start();
     }
 
@@ -428,10 +433,10 @@ public class ServiceHost : ServiceHostBase
         }
     }
 
-    private void WebServer_StatusMessage(object sender, EventArgs<string> e) => 
+    private void WebServer_StatusMessage(object sender, EventArgs<string> e) =>
         LogWebHostStatusMessage(e.Argument);
 
-    public void LogWebHostStatusMessage(string message, UpdateType type = UpdateType.Information) => 
+    public void LogWebHostStatusMessage(string message, UpdateType type = UpdateType.Information) =>
         LogStatusMessage($"[WEBHOST] {message}", type);
 
     /// <summary>
@@ -439,7 +444,7 @@ public class ServiceHost : ServiceHostBase
     /// </summary>
     /// <param name="message">Message to log.</param>
     /// <param name="type">Type of message to log.</param>
-    public void LogStatusMessage(string message, UpdateType type = UpdateType.Information) => 
+    public void LogStatusMessage(string message, UpdateType type = UpdateType.Information) =>
         DisplayStatusMessage(message, type);
 
     /// <summary>
@@ -631,7 +636,7 @@ public class ServiceHost : ServiceHostBase
                         try
                         {
                             string actionURI = $"{targetUri}/api/Operations/RelayCommand?command={UrlEncode(commandInput)}";
-                                
+
                             HttpResponseMessage response = await s_http.SendAsync(new(HttpMethod.Get, actionURI));
 
                             LogStatusMessage(response.StatusCode == HttpStatusCode.OK ?
@@ -657,27 +662,27 @@ public class ServiceHost : ServiceHostBase
         ServiceHelper.DisconnectClient(clientID);
     }
 
-    private void UpdatedStatusHandler(object sender, EventArgs<Guid, string, UpdateType> e) => 
+    private void UpdatedStatusHandler(object sender, EventArgs<Guid, string, UpdateType> e) =>
         UpdatedStatus?.Invoke(sender, new(e.Argument1, e.Argument2, e.Argument3));
 
-    private void LoggedExceptionHandler(object sender, EventArgs<Exception> e) => 
+    private void LoggedExceptionHandler(object sender, EventArgs<Exception> e) =>
         LoggedException?.Invoke(sender, new(e.Argument));
 
-#endregion
+    #endregion
 
-#region [ Static ]
+    #region [ Static ]
 
     // Static Fields
     private static readonly HttpClient s_http = new(new HttpClientHandler { UseCookies = false });
 
-    internal static bool CommandAllowedForRelay(string commandInput) => 
+    internal static bool CommandAllowedForRelay(string commandInput) =>
         // Only allow single line commands
         commandInput.Split(new[] { Environment.NewLine, "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries).Length == 1 &&
         (
             // Only allow Initialize and ReloadConfig commands for pool machine relay
-            commandInput.StartsWith("init", StringComparison.OrdinalIgnoreCase) || 
+            commandInput.StartsWith("init", StringComparison.OrdinalIgnoreCase) ||
             commandInput.StartsWith("reloadconfig", StringComparison.OrdinalIgnoreCase)
         );
 
-#endregion
+    #endregion
 }
