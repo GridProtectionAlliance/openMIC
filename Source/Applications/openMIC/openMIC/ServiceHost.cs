@@ -24,6 +24,7 @@
 using GSF;
 using GSF.ComponentModel;
 using GSF.Configuration;
+using GSF.Diagnostics;
 using GSF.IO;
 using GSF.Security;
 using GSF.Security.Model;
@@ -36,6 +37,7 @@ using GSF.Web.Model.Handlers;
 using GSF.Web.Security;
 using GSF.Web.Shared;
 using GSF.Web.Shared.Model;
+using Microsoft.Ajax.Utilities;
 using Microsoft.Owin.Hosting;
 using openMIC.Model;
 using System;
@@ -48,7 +50,6 @@ using System.Security;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using GSF.Diagnostics;
 using static System.Net.WebUtility;
 
 namespace openMIC;
@@ -369,10 +370,13 @@ public class ServiceHost : ServiceHostBase
                 {
                     try
                     {
+                        // Load target minifier into app domain before precompiling Razor views - this will fix race condition on which assembly to use
+                        Minifier _ = new();
+                        
                         // Initiate pre-compile of base templates
-                        RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException);
                         RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException, "GSF.Web.Security.Views.");
                         RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException, "GSF.Web.Shared.Views.");
+                        RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException);
                         RazorEngine<CSharp>.Default.PreCompile(LogException);
                     }
                     catch (Exception ex)
