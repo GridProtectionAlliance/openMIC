@@ -101,11 +101,16 @@ public class Startup
         // Load Modbus assembly
         try
         {
-            // Make embedded resources of Modbus poller available to web server
-            using (ModbusPoller poller = new())
-                WebExtensions.AddEmbeddedResourceAssembly(poller.GetType().Assembly);
+            // Wrap class reference in lambda function to force
+            // assembly load errors to occur within the try-catch
+            new Action(() =>
+            {
+                // Make embedded resources of Modbus poller available to web server
+                using (ModbusPoller poller = new())
+                    WebExtensions.AddEmbeddedResourceAssembly(poller.GetType().Assembly);
 
-            ModbusPoller.RestoreConfigurations(FilePath.GetAbsolutePath("ModbusConfigs"));
+                ModbusPoller.RestoreConfigurations(FilePath.GetAbsolutePath("ModbusConfigs"));
+            })();
         }
         catch (Exception ex)
         {
@@ -143,7 +148,21 @@ public class Startup
 
         // Load ServiceHub SignalR class
         app.MapSignalR(hubConfig);
-
+        
+        // Map custom API controllers
+        try
+        {
+            httpConfig.Routes.MapHttpRoute(
+                name: "CustomAPIs",
+                routeTemplate: "api/{controller}/{action}/{id}",
+                defaults: new { action = "Index", id = RouteParameter.Optional }
+            );
+        }
+        catch (Exception ex)
+        {
+            Program.Host.LogException(new InvalidOperationException($"Failed to initialize custom API controllers: {ex.Message}", ex));
+        }
+        
         // Set configuration to use reflection to setup routes
         httpConfig.MapHttpAttributeRoutes();
 

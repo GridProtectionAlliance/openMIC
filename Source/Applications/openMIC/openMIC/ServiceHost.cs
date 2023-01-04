@@ -179,7 +179,9 @@ public class ServiceHost : ServiceHostBase
         CategorizedSettingsElementCollection securityProvider = ConfigurationFile.Current.Settings["securityProvider"];
 
         // Define set of default anonymous web resources for this site
-        const string DefaultAnonymousResourceExpression = "^/@|^/Scripts/|^/Content/|^/Images/|^/fonts/|^/favicon.ico$";
+        const string BaseAnonymousApiExpression = "^/api/";
+        const string AnonymousApiExpression = $"{BaseAnonymousApiExpression}(?!ModbusConfig)"; // Modbus config API should not be anonymous
+        const string DefaultAnonymousResourceExpression = $"^/@|^/Scripts/|^/Content/|^/Images/|^/fonts/|{AnonymousApiExpression}|^/favicon.ico$";
 
         systemSettings.Add("CompanyName", "Grid Protection Alliance", "The name of the company who owns this instance of the openMIC.");
         systemSettings.Add("CompanyAcronym", "GPA", "The acronym representing the company who owns this instance of the openMIC.");
@@ -223,6 +225,22 @@ public class ServiceHost : ServiceHostBase
         systemSettings.Add("UseRemoteScheduler", false, "Flag that determines if scheduling is handled locally or managed by a remote scheduling system");
         systemSettings.Add("SystemName", "", "Name of system that will be prefixed to system level tags, when defined. Value should follow tag naming conventions, e.g., no spaces and all upper case.");
         systemSettings.Add("HideRestartButton", false, "Flag that determines if restart button should be displayed on the home page. Set to false for clustered environments.");
+
+        // Ensure "^/api/(?!ModbusConfig)" exists in AnonymousResourceExpression
+        string anonymousResourceExpression = systemSettings["AnonymousResourceExpression"].Value;
+
+        if (anonymousResourceExpression.Contains($"{BaseAnonymousApiExpression}|"))
+        {
+            anonymousResourceExpression = anonymousResourceExpression.Replace($"{BaseAnonymousApiExpression}|", $"{AnonymousApiExpression}|");
+            systemSettings["AnonymousResourceExpression"].Update(anonymousResourceExpression);
+            ConfigurationFile.Current.Save();
+        }
+        
+        if (!anonymousResourceExpression.ToLowerInvariant().Contains(AnonymousApiExpression.ToLowerInvariant()))
+        {
+            systemSettings["AnonymousResourceExpression"].Update($"{AnonymousApiExpression}|{anonymousResourceExpression}");
+            ConfigurationFile.Current.Save();
+        }
 
         DefaultWebPage = systemSettings["DefaultWebPage"].Value;
 
