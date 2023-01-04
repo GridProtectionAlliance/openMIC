@@ -394,6 +394,11 @@
       <Component Id="DotRas">
         <File Id="DotRas.dll" Name="DotRas.dll" Source="$(var.SolutionDir)Dependencies\NuGet\DotRas.for.Win7.1.3.0\lib\net40\DotRas.dll"/>
       </Component>
+
+      <!-- Renci.SshNet components -->
+      <Component Id="Renci.SshNet">
+	      <File Id="Renci.SshNet.dll" Name="Renci.SshNet.dll" Source="$(var.SolutionDir)Dependencies\NuGet\SSH.NET.2020.0.2\lib\net40\Renci.SshNet.dll"/>
+      </Component>
     </ComponentGroup>
 
     <!-- openMIC Manager -->
