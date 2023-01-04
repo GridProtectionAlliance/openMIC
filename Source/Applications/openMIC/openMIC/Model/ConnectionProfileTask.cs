@@ -164,14 +164,14 @@ public class ConnectionProfileTaskSettings
 [PrimaryLabel("Name")]
 public class ConnectionProfileTask
 {
-#region [ Members ]
+    #region [ Members ]
 
     // Fields
     private readonly StringBuilder m_failMessage;
 
-#endregion
+    #endregion
 
-#region [ Constructors ]
+    #region [ Constructors ]
 
     public ConnectionProfileTask()
     {
@@ -179,9 +179,9 @@ public class ConnectionProfileTask
         m_failMessage = new StringBuilder();
     }
 
-#endregion
+    #endregion
 
-#region [ Properties ]
+    #region [ Properties ]
 
     [PrimaryKey(true)]
     public int ID { get; set; }
@@ -237,9 +237,9 @@ public class ConnectionProfileTask
     [JsonIgnore]
     public string FailMessage => m_failMessage.ToString();
 
-#endregion
+    #endregion
 
-#region [ Methods ]
+    #region [ Methods ]
 
     public void Reset()
     {
@@ -253,12 +253,12 @@ public class ConnectionProfileTask
         m_failMessage.AppendLine(message);
     }
 
-#endregion
+    #endregion
 
-#region [ Static ]
+    #region [ Static ]
 
     // Static Methods
     public static RecordRestriction CreateFilter(int connectionProfileID) => new("ConnectionProfileID = {0}", connectionProfileID);
 
-#endregion
+    #endregion
 }

@@ -903,8 +903,7 @@ public class Downloader : InputAdapterBase
         if (taskQueue == null && m_connectionProfile.DefaultTaskQueueID != null)
             taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("ID = {0}", m_connectionProfile.DefaultTaskQueueID.GetValueOrDefault());
 
-        if (taskQueue == null)
-            taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", m_connectionProfile.Name) ?? new ConnectionProfileTaskQueue { Name = m_connectionProfile.Name };
+        taskQueue ??= connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", m_connectionProfile.Name) ?? new ConnectionProfileTaskQueue { Name = m_connectionProfile.Name };
 
         taskQueue.RegisterExceptionHandler(ex => OnProcessException(MessageLevel.Error, ex, "Task Execution"));
         m_taskQueue = taskQueue;

@@ -33,16 +33,16 @@ namespace openMIC.Model;
 
 public class ConnectionProfileTaskQueue
 {
-#region [ Members ]
+    #region [ Members ]
 
     // Fields
     private string m_name;
     private LogicalThreadScheduler m_threadScheduler;
     private LogicalThread m_taskThread;
 
-#endregion
+    #endregion
 
-#region [ Properties ]
+    #region [ Properties ]
 
     [PrimaryKey(true)]
     public int ID { get; set; }
@@ -88,9 +88,9 @@ public class ConnectionProfileTaskQueue
 
     private LogicalThread TaskThread => m_taskThread ??= ThreadScheduler.CreateThread();
 
-#endregion
+    #endregion
 
-#region [ Methods ]
+    #region [ Methods ]
 
     public void QueueAction(Action action, QueuePriority priority) => TaskThread.Push((int)priority, action);
 
@@ -104,13 +104,13 @@ public class ConnectionProfileTaskQueue
         return threadScheduler;
     }
 
-#endregion
+    #endregion
 
-#region [ Static ]
+    #region [ Static ]
 
     // Static Fields
     private static readonly ConcurrentDictionary<string, LogicalThreadScheduler> s_threadSchedulers = new();
     private static readonly int s_priorityLevels = Enum.GetValues(typeof(QueuePriority)).Cast<int>().Max();
 
-#endregion
+    #endregion
 }
