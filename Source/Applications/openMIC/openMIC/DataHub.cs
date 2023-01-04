@@ -71,8 +71,8 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         void logStatusMessage(string message, UpdateType updateType) => LogStatusMessage(message, updateType);
         void logException(Exception ex) => LogException(ex);
 
-        m_dataSubscriptionOperations = new(this, logStatusMessage, logException);
-        m_modbusOperations = new(this, logStatusMessage, logException);
+        m_dataSubscriptionOperations = new DataSubscriptionOperations(this, logStatusMessage, logException);
+        m_modbusOperations = new ModbusOperations(this, logStatusMessage, logException);
     }
 
 #endregion
@@ -118,7 +118,7 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
 
     private static readonly string[] s_allowedSectionMaps = { "", "Dranetz", "PQube" };
 
-    private static HashSet<string> AllowedSectionMapPaths => s_allowedSectionMapPaths ??= new(s_allowedSectionMaps, StringComparer.OrdinalIgnoreCase);
+    private static HashSet<string> AllowedSectionMapPaths => s_allowedSectionMapPaths ??= new HashSet<string>(s_allowedSectionMaps, StringComparer.OrdinalIgnoreCase);
 
     private static string SystemName => s_systemName ??= Program.Host.Model.Global.SystemName ?? "";
 
@@ -152,7 +152,7 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
     static DataHub()
     {
         Downloader.ProgressUpdated += HandleProgressUpdated;
-        ModbusPoller.ProgressUpdated += (sender, args) => HandleProgressUpdated(sender, new(null, new(new[] { args.Argument })));
+        ModbusPoller.ProgressUpdated += (sender, args) => HandleProgressUpdated(sender, new EventArgs<string, List<ProgressUpdate>>(null, new List<ProgressUpdate>(new[] { args.Argument })));
 
         s_digits = "0123456789".ToCharArray();
 
@@ -165,7 +165,7 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         };
 
         // Create a shared HTTP client instance
-        s_http = new(new HttpClientHandler { UseCookies = false });
+        s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
     }
 
     private static void HandleProgressUpdated(object sender, EventArgs<string, List<ProgressUpdate>> e)
@@ -269,7 +269,7 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
     [RecordOperation(typeof(Setting), RecordOperation.CreateNewRecord)]
     public Setting NewSetting()
     {
-        return new();
+        return new Setting();
     }
 
     [AuthorizeHubRole("Administrator")]

@@ -175,8 +175,8 @@ public class ConnectionProfileTask
 
     public ConnectionProfileTask()
     {
-        Settings = new();
-        m_failMessage = new();
+        Settings = new ConnectionProfileTaskSettings();
+        m_failMessage = new StringBuilder();
     }
 
 #endregion

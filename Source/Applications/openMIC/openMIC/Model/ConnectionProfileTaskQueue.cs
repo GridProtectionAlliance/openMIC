@@ -98,7 +98,7 @@ public class ConnectionProfileTaskQueue
 
     private LogicalThreadScheduler GetThreadScheduler()
     {
-        LogicalThreadScheduler threadScheduler = s_threadSchedulers.GetOrAdd(Name, _ => new(s_priorityLevels));
+        LogicalThreadScheduler threadScheduler = s_threadSchedulers.GetOrAdd(Name, _ => new LogicalThreadScheduler(s_priorityLevels));
         threadScheduler.MaxThreadCount = MaxThreadCount <= 0 ? Environment.ProcessorCount : MaxThreadCount;
         threadScheduler.UseBackgroundThreads = UseBackgroundThreads;
         return threadScheduler;

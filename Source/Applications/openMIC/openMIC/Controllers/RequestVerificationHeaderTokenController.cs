@@ -35,7 +35,7 @@ public class RequestVerificationHeaderTokenController : ApiController
     [HttpGet, Route("")]
     public HttpResponseMessage Get()
     {
-        return new(HttpStatusCode.OK)
+        return new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(Request.GenerateRequestVerficationHeaderToken(), Encoding.UTF8, "text/plain")
         };

@@ -82,7 +82,7 @@ public partial class DataHub
             decimal.TryParse(location?.Element("longitude")?.Value, out decimal longitude);
             decimal.TryParse(location?.Element("latitude")?.Value, out decimal latitude);
 
-            yield return new()
+            yield return new IGridDevice
             {
                 DeviceID = deviceRecord.ID,
                 Acronym = deviceRecord.Acronym,

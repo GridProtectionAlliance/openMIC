@@ -27,6 +27,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.Caching;
 using System.Runtime.CompilerServices;
 using System.Security;
@@ -90,7 +91,7 @@ public partial class DataHub
             {
                 DefaultRequestHeaders =
                 {
-                    Authorization = new("Basic", 
+                    Authorization = new AuthenticationHeaderValue("Basic", 
                         Convert.ToBase64String(Encoding.UTF8.GetBytes(
                         $"{m_userName.ToUnsecureString()}:{m_password.ToUnsecureString()}")))
                 }
@@ -106,7 +107,7 @@ public partial class DataHub
         }
 
         public void ClearCookies() =>
-            Cookies = new();
+            Cookies = new CookieContainer();
 
         public string GetRequestUri(string cmdParam) =>
             $"{m_rootUri.ToUnsecureString()}/cmd={cmdParam}";

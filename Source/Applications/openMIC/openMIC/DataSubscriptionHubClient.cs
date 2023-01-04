@@ -65,16 +65,16 @@ public class DataSubscriptionHubClient : HubClientBase
     /// </summary>
     public DataSubscriptionHubClient()
     {
-        m_statisticSubscriptionInfo = new(false);
-        m_dataSubscriptionInfo = new(false);
-        m_measurements = new();
-        m_statistics = new();
-        m_statusLights = new();
-        m_deviceDetails = new();
-        m_measurementDetails = new();
-        m_phasorDetails = new();
-        m_schemaVersion = new();
-        m_measurementLock = new();
+        m_statisticSubscriptionInfo = new UnsynchronizedSubscriptionInfo(false);
+        m_dataSubscriptionInfo = new UnsynchronizedSubscriptionInfo(false);
+        m_measurements = new List<MeasurementValue>();
+        m_statistics = new List<MeasurementValue>();
+        m_statusLights = new List<StatusLight>();
+        m_deviceDetails = new List<DeviceDetail>();
+        m_measurementDetails = new List<MeasurementDetail>();
+        m_phasorDetails = new List<PhasorDetail>();
+        m_schemaVersion = new List<SchemaVersion>();
+        m_measurementLock = new object();
     }
 
 #endregion
@@ -91,7 +91,7 @@ public class DataSubscriptionHubClient : HubClientBase
                 {
                     LogStatusMessage("Initializing data subscriptions...");
 
-                    m_dataSubscription = new();
+                    m_dataSubscription = new DataSubscriber();
 
                     m_dataSubscription.StatusMessage += DataSubscriptionStatusMessage;
                     m_dataSubscription.ProcessException += DataSubscriptionProcessException;
@@ -126,7 +126,7 @@ public class DataSubscriptionHubClient : HubClientBase
             {
                 try
                 {
-                    m_statisticSubscription = new();
+                    m_statisticSubscription = new DataSubscriber();
 
                     m_statisticSubscription.StatusMessage += StatisticSubscriptionStatusMessage;
                     m_statisticSubscription.ProcessException += StatisticSubscriptionProcessException;
@@ -190,7 +190,7 @@ public class DataSubscriptionHubClient : HubClientBase
 
         lock (m_measurementLock)
         {
-            currentMeasurements = new(m_measurements);
+            currentMeasurements = new List<MeasurementValue>(m_measurements);
             m_measurements.Clear();
         }
 
@@ -263,7 +263,7 @@ public class DataSubscriptionHubClient : HubClientBase
         {
             foreach (IMeasurement measurement in e.Argument)
             {
-                m_measurements.Add(new()
+                m_measurements.Add(new MeasurementValue
                 {
                     Timestamp = GetUnixMilliseconds(measurement.Timestamp),
                     Value = measurement.Value,

@@ -38,7 +38,7 @@ public class AppModel
     /// </summary>
     public AppModel()
     {
-        Global = Program.Host.Model is null ? new() : Program.Host.Model.Global;
+        Global = Program.Host.Model is null ? new GlobalSettings() : Program.Host.Model.Global;
     }
 
 #endregion

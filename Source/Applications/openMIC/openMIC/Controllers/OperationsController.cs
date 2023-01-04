@@ -63,10 +63,10 @@ public class OperationsController : ApiController
         systemSettings.Add("DailyStatsInterval", DefaultDailyStatsInterval, "The interval, in seconds, for collecting the next set of daily device statistics.");
         double dailyStatsInterval = TimeSpan.FromSeconds(systemSettings["DailyStatsInterval"].ValueAs(DefaultDailyStatsInterval)).TotalMilliseconds;
 
-        s_http = new(new HttpClientHandler { UseCookies = false });
-        s_dailyStatistics = new(StringComparer.OrdinalIgnoreCase);
-        s_collectDailyStatistics = new(CollectDailyStatistics, Program.Host.LogException);
-        s_statisticsTimer = new(dailyStatsInterval);
+        s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
+        s_dailyStatistics = new ConcurrentDictionary<string, DailyStatistics>(StringComparer.OrdinalIgnoreCase);
+        s_collectDailyStatistics = new ShortSynchronizedOperation(CollectDailyStatistics, Program.Host.LogException);
+        s_statisticsTimer = new Timer(dailyStatsInterval);
         s_lastDayOfYear = DateTime.UtcNow.DayOfYear;
 
         s_statisticsTimer.Elapsed += (_, __) => s_collectDailyStatistics.RunOnce();
@@ -165,7 +165,7 @@ public class OperationsController : ApiController
             }
         }
 
-        return new(HttpStatusCode.OK);
+        return new HttpResponseMessage(HttpStatusCode.OK);
     }
 
     /// <summary>
@@ -177,10 +177,10 @@ public class OperationsController : ApiController
     public HttpResponseMessage ProgressUpdate([FromUri] string deviceName, [FromBody] List<ProgressUpdate> progressUpdates)
     {
         if (Program.Host.Model.Global.UseRemoteScheduler)
-            return new(HttpStatusCode.Forbidden);
+            return new HttpResponseMessage(HttpStatusCode.Forbidden);
 
         DataHub.ProgressUpdate(deviceName, null, progressUpdates);
-        return new(HttpStatusCode.OK);
+        return new HttpResponseMessage(HttpStatusCode.OK);
     }
 
     /// <summary>
@@ -192,15 +192,15 @@ public class OperationsController : ApiController
     public HttpResponseMessage RelayCommand(string commandInput)
     {
         if (string.IsNullOrWhiteSpace(commandInput))
-            return new(HttpStatusCode.BadRequest);
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
 
         commandInput = commandInput.Trim();
 
         if (!ServiceHost.CommandAllowedForRelay(commandInput))
-            return new(HttpStatusCode.Unauthorized);
+            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
 
         Program.Host.SendRequest(commandInput);
-        return new(HttpStatusCode.OK);
+        return new HttpResponseMessage(HttpStatusCode.OK);
     }
 
     /// <summary>
@@ -312,7 +312,7 @@ public class OperationsController : ApiController
         string name = downloader.Name;
         DateTime currentTime = DateTime.UtcNow;
 
-        return s_dailyStatistics.GetOrAdd(name, _ => new()
+        return s_dailyStatistics.GetOrAdd(name, _ => new DailyStatistics
         {
             Meter = name,
             StartTime = currentTime,

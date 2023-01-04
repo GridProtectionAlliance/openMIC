@@ -31,6 +31,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -178,12 +179,12 @@ public class Downloader : InputAdapterBase
 
     public Downloader()
     {
-        m_rasDialer = new();
+        m_rasDialer = new RasDialer();
         m_rasDialer.Error += RasDialer_Error;
-        m_deviceProxy = new(this);
-        m_trackedProgressUpdates = new();
+        m_deviceProxy = new DeviceProxy(this);
+        m_trackedProgressUpdates = new List<ProgressUpdate>();
         m_cancellationToken = new GSF.Threading.CancellationToken();
-        m_taskArrayLock = new();
+        m_taskArrayLock = new object();
     }
 
     #endregion
@@ -714,7 +715,7 @@ public class Downloader : InputAdapterBase
         lock (m_trackedProgressUpdates)
         {
             List<ProgressUpdate> updates = ProgressUpdate.Flatten(m_trackedProgressUpdates);
-            ProgressUpdated?.Invoke(this, new(clientID, updates));
+            ProgressUpdated?.Invoke(this, new EventArgs<string, List<ProgressUpdate>>(clientID, updates));
         }
     }
 
@@ -827,7 +828,7 @@ public class Downloader : InputAdapterBase
 
                     OnStatusMessage(MessageLevel.Warning, message);
 
-                    OnProgressUpdated(this, new()
+                    OnProgressUpdated(this, new ProgressUpdate
                     {
                         State = ProgressState.Fail,
                         ErrorMessage = message,
@@ -844,7 +845,7 @@ public class Downloader : InputAdapterBase
     {
         m_taskQueue.QueueAction(() => ExecuteSingleTask(task), priority);
 
-        OnProgressUpdated(this, new()
+        OnProgressUpdated(this, new ProgressUpdate
         {
             State = ProgressState.Queued,
             Message = $"Connection profile task \"{task.Name}\" with overridden schedule queued at \"{priority}\" priority.",
@@ -860,7 +861,7 @@ public class Downloader : InputAdapterBase
     {
         m_taskQueue.QueueAction(() => ExecuteGroupedTasks(tasks, startTimeConstraint, endTimeConstraint), priority);
 
-        OnProgressUpdated(this, new()
+        OnProgressUpdated(this, new ProgressUpdate
         {
             State = ProgressState.Queued,
             Message = $"Connection profile tasks queued at \"{priority}\" priority.",
@@ -989,7 +990,7 @@ public class Downloader : InputAdapterBase
             m_overallTasksCompleted = 0;
             m_overallTasksCount = 1;
 
-            OnProgressUpdated(this, new()
+            OnProgressUpdated(this, new ProgressUpdate
             {
                 State = ProgressState.Processing,
                 Message = $"Beginning execution of task \"{task.Name}\" with overridden schedule for connection profile \"{connectionProfileName}\"...",
@@ -1024,7 +1025,7 @@ public class Downloader : InputAdapterBase
                         LastFailedConnectionReason = ex.Message;
 
                         OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
-                        OnProgressUpdated(this, new() { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
+                        OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
                     }
                 }
             }
@@ -1050,7 +1051,7 @@ public class Downloader : InputAdapterBase
         }
         catch (Exception ex)
         {
-            OnProgressUpdated(this, new()
+            OnProgressUpdated(this, new ProgressUpdate
             {
                 State = ProgressState.Fail,
                 ErrorMessage = $"Unexpected error caused task execution to end prematurely: {ex.Message}",
@@ -1097,7 +1098,7 @@ public class Downloader : InputAdapterBase
         {
             if (tasks.Length == 0)
             {
-                OnProgressUpdated(this, new()
+                OnProgressUpdated(this, new ProgressUpdate
                 {
                     State = ProgressState.Fail,
                     ErrorMessage = $"No connection profile tasks defined for \"{connectionProfileName}\"."
@@ -1110,7 +1111,7 @@ public class Downloader : InputAdapterBase
             m_overallTasksCompleted = 0;
             m_overallTasksCount = tasks.Length;
 
-            OnProgressUpdated(this, new()
+            OnProgressUpdated(this, new ProgressUpdate
             {
                 State = ProgressState.Processing,
                 Message = $"Beginning execution of {m_overallTasksCount:N0} tasks for connection profile \"{connectionProfileName}\"...",
@@ -1145,7 +1146,7 @@ public class Downloader : InputAdapterBase
                         LastFailedConnectionReason = ex.Message;
 
                         OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
-                        OnProgressUpdated(this, new() { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
+                        OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
                     }
                 }
             }
@@ -1192,7 +1193,7 @@ public class Downloader : InputAdapterBase
         }
         catch (Exception ex)
         {
-            OnProgressUpdated(this, new()
+            OnProgressUpdated(this, new ProgressUpdate
             {
                 State = ProgressState.Fail,
                 ErrorMessage = $"Unexpected error caused task execution to end prematurely: {ex.Message}",
@@ -1223,7 +1224,7 @@ public class Downloader : InputAdapterBase
         ConnectionProfileTaskSettings settings = task.Settings;
         bool timeConstraintApplied = settings.StartTimeConstraint.HasValue && settings.EndTimeConstraint.HasValue;
 
-        OnProgressUpdated(this, new() { Message = $"Executing task \"{task.Name}\"..." });
+        OnProgressUpdated(this, new ProgressUpdate { Message = $"Executing task \"{task.Name}\"..." });
 
         task.Reset();
 
@@ -1258,7 +1259,7 @@ public class Downloader : InputAdapterBase
         if (settings.DeleteOldLocalFiles && !timeConstraintApplied)
             HandleLocalFileAgeLimitProcessing(task);
 
-        OnProgressUpdated(this, new() { OverallProgress = ++m_overallTasksCompleted, OverallProgressTotal = m_overallTasksCount });
+        OnProgressUpdated(this, new ProgressUpdate { OverallProgress = ++m_overallTasksCompleted, OverallProgressTotal = m_overallTasksCount });
 
         if (!task.Success)
             LogFailure(task.FailMessage);
@@ -1347,7 +1348,7 @@ public class Downloader : InputAdapterBase
         {
             string message = $"Cannot check adapter enabled state in database - task execution skipped: {ex.Message}";
 
-            OnProgressUpdated(this, new()
+            OnProgressUpdated(this, new ProgressUpdate
             {
                 State = ProgressState.Fail,
                 ErrorMessage = message,
@@ -1419,7 +1420,7 @@ public class Downloader : InputAdapterBase
             m_rasDialer.EntryName = DialUpEntryName;
             m_rasDialer.PhoneNumber = DialUpPassword;
             m_rasDialer.Timeout = DialUpTimeout;
-            m_rasDialer.Credentials = new(DialUpUserName, DialUpPassword);
+            m_rasDialer.Credentials = new NetworkCredential(DialUpUserName, DialUpPassword);
             m_rasDialer.Dial();
 
             m_startDialUpTime = DateTime.UtcNow.Ticks;
@@ -1586,14 +1587,14 @@ public class Downloader : InputAdapterBase
             else if (settings.LimitRemoteFileDownloadByAge && (DateTime.Now - file.Timestamp).Days > Program.Host.Model.Global.MaxRemoteFileAge)
             {
                 OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, timestamp \"{file.Timestamp:yyyy-MM-dd HH:mm.ss.fff}\" is older than {Program.Host.Model.Global.MaxRemoteFileAge} days.");
-                OnProgressUpdated(this, new() { Message = $"File \"{file.Name}\" skipped: File is too old." });
+                OnProgressUpdated(this, new ProgressUpdate { Message = $"File \"{file.Name}\" skipped: File is too old." });
                 continue;
             }
 
             if (file.Size > settings.MaximumFileSize * SI2.Mega)
             {
                 OnStatusMessage(MessageLevel.Info, $"File \"{file.Name}\" skipped, size of {file.Size / SI2.Mega:N3} MB is larger than {settings.MaximumFileSize:N3} MB configured limit.");
-                OnProgressUpdated(this, new() { Message = $"File \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB)." });
+                OnProgressUpdated(this, new ProgressUpdate { Message = $"File \"{file.Name}\" skipped: File is too large ({file.Size / (double)SI2.Mega:N3} MB)." });
                 continue;
             }
 
@@ -1613,7 +1614,7 @@ public class Downloader : InputAdapterBase
                     if (localEqualsRemote)
                     {
                         OnStatusMessage(MessageLevel.Info, $"Skipping file download for remote file \"{file.Name}\": Local file already exists and matches remote file.");
-                        OnProgressUpdated(this, new() { Message = $"File \"{file.Name}\" skipped: Local file already exists and matches remote file" });
+                        OnProgressUpdated(this, new ProgressUpdate { Message = $"File \"{file.Name}\" skipped: Local file already exists and matches remote file" });
                         continue;
                     }
                 }
@@ -1623,7 +1624,7 @@ public class Downloader : InputAdapterBase
                 }
             }
 
-            fileList.Add(new(localPath, file));
+            fileList.Add(new FtpFileWrapper(localPath, file));
         }
 
         if (!settings.RecursiveDownload)
@@ -1639,8 +1640,8 @@ public class Downloader : InputAdapterBase
         catch (Exception ex)
         {
             task.Fail(ex.Message);
-            OnProcessException(MessageLevel.Error, new($"Failed to enumerate remote directories in \"{remotePathDirectory}\" due to exception: {ex.Message}", ex));
-            OnProgressUpdated(this, new() { ErrorMessage = $"Failed to enumerate remote directories in \"{remotePathDirectory}\": {ex.Message}" });
+            OnProcessException(MessageLevel.Error, new Exception($"Failed to enumerate remote directories in \"{remotePathDirectory}\" due to exception: {ex.Message}", ex));
+            OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to enumerate remote directories in \"{remotePathDirectory}\": {ex.Message}" });
         }
 
         foreach (FtpDirectory directory in directories)
@@ -1664,8 +1665,8 @@ public class Downloader : InputAdapterBase
             catch (Exception ex)
             {
                 task.Fail(ex.Message);
-                OnProcessException(MessageLevel.Error, new($"Failed to add remote files from remote directory \"{directory.Name}\" to file list due to exception: {ex.Message}", ex));
-                OnProgressUpdated(this, new() { ErrorMessage = $"Failed to build file list for remote directory \"{directory.Name}\": {ex.Message}" });
+                OnProcessException(MessageLevel.Error, new Exception($"Failed to add remote files from remote directory \"{directory.Name}\" to file list due to exception: {ex.Message}", ex));
+                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to build file list for remote directory \"{directory.Name}\": {ex.Message}" });
             }
         }
     }
@@ -1679,7 +1680,7 @@ public class Downloader : InputAdapterBase
         if (m_cancellationToken.IsCancelled)
             return;
 
-        OnProgressUpdated(this, new() { OverallProgress = m_overallTasksCompleted * totalBytes, OverallProgressTotal = totalBytes * m_overallTasksCount });
+        OnProgressUpdated(this, new ProgressUpdate { OverallProgress = m_overallTasksCompleted * totalBytes, OverallProgressTotal = totalBytes * m_overallTasksCount });
 
         // Group files by destination directory so we can skip whole groups
         // of files if the directory does not exist and cannot be created
@@ -1697,9 +1698,9 @@ public class Downloader : InputAdapterBase
                 task.Fail(ex.Message);
 
                 string message = $"Failed to create local directory for {grouping.Count():N0} remote files due to exception: {ex.Message}";
-                OnProcessException(MessageLevel.Error, new(message, ex));
+                OnProcessException(MessageLevel.Error, new Exception(message, ex));
                 progress += grouping.Sum(wrapper => wrapper.RemoteFile.Size);
-                OnProgressUpdated(this, new() { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
+                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
                 continue;
             }
 
@@ -1741,7 +1742,7 @@ public class Downloader : InputAdapterBase
                 {
                     task.Fail("Local file already exists and settings do not allow overwrite.");
                     OnStatusMessage(MessageLevel.Info, $"Skipping file download for remote file \"{wrapper.RemoteFile.Name}\": Local file already exists and settings do not allow overwrite.");
-                    OnProgressUpdated(this, new() { ErrorMessage = $"File \"{wrapper.RemoteFile.Name}\" skipped: Local file already exists", OverallProgress = m_overallTasksCompleted * totalBytes + progress });
+                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"File \"{wrapper.RemoteFile.Name}\" skipped: Local file already exists", OverallProgress = m_overallTasksCompleted * totalBytes + progress });
                     continue;
                 }
 
@@ -1765,7 +1766,7 @@ public class Downloader : InputAdapterBase
 
                             string message = $"Failed to remove file \"{wrapper.RemoteFile.FullPath}\" from remote server due to exception: {ex.Message}";
                             OnProcessException(MessageLevel.Warning, new InvalidOperationException(message, ex));
-                            OnProgressUpdated(this, new() { ErrorMessage = message });
+                            OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = message });
                         }
                     }
 
@@ -1775,7 +1776,7 @@ public class Downloader : InputAdapterBase
                     TotalFilesDownloaded++;
                     BytesDownloaded += wrapper.RemoteFile.Size;
 
-                    OnProgressUpdated(this, new()
+                    OnProgressUpdated(this, new ProgressUpdate
                     {
                         Message = $"Successfully downloaded remote file \"{wrapper.RemoteFile.FullPath}\".",
                         Summary = $"{FilesDownloaded} Files Downloaded ({TotalFilesDownloaded} Total)",
@@ -1802,7 +1803,7 @@ public class Downloader : InputAdapterBase
 
                     string message = $"Failed to download remote file \"{wrapper.RemoteFile.FullPath}\" due to exception: {ex.Message}";
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException(message, ex));
-                    OnProgressUpdated(this, new() { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
+                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = message, OverallProgress = m_overallTasksCompleted * totalBytes + progress });
                 }
 
                 // Send e-mail on file update, if requested
@@ -1935,7 +1936,7 @@ public class Downloader : InputAdapterBase
         TimeSpan timeout = TimeSpan.FromSeconds(settings.ExternalOperationTimeout ?? ConnectionTimeout / 1000.0D);
 
         OnStatusMessage(MessageLevel.Info, $"Executing external operation \"{command}\"...");
-        OnProgressUpdated(this, new() { Message = $"Executing external operation command \"{command}\"..." });
+        OnProgressUpdated(this, new ProgressUpdate { Message = $"Executing external operation command \"{command}\"..." });
 
         try
         {
@@ -1966,7 +1967,7 @@ public class Downloader : InputAdapterBase
                     return;
 
                 OnStatusMessage(MessageLevel.Info, processArgs.Data);
-                OnProgressUpdated(this, new() { Message = processArgs.Data });
+                OnProgressUpdated(this, new ProgressUpdate { Message = processArgs.Data });
             };
 
             externalOperation.ErrorDataReceived += (sender, processArgs) =>
@@ -1977,7 +1978,7 @@ public class Downloader : InputAdapterBase
                 task.Fail(processArgs.Data);
                 lastUpdate = DateTime.UtcNow;
                 OnStatusMessage(MessageLevel.Error, processArgs.Data);
-                OnProgressUpdated(this, new() { ErrorMessage = processArgs.Data });
+                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = processArgs.Data });
             };
 
             externalOperation.Start();
@@ -1991,7 +1992,7 @@ public class Downloader : InputAdapterBase
                     task.Fail();
                     TerminateProcessTree(externalOperation);
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: downloader was disabled."));
-                    OnProgressUpdated(this, new() { ErrorMessage = "External operation forcefully terminated: downloader was disabled." });
+                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = "External operation forcefully terminated: downloader was disabled." });
                     return;
                 }
 
@@ -2000,19 +2001,19 @@ public class Downloader : InputAdapterBase
                     task.Fail();
                     TerminateProcessTree(externalOperation);
                     OnProcessException(MessageLevel.Error, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)."));
-                    OnProgressUpdated(this, new() { ErrorMessage = $"External operation forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)." });
+                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"External operation forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)." });
                     return;
                 }
             }
 
             OnStatusMessage(MessageLevel.Info, $"External operation \"{command}\" completed with status code {externalOperation.ExitCode}.");
-            OnProgressUpdated(this, new() { Message = $"External action complete: exit code {externalOperation.ExitCode}." });
+            OnProgressUpdated(this, new ProgressUpdate { Message = $"External action complete: exit code {externalOperation.ExitCode}." });
         }
         catch (Exception ex)
         {
             task.Fail(ex.Message);
             OnProcessException(MessageLevel.Error, new InvalidOperationException($"Failed to execute external operation \"{command}\": {ex.Message}", ex));
-            OnProgressUpdated(this, new() { ErrorMessage = $"Failed to execute external action: {ex.Message}" });
+            OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to execute external action: {ex.Message}" });
         }
     }
 
@@ -2030,7 +2031,7 @@ public class Downloader : InputAdapterBase
             FilesDownloaded++;
             TotalFilesDownloaded++;
 
-            OnProgressUpdated(this, new() { Summary = $"{FilesDownloaded:N0} Files Downloaded ({TotalFilesDownloaded:N0} Total)" });
+            OnProgressUpdated(this, new ProgressUpdate { Summary = $"{FilesDownloaded:N0} Files Downloaded ({TotalFilesDownloaded:N0} Total)" });
             return true;
         }
 
@@ -2046,7 +2047,7 @@ public class Downloader : InputAdapterBase
             SuccessfulConnections++;
             LastSuccessfulConnectionTime = DateTime.UtcNow;
 
-            OnProgressUpdated(this, new() { Summary = patternMessage });
+            OnProgressUpdated(this, new ProgressUpdate { Summary = patternMessage });
             return true;
         }
 
@@ -2063,7 +2064,7 @@ public class Downloader : InputAdapterBase
             LastFailedConnectionTime = DateTime.UtcNow;
             LastFailedConnectionReason = patternMessage;
 
-            OnProgressUpdated(this, new() { State = ProgressState.Fail, ErrorMessage = patternMessage });
+            OnProgressUpdated(this, new ProgressUpdate { State = ProgressState.Fail, ErrorMessage = patternMessage });
             return true;
         }
 
@@ -2190,7 +2191,7 @@ public class Downloader : InputAdapterBase
     {
         ProcessProgress<long> progress = e.Argument1;
 
-        OnProgressUpdated(this, new()
+        OnProgressUpdated(this, new ProgressUpdate
         {
             Message = progress.ProgressMessage,
             Progress = progress.Complete,
@@ -2226,11 +2227,11 @@ public class Downloader : InputAdapterBase
     // Static Constructor
     static Downloader()
     {
-        s_scheduleManager = new();
+        s_scheduleManager = new ScheduleManager();
         s_scheduleManager.ScheduleDue += ScheduleManager_ScheduleDue;
 
-        s_taskSchedules = new();
-        s_queuedProgressUpdates = new();
+        s_taskSchedules = new ConcurrentDictionary<string, Tuple<Downloader, ConnectionProfileTask>>();
+        s_queuedProgressUpdates = new List<ProgressUpdateWrapper>();
 
         s_scheduleManager.Start();
     }
@@ -2276,7 +2277,7 @@ public class Downloader : InputAdapterBase
 
         string scheduleName = task == null ? downloader.Name : $"{downloader.Name}:{task.Name}";
 
-        s_taskSchedules.TryAdd(scheduleName, new(downloader, task));
+        s_taskSchedules.TryAdd(scheduleName, new Tuple<Downloader, ConnectionProfileTask>(downloader, task));
         s_scheduleManager.AddSchedule(scheduleName, schedule, $"Download schedule for \"{scheduleName}\"", true);
     }
 
@@ -2302,7 +2303,7 @@ public class Downloader : InputAdapterBase
 
             lock (s_queuedProgressUpdates)
             {
-                queuedProgressUpdates = new(s_queuedProgressUpdates);
+                queuedProgressUpdates = new List<ProgressUpdateWrapper>(s_queuedProgressUpdates);
                 s_queuedProgressUpdates.Clear();
             }
 
@@ -2318,7 +2319,7 @@ public class Downloader : InputAdapterBase
                         wrapper.Instance.m_trackedProgressUpdates.Add(wrapper.Update);
                     }
 
-                    ProgressUpdated?.Invoke(grouping.Key, new(null, ProgressUpdate.Flatten(grouping.Select(wrapper => wrapper.Update).ToList())));
+                    ProgressUpdated?.Invoke(grouping.Key, new EventArgs<string, List<ProgressUpdate>>(null, ProgressUpdate.Flatten(grouping.Select(wrapper => wrapper.Update).ToList())));
                 }
             }
 
@@ -2328,7 +2329,7 @@ public class Downloader : InputAdapterBase
 
         lock (s_queuedProgressUpdates)
         {
-            s_queuedProgressUpdates.Add(new(instance, update));
+            s_queuedProgressUpdates.Add(new ProgressUpdateWrapper(instance, update));
 
             if (s_progressUpdateCancellationToken == null)
                 s_progressUpdateCancellationToken = sendProgressUpdates.DelayAndExecute(100);

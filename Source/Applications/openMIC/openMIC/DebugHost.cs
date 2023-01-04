@@ -38,7 +38,7 @@ namespace openMIC
 
         private void InitializeComponent()
         {
-            ComponentResourceManager resources = new ComponentResourceManager(typeof(DebugHost));
+            ComponentResourceManager resources = new(typeof(DebugHost));
             
             SuspendLayout();
 

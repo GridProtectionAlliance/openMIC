@@ -50,7 +50,7 @@ public class ServiceHub : Hub, IServiceConnectionOperations
         void logStatusMessage(string message, UpdateType updateType) => Program.Host.LogWebHostStatusMessage(message, updateType);
         void logException(Exception ex) => Program.Host.LogException(ex);
 
-        m_serviceConnectionOperations = new(this, logStatusMessage, logException);
+        m_serviceConnectionOperations = new ServiceConnectionOperations(this, logStatusMessage, logException);
     }
 
 #endregion
