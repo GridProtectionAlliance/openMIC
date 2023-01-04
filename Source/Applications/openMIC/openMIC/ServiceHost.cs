@@ -232,7 +232,7 @@ public class ServiceHost : ServiceHostBase
             ConfigurationFile.Current.Save();
         }
 
-        Model = new();
+        Model = new AppModel();
         Model.Global.CompanyName = systemSettings["CompanyName"].Value;
         Model.Global.CompanyAcronym = systemSettings["CompanyAcronym"].Value;
         Model.Global.NodeID = Guid.Parse(systemSettings["NodeID"].Value);
@@ -291,9 +291,12 @@ public class ServiceHost : ServiceHostBase
             Model.Global.UseRemoteScheduler = systemSettings["UseRemoteScheduler"].ValueAs(false);
         }
 
+        // Register a symbolic reference to global settings for use by default value expressions
+        ValueExpressionParser.DefaultTypeRegistry.RegisterSymbol("Global", Model.Global);
+
         // Get web host URL and parse URI components
         string webHostURL = systemSettings["WebHostURL"].Value;
-        Model.Global.WebHostUri = new(webHostURL.Replace("+", "localhost"));
+        Model.Global.WebHostUri = new Uri(webHostURL.Replace("+", "localhost"));
 
         // Parse configured authentication schemes
         if (!Enum.TryParse(systemSettings["AuthenticationSchemes"].ValueAs(AuthenticationOptions.DefaultAuthenticationSchemes.ToString()), true, out AuthenticationSchemes authenticationSchemes))
@@ -323,66 +326,72 @@ public class ServiceHost : ServiceHostBase
         if (Startup.AuthenticationOptions.AuthenticationToken == Startup.AuthenticationOptions.SessionToken)
             throw new InvalidOperationException("Authentication token must be different from session token in order to differentiate the cookie values in the HTTP headers.");
 
-        // Register a symbolic reference to global settings for use by default value expressions
-        ValueExpressionParser.DefaultTypeRegistry.RegisterSymbol("Global", Program.Host.Model.Global);
-
         ServiceHelper.UpdatedStatus += UpdatedStatusHandler;
         ServiceHelper.LoggedException += LoggedExceptionHandler;
-
-        // Attach to default web server events
-        WebServer webServer = WebServer.Default;
-        webServer.StatusMessage += WebServer_StatusMessage;
-        webServer.ExecutionException += LoggedExceptionHandler;
-
-        // Define types for Razor pages - self-hosted web service does not use view controllers so
-        // we must define configuration types for all paged view model based Razor views here:
-        webServer.PagedViewModelTypes.TryAdd("Devices.cshtml", new(typeof(Device), typeof(DataHub)));
-        webServer.PagedViewModelTypes.TryAdd("Companies.cshtml", new(typeof(Company), typeof(SharedHub)));
-        webServer.PagedViewModelTypes.TryAdd("Vendors.cshtml", new(typeof(Vendor), typeof(SharedHub)));
-        webServer.PagedViewModelTypes.TryAdd("VendorDevices.cshtml", new(typeof(VendorDevice), typeof(SharedHub)));
-        webServer.PagedViewModelTypes.TryAdd("Users.cshtml", new(typeof(UserAccount), typeof(SecurityHub)));
-        webServer.PagedViewModelTypes.TryAdd("Groups.cshtml", new(typeof(SecurityGroup), typeof(SecurityHub)));
-        webServer.PagedViewModelTypes.TryAdd("ConnectionProfiles.cshtml", new(typeof(ConnectionProfile), typeof(DataHub)));
-        webServer.PagedViewModelTypes.TryAdd("ConnectionProfileTasks.cshtml", new(typeof(ConnectionProfileTask), typeof(DataHub)));
-        webServer.PagedViewModelTypes.TryAdd("Settings.cshtml", new(typeof(Setting), typeof(DataHub)));
 
         // Define exception logger for CSV downloader
         CsvDownloadHandler.LogExceptionHandler = LogException;
 
-        new Thread(() =>
+        Thread startWebServer = new(() =>
+        {
+            try
             {
-                const int RetryDelay = 1000;
-                const int SleepTime = 200;
-                const int LoopCount = RetryDelay / SleepTime;
+                // Attach to default web server events
+                WebServer webServer = WebServer.Default;
+                webServer.StatusMessage += WebServer_StatusMessage;
+                webServer.ExecutionException += LoggedExceptionHandler;
 
-                while (!m_serviceStopping)
+                // Define types for Razor pages - self-hosted web service does not use view controllers so
+                // we must define configuration types for all paged view model based Razor views here:
+                webServer.PagedViewModelTypes.TryAdd("Devices.cshtml", new Tuple<Type, Type>(typeof(Device), typeof(DataHub)));
+                webServer.PagedViewModelTypes.TryAdd("Companies.cshtml", new Tuple<Type, Type>(typeof(Company), typeof(SharedHub)));
+                webServer.PagedViewModelTypes.TryAdd("Vendors.cshtml", new Tuple<Type, Type>(typeof(Vendor), typeof(SharedHub)));
+                webServer.PagedViewModelTypes.TryAdd("VendorDevices.cshtml", new Tuple<Type, Type>(typeof(VendorDevice), typeof(SharedHub)));
+                webServer.PagedViewModelTypes.TryAdd("Users.cshtml", new Tuple<Type, Type>(typeof(UserAccount), typeof(SecurityHub)));
+                webServer.PagedViewModelTypes.TryAdd("Groups.cshtml", new Tuple<Type, Type>(typeof(SecurityGroup), typeof(SecurityHub)));
+                webServer.PagedViewModelTypes.TryAdd("ConnectionProfiles.cshtml", new Tuple<Type, Type>(typeof(ConnectionProfile), typeof(DataHub)));
+                webServer.PagedViewModelTypes.TryAdd("ConnectionProfileTasks.cshtml", new Tuple<Type, Type>(typeof(ConnectionProfileTask), typeof(DataHub)));
+                webServer.PagedViewModelTypes.TryAdd("Settings.cshtml", new Tuple<Type, Type>(typeof(Setting), typeof(DataHub)));
+            }
+            catch (Exception ex)
+            {
+                LogException(new InvalidOperationException($"Failed during web-server initialization: {ex.Message}", ex));
+                return;
+            }
+
+            const int RetryDelay = 1000;
+            const int SleepTime = 200;
+            const int LoopCount = RetryDelay / SleepTime;
+
+            while (!m_serviceStopping)
+            {
+                if (TryStartWebHosting(webHostURL))
                 {
-                    if (TryStartWebHosting(webHostURL))
+                    try
                     {
-                        try
-                        {
-                            // Initiate pre-compile of base templates
-                            RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException);
-                            RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException, "GSF.Web.Security.Views.");
-                            RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException, "GSF.Web.Shared.Views.");
-                            RazorEngine<CSharp>.Default.PreCompile(LogException);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogException(new InvalidOperationException($"Failed to initiate pre-compile of razor templates: {ex.Message}", ex));
-                        }
-
-                        break;
+                        // Initiate pre-compile of base templates
+                        RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException);
+                        RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException, "GSF.Web.Security.Views.");
+                        RazorEngine<CSharpEmbeddedResource>.Default.PreCompile(LogException, "GSF.Web.Shared.Views.");
+                        RazorEngine<CSharp>.Default.PreCompile(LogException);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(new InvalidOperationException($"Failed to initiate pre-compile of razor templates: {ex.Message}", ex));
                     }
 
-                    for (int i = 0; i < LoopCount && !m_serviceStopping; i++)
-                        Thread.Sleep(SleepTime);
+                    break;
                 }
-            })
+
+                for (int i = 0; i < LoopCount && !m_serviceStopping; i++)
+                    Thread.Sleep(SleepTime);
+            }
+        })
         {
             IsBackground = true
-        }
-            .Start();
+        };
+        
+        startWebServer.Start();
     }
 
     private bool TryStartWebHosting(string webHostURL)
@@ -426,11 +435,11 @@ public class ServiceHost : ServiceHostBase
             LogException(new InvalidOperationException($"Service stopping handler exception: {ex.Message}", ex));
         }
 
-        if (helper is not null)
-        {
-            helper.UpdatedStatus -= UpdatedStatusHandler;
-            helper.LoggedException -= LoggedExceptionHandler;
-        }
+        if (helper is null)
+            return;
+
+        helper.UpdatedStatus -= UpdatedStatusHandler;
+        helper.LoggedException -= LoggedExceptionHandler;
     }
 
     private void WebServer_StatusMessage(object sender, EventArgs<string> e) =>
@@ -525,13 +534,13 @@ public class ServiceHost : ServiceHostBase
             if (response.StatusCode == HttpStatusCode.OK)
                 LogStatusMessage($"REMOTE QUEUE: Successfully executed remote queue action \"{actionURI}\" for \"{acronym}\" task load at \"{priority}\" priority");
             else
-                throw new($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\", HTTP response = {response.StatusCode}: {response.ReasonPhrase}");
+                throw new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\", HTTP response = {response.StatusCode}: {response.ReasonPhrase}");
         }
 
         void Fail(Exception ex)
         {
             if (ex is AggregateException aggEx)
-                LogException(new($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\": {string.Join(", ", aggEx.InnerExceptions.Select(innerEx => innerEx.Message))}", ex));
+                LogException(new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\": {string.Join(", ", aggEx.InnerExceptions.Select(innerEx => innerEx.Message))}", ex));
             else
                 LogException(ex);
 
@@ -555,7 +564,7 @@ public class ServiceHost : ServiceHostBase
 
     private void QueueTasksLocally(string acronym, string taskID, QueuePriority priority)
     {
-        IAdapter adapter = GetRequestedAdapter(new(null, ClientRequest.Parse($"invoke {acronym}")));
+        IAdapter adapter = GetRequestedAdapter(new ClientRequestInfo(null, ClientRequest.Parse($"invoke {acronym}")));
 
         if (adapter is Downloader downloader)
             downloader.QueueTasksByID(taskID, priority);
@@ -637,7 +646,7 @@ public class ServiceHost : ServiceHostBase
                         {
                             string actionURI = $"{targetUri}/api/Operations/RelayCommand?command={UrlEncode(commandInput)}";
 
-                            HttpResponseMessage response = await s_http.SendAsync(new(HttpMethod.Get, actionURI));
+                            HttpResponseMessage response = await s_http.SendAsync(new HttpRequestMessage(HttpMethod.Get, actionURI));
 
                             LogStatusMessage(response.StatusCode == HttpStatusCode.OK ?
                                                  $"Successfully relayed \"{request.Command}\" command to \"{targetMachine}\"." :
@@ -663,10 +672,10 @@ public class ServiceHost : ServiceHostBase
     }
 
     private void UpdatedStatusHandler(object sender, EventArgs<Guid, string, UpdateType> e) =>
-        UpdatedStatus?.Invoke(sender, new(e.Argument1, e.Argument2, e.Argument3));
+        UpdatedStatus?.Invoke(sender, new EventArgs<Guid, string, UpdateType>(e.Argument1, e.Argument2, e.Argument3));
 
     private void LoggedExceptionHandler(object sender, EventArgs<Exception> e) =>
-        LoggedException?.Invoke(sender, new(e.Argument));
+        LoggedException?.Invoke(sender, new EventArgs<Exception>(e.Argument));
 
     #endregion
 
