@@ -77,6 +77,7 @@
             loginPage = options.LoginPage;
         }
     }
+    
     string requiresEditor = UserIsAdminOrEditor() ? "" : " disabled";
 }
 @functions {
@@ -222,6 +223,7 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configuration <span class="caret"></span></a>
                             <ul class="dropdown-menu">
                                 <li><a href="ConnectionProfiles.cshtml" class="@(requiresEditor)"@requiresEditor>Connection Profiles</a></li>
+                                <li><a href="OutputMirrors.cshtml" class="@(requiresEditor)" @requiresEditor>Output Mirrors</a></li>
                                 <li role="separator" class="divider"></li>
                                 <li><a href="ModbusConfig.cshtml" class="@(requiresEditor)"@requiresEditor>Modbus Configuration Builder</a></li>
                                 <li><a href="IGridConfig.cshtml" class="@(requiresEditor)"@requiresEditor>Manage I-Grid Connections</a></li>

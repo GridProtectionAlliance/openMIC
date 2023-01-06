@@ -56,15 +56,15 @@ namespace openMIC;
 [AuthorizeHubRole]
 public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOperations, IDirectoryBrowserOperations
 {
-#region [ Members ]
+    #region [ Members ]
 
     // Fields
     private readonly DataSubscriptionOperations m_dataSubscriptionOperations;
     private readonly ModbusOperations m_modbusOperations;
 
-#endregion
+    #endregion
 
-#region [ Constructors ]
+    #region [ Constructors ]
 
     public DataHub() : base(Program.Host.LogWebHostStatusMessage, Program.Host.LogException)
     {
@@ -75,9 +75,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         m_modbusOperations = new ModbusOperations(this, logStatusMessage, logException);
     }
 
-#endregion
+    #endregion
 
-#region [ Methods ]
+    #region [ Methods ]
 
     public override Task OnConnected()
     {
@@ -99,9 +99,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         return base.OnDisconnected(stopCalled);
     }
 
-#endregion
+    #endregion
 
-#region [ Static ]
+    #region [ Static ]
 
     // Static Fields
     private static string s_systemName;
@@ -238,11 +238,11 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         }
     }
 
-#endregion
+    #endregion
 
     // Client-side script functionality
 
-#region [ Setting Table Operations ]
+    #region [ Setting Table Operations ]
 
     [AuthorizeHubRole("Administrator")]
     [RecordOperation(typeof(Setting), RecordOperation.QueryRecordCount)]
@@ -286,9 +286,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         DataContext.Table<Setting>().UpdateRecord(record);
     }
 
-#endregion
+    #endregion
 
-#region [ Device Table Operations ]
+    #region [ Device Table Operations ]
 
     private int DownloaderProtocolID => s_downloaderProtocolID != 0 ? s_downloaderProtocolID : s_downloaderProtocolID = DataContext.Connection.ExecuteScalar<int>("SELECT ID FROM Protocol WHERE Acronym='Downloader'");
 
@@ -354,8 +354,8 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
     [RecordOperation(typeof(Device), RecordOperation.DeleteRecord)]
     public void DeleteDevice(int id)
     {
-        TableOperations<Device> deviceTable = DataContext.Table<Device>();            
-            
+        TableOperations<Device> deviceTable = DataContext.Table<Device>();
+
         deviceTable.DeleteRecordWhere("ParentID = {0}", id);
         deviceTable.DeleteRecord(id);
 
@@ -411,9 +411,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         return vendorDevice is null ? null : DataContext.Table<Vendor>().QueryRecordWhere("ID = {0}", vendorDevice.VendorID);
     }
 
-#endregion
+    #endregion
 
-#region [ Measurement Table Operations ]
+    #region [ Measurement Table Operations ]
 
     [RecordOperation(typeof(Measurement), RecordOperation.QueryRecordCount)]
     public int QueryMeasurementCount(string filterText)
@@ -474,9 +474,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         DataContext.Table<Measurement>().UpdateRecord(measurement);
     }
 
-#endregion
+    #endregion
 
-#region [ ConnectionProfile Table Operations ]
+    #region [ ConnectionProfile Table Operations ]
 
     [RecordOperation(typeof(ConnectionProfile), RecordOperation.QueryRecordCount)]
     public int QueryConnectionProfileCount(string filterText)
@@ -517,9 +517,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         DataContext.Table<ConnectionProfile>().UpdateRecord(connectionProfile);
     }
 
-#endregion
+    #endregion
 
-#region [ ConnectionProfileTask Table Operations ]
+    #region [ ConnectionProfileTask Table Operations ]
 
     public int QueryConnectionProfileTaskCount(int parentID)
     {
@@ -569,9 +569,52 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         DataContext.Table<ConnectionProfileTask>().UpdateRecord(connectionProfileTask);
     }
 
-#endregion
+    #endregion
 
-#region [ SignalType Table Operations ]
+    #region [ OutputMirror Table Operations ]
+
+    [RecordOperation(typeof(OutputMirror), RecordOperation.QueryRecordCount)]
+    public int QueryOutputMirrorCount(string filterText)
+    {
+        return DataContext.Table<OutputMirror>().QueryRecordCount(filterText);
+    }
+
+    [RecordOperation(typeof(OutputMirror), RecordOperation.QueryRecords)]
+    public IEnumerable<OutputMirror> QueryOutputMirrors(string sortField, bool ascending, int page, int pageSize, string filterText)
+    {
+        return DataContext.Table<OutputMirror>().QueryRecords(sortField, ascending, page, pageSize, filterText);
+    }
+
+    [AuthorizeHubRole("Administrator, Editor")]
+    [RecordOperation(typeof(OutputMirror), RecordOperation.DeleteRecord)]
+    public void DeleteOutputMirror(int id)
+    {
+        DataContext.Table<OutputMirror>().DeleteRecord(id);
+    }
+
+    [RecordOperation(typeof(OutputMirror), RecordOperation.CreateNewRecord)]
+    public OutputMirror NewOutputMirror()
+    {
+        return DataContext.Table<OutputMirror>().NewRecord();
+    }
+
+    [AuthorizeHubRole("Administrator, Editor")]
+    [RecordOperation(typeof(OutputMirror), RecordOperation.AddNewRecord)]
+    public void AddNewOutputMirror(OutputMirror outputMirror)
+    {
+        DataContext.Table<OutputMirror>().AddNewRecord(outputMirror);
+    }
+
+    [AuthorizeHubRole("Administrator, Editor")]
+    [RecordOperation(typeof(OutputMirror), RecordOperation.UpdateRecord)]
+    public void UpdateOutputMirror(OutputMirror outputMirror)
+    {
+        DataContext.Table<OutputMirror>().UpdateRecord(outputMirror);
+    }
+
+    #endregion
+
+    #region [ SignalType Table Operations ]
 
     [RecordOperation(typeof(SignalType), RecordOperation.QueryRecordCount)]
     public int QuerySignalTypeCount(string filterText)
@@ -617,9 +660,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         DataContext.Table<SignalType>().UpdateRecord(signalType);
     }
 
-#endregion
+    #endregion
 
-#region [ RunTime Table Operations ]
+    #region [ RunTime Table Operations ]
 
     public int QueryRuntimeID(string sourceTable, int sourceID)
     {
@@ -644,9 +687,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         DataContext.Table<Runtime>().AddNewRecord(runtime);
     }
 
-#endregion
+    #endregion
 
-#region [ Historian Table Operations ]
+    #region [ Historian Table Operations ]
 
     [RecordOperation(typeof(Historian), RecordOperation.QueryRecordCount)]
     public int QueryHistorianCount(string filterText)
@@ -701,18 +744,18 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         return DataContext.Table<Historian>().QueryRecordsWhere("Enabled != 0").Select(historian => historian.Acronym);
     }
 
-#endregion
+    #endregion
 
-#region [ StatusLog Operations ]
+    #region [ StatusLog Operations ]
 
     public StatusLog GetStatusLogForDevice(string deviceName)
     {
         return DataContext.Table<StatusLog>().QueryRecordWhere("DeviceID IN (SELECT ID FROM Device WHERE Acronym LIKE {0})", deviceName) ?? new StatusLog();
     }
 
-#endregion
+    #endregion
 
-#region [ Data Subscription Operations ]
+    #region [ Data Subscription Operations ]
 
     // These functions are dependent on subscriptions to data where each client connection can customize the subscriptions, so an instance
     // of the DataHubSubscriptionClient is created per SignalR DataHub client connection to manage the subscription life-cycles.
@@ -772,9 +815,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         m_dataSubscriptionOperations.StatSubscribe(filterExpression);
     }
 
-#endregion
+    #endregion
 
-#region [ DirectoryBrowser Operations ]
+    #region [ DirectoryBrowser Operations ]
 
     public IEnumerable<string> LoadDirectories(string rootFolder, bool showHidden)
     {
@@ -801,9 +844,9 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
         DirectoryBrowserOperations.CreatePath(path);
     }
 
-#endregion
+    #endregion
 
-#region [ Miscellaneous Functions ]
+    #region [ Miscellaneous Functions ]
 
     /// <summary>
     /// Determines if directory exists from server's perspective.
@@ -931,5 +974,5 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
     public string GetJsonAsIni(string value) =>
         IniJsonInterop.GetJsonAsIni(value, true);
 
-#endregion
+    #endregion
 }

@@ -258,11 +258,13 @@
                 <div class="btn-group-vertical btn-block">
                     <a href="Devices.cshtml" role="button" class="btn btn-primary">Devices</a>
                     <a href="Status.cshtml" role="button" class="btn btn-default">Status</a>
-                    <a href="ConnectionProfiles.cshtml" role="button" class="btn btn-default">Connection Profiles</a>
-                    <a href="ModbusConfig.cshtml" role="button" class="btn btn-default">Add Modbus Mapping</a>
-                    <a href="IGridConfig.cshtml" role="button" class="btn btn-default">Manage I-Grid Connections</a>
+                    <a href="ConnectionProfiles.cshtml" role="button" class="btn btn-default@(requiresEditor)"@requiresEditor>Connection Profiles</a>
+                    <a href="OutputMirrors.cshtml" role="button" class="btn btn-default@(requiresEditor)"@requiresEditor>Output Mirrors</a>
+                    <a href="ModbusConfig.cshtml" role="button" class="btn btn-default@(requiresEditor)"@requiresEditor>Add Modbus Mapping</a>
+                    <a href="IGridConfig.cshtml" role="button" class="btn btn-default@(requiresEditor)"@requiresEditor>Manage I-Grid Connections</a>
                     <a href="GraphMeasurements.cshtml" role="button" class="btn btn-default">Real-time Measurements</a>
-                    @if (showRestartButton) {
+                    @if (showRestartButton)
+                    {
                         <button type="button" class="btn btn-default@(requiresAdmin)" id="restartButton"@requiresAdmin hub-dependent>Restart Service</button>
                     }
                 </div>
