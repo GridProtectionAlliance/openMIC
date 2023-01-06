@@ -1306,6 +1306,15 @@ public class Downloader : InputAdapterBase
                         deletedCount++;
                         OnStatusMessage(MessageLevel.Info, $"File \"{file}\" successfully deleted...");
 
+                        try
+                        {
+                            s_fileMirror.Queue(file, FileOperation.Delete);
+                        }
+                        catch (Exception ex)
+                        {
+                            OnProcessException(MessageLevel.Error, new InvalidOperationException($"Failed while attempting to queue deleted file \"{file}\" for mirroring operations: {ex.Message}", ex));
+                        }
+
                         if (!directoryName.Equals(rootPathName, StringComparison.OrdinalIgnoreCase))
                         {
                             // Try to remove sub-folder, this will only succeed if folder is empty...
@@ -1912,6 +1921,7 @@ public class Downloader : InputAdapterBase
         ConnectionProfileTaskSettings settings = task.Settings;
         string localPathDirectory = GetLocalPathDirectory(settings, localTime);
         string dateTimeFormat = Program.Host.Model.Global.DateTimeFormat;
+        bool timeConstraintApplied = settings.StartTimeConstraint.HasValue && settings.EndTimeConstraint.HasValue;
 
         Dictionary<string, string> substitutions = new()
         {
@@ -2008,6 +2018,10 @@ public class Downloader : InputAdapterBase
 
             OnStatusMessage(MessageLevel.Info, $"External operation \"{command}\" completed with status code {externalOperation.ExitCode}.");
             OnProgressUpdated(this, new ProgressUpdate { Message = $"External action complete: exit code {externalOperation.ExitCode}." });
+
+            // Handle local file age limit processing, if enabled
+            if (settings.DeleteOldLocalFiles && !timeConstraintApplied)
+                HandleLocalFileAgeLimitProcessing(task);
         }
         catch (Exception ex)
         {
@@ -2078,16 +2092,17 @@ public class Downloader : InputAdapterBase
 
     private int LogDownloadedFile(string filePath)
     {
+        // Queue any mirror operations for downloaded files
         try
         {
-            // Queue any mirror operations for downloaded files
-            s_fileMirror.Queue(filePath);
+            s_fileMirror.Queue(filePath, FileOperation.Copy);
         }
         catch (Exception ex)
         {
             OnProcessException(MessageLevel.Error, new InvalidOperationException($"Failed while attempting to queue downloaded file \"{filePath}\" for mirroring operations: {ex.Message}", ex));
         }
 
+        // Log downloaded files
         try
         {
             FileInfo fileInfo = new(filePath);

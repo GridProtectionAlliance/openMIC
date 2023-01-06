@@ -32,6 +32,21 @@ using System.Collections.Generic;
 namespace openMIC.FileMirroring
 {
     /// <summary>
+    /// Defines an enumeration of file operations that <see cref="FileMirror"/> can handle.
+    /// </summary>
+    public enum FileOperation
+    {
+        /// <summary>
+        /// Copies file to remote location. Folders will be created as needed.
+        /// </summary>
+        Copy,
+        /// <summary>
+        /// Deletes file from remote location. Folders will be removed when empty.
+        /// </summary>
+        Delete
+    }
+
+    /// <summary>
     /// Represents a file mirroring operation.
     /// </summary>
     public class FileMirror
@@ -128,7 +143,8 @@ namespace openMIC.FileMirroring
         /// Queues any configured mirror operations for downloaded <paramref name="filePath"/>.
         /// </summary>
         /// <param name="filePath">Download filename to mirror.</param>
-        public void Queue(string filePath)
+        /// <param name="operation">File operation for mirror filename.</param>
+        public void Queue(string filePath, FileOperation operation)
         {
 
         }
