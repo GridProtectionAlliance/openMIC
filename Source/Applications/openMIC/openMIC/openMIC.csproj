@@ -248,6 +248,7 @@
     <Compile Include="Model\IGridDevice.cs" />
     <Compile Include="Model\DownloadedFile.cs" />
     <Compile Include="Model\Node.cs" />
+    <Compile Include="Model\OutputMirror.cs" />
     <Compile Include="Model\Runtime.cs" />
     <Compile Include="Model\AlarmLog.cs" />
     <Compile Include="Model\AppModel.cs" />
@@ -391,6 +392,7 @@
     <Content Include="wwwroot\DranetzGraph.cshtml" />
     <Content Include="wwwroot\PQubeConfig.cshtml" />
     <Content Include="wwwroot\Content\jquery.ui.scrolltabs.css" />
+    <Content Include="wwwroot\OutputMirrors.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Readme.txt" />
