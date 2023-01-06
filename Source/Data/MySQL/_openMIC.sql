@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 5 AS VersionNumber;
+SELECT 6 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID INT AUTO_INCREMENT NOT NULL,
@@ -49,6 +49,20 @@ CREATE TABLE ConnectionProfileTask(
     UpdatedOn DATETIME NULL,
     UpdatedBy VARCHAR(200) NULL,
     CONSTRAINT PK_ConnectionProfileTask PRIMARY KEY (ID ASC)
+);
+
+CREATE TABLE OutputMirror(
+    ID INT AUTO_INCREMENT NOT NULL,
+    Name VARCHAR(200) NOT NULL,
+    Source TEXT NOT NULL,
+    ConnectionType VARCHAR(200) NOT NULL,
+    Settings TEXT NULL,
+    LoadOrder INT NOT NULL DEFAULT 0,
+    CreatedOn DATETIME NULL,
+    CreatedBy VARCHAR(200) NULL,
+    UpdatedOn DATETIME NULL,
+    UpdatedBy VARCHAR(200) NULL,
+    CONSTRAINT PK_OutputMirror PRIMARY KEY (ID ASC)
 );
 
 CREATE TABLE DownloadedFile(
@@ -131,6 +145,9 @@ CREATE TRIGGER ConnectionProfile_InsertDefault BEFORE INSERT ON ConnectionProfil
 FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
 
 CREATE TRIGGER ConnectionProfileTask_InsertDefault BEFORE INSERT ON ConnectionProfileTask
+FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
+
+CREATE TRIGGER OutputMirror_InsertDefault BEFORE INSERT ON OutputMirror
 FOR EACH ROW SET NEW.CreatedBy = COALESCE(NEW.CreatedBy, USER()), NEW.CreatedOn = COALESCE(NEW.CreatedOn, UTC_TIMESTAMP()), NEW.UpdatedBy = COALESCE(NEW.UpdatedBy, USER()), NEW.UpdatedOn = COALESCE(NEW.UpdatedOn, UTC_TIMESTAMP());
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
