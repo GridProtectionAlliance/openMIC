@@ -1,0 +1,293 @@
+﻿@*******************************************************************************************************
+//  OutputMirrors.cshtml - Gbtc
+//
+//  Copyright © 2022, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may
+//  not use this file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  12/27/2022 - J. Ritchie Carroll
+//       Generated original version of source code.
+//
+//*****************************************************************************************************@
+@using System.Text
+@using GSF
+@using GSF.Web
+@using GSF.Web.Model
+@using openMIC
+@using openMIC.Model
+@inherits ExtendedTemplateBase<AppModel>
+@section StyleSheets {
+    <style>
+        html, body {
+            height: 100%;
+        }
+    </style>
+}
+@{
+    DataContext dataContext = ViewBag.DataContext;
+
+    Layout = "Layout.cshtml";
+    ViewBag.Title = "Output Mirrors";
+
+    ViewBag.HeaderColumns = new[]
+    {   //    { "Field", "Label", "Classes" }
+        new[] { "Name", "Name", "text-left" },
+        new[] { "Source", "Source", "text-center valign-middle" },
+        new[] { "ConnectionType", "Connection Type", "text-center valign-middle" },
+    };
+
+    Dictionary<string, string> connectionTypes = new Dictionary<string, string>();
+    StringBuilder connectionTypeDict = new StringBuilder();
+
+    foreach (Enum option in Enum.GetValues(typeof(OutputMirrorConnectionType))) {
+        connectionTypes.Add(option.ToString(), option.GetDescription());
+    }
+
+    connectionTypeDict.AppendLine("const connectionTypes = {");
+
+    foreach (KeyValuePair<string, string> connectionType in connectionTypes) {
+        connectionTypeDict.AppendFormat("            {0}: \"{1}\",{2}", connectionType.Key, connectionType.Value, Environment.NewLine);
+    }
+
+    connectionTypeDict.Append("        };");
+
+    ViewBag.BodyRows = BodyRows().ToString();
+    ViewBag.AddNewEditDialog = AddNewEditDialog(dataContext, connectionTypes).ToString();
+
+    dataContext.AddFieldValidation("viewModel.connectionString.get('port')", "^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$", "Port number must be an integer between 1 and 65535");
+}
+@helper BodyRows()
+{
+    <td width="25%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Name, click: $parent.viewPageRecord"></button></td>
+    <td width="45%" class="text-center"><div data-bind="text: $($element.parentElement).truncateToWidth(Source, 2)"></div></td>
+    <td width="25%" class="text-center" data-bind="text: connectionTypes[ConnectionType]"><</td>
+    <td width="5%" class="text-center valign-middle" nowrap>
+        <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
+        <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
+    </td>
+}
+@helper AddNewEditDialog(DataContext dataContext, Dictionary<string, string> connectionTypes)
+{
+    <div class="col-md-6">
+        @Raw(dataContext.AddInputField<OutputMirror>("Name", initialFocus: true))
+        @Raw(dataContext.AddInputField<OutputMirror>("Source", enableHotLinks: false))
+        @Raw(dataContext.AddSelectField<OutputMirror>(connectionTypes, "ConnectionType", false, allowUnset: false))
+        @Raw(dataContext.AddInputField("get('remotepath')", true, fieldLabel: "Remote Mirror Root Path", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+    </div>
+    <div class="col-md-6">
+        @Raw(dataContext.AddInputField("get('host')", false, fieldLabel: "Remote Mirror Host Name or IP", fieldID: "inputHost", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "HostEnabled", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('port')", false, inputType: "number", fieldLabel: "Remote Mirror Host Port (if applicable)", fieldID: "inputPort", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "PortEnabled", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('username')", false, fieldLabel: "Remote Mirror Host Connection Username", fieldID: "inputUsername", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "UsernameEnabled", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('password')", false, inputType: "password", fieldLabel: "Remote Mirror Host Connection Password (or Pass-phrase)", fieldID: "inputPassword", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "PasswordEnabled", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('keyfile')", false, fieldLabel: "Remote Mirror Host Key File (if applicable)", fieldID: "inputKeyFile", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "KeyFileEnabled", enableHotLinks: false))
+    </div>
+    <div class="col-md-12">
+        <div class="form-group">
+            <label for="textConnectionString">Task Settings:</label>
+            <textarea class="form-control" rows="2" data-bind="text: ConnectionString" id="textConnectionString" readonly></textarea>
+        </div>
+    </div>
+}
+@Html.RenderResource("GSF.Web.Model.Views.PagedViewModel.cshtml")
+@section Scripts {
+    <script>
+        "use strict";
+
+        @Raw(dataContext.RenderViewModelConfiguration<OutputMirror, DataHub>(ViewBag, "Name"))
+        @Raw(connectionTypeDict.ToString())
+
+        // Define default connection string keys needed for binding
+        const defaultConnectionString = new Dictionary();
+
+        defaultConnectionString.set("remotePath", "@Raw(Model.Global.DefaultRemotePath.JavaScriptEncode())");
+        defaultConnectionString.set("host", "");
+        defaultConnectionString.set("port", "");
+        defaultConnectionString.set("username", "");
+        defaultConnectionString.set("password", "");
+        defaultConnectionString.set("keyFile", "");
+
+        // Create an observable key/value pair connection string dictionary
+        viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);
+        viewModel.loadingConnectionString = false;
+
+        viewModel.connectionString.HostEnabled = ko.pureComputed({
+            read: function () {
+                const record = viewModel.currentRecord();
+                
+                if (record)
+                    return record.ConnectionType() !== "FileSystem";
+
+                return false;
+            },
+            owner: viewModel
+        });
+
+        viewModel.connectionString.PortEnabled = ko.pureComputed({
+            read: function () {
+                const record = viewModel.currentRecord();
+                var enabled = false;
+
+                if (record) {
+                    const connectionType = record.ConnectionType();
+                    enabled = connectionType !== "FileSystem" && connectionType !== "UNC";
+                }
+
+                if (!enabled)
+                    viewModel.connectionString.set("port", "");
+
+                return enabled;
+            },
+            owner: viewModel
+        });
+
+        viewModel.connectionString.UsernameEnabled = ko.pureComputed({
+            read: function () {
+                const record = viewModel.currentRecord();
+
+                if (record)
+                    return record.ConnectionType() !== "FileSystem";
+
+                return false;
+            },
+            owner: viewModel
+        });
+
+        viewModel.connectionString.PasswordEnabled = ko.pureComputed({
+            read: function () {
+                const record = viewModel.currentRecord();
+
+                if (record)
+                    return record.ConnectionType() !== "FileSystem";
+
+                return false;
+            },
+            owner: viewModel
+        });
+
+        viewModel.connectionString.KeyFileEnabled = ko.pureComputed({
+            read: function () {
+                const record = viewModel.currentRecord();
+
+                if (record)
+                    return record.ConnectionType() === "SFTP";
+
+                return false;
+            },
+            owner: viewModel
+        });
+
+        // Watch the connection string dictionary for changes independent of current record
+        ko.watch(viewModel.connectionString, { depth: -1 }, function() {
+            if (viewModel.loadingConnectionString)
+                return;
+
+            // Update connection string applying camel-case key names as defined in default connection string
+            const updates = new Dictionary(defaultConnectionString);
+            updates.pushAll(viewModel.connectionString.toJSON());
+            viewModel.currentRecord().ConnectionString(updates.joinKeyValuePairs());
+        });
+
+        $(viewModel).on("newRecord", function (event, newRecord) {
+            // Update connection string applying camel-case key names as defined in default connection string
+            const updates = new Dictionary(defaultConnectionString);
+            newRecord.ConnectionString = updates.joinKeyValuePairs();
+        });
+
+        $(viewModel).on("beforeEdit", function(event, observableRecord) {
+            // Add connection string reference to current observable record so it can participate in the validation group
+            observableRecord._connectionstring = viewModel.connectionString;
+
+            observableRecord.ConnectionTypeChange = observableRecord.ConnectionType.subscribe(function () {
+                // Reset observable dictionary to default values on connection type change
+                const keys = viewModel.connectionString.keys();
+
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+
+                    if (defaultConnectionString.containsKey(key))
+                        viewModel.connectionString.set(key, defaultConnectionString.get(key));
+                    else
+                        viewModel.connectionString.remove(key);
+                }
+
+                switch (viewModel.currentRecord().ConnectionType()) {
+                    case "FTP":
+                        viewModel.connectionString.set("port", "21");
+                        break;
+                    case "SFTP":
+                        viewModel.connectionString.set("port", "22");
+                        break;
+                }
+            });
+        });
+
+        $(viewModel).on("beforeSave", function (event, observableRecord) {
+            // Remove added connection string reference before serialization
+            delete observableRecord._connectionstring;
+
+            observableRecord.ConnectionTypeChange.dispose();
+        });
+
+        $(viewModel).on("currentRecordChanged", function(event) {
+            viewModel.loadingConnectionString = true;
+
+            // Reset observable dictionary to default values on record change
+            const keys = viewModel.connectionString.keys();
+
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+
+                if (defaultConnectionString.containsKey(key))
+                    viewModel.connectionString.set(key, defaultConnectionString.get(key));
+                else
+                    viewModel.connectionString.remove(key);
+            }
+
+            // Numeric validation forces empty port to zero, make sure value remains empty
+            if (viewModel.connectionString.get("port")() === "0")
+                viewModel.connectionString.set("port", "");
+
+            // Update observable dictionary with parsed key/value pairs of current connection string
+            const currentConnectionString = notNull(viewModel.currentRecord().ConnectionString()).parseKeyValuePairs();
+            currentConnectionString.updateObservableDictionary(viewModel.connectionString, true);
+
+            viewModel.isDirty(false);
+            viewModel.loadingConnectionString = false;
+        });
+
+        $(viewModel).on("recordSaved", function (event, record, isNew) {
+            if (!hubIsConnected)
+                return;
+
+            // Notify downloaders of a change in the output mirrors
+            serviceHub.sendCommand("reloadconfig");
+        });
+
+        //$(function() {
+        //    $("#addNewEditDialog").on("shown.bs.modal", function () {
+        //        // On add/edit dialog shown, disable data-dismiss buttons on parent pop-up
+        //        const dismissButtons = $("#editTasksDialog", window.parent.document).find("button[data-dismiss]");
+        //        dismissButtons.prop("disabled", true);
+        //        dismissButtons.invisible();
+        //    });
+
+        //    $("#addNewEditDialog").on("hidden.bs.modal", function () {
+        //        // On add/edit dialog hidden, re-enable data-dismiss buttons on parent pop-up
+        //        const dismissButtons = $("#editTasksDialog", window.parent.document).find("button[data-dismiss]");
+        //        dismissButtons.visible();
+        //        dismissButtons.prop("disabled", false);
+        //    });
+        //});
+    </script>
+}
