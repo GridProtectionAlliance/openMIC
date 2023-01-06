@@ -239,6 +239,11 @@
     <Compile Include="DataSubscriptionHubClient.cs" />
     <Compile Include="DataSubscriptionOperations.cs" />
     <Compile Include="Downloader.cs" />
+    <Compile Include="FileMirroring\FileSystemMirror.cs" />
+    <Compile Include="FileMirroring\FTPMirror.cs" />
+    <Compile Include="FileMirroring\MirrorHandler.cs" />
+    <Compile Include="FileMirroring\SFTPMirror.cs" />
+    <Compile Include="FileMirroring\UNCMirror.cs" />
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="IniJsonInterop.cs" />
     <Compile Include="IOrderedQueryableExtensions.cs" />
@@ -275,6 +280,7 @@
     <Compile Include="Model\ConnectionProfileTask.cs" />
     <Compile Include="Controllers\OperationsController.cs" />
     <Compile Include="Model\QueuePriority.cs" />
+    <Compile Include="FileMirroring\FileMirror.cs" />
     <Compile Include="ServiceConnectionHubClient.cs" />
     <Compile Include="ServiceConnectionOperations.cs" />
     <Compile Include="ServiceHub.cs" />

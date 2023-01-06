@@ -53,6 +53,7 @@ using GSF.Units;
 using DotRas;
 using ModbusAdapters.Model;
 using openMIC.Model;
+using openMIC.FileMirroring;
 using openMIC.SharedAssets;
 using static openMIC.SharedAssets.LogFunctions;
 
@@ -2079,6 +2080,16 @@ public class Downloader : InputAdapterBase
     {
         try
         {
+            // Queue any mirror operations for downloaded files
+            s_fileMirror.Queue(filePath);
+        }
+        catch (Exception ex)
+        {
+            OnProcessException(MessageLevel.Error, new InvalidOperationException($"Failed while attempting to queue downloaded file \"{filePath}\" for mirroring operations: {ex.Message}", ex));
+        }
+
+        try
+        {
             FileInfo fileInfo = new(filePath);
             using AdoDataConnection connection = new("systemSettings");
             TableOperations<DownloadedFile> downloadedFileTable = new(connection);
@@ -2210,6 +2221,7 @@ public class Downloader : InputAdapterBase
     // Static Fields
     private static readonly ScheduleManager s_scheduleManager;
     private static readonly ConcurrentDictionary<string, Tuple<Downloader, ConnectionProfileTask>> s_taskSchedules;
+    private static readonly FileMirror s_fileMirror;
     private static readonly List<ProgressUpdateWrapper> s_queuedProgressUpdates;
     private static ICancellationToken s_progressUpdateCancellationToken;
     private static readonly string LogDownloadedFilePattern = string.Format(LogDownloadedFileTemplate, "(?<FilePath>.+)");
@@ -2230,8 +2242,14 @@ public class Downloader : InputAdapterBase
         s_scheduleManager.ScheduleDue += ScheduleManager_ScheduleDue;
 
         s_taskSchedules = new ConcurrentDictionary<string, Tuple<Downloader, ConnectionProfileTask>>();
-        s_queuedProgressUpdates = new List<ProgressUpdateWrapper>();
 
+        s_fileMirror = new FileMirror
+        {
+            LogStatusMessageFunction = Program.Host.LogStatusMessage,
+            LogExceptionFunction = Program.Host.LogException
+        };
+        
+        s_queuedProgressUpdates = new List<ProgressUpdateWrapper>();
         s_scheduleManager.Start();
     }
 
@@ -2329,9 +2347,7 @@ public class Downloader : InputAdapterBase
         lock (s_queuedProgressUpdates)
         {
             s_queuedProgressUpdates.Add(new ProgressUpdateWrapper(instance, update));
-
-            if (s_progressUpdateCancellationToken == null)
-                s_progressUpdateCancellationToken = sendProgressUpdates.DelayAndExecute(100);
+            s_progressUpdateCancellationToken ??= sendProgressUpdates.DelayAndExecute(100);
         }
     }
 
@@ -2414,7 +2430,7 @@ public class Downloader : InputAdapterBase
 
     #region [ Statistic Methods ]
 
-#pragma warning disable IDE0051 // These methods are accessed via reflection
+    #pragma warning disable IDE0051 // These methods are accessed via reflection
 
     private static double GetDownloaderStatistic_Enabled(object source, string _)
     {
@@ -2526,7 +2542,7 @@ public class Downloader : InputAdapterBase
         return statistic;
     }
 
-#pragma warning restore IDE0051
+    #pragma warning restore IDE0051
 
     #endregion
 
