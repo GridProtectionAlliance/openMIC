@@ -213,6 +213,10 @@
             // Add connection string reference to current observable record so it can participate in the validation group
             observableRecord._connectionstring = viewModel.connectionString;
 
+            // Set initial required states
+            const connectionType = observableRecord.ConnectionType();
+            setRequiredStates(["host"], connectionType === "FTP" || connectionType === "SFTP");
+
             observableRecord.ConnectionTypeChange = observableRecord.ConnectionType.subscribe(function () {
                 // Reset observable dictionary to default values on connection type change
                 const keys = viewModel.connectionString.keys();
@@ -232,12 +236,10 @@
                         setRequiredStates(["host"], false);
                         break;
                     case "FTP":
-                        viewModel.connectionString.set("remotepath", "/");
                         viewModel.connectionString.set("port", "21");
                         setRequiredStates(["host"], true);
                         break;
                     case "SFTP":
-                        viewModel.connectionString.set("remotepath", "/");
                         viewModel.connectionString.set("port", "22");
                         setRequiredStates(["host"], true);
                         break;
