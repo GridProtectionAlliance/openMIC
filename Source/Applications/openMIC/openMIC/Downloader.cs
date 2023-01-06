@@ -443,6 +443,10 @@ public class Downloader : InputAdapterBase
                     }
                 });
             }
+
+            // Let file mirror operations know about reload configuration requests, since this trigger will be called
+            // from multiple downloader instances, file mirror handles this as a delayed synchronized operation
+            s_fileMirror.Load();
         }
     }
 

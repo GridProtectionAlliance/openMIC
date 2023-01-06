@@ -25,9 +25,13 @@ using GSF;
 using GSF.Collections;
 using GSF.Data;
 using GSF.Data.Model;
+using GSF.Threading;
 using openMIC.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using MirrorHandlers = System.Collections.Generic.List<openMIC.FileMirroring.MirrorHandler>;
 
 namespace openMIC.FileMirroring
 {
@@ -53,16 +57,11 @@ namespace openMIC.FileMirroring
     {
         #region [ Members ]
 
-        // Nested Types
-
-        // Constants
-
-        // Delegates
-
-        // Events
-
         // Fields
-        private readonly Dictionary<string, List<MirrorHandler>> m_mirrors;
+        private readonly AsyncQueue<List<Action>> m_operationQueue;
+        private readonly Dictionary<string, MirrorHandlers> m_mirrors;
+        private readonly DelayedSynchronizedOperation m_loadMirrors;
+        private DateTime m_lastMirrorUpdate;
 
         #endregion
 
@@ -73,7 +72,19 @@ namespace openMIC.FileMirroring
         /// </summary>
         public FileMirror()
         {
-            m_mirrors = new Dictionary<string, List<MirrorHandler>>(StringComparer.OrdinalIgnoreCase);
+            m_operationQueue = new AsyncQueue<List<Action>>(SynchronizedOperationType.LongBackground)
+            {
+                ProcessItemFunction = ProcessFileOperations,
+                Enabled = true
+            };
+
+            m_mirrors = new Dictionary<string, MirrorHandlers>(StringComparer.OrdinalIgnoreCase);
+            
+            // Load initial output mirrors without delay
+            LoadMirrors();
+
+            // Wait 5 seconds before starting new synchronized load operations
+            m_loadMirrors = new DelayedSynchronizedOperation(LoadMirrors, LogException) { Delay = 5000 };
         }
 
         #endregion
@@ -97,18 +108,29 @@ namespace openMIC.FileMirroring
         /// <summary>
         /// Loads all existing mirror configurations.
         /// </summary>
-        public void Load()
+        public void Load() => 
+            m_loadMirrors.RunOnceAsync();
+
+        private void LoadMirrors()
         {
             using AdoDataConnection connection = new("systemSettings");
             TableOperations<OutputMirror> tableOperations = new(connection);
-            IEnumerable<OutputMirror> outputMirrors = tableOperations.QueryRecords();
+            OutputMirror[] outputMirrors = tableOperations.QueryRecords().ToArray();
 
-            Dictionary<string, List<MirrorHandler>> mirrors = new(StringComparer.OrdinalIgnoreCase);
+            DateTime lastMirrorUpdate = outputMirrors.Select(outputMirror => outputMirror.UpdatedOn).Max();
+
+            // Cancel load operation if no output mirrors have been updated since last load
+            if (lastMirrorUpdate <= m_lastMirrorUpdate)
+                return;
+
+            m_lastMirrorUpdate = lastMirrorUpdate;
+
+            Dictionary<string, MirrorHandlers> mirrors = new(StringComparer.OrdinalIgnoreCase);
 
             foreach (OutputMirror outputMirror in outputMirrors)
             {
                 // Each source location can have multiple mirror handlers
-                List<MirrorHandler> handlers = mirrors.GetOrAdd(outputMirror.Source, _ => new List<MirrorHandler>());
+                MirrorHandlers handlers = mirrors.GetOrAdd(outputMirror.Source, _ => new MirrorHandlers());
                 
                 switch (outputMirror.Type)
                 {
@@ -132,9 +154,16 @@ namespace openMIC.FileMirroring
 
             lock (m_mirrors)
             {
+                // Dispose existing handlers - this will close any open connections
+                foreach (MirrorHandlers handlers in m_mirrors.Values)
+                {
+                    foreach (IDisposable handler in handlers)
+                        handler.Dispose();
+                }
+
                 m_mirrors.Clear();
 
-                foreach (KeyValuePair<string, List<MirrorHandler>> mirror in mirrors)
+                foreach (KeyValuePair<string, MirrorHandlers> mirror in mirrors)
                     m_mirrors.Add(mirror.Key, mirror.Value);
             }
         }
@@ -146,7 +175,52 @@ namespace openMIC.FileMirroring
         /// <param name="operation">File operation for mirror filename.</param>
         public void Queue(string filePath, FileOperation operation)
         {
+            List<Action> operations = new();
+            Dictionary<string, MirrorHandlers> mirrors;
 
+            lock (m_mirrors)
+                mirrors = m_mirrors;
+
+            IEnumerable<MirrorHandlers> targetHandlers = mirrors.
+                Where(mirror => filePath.StartsWith(mirror.Key, StringComparison.OrdinalIgnoreCase)).
+                Select(mirror => mirror.Value);
+
+            foreach (MirrorHandlers handlers in targetHandlers)
+            {
+                operations.AddRange(handlers.Select(handler => new Action(() =>
+                {
+                    switch (operation)
+                    {
+                        case FileOperation.Copy:
+                            handler.CopyFile(filePath);
+                            break;
+                        case FileOperation.Delete:
+                            handler.DeleteFile(filePath);
+                            break;
+                        default:
+                            return;
+                    }
+                })));
+            }
+
+            if (operations.Any())
+                m_operationQueue.Enqueue(operations);
+        }
+
+        private void ProcessFileOperations(List<Action> actions)
+        { 
+            // Actions will be for same source, but different output mirrors - so parallel handling is considered safe
+            Parallel.ForEach(actions, action =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                }
+            });
         }
 
         private void LogStatusMessage(UpdateType updateType, string message) => 
@@ -154,22 +228,6 @@ namespace openMIC.FileMirroring
 
         private void LogException(Exception ex) => 
             LogExceptionFunction?.Invoke(new InvalidOperationException($"[{nameof(FileMirror)}] ERROR: {ex.Message}", ex));
-
-        #endregion
-
-        #region [ Operators ]
-
-        #endregion
-
-        #region [ Static ]
-
-        // Static Fields
-
-        // Static Constructor
-
-        // Static Properties
-
-        // Static Methods
 
         #endregion
     }

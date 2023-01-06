@@ -22,14 +22,35 @@
 //******************************************************************************************************
 
 using openMIC.Model;
+using System;
 
 namespace openMIC.FileMirroring
 {
     /// <summary>
     /// Represents the basic functionality required by an openMIC file mirror handler.
     /// </summary>
-    public abstract class MirrorHandler
+    public abstract class MirrorHandler : IDisposable
     {
+        /// <summary>
+        /// Gets connection type for output mirror handler instance.
+        /// </summary>
         public abstract OutputMirrorConnectionType Type { get; }
+
+        /// <summary>
+        /// Copies <paramref name="file"/> to configured destination. Folders in path should be created.
+        /// </summary>
+        /// <param name="file">File to copy.</param>
+        public abstract void CopyFile(string file);
+
+        /// <summary>
+        /// Deletes <paramref name="file"/> from configured destination. Empty folders should be deleted.
+        /// </summary>
+        /// <param name="file">File to delete.</param>
+        public abstract void DeleteFile(string file);
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public abstract void Dispose();
     }
 }

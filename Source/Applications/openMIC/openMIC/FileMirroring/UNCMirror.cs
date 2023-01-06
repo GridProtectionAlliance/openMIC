@@ -38,5 +38,17 @@ namespace openMIC.FileMirroring
         }
         
         public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.UNC;
+
+        public override void CopyFile(string file)
+        {
+        }
+
+        public override void DeleteFile(string file)
+        {
+        }
+
+        public override void Dispose()
+        {
+        }
     }
 }
