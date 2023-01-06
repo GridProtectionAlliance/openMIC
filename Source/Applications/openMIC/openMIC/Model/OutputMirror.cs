@@ -64,8 +64,8 @@ public class OutputMirrorSettings
 
     [ConnectionStringParameter]
     [Description("Defines remote mirror host port (if applicable).")]
-    [DefaultValue(22)]
-    public int Port { get; set; }
+    [DefaultValue(null)]
+    public int? Port { get; set; }
 
     [ConnectionStringParameter]
     [Description("Defines remote mirror host connection username.")]
