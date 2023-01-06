@@ -87,7 +87,7 @@
         @Raw(dataContext.AddInputField("get('remotepath')", true, fieldLabel: "Output Mirror Root Path", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
     </div>
     <div class="col-md-6">
-        @Raw(dataContext.AddInputField("get('host')", false, fieldLabel: "Remote Mirror Host Name or IP", fieldID: "inputHost", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "HostEnabled", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('host')", true, fieldLabel: "Remote Mirror Host Name or IP", fieldID: "inputHost", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "HostEnabled", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('port')", false, inputType: "number", fieldLabel: "Remote Mirror Host Port (if applicable)", fieldID: "inputPort", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "PortEnabled", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('username')", false, fieldLabel: "Remote Mirror Host Connection Username", fieldID: "inputUsername", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "UsernameEnabled", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('password')", false, inputType: "password", fieldLabel: "Remote Mirror Host Connection Password (or Pass-phrase)", fieldID: "inputPassword", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "PasswordEnabled", enableHotLinks: false))
@@ -229,18 +229,22 @@
                 switch (viewModel.currentRecord().ConnectionType()) {
                     case "FileSystem":
                         viewModel.connectionString.set("remotepath", "C:\\MirrorPath\\");
+                        setRequiredStates(["host"], false);
                         break;
                     case "FTP":
                         viewModel.connectionString.set("remotepath", "/");
                         viewModel.connectionString.set("port", "21");
+                        setRequiredStates(["host"], true);
                         break;
                     case "SFTP":
                         viewModel.connectionString.set("remotepath", "/");
                         viewModel.connectionString.set("port", "22");
+                        setRequiredStates(["host"], true);
                         break;
                     case "UNC":
                         viewModel.connectionString.set("host", "\\\\MachineName\\ShareName");
                         viewModel.connectionString.set("remotepath", "\\MirrorPath\\");
+                        setRequiredStates(["host"], true);
                         break;
                 }
             });
@@ -284,20 +288,10 @@
             serviceHub.sendCommand("reloadconfig");
         });
 
-        //$(function() {
-        //    $("#addNewEditDialog").on("shown.bs.modal", function () {
-        //        // On add/edit dialog shown, disable data-dismiss buttons on parent pop-up
-        //        const dismissButtons = $("#editTasksDialog", window.parent.document).find("button[data-dismiss]");
-        //        dismissButtons.prop("disabled", true);
-        //        dismissButtons.invisible();
-        //    });
-
-        //    $("#addNewEditDialog").on("hidden.bs.modal", function () {
-        //        // On add/edit dialog hidden, re-enable data-dismiss buttons on parent pop-up
-        //        const dismissButtons = $("#editTasksDialog", window.parent.document).find("button[data-dismiss]");
-        //        dismissButtons.visible();
-        //        dismissButtons.prop("disabled", false);
-        //    });
-        //});
+        function setRequiredStates(valueFieldNames, state) {
+            for (let i = 0; i < valueFieldNames.length; i++) {
+                viewModel.connectionString.get(valueFieldNames[i]).extend({ required: state });
+            }
+        }
     </script>
 }
