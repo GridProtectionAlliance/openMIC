@@ -48,6 +48,9 @@
   <Component Id="ModbusConfig_cshtml">
     <File Id="ModbusConfig.cshtml" Name="ModbusConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\ModbusConfig.cshtml" />
   </Component>
+  <Component Id="OutputMirrors_cshtml">
+    <File Id="OutputMirrors.cshtml" Name="OutputMirrors.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\OutputMirrors.cshtml" />
+  </Component>
   <Component Id="PQubeConfig_cshtml">
     <File Id="PQubeConfig.cshtml" Name="PQubeConfig.cshtml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\PQubeConfig.cshtml" />
   </Component>
@@ -288,6 +291,9 @@
   </Component>
   <Component Id="SectionMaps_PQube_Network_xml">
     <File Id="SectionMaps_PQube_Network.xml" Name="Network.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\Network.xml" />
+  </Component>
+  <Component Id="SectionMaps_PQube_RelayExtension_xml">
+    <File Id="SectionMaps_PQube_RelayExtension.xml" Name="RelayExtension.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\RelayExtension.xml" />
   </Component>
   <Component Id="SectionMaps_PQube_RelayOutput_xml">
     <File Id="SectionMaps_PQube_RelayOutput.xml" Name="RelayOutput.xml" Source="$(var.SolutionDir)Applications\openMIC\openMIC\wwwroot\SectionMaps\PQube\RelayOutput.xml" />
