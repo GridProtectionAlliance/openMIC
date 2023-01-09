@@ -30,23 +30,40 @@ namespace openMIC.FileMirroring
     /// </summary>
     public class UNCMirror : MirrorHandler
     {
-        private readonly OutputMirror m_outputMirror;
-        
-        public UNCMirror(OutputMirror outputMirror)
+        /// <summary>
+        /// Creates a new <see cref="UNCMirror"/>.
+        /// </summary>
+        /// <param name="config">Output mirror configuration loaded from the database.</param>
+        public UNCMirror(OutputMirror config) : base(config)
         {
-            m_outputMirror = outputMirror;
         }
-        
+
+        /// <summary>
+        /// Gets connection type for output mirror handler instance.
+        /// </summary>
         public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.UNC;
 
-        public override void CopyFile(string file)
+        /// <summary>
+        /// Copies <paramref name="file"/> to configured destination.
+        /// Folders in path should be created.
+        /// </summary>
+        /// <param name="file">File to copy.</param>
+        protected override void CopyFileInternal(string file)
         {
         }
 
-        public override void DeleteFile(string file)
+        /// <summary>
+        /// Derived class implementation of function that deletes <paramref name="file"/> from configured destination.
+        /// Empty folders should be deleted.
+        /// </summary>
+        /// <param name="file">File to delete.</param>
+        protected override void DeleteFileInternal(string file)
         {
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public override void Dispose()
         {
         }

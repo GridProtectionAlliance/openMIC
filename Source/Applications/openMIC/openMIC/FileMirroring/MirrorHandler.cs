@@ -32,21 +32,63 @@ namespace openMIC.FileMirroring
     public abstract class MirrorHandler : IDisposable
     {
         /// <summary>
+        /// Output mirror configuration loaded from the database.
+        /// </summary>
+        protected readonly OutputMirror Config;
+
+        /// <summary>
+        /// Creates a new <see cref="MirrorHandler"/>.
+        /// </summary>
+        /// <param name="config">Output mirror configuration loaded from the database.</param>
+        protected MirrorHandler(OutputMirror config)
+        {
+            Config = config;
+        }
+
+        /// <summary>
         /// Gets connection type for output mirror handler instance.
         /// </summary>
         public abstract OutputMirrorConnectionType Type { get; }
 
         /// <summary>
-        /// Copies <paramref name="file"/> to configured destination. Folders in path should be created.
+        /// Copies <paramref name="file"/> to configured destination.
+        /// Folders in path should be created.
         /// </summary>
         /// <param name="file">File to copy.</param>
-        public abstract void CopyFile(string file);
+        public void CopyFile(string file)
+        {
+            if (!Config.Settings.SyncCopy)
+                return;
+
+            CopyFileInternal(file);
+        }
 
         /// <summary>
-        /// Deletes <paramref name="file"/> from configured destination. Empty folders should be deleted.
+        /// Derived class implementation of function that copies <paramref name="file"/> to configured destination.
+        /// Folders in path should be created.
+        /// </summary>
+        /// <param name="file">File to copy.</param>
+        protected abstract void CopyFileInternal(string file);
+
+        /// <summary>
+        /// Deletes <paramref name="file"/> from configured destination.
+        /// Empty folders should be deleted.
         /// </summary>
         /// <param name="file">File to delete.</param>
-        public abstract void DeleteFile(string file);
+        public void DeleteFile(string file)
+        {
+            if (!Config.Settings.SyncDelete)
+                return;
+
+            DeleteFileInternal(file);
+        }
+
+        /// <summary>
+        /// Derived class implementation of function that deletes <paramref name="file"/> from configured destination.
+        /// Empty folders should be deleted.
+        /// </summary>
+        /// <param name="file">File to delete.</param>
+        protected abstract void DeleteFileInternal(string file);
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.

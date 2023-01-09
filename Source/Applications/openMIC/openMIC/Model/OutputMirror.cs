@@ -81,6 +81,22 @@ public class OutputMirrorSettings
     [Description("Defines remote mirror host key file (if applicable).")]
     [DefaultValue("")]
     public string KeyFile { get; set; }
+
+    [ConnectionStringParameter]
+    [Description("Defines flag that determines if source copies should be synced to destination.")]
+    [DefaultValue(true)]
+    public bool SyncCopy { get; set; }
+
+
+    [ConnectionStringParameter]
+    [Description("Defines flag that determines if source deletes should be synced to destination.")]
+    [DefaultValue(true)]
+    public bool SyncDelete { get; set; }
+
+    [ConnectionStringParameter]
+    [Description("Defines flag that determines if full source file system should be monitored for sync operations.")]
+    [DefaultValue(false)]
+    public bool EnableFullSyncOps { get; set; }
 }
 
 [PrimaryLabel("Name")]

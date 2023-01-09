@@ -30,23 +30,40 @@ namespace openMIC.FileMirroring
     /// </summary>
     public class SFTPMirror : MirrorHandler
     {
-        private readonly OutputMirror m_outputMirror;
-        
-        public SFTPMirror(OutputMirror outputMirror)
-        {
-            m_outputMirror = outputMirror;
-        }
-        
-        public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.SFTP;
-
-        public override void CopyFile(string file)
+        /// <summary>
+        /// Creates a new <see cref="SFTPMirror"/>.
+        /// </summary>
+        /// <param name="config">Output mirror configuration loaded from the database.</param>
+        public SFTPMirror(OutputMirror config) : base(config)
         {
         }
 
-        public override void DeleteFile(string file)
+        /// <summary>
+        /// Gets connection type for output mirror handler instance.
+        /// </summary>
+        public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.UNC;
+
+        /// <summary>
+        /// Copies <paramref name="file"/> to configured destination.
+        /// Folders in path should be created.
+        /// </summary>
+        /// <param name="file">File to copy.</param>
+        protected override void CopyFileInternal(string file)
         {
         }
 
+        /// <summary>
+        /// Derived class implementation of function that deletes <paramref name="file"/> from configured destination.
+        /// Empty folders should be deleted.
+        /// </summary>
+        /// <param name="file">File to delete.</param>
+        protected override void DeleteFileInternal(string file)
+        {
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public override void Dispose()
         {
         }

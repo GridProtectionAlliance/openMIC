@@ -85,6 +85,9 @@
         @Raw(dataContext.AddInputField<OutputMirror>("Source", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<OutputMirror>(connectionTypes, "ConnectionType", false, allowUnset: false))
         @Raw(dataContext.AddInputField("get('remotepath')", true, fieldLabel: "Output Mirror Root Path", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+        @Raw(dataContext.AddCheckBoxField("get('synccopy')", "Sync Copies from Source to Output", "checkSyncCopy", "with: $root.connectionString"))
+        @Raw(dataContext.AddCheckBoxField("get('syncdelete')", "Sync Deletes from Source to Output", "checkSyncCopy", "with: $root.connectionString"))
+        @Raw(dataContext.AddCheckBoxField("get('enablefullsyncops')", "Monitor and Sync Full Source File System (Primary Machine Only)", "checkEnableFullSyncOps", "with: $root.connectionString"))
     </div>
     <div class="col-md-6">
         @Raw(dataContext.AddInputField("get('host')", true, fieldLabel: "Remote Mirror Host Name or IP", fieldID: "inputHost", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "HostEnabled", enableHotLinks: false))
@@ -117,6 +120,9 @@
         defaultConnectionString.set("username", "");
         defaultConnectionString.set("password", "");
         defaultConnectionString.set("keyFile", "");
+        defaultConnectionString.set("syncCopy", true);
+        defaultConnectionString.set("syncDelete", true);
+        defaultConnectionString.set("enableFullSyncOps", false);
 
         // Create an observable key/value pair connection string dictionary
         viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);
