@@ -35,7 +35,7 @@
         }
 
         .tooltip.bottom .tooltip-inner {
-            max-width: 700px;
+            max-width: 800px;
         }
     </style>
 }
@@ -206,6 +206,10 @@
         });
 
         function applyConnectionTypeAttrs() {
+
+            $("input[id=inputRemotePath]").attr("autocomplete", "off")
+            $("input[id=inputOtherSettings]").attr("autocomplete", "off");
+
             switch (viewModel.currentRecord().ConnectionType()) {
                 case "FileSystem":
                     setRequiredStates(["host"], false);
@@ -225,7 +229,7 @@
                     $("input[id=inputUsername]").attr("placeholder", "FTP Username");
                     $("input[id=inputPassword]").attr("placeholder", "FTP Password");
                     $("input[id=inputKeyFile]").attr("placeholder", "");
-                    $("input[id=inputOtherSettings]").attr("placeholder", "connectionTimeout=@(FTPMirror.DefaultConnectionTimeout); passive=@(FTPMirror.DefaultPassive.ToString().ToLower()); activeAddress=@(FTPMirror.DefaultActiveAddress.JavaScriptEncode()); minActivePort=@(FTPMirror.DefaultMinActivePort); maxActivePort=@(FTPMirror.DefaultMaxActivePort); noopInterval=@(FTPMirror.DefaultNoopInterval)");
+                    $("input[id=inputOtherSettings]").attr("placeholder", "connectionTimeout=@(FTPMirror.DefaultConnectionTimeout); passive=@(FTPMirror.DefaultPassive.ToString().ToLower()); activeAddress=@(FTPMirror.DefaultActiveAddress.JavaScriptEncode()); minActivePort=@(FTPMirror.DefaultMinActivePort); maxActivePort=@(FTPMirror.DefaultMaxActivePort); noOpInterval=@(FTPMirror.DefaultNoOpInterval); reconnectDelay=@(FTPMirror.DefaultReconnectDelay)");
                     break;
                 case "SFTP":
                     setRequiredStates(["host"], true);
