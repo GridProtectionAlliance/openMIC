@@ -45,7 +45,7 @@ public enum OutputMirrorConnectionType
     [Description("SFTP")]
     SFTP,
 
-    [Description("UNC - Windows Only")]
+    [Description("UNC Path")]
     UNC
 }
 
@@ -54,7 +54,7 @@ public class OutputMirrorSettings
 {
     [ConnectionStringParameter]
     [Description("Defines remote mirror root path.")]
-    [DefaultValue("/")]
+    [DefaultValue("")]
     public string RemotePath { get; set; }
 
     [ConnectionStringParameter]
@@ -97,6 +97,11 @@ public class OutputMirrorSettings
     [Description("Defines flag that determines if full source file system should be monitored for sync operations.")]
     [DefaultValue(false)]
     public bool EnableFullSyncOps { get; set; }
+
+    [ConnectionStringParameter]
+    [Description("Defines any extra settings that may applicable to the connection type.")]
+    [DefaultValue("")]
+    public string OtherSettings { get; set; }
 }
 
 [PrimaryLabel("Name")]

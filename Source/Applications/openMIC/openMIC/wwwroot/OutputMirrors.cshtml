@@ -25,12 +25,17 @@
 @using GSF.Web
 @using GSF.Web.Model
 @using openMIC
+@using openMIC.FileMirroring
 @using openMIC.Model
 @inherits ExtendedTemplateBase<AppModel>
 @section StyleSheets {
     <style>
         html, body {
             height: 100%;
+        }
+
+        .tooltip.bottom .tooltip-inner {
+            max-width: 700px;
         }
     </style>
 }
@@ -49,7 +54,8 @@
 
     Dictionary<string, string> connectionTypes = new Dictionary<string, string>();
 
-    foreach (Enum option in Enum.GetValues(typeof(OutputMirrorConnectionType))) {
+    foreach (Enum option in Enum.GetValues(typeof(OutputMirrorConnectionType)))
+    {
         connectionTypes.Add(option.ToString(), option.GetDescription());
     }
 
@@ -60,7 +66,8 @@
 
     connectionTypeDict.AppendLine("const connectionTypes = {");
 
-    foreach (KeyValuePair<string, string> connectionType in connectionTypes) {
+    foreach (KeyValuePair<string, string> connectionType in connectionTypes)
+    {
         connectionTypeDict.AppendFormat("            {0}: \"{1}\",{2}", connectionType.Key, connectionType.Value, Environment.NewLine);
     }
 
@@ -71,8 +78,8 @@
 @helper BodyRows()
 {
     <td width="25%" class="text-left valign-middle"><button type="button" class="btn btn-link" data-bind="text: Name, click: $parent.viewPageRecord"></button></td>
-    <td width="45%" class="text-center"><div data-bind="text: $($element.parentElement).truncateToWidth(Source, 2)"></div></td>
-    <td width="25%" class="text-center" data-bind="text: connectionTypes[ConnectionType]"><</td>
+    <td width="45%" class="text-center valign-middle"><div data-bind="text: $($element.parentElement).truncateToWidth(Source, 2)"></div></td>
+    <td width="25%" class="text-center valign-middle" data-bind="text: connectionTypes[ConnectionType]"><</td>
     <td width="5%" class="text-center valign-middle" nowrap>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.editPageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-pencil"></span></button>
         <button type="button" class="btn btn-xs" data-bind="click: $parent.removePageRecord, enable: $parent.dataHubIsConnected"><span class="glyphicon glyphicon-remove"></span></button>
@@ -84,10 +91,10 @@
         @Raw(dataContext.AddInputField<OutputMirror>("Name", initialFocus: true))
         @Raw(dataContext.AddInputField<OutputMirror>("Source", enableHotLinks: false))
         @Raw(dataContext.AddSelectField<OutputMirror>(connectionTypes, "ConnectionType", false, allowUnset: false))
-        @Raw(dataContext.AddInputField("get('remotepath')", true, fieldLabel: "Output Mirror Root Path", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
+        @Raw(dataContext.AddInputField("get('remotepath')", true, fieldLabel: "Output Mirror Root Path<span class=\"pull-right\">&nbsp;&nbsp;&nbsp;<small>(Configured Default: " + Model.Global.DefaultRemotePath.HtmlEncode() + ")</small></span>", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddCheckBoxField("get('synccopy')", "Sync Copies from Source to Output", "checkSyncCopy", "with: $root.connectionString"))
-        @Raw(dataContext.AddCheckBoxField("get('syncdelete')", "Sync Deletes from Source to Output", "checkSyncCopy", "with: $root.connectionString"))
-        @Raw(dataContext.AddCheckBoxField("get('enablefullsyncops')", "Monitor and Sync Full Source File System (Primary Machine Only)", "checkEnableFullSyncOps", "with: $root.connectionString"))
+        @Raw(dataContext.AddCheckBoxField("get('syncdelete')", "Sync Deletes from Source to Output", "checkSyncDelete", "with: $root.connectionString"))
+        @Raw(dataContext.AddCheckBoxField("get('enablefullsyncops')", "Monitor Changes and Sync Full Source File System to Output", "checkEnableFullSyncOps", "with: $root.connectionString"))
     </div>
     <div class="col-md-6">
         @Raw(dataContext.AddInputField("get('host')", true, fieldLabel: "Remote Mirror Host Name or IP", fieldID: "inputHost", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "HostEnabled", enableHotLinks: false))
@@ -95,6 +102,9 @@
         @Raw(dataContext.AddInputField("get('username')", false, fieldLabel: "Remote Mirror Host Connection Username", fieldID: "inputUsername", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "UsernameEnabled", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('password')", false, inputType: "password", fieldLabel: "Remote Mirror Host Connection Password (or Pass-phrase)", fieldID: "inputPassword", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "PasswordEnabled", enableHotLinks: false))
         @Raw(dataContext.AddInputField("get('keyfile')", false, fieldLabel: "Remote Mirror Host Key File (if applicable)", fieldID: "inputKeyFile", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "KeyFileEnabled", enableHotLinks: false))
+    </div>
+    <div class="col-md-12">
+        @Raw(dataContext.AddInputField("get('othersettings')", false, fieldLabel: "Custom Connection Type Settings<span class=\"pull-right\">&nbsp;&nbsp;<button type=\"button\" id=\"applyDefaultSettingsButton\" class=\"btn btn-default\" style=\"padding: 0px 6px; margin-top: -3px\" data-bind=\"attr: {'disabled': ($root.recordMode()===RecordMode.View ? true : undefined)}\"><small>Apply Defaults &gt;&gt;</small></button></span>", fieldID: "inputOtherSettings", groupDataBinding: "with: $root.connectionString", toolTip: "Custom Key/Value Settings", enableHotLinks: false))
     </div>
     <div class="col-md-12">
         <div class="form-group">
@@ -114,7 +124,7 @@
         // Define default connection string keys needed for OutputMirrorSettings class binding
         const defaultConnectionString = new Dictionary();
 
-        defaultConnectionString.set("remotePath", "@Raw(Model.Global.DefaultRemotePath.JavaScriptEncode())");
+        defaultConnectionString.set("remotePath", "");
         defaultConnectionString.set("host", "");
         defaultConnectionString.set("port", "");
         defaultConnectionString.set("username", "");
@@ -123,6 +133,7 @@
         defaultConnectionString.set("syncCopy", true);
         defaultConnectionString.set("syncDelete", true);
         defaultConnectionString.set("enableFullSyncOps", false);
+        defaultConnectionString.set("otherSettings", "");
 
         // Create an observable key/value pair connection string dictionary
         viewModel.connectionString = defaultConnectionString.toObservableDictionary(true);
@@ -131,7 +142,7 @@
         viewModel.connectionString.HostEnabled = ko.pureComputed({
             read: function () {
                 const record = viewModel.currentRecord();
-                
+
                 if (record)
                     return record.ConnectionType() !== "FileSystem";
 
@@ -194,6 +205,60 @@
             owner: viewModel
         });
 
+        function applyConnectionTypeAttrs() {
+            switch (viewModel.currentRecord().ConnectionType()) {
+                case "FileSystem":
+                    setRequiredStates(["host"], false);
+                    $("input[id=inputRemotePath]").attr("placeholder", "C:\\MirrorPath\\")
+                    $("input[id=inputHost]").attr("placeholder", "");
+                    $("input[id=inputPort]").attr("placeholder", "");
+                    $("input[id=inputUsername]").attr("placeholder", "");
+                    $("input[id=inputPassword]").attr("placeholder", "");
+                    $("input[id=inputKeyFile]").attr("placeholder", "");
+                    $("input[id=inputOtherSettings]").attr("placeholder", "");
+                    break;
+                case "FTP":
+                    setRequiredStates(["host"], true);
+                    $("input[id=inputRemotePath]").attr("placeholder", "/RemotePath/")
+                    $("input[id=inputHost]").attr("placeholder", "Remote Host DNS Name or IP");
+                    $("input[id=inputPort]").attr("placeholder", "Remote Port, Defaults to 21 for FTP");
+                    $("input[id=inputUsername]").attr("placeholder", "FTP Username");
+                    $("input[id=inputPassword]").attr("placeholder", "FTP Password");
+                    $("input[id=inputKeyFile]").attr("placeholder", "");
+                    $("input[id=inputOtherSettings]").attr("placeholder", "connectionTimeout=@(FTPMirror.DefaultConnectionTimeout); passive=@(FTPMirror.DefaultPassive.ToString().ToLower()); activeAddress=@(FTPMirror.DefaultActiveAddress.JavaScriptEncode()); minActivePort=@(FTPMirror.DefaultMinActivePort); maxActivePort=@(FTPMirror.DefaultMaxActivePort); noopInterval=@(FTPMirror.DefaultNoopInterval)");
+                    break;
+                case "SFTP":
+                    setRequiredStates(["host"], true);
+                    $("input[id=inputRemotePath]").attr("placeholder", "/RemotePath/")
+                    $("input[id=inputHost]").attr("placeholder", "Remote Host DNS Name or IP");
+                    $("input[id=inputPort]").attr("placeholder", "Remote Port, Defaults to 22 for SFTP");
+                    $("input[id=inputUsername]").attr("placeholder", "SFTP Username");
+                    $("input[id=inputPassword]").attr("placeholder", "SFTP Password or Pass-phrase for Key File");
+                    $("input[id=inputKeyFile]").attr("placeholder", "Key File Path");
+                    $("input[id=inputOtherSettings]").attr("placeholder", "");
+                    break;
+                case "UNC":
+                    setRequiredStates(["host"], true);
+                    $("input[id=inputRemotePath]").attr("placeholder", "\\RemotePath\\")
+                    $("input[id=inputHost]").attr("placeholder", "\\\\MachineName\\ShareName");
+                    $("input[id=inputPort]").attr("placeholder", "");
+                    $("input[id=inputUsername]").attr("placeholder", "UNC Domain\\Username");
+                    $("input[id=inputPassword]").attr("placeholder", "UNC Password");
+                    $("input[id=inputKeyFile]").attr("placeholder", "");
+                    $("input[id=inputOtherSettings]").attr("placeholder", "");
+                    break;
+            }
+
+            const placeholder = $("input[id=inputOtherSettings]").attr("placeholder");
+
+            $("input[id=inputOtherSettings]").parent().attr("data-original-title", placeholder);
+
+            if (placeholder.length > 0)
+                $("#applyDefaultSettingsButton").show();
+            else
+                $("#applyDefaultSettingsButton").hide();
+        }
+
         // Watch the connection string dictionary for changes independent of current record
         ko.watch(viewModel.connectionString, { depth: -1 }, function() {
             if (viewModel.loadingConnectionString)
@@ -208,10 +273,6 @@
         $(viewModel).on("newRecord", function (event, newRecord) {
             // Update connection string applying camel-case key names as defined in default connection string
             const updates = new Dictionary(defaultConnectionString);
-
-            // Provide better initial selection value for FileSystem
-            updates.set("remotepath", "C:\\MirrorPath\\");
-
             newRecord.ConnectionString = updates.joinKeyValuePairs();
         });
 
@@ -221,7 +282,7 @@
 
             // Set initial required states
             const connectionType = observableRecord.ConnectionType();
-            setRequiredStates(["host"], connectionType === "FTP" || connectionType === "SFTP");
+            setRequiredStates(["host"], connectionType === "FTP" || connectionType === "SFTP" || connectionType === "UNC");
 
             observableRecord.ConnectionTypeChange = observableRecord.ConnectionType.subscribe(function () {
                 // Reset observable dictionary to default values on connection type change
@@ -236,25 +297,7 @@
                         viewModel.connectionString.remove(key);
                 }
 
-                switch (viewModel.currentRecord().ConnectionType()) {
-                    case "FileSystem":
-                        viewModel.connectionString.set("remotepath", "C:\\MirrorPath\\");
-                        setRequiredStates(["host"], false);
-                        break;
-                    case "FTP":
-                        viewModel.connectionString.set("port", "21");
-                        setRequiredStates(["host"], true);
-                        break;
-                    case "SFTP":
-                        viewModel.connectionString.set("port", "22");
-                        setRequiredStates(["host"], true);
-                        break;
-                    case "UNC":
-                        viewModel.connectionString.set("host", "\\\\MachineName\\ShareName");
-                        viewModel.connectionString.set("remotepath", "\\MirrorPath\\");
-                        setRequiredStates(["host"], true);
-                        break;
-                }
+                applyConnectionTypeAttrs();
             });
         });
 
@@ -286,6 +329,8 @@
 
             viewModel.isDirty(false);
             viewModel.loadingConnectionString = false;
+
+            setTimeout(applyConnectionTypeAttrs, 750);
         });
 
         $(viewModel).on("recordSaved", function (event, record, isNew) {
@@ -301,5 +346,15 @@
                 viewModel.connectionString.get(valueFieldNames[i]).extend({ required: state });
             }
         }
+
+        $("#addNewEditDialog").on("show.bs.modal", function () {
+            applyConnectionTypeAttrs();
+
+            $("#applyDefaultSettingsButton").click(function () {
+                const $otherSettings = $("input[id=inputOtherSettings]");
+                $otherSettings.val($otherSettings.attr("placeholder"));
+                $otherSettings.focus();
+            });
+        });
     </script>
 }
