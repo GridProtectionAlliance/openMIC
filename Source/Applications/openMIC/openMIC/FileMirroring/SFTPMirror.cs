@@ -44,20 +44,25 @@ namespace openMIC.FileMirroring
         public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.UNC;
 
         /// <summary>
-        /// Copies <paramref name="file"/> to configured destination.
+        /// Gets the remote directory character, e.g., "/" or "\".
+        /// </summary>
+        public override string RemoteDirChar => "/";
+
+        /// <summary>
+        /// Copies <paramref name="filePath"/> to configured destination.
         /// Folders in path should be created.
         /// </summary>
-        /// <param name="file">File to copy.</param>
-        protected override void CopyFileInternal(string file)
+        /// <param name="filePath">File to copy.</param>
+        protected override void CopyFileInternal(string filePath)
         {
         }
 
         /// <summary>
-        /// Derived class implementation of function that deletes <paramref name="file"/> from configured destination.
+        /// Derived class implementation of function that deletes <paramref name="filePath"/> from configured destination.
         /// Empty folders should be deleted.
         /// </summary>
-        /// <param name="file">File to delete.</param>
-        protected override void DeleteFileInternal(string file)
+        /// <param name="filePath">File to delete.</param>
+        protected override void DeleteFileInternal(string filePath)
         {
         }
 

@@ -21,6 +21,8 @@
 //
 //******************************************************************************************************
 
+using System.IO;
+using System.Linq;
 using openMIC.Model;
 
 namespace openMIC.FileMirroring
@@ -41,24 +43,45 @@ namespace openMIC.FileMirroring
         /// <summary>
         /// Gets connection type for output mirror handler instance.
         /// </summary>
-        public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.UNC;
+        public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.FileSystem;
 
         /// <summary>
-        /// Copies <paramref name="file"/> to configured destination.
+        /// Gets the remote directory character, e.g., "/" or "\".
+        /// </summary>
+        public override string RemoteDirChar => @"\";
+
+        /// <summary>
+        /// Copies <paramref name="filePath"/> to configured destination.
         /// Folders in path should be created.
         /// </summary>
-        /// <param name="file">File to copy.</param>
-        protected override void CopyFileInternal(string file)
+        /// <param name="filePath">File to copy.</param>
+        protected override void CopyFileInternal(string filePath)
         {
+            string destination = GetRemoteFilePath(filePath);
+
+            if (!Directory.Exists(Path.GetDirectoryName(destination)))
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+
+            File.Copy(filePath, destination, true);
         }
 
         /// <summary>
-        /// Derived class implementation of function that deletes <paramref name="file"/> from configured destination.
+        /// Derived class implementation of function that deletes <paramref name="filePath"/> from configured destination.
         /// Empty folders should be deleted.
         /// </summary>
-        /// <param name="file">File to delete.</param>
-        protected override void DeleteFileInternal(string file)
+        /// <param name="filePath">File to delete.</param>
+        protected override void DeleteFileInternal(string filePath)
         {
+            string destination = GetRemoteFilePath(filePath);
+            string destinationDir = Path.GetDirectoryName(destination);
+
+            if (!Directory.Exists(destinationDir))
+                return;
+
+            File.Delete(destination);
+                
+            if (!Directory.EnumerateFiles(destinationDir).Any())
+                Directory.Delete(destinationDir);
         }
 
         /// <summary>

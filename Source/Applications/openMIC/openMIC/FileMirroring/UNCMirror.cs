@@ -21,6 +21,7 @@
 //
 //******************************************************************************************************
 
+using GSF.IO;
 using openMIC.Model;
 
 namespace openMIC.FileMirroring
@@ -28,7 +29,7 @@ namespace openMIC.FileMirroring
     /// <summary>
     /// Represents the an openMIC file mirror handler for UNC paths.
     /// </summary>
-    public class UNCMirror : MirrorHandler
+    public class UNCMirror : FileSystemMirror
     {
         /// <summary>
         /// Creates a new <see cref="UNCMirror"/>.
@@ -36,6 +37,10 @@ namespace openMIC.FileMirroring
         /// <param name="config">Output mirror configuration loaded from the database.</param>
         public UNCMirror(OutputMirror config) : base(config)
         {
+            OutputMirrorSettings settings = config.Settings;
+
+            if (!string.IsNullOrWhiteSpace(settings.Username))
+                FilePath.ConnectToNetworkShare(settings.Host, settings.Username, settings.Password, null);
         }
 
         /// <summary>
@@ -44,28 +49,14 @@ namespace openMIC.FileMirroring
         public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.UNC;
 
         /// <summary>
-        /// Copies <paramref name="file"/> to configured destination.
-        /// Folders in path should be created.
-        /// </summary>
-        /// <param name="file">File to copy.</param>
-        protected override void CopyFileInternal(string file)
-        {
-        }
-
-        /// <summary>
-        /// Derived class implementation of function that deletes <paramref name="file"/> from configured destination.
-        /// Empty folders should be deleted.
-        /// </summary>
-        /// <param name="file">File to delete.</param>
-        protected override void DeleteFileInternal(string file)
-        {
-        }
-
-        /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public override void Dispose()
         {
+            OutputMirrorSettings settings = Config.Settings;
+            
+            if (!string.IsNullOrWhiteSpace(settings.Username))
+                FilePath.DisconnectFromNetworkShare(settings.Host);
         }
     }
 }

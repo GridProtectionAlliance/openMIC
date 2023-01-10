@@ -23,6 +23,9 @@
 
 using openMIC.Model;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using GSF;
 
 namespace openMIC.FileMirroring
 {
@@ -31,6 +34,8 @@ namespace openMIC.FileMirroring
     /// </summary>
     public abstract class MirrorHandler : IDisposable
     {
+        private string m_remotePath;
+
         /// <summary>
         /// Output mirror configuration loaded from the database.
         /// </summary>
@@ -42,6 +47,14 @@ namespace openMIC.FileMirroring
         /// <param name="config">Output mirror configuration loaded from the database.</param>
         protected MirrorHandler(OutputMirror config)
         {
+            if (string.IsNullOrWhiteSpace(config.Source))
+                config.Source = "\\";
+
+            config.Source = config.Source.Trim();
+            
+            if (!config.Source.EndsWith("\\"))
+                config.Source += "\\";
+
             Config = config;
         }
 
@@ -51,48 +64,111 @@ namespace openMIC.FileMirroring
         public abstract OutputMirrorConnectionType Type { get; }
 
         /// <summary>
-        /// Copies <paramref name="file"/> to configured destination.
+        /// Gets the remote directory character, e.g., "/" or "\".
+        /// </summary>
+        public abstract string RemoteDirChar { get; }
+
+        /// <summary>
+        /// Gets any defined custom settings.
+        /// </summary>
+        protected Dictionary<string, string> OtherSettings =>
+            (Config.Settings.OtherSettings ?? "").ParseKeyValuePairs();
+
+        /// <summary>
+        /// Copies <paramref name="filePath"/> to configured destination.
         /// Folders in path should be created.
         /// </summary>
-        /// <param name="file">File to copy.</param>
-        public void CopyFile(string file)
+        /// <param name="filePath">File to copy.</param>
+        public void CopyFile(string filePath)
         {
             if (!Config.Settings.SyncCopy)
                 return;
 
-            CopyFileInternal(file);
+            CopyFileInternal(filePath);
         }
 
         /// <summary>
-        /// Derived class implementation of function that copies <paramref name="file"/> to configured destination.
+        /// Derived class implementation of function that copies <paramref name="filePath"/> to configured destination.
         /// Folders in path should be created.
         /// </summary>
-        /// <param name="file">File to copy.</param>
-        protected abstract void CopyFileInternal(string file);
+        /// <param name="filePath">File to copy.</param>
+        protected abstract void CopyFileInternal(string filePath);
 
         /// <summary>
-        /// Deletes <paramref name="file"/> from configured destination.
+        /// Deletes <paramref name="filePath"/> from configured destination.
         /// Empty folders should be deleted.
         /// </summary>
-        /// <param name="file">File to delete.</param>
-        public void DeleteFile(string file)
+        /// <param name="filePath">File to delete.</param>
+        public void DeleteFile(string filePath)
         {
             if (!Config.Settings.SyncDelete)
                 return;
 
-            DeleteFileInternal(file);
+            DeleteFileInternal(filePath);
         }
 
         /// <summary>
-        /// Derived class implementation of function that deletes <paramref name="file"/> from configured destination.
+        /// Derived class implementation of function that deletes <paramref name="filePath"/> from configured destination.
         /// Empty folders should be deleted.
         /// </summary>
-        /// <param name="file">File to delete.</param>
-        protected abstract void DeleteFileInternal(string file);
+        /// <param name="filePath">File to delete.</param>
+        protected abstract void DeleteFileInternal(string filePath);
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public abstract void Dispose();
+
+        /// <summary>
+        /// Gets the remote file path for the source <paramref name="filePath"/>.
+        /// </summary>
+        /// <param name="filePath">Remote system file path.</param>
+        /// <returns>base file name for the source <paramref name="filePath"/>.</returns>
+        /// <exception cref="InvalidOperationException">File path does not belong to output mirror.</exception>
+        /// <exception cref="InvalidOperationException">Remote path is not defined for output mirror.</exception>
+        protected string GetRemoteFilePath(string filePath)
+        {
+            string baseFilePath = GetBaseFilePath(filePath);
+
+            if (RemoteDirChar != "\\")
+                baseFilePath = baseFilePath.Replace("\\", RemoteDirChar);
+
+            return Path.Combine(GetRemotePath(), baseFilePath);
+        }
+
+        /// <summary>
+        /// Gets the base file path for the source <paramref name="filePath"/>.
+        /// </summary>
+        /// <param name="filePath">Source system file path.</param>
+        /// <returns>base file name for the source <paramref name="filePath"/>.</returns>
+        /// <exception cref="InvalidOperationException">File path does not belong to output mirror.</exception>
+        protected string GetBaseFilePath(string filePath)
+        {
+            if (!filePath.StartsWith(Config.Source, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"File path \"{filePath}\" does not belong to output mirror \"{Config.Name}\"");
+
+            return filePath.Substring(Config.Source.Length);
+        }
+
+        /// <summary>
+        /// Gets the configured remote path.
+        /// </summary>
+        /// <returns>Configured remote path.</returns>
+        /// <exception cref="InvalidOperationException">Remote path is not defined for output mirror.</exception>
+        protected string GetRemotePath()
+        {
+            if (!string.IsNullOrEmpty(m_remotePath))
+                return m_remotePath;
+
+            string remotePath = Config.Settings.RemotePath;
+
+            if (string.IsNullOrEmpty(remotePath))
+                throw new InvalidOperationException($"Remote path is not defined for output mirror \"{Config.Name}\"");
+
+            if (!remotePath.EndsWith(RemoteDirChar))
+                remotePath += RemoteDirChar;
+
+            return m_remotePath = remotePath;
+        }
     }
 }
