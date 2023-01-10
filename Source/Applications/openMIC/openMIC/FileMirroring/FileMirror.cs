@@ -145,16 +145,32 @@ namespace openMIC.FileMirroring
                 switch (outputMirror.Type)
                 {
                     case OutputMirrorConnectionType.FileSystem:
-                        handlers.Add(new FileSystemMirror(outputMirror));
+                        handlers.Add(new FileSystemMirror(outputMirror)
+                        {
+                            LogStatusMessageFunction = LogStatusMessageFunction,
+                            LogExceptionFunction = LogExceptionFunction
+                        });
                         break;
                     case OutputMirrorConnectionType.FTP:
-                        handlers.Add(new FTPMirror(outputMirror));
+                        handlers.Add(new FTPMirror(outputMirror)
+                        {
+                            LogStatusMessageFunction = LogStatusMessageFunction,
+                            LogExceptionFunction = LogExceptionFunction
+                        });
                         break;
                     case OutputMirrorConnectionType.SFTP:
-                        handlers.Add(new SFTPMirror(outputMirror));
+                        handlers.Add(new SFTPMirror(outputMirror)
+                        {
+                            LogStatusMessageFunction = LogStatusMessageFunction,
+                            LogExceptionFunction = LogExceptionFunction
+                        });
                         break;
                     case OutputMirrorConnectionType.UNC:
-                        handlers.Add(new UNCMirror(outputMirror));
+                        handlers.Add(new UNCMirror(outputMirror)
+                        {
+                            LogStatusMessageFunction = LogStatusMessageFunction,
+                            LogExceptionFunction = LogExceptionFunction
+                        });
                         break;
                     default:
                         LogStatusMessage(UpdateType.Warning, $"Encounter unexpected output mirror type: {outputMirror.Type}");

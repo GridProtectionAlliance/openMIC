@@ -21,12 +21,14 @@
 //
 //******************************************************************************************************
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Timers;
 using GSF;
 using GSF.Net.Ftp;
+using GSF.Threading;
 using openMIC.Model;
 using Timer = System.Timers.Timer;
 
@@ -38,7 +40,8 @@ namespace openMIC.FileMirroring
     public class FTPMirror : MirrorHandler
     {
         private readonly FtpClient m_client;
-        private readonly Timer m_noopTimer;
+        private readonly Timer m_noOpTimer;
+        private readonly DelayedSynchronizedOperation m_reconnect;
 
         /// <summary>
         /// Default connection timeout in milliseconds.
@@ -68,7 +71,12 @@ namespace openMIC.FileMirroring
         /// <summary>
         /// Default NOOP interval in milliseconds.
         /// </summary>
-        public const int DefaultNoopInterval = 10000;
+        public const int DefaultNoOpInterval = 10000;
+
+        /// <summary>
+        /// Default reconnect delay in milliseconds.
+        /// </summary>
+        public const int DefaultReconnectDelay = 10000;
 
         /// <summary>
         /// Creates a new <see cref="FTPMirror"/>.
@@ -88,7 +96,7 @@ namespace openMIC.FileMirroring
 
             Dictionary<string, string> otherSettings = OtherSettings;
 
-            int connectionTimeout, noopInterval, minActivePort, maxActivePort;
+            int connectionTimeout, minActivePort, maxActivePort, noOpInterval, reconnectDelay;
             bool passive = DefaultPassive;
             string activeAddress = DefaultActiveAddress;
 
@@ -113,15 +121,23 @@ namespace openMIC.FileMirroring
             m_client.MinActivePort = minActivePort;
             m_client.MaxActivePort = maxActivePort;
 
-            if (!otherSettings.TryGetValue(nameof(noopInterval), out value) || !int.TryParse(value, out noopInterval) || noopInterval <= 0)
-                noopInterval = DefaultNoopInterval;
+            if (!otherSettings.TryGetValue(nameof(noOpInterval), out value) || !int.TryParse(value, out noOpInterval) || noOpInterval <= 0)
+                noOpInterval = DefaultNoOpInterval;
 
-            m_noopTimer = new Timer(noopInterval);
-            m_noopTimer.Elapsed += m_noopTimer_Elapsed;
-            m_noopTimer.Start();
+            m_noOpTimer = new Timer(noOpInterval);
+            m_noOpTimer.Elapsed += NoOpTimer_Elapsed;
+            m_noOpTimer.Start();
+
+            if (!otherSettings.TryGetValue(nameof(reconnectDelay), out value) || !int.TryParse(value, out reconnectDelay) || reconnectDelay <= 0)
+                reconnectDelay = DefaultReconnectDelay;
+
+            m_reconnect = new DelayedSynchronizedOperation(Reconnect, LogException)
+            {
+                Delay = reconnectDelay
+            };
         }
 
-        private void m_noopTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void NoOpTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             if (!Monitor.TryEnter(m_client))
                 return;
@@ -130,12 +146,37 @@ namespace openMIC.FileMirroring
             {
                 m_client.ControlChannel.Command("NOOP");
             }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                m_reconnect.RunOnceAsync();
+            }
             finally
             {
                 Monitor.Exit(m_client);
             }
         }
 
+        private void Reconnect()
+        {
+            lock (m_client)
+            {
+                if (m_client.IsConnected)
+                    return;
+
+                try
+                {
+                    OutputMirrorSettings settings = Config.Settings;
+                    m_client.Connect(settings.Username, settings.Password);
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                    m_reconnect.RunOnceAsync();
+                }
+            }
+        }
+        
         /// <summary>
         /// Gets connection type for output mirror handler instance.
         /// </summary>
@@ -156,26 +197,34 @@ namespace openMIC.FileMirroring
             string destination = GetRemoteFilePath(filePath);
             string[] directories = destination.Split('/');
 
-            lock (m_client)
+            try
             {
-                FtpDirectory current = m_client.RootDirectory;
-                m_client.SetCurrentDirectory(m_client.RootDirectory.FullPath);
-
-                foreach (string directory in directories)
+                lock (m_client)
                 {
-                    FtpDirectory next = current.FindSubDirectory(directory);
+                    FtpDirectory current = m_client.RootDirectory;
+                    m_client.SetCurrentDirectory(m_client.RootDirectory.FullPath);
 
-                    if (next is null)
+                    foreach (string directory in directories)
                     {
-                        m_client.ControlChannel.Command($"MKD {directory}");
-                        current.Refresh();
-                        next = current.FindSubDirectory(directory);
+                        FtpDirectory next = current.FindSubDirectory(directory);
+
+                        if (next is null)
+                        {
+                            m_client.ControlChannel.Command($"MKD {directory}");
+                            current.Refresh();
+                            next = current.FindSubDirectory(directory);
+                        }
+
+                        current = next ?? throw new IOException($"Failed to create directory \"{destination}\" on FTP server \"{m_client.Server}\".");
                     }
 
-                    current = next ?? throw new IOException($"Failed to create directory \"{destination}\" on FTP server \"{m_client.Server}\".");
+                    current.PutFile(filePath);
                 }
-
-                current.PutFile(filePath);
+            }
+            catch
+            {
+                m_reconnect.RunOnceAsync();
+                throw;
             }
         }
 
@@ -189,26 +238,34 @@ namespace openMIC.FileMirroring
             string destination = GetRemoteFilePath(filePath);
             string[] directories = destination.Split('/');
 
-            lock (m_client)
+            try
             {
-                FtpDirectory current = m_client.RootDirectory;
-                m_client.SetCurrentDirectory(m_client.RootDirectory.FullPath);
-
-                foreach (string directory in directories)
+                lock (m_client)
                 {
-                    FtpDirectory next = current.FindSubDirectory(directory);
+                    FtpDirectory current = m_client.RootDirectory;
+                    m_client.SetCurrentDirectory(m_client.RootDirectory.FullPath);
 
-                    if (next is null)
-                        return;
+                    foreach (string directory in directories)
+                    {
+                        FtpDirectory next = current.FindSubDirectory(directory);
 
-                    current = next;
+                        if (next is null)
+                            return;
+
+                        current = next;
+                    }
+
+                    current.RemoveFile(Path.GetFileName(filePath));
+                    current.Refresh();
+
+                    if (current.Files.Count == 0)
+                        current.Parent.RemoveSubDir(current.Name);
                 }
-
-                current.RemoveFile(Path.GetFileName(filePath));
-                current.Refresh();
-
-                if (current.Files.Count == 0)
-                    current.Parent.RemoveSubDir(current.Name);
+            }
+            catch
+            {
+                m_reconnect.RunOnceAsync();
+                throw;
             }
         }
 
@@ -218,7 +275,7 @@ namespace openMIC.FileMirroring
         public override void Dispose()
         {
             m_client?.Dispose();
-            m_noopTimer?.Dispose();
+            m_noOpTimer?.Dispose();
         }
     }
 }

@@ -67,7 +67,17 @@ namespace openMIC.FileMirroring
         /// Gets the remote directory character, e.g., "/" or "\".
         /// </summary>
         public abstract string RemoteDirChar { get; }
+        
+        /// <summary>
+        /// Gets or sets delegate to use to log status messages, if any.
+        /// </summary>
+        public Action<string, UpdateType> LogStatusMessageFunction { get; set; }
 
+        /// <summary>
+        /// Gets or sets delegate to use to log exceptions, if any.
+        /// </summary>
+        public Action<Exception> LogExceptionFunction { get; set; }
+        
         /// <summary>
         /// Gets any defined custom settings.
         /// </summary>
@@ -84,7 +94,14 @@ namespace openMIC.FileMirroring
             if (!Config.Settings.SyncCopy)
                 return;
 
-            CopyFileInternal(filePath);
+            try
+            {
+                CopyFileInternal(filePath);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         /// <summary>
@@ -104,7 +121,14 @@ namespace openMIC.FileMirroring
             if (!Config.Settings.SyncDelete)
                 return;
 
-            DeleteFileInternal(filePath);
+            try
+            {
+                DeleteFileInternal(filePath);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         /// <summary>
@@ -170,5 +194,11 @@ namespace openMIC.FileMirroring
 
             return m_remotePath = remotePath;
         }
+        
+        protected void LogStatusMessage(UpdateType updateType, string message) =>
+            LogStatusMessageFunction?.Invoke($"[{nameof(FileMirror)}] {message}", updateType);
+
+        protected void LogException(Exception ex) =>
+            LogExceptionFunction?.Invoke(new InvalidOperationException($"[{nameof(FileMirror)}] ERROR: {ex.Message}", ex));
     }
 }
