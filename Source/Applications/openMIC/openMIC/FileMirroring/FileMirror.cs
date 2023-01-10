@@ -79,12 +79,19 @@ namespace openMIC.FileMirroring
             };
 
             m_mirrors = new Dictionary<string, MirrorHandlers>(StringComparer.OrdinalIgnoreCase);
-            
-            // Load initial output mirrors without delay
-            LoadMirrors();
 
             // Wait 5 seconds before starting new synchronized load operations
             m_loadMirrors = new DelayedSynchronizedOperation(LoadMirrors, LogException) { Delay = 5000 };
+
+            try
+            {
+                // Load initial output mirrors without delay
+                LoadMirrors();
+            }
+            catch (Exception ex)
+            {
+                Program.Host.LogException(ex);
+            }
         }
 
         #endregion
@@ -116,6 +123,9 @@ namespace openMIC.FileMirroring
             using AdoDataConnection connection = new("systemSettings");
             TableOperations<OutputMirror> tableOperations = new(connection);
             OutputMirror[] outputMirrors = tableOperations.QueryRecords().ToArray();
+
+            if (outputMirrors.Length == 0)
+                return;
 
             DateTime lastMirrorUpdate = outputMirrors.Select(outputMirror => outputMirror.UpdatedOn).Max();
 
