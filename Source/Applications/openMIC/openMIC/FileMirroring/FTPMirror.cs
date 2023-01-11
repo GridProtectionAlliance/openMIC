@@ -92,8 +92,6 @@ namespace openMIC.FileMirroring
                 Port = settings.Port ?? 21
             };
 
-            m_client.Connect(settings.Username, settings.Password);
-
             Dictionary<string, string> otherSettings = OtherSettings;
 
             int connectionTimeout, minActivePort, maxActivePort, noOpInterval, reconnectDelay;
@@ -135,6 +133,8 @@ namespace openMIC.FileMirroring
             {
                 Delay = reconnectDelay
             };
+
+            Reconnect();
         }
 
         private void NoOpTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -163,15 +163,15 @@ namespace openMIC.FileMirroring
             {
                 if (m_client.IsConnected)
                     return;
-
+                
                 try
                 {
-                    OutputMirrorSettings settings = Config.Settings;
-                    m_client.Connect(settings.Username, settings.Password);
+                    m_client.Connect(Config.Settings.Username, Config.Settings.Password);
+                    LogStatusMessage(UpdateType.Information, $"Output mirror \"{Config.Name}\" successfully connected to \"{Config.Settings.Host}\" using {Type}.");
                 }
                 catch (Exception ex)
                 {
-                    LogException(ex);
+                    LogException(new InvalidOperationException($"Output mirror \"{Config.Name}\" failed to reconnect to \"{Config.Settings.Host}\" using {Type}: {ex.Message}", ex));
                     m_reconnect.RunOnceAsync();
                 }
             }
@@ -180,7 +180,7 @@ namespace openMIC.FileMirroring
         /// <summary>
         /// Gets connection type for output mirror handler instance.
         /// </summary>
-        public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.UNC;
+        public override OutputMirrorConnectionType Type => OutputMirrorConnectionType.FTP;
 
         /// <summary>
         /// Gets the remote directory character, e.g., "/" or "\".
@@ -206,6 +206,9 @@ namespace openMIC.FileMirroring
 
                     foreach (string directory in directories)
                     {
+                        if (string.IsNullOrEmpty(directory))
+                            continue;
+
                         FtpDirectory next = current.FindSubDirectory(directory);
 
                         if (next is null)
@@ -247,6 +250,9 @@ namespace openMIC.FileMirroring
 
                     foreach (string directory in directories)
                     {
+                        if (string.IsNullOrEmpty(directory))
+                            continue;
+
                         FtpDirectory next = current.FindSubDirectory(directory);
 
                         if (next is null)
@@ -277,5 +283,12 @@ namespace openMIC.FileMirroring
             m_client?.Dispose();
             m_noOpTimer?.Dispose();
         }
+
+        /// <summary>
+        /// Gets remote path name. Implementations should include relevant host information, if applicable.
+        /// </summary>
+        /// <returns>Remote path name.</returns>
+        protected override string GetRemotePathName() =>
+            $"{Config.Settings.Host}/{base.GetRemotePathName()}";
     }
 }

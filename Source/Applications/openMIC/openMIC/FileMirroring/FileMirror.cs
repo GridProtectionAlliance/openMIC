@@ -81,7 +81,10 @@ namespace openMIC.FileMirroring
             m_mirrors = new Dictionary<string, MirrorHandlers>(StringComparer.OrdinalIgnoreCase);
 
             // Wait 5 seconds before starting new synchronized load operations
-            m_loadMirrors = new DelayedSynchronizedOperation(LoadMirrors, LogException) { Delay = 5000 };
+            m_loadMirrors = new DelayedSynchronizedOperation(LoadMirrors, LogException)
+            {
+                Delay = 5000
+            };
 
             try
             {
@@ -113,7 +116,7 @@ namespace openMIC.FileMirroring
         #region [ Methods ]
 
         /// <summary>
-        /// Loads all existing mirror configurations.
+        /// Loads (or reloads) all existing mirror configurations.
         /// </summary>
         public void Load() => 
             m_loadMirrors.RunOnceAsync();
@@ -141,40 +144,47 @@ namespace openMIC.FileMirroring
             {
                 // Each source location can have multiple mirror handlers
                 MirrorHandlers handlers = mirrors.GetOrAdd(outputMirror.Source, _ => new MirrorHandlers());
-                
-                switch (outputMirror.Type)
+
+                try
                 {
-                    case OutputMirrorConnectionType.FileSystem:
-                        handlers.Add(new FileSystemMirror(outputMirror)
-                        {
-                            LogStatusMessageFunction = LogStatusMessageFunction,
-                            LogExceptionFunction = LogExceptionFunction
-                        });
-                        break;
-                    case OutputMirrorConnectionType.FTP:
-                        handlers.Add(new FTPMirror(outputMirror)
-                        {
-                            LogStatusMessageFunction = LogStatusMessageFunction,
-                            LogExceptionFunction = LogExceptionFunction
-                        });
-                        break;
-                    case OutputMirrorConnectionType.SFTP:
-                        handlers.Add(new SFTPMirror(outputMirror)
-                        {
-                            LogStatusMessageFunction = LogStatusMessageFunction,
-                            LogExceptionFunction = LogExceptionFunction
-                        });
-                        break;
-                    case OutputMirrorConnectionType.UNC:
-                        handlers.Add(new UNCMirror(outputMirror)
-                        {
-                            LogStatusMessageFunction = LogStatusMessageFunction,
-                            LogExceptionFunction = LogExceptionFunction
-                        });
-                        break;
-                    default:
-                        LogStatusMessage(UpdateType.Warning, $"Encounter unexpected output mirror type: {outputMirror.Type}");
-                        break;
+                    switch (outputMirror.Type)
+                    {
+                        case OutputMirrorConnectionType.FileSystem:
+                            handlers.Add(new FileSystemMirror(outputMirror)
+                            {
+                                LogStatusMessageFunction = LogStatusMessageFunction,
+                                LogExceptionFunction = LogExceptionFunction
+                            });
+                            break;
+                        case OutputMirrorConnectionType.FTP:
+                            handlers.Add(new FTPMirror(outputMirror)
+                            {
+                                LogStatusMessageFunction = LogStatusMessageFunction,
+                                LogExceptionFunction = LogExceptionFunction
+                            });
+                            break;
+                        case OutputMirrorConnectionType.SFTP:
+                            handlers.Add(new SFTPMirror(outputMirror)
+                            {
+                                LogStatusMessageFunction = LogStatusMessageFunction,
+                                LogExceptionFunction = LogExceptionFunction
+                            });
+                            break;
+                        case OutputMirrorConnectionType.UNC:
+                            handlers.Add(new UNCMirror(outputMirror)
+                            {
+                                LogStatusMessageFunction = LogStatusMessageFunction,
+                                LogExceptionFunction = LogExceptionFunction
+                            });
+                            break;
+                        default:
+                            LogStatusMessage(UpdateType.Warning, $"Output mirror \"{outputMirror.Name}\" had an unexpected connection type: {outputMirror.Type}");
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(new InvalidOperationException($"Failed to create output mirror \"{outputMirror.Name}\" for \"{outputMirror.Source}\": {ex.Message}", ex));
                 }
             }
 

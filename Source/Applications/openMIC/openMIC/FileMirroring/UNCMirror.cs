@@ -21,8 +21,10 @@
 //
 //******************************************************************************************************
 
+using System;
 using GSF.IO;
 using openMIC.Model;
+using System.IO;
 
 namespace openMIC.FileMirroring
 {
@@ -58,5 +60,13 @@ namespace openMIC.FileMirroring
             if (!string.IsNullOrWhiteSpace(settings.Username))
                 FilePath.DisconnectFromNetworkShare(settings.Host);
         }
+
+        /// <summary>
+        /// Gets the configured remote path.
+        /// </summary>
+        /// <returns>Configured remote path.</returns>
+        /// <exception cref="InvalidOperationException">Remote path is not defined for output mirror.</exception>
+        protected override string GetRemotePath() => 
+            Path.Combine(Config.Settings.Host, base.GetRemotePath());
     }
 }

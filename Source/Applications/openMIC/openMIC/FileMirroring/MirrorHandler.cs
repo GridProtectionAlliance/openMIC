@@ -97,10 +97,11 @@ namespace openMIC.FileMirroring
             try
             {
                 CopyFileInternal(filePath);
+                LogStatusMessage(UpdateType.Information, $"Output mirror \"{Config.Name}\" successfully copied \"{filePath}\" to \"{GetRemotePathName()}\" using {Type}.");
             }
             catch (Exception ex)
             {
-                LogException(ex);
+                LogException(new InvalidOperationException($"Output mirror \"{Config.Name}\" failed to copy \"{filePath}\" to \"{GetRemotePathName()}\" using {Type}: {ex.Message}", ex));
             }
         }
 
@@ -124,10 +125,11 @@ namespace openMIC.FileMirroring
             try
             {
                 DeleteFileInternal(filePath);
+                LogStatusMessage(UpdateType.Information, $"Output mirror \"{Config.Name}\" successfully deleted \"{filePath}\" from \"{GetRemotePathName()}\" using {Type}.");
             }
             catch (Exception ex)
             {
-                LogException(ex);
+                LogException(new InvalidOperationException($"Output mirror \"{Config.Name}\" failed to delete \"{filePath}\" from \"{GetRemotePathName()}\" using {Type}: {ex.Message}", ex));
             }
         }
 
@@ -179,7 +181,7 @@ namespace openMIC.FileMirroring
         /// </summary>
         /// <returns>Configured remote path.</returns>
         /// <exception cref="InvalidOperationException">Remote path is not defined for output mirror.</exception>
-        protected string GetRemotePath()
+        protected virtual string GetRemotePath()
         {
             if (!string.IsNullOrEmpty(m_remotePath))
                 return m_remotePath;
@@ -194,7 +196,13 @@ namespace openMIC.FileMirroring
 
             return m_remotePath = remotePath;
         }
-        
+
+        /// <summary>
+        /// Gets remote path name. Implementations should include relevant host information, if applicable.
+        /// </summary>
+        /// <returns>Remote path name.</returns>
+        protected virtual string GetRemotePathName() => GetRemotePath();
+
         protected void LogStatusMessage(UpdateType updateType, string message) =>
             LogStatusMessageFunction?.Invoke($"[{nameof(FileMirror)}] {message}", updateType);
 
