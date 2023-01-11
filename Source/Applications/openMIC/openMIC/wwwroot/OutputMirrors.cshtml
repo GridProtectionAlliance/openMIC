@@ -94,7 +94,7 @@
         @Raw(dataContext.AddInputField("get('remotepath')", true, fieldLabel: "Output Mirror Root Path<span class=\"pull-right\">&nbsp;&nbsp;&nbsp;<small>(Configured Default: " + Model.Global.DefaultRemotePath.HtmlEncode() + ")</small></span>", fieldID: "inputRemotePath", groupDataBinding: "with: $root.connectionString", enableHotLinks: false))
         @Raw(dataContext.AddCheckBoxField("get('synccopy')", "Sync Copies from Source to Output", "checkSyncCopy", "with: $root.connectionString"))
         @Raw(dataContext.AddCheckBoxField("get('syncdelete')", "Sync Deletes from Source to Output", "checkSyncDelete", "with: $root.connectionString"))
-        @Raw(dataContext.AddCheckBoxField("get('enablefullsyncops')", "Monitor Changes and Sync Full Source File System to Output", "checkEnableFullSyncOps", "with: $root.connectionString"))
+        @Raw(dataContext.AddCheckBoxField("get('enablefullsyncops')", "Monitor Changes and Sync Full Source File System to Output", "checkEnableFullSyncOps", "with: $root.connectionString", dependencyFieldName: "FullSyncOpsEnabled"))
     </div>
     <div class="col-md-6">
         @Raw(dataContext.AddInputField("get('host')", true, fieldLabel: "Remote Mirror Host Name or IP", fieldID: "inputHost", groupDataBinding: "with: $root.connectionString", dependencyFieldName: "HostEnabled", enableHotLinks: false))
@@ -205,6 +205,13 @@
             owner: viewModel
         });
 
+        viewModel.connectionString.FullSyncOpsEnabled = ko.pureComputed({
+            read: function () {
+                return false; // Feature currently disabled
+            },
+            owner: viewModel
+        });
+
         function applyConnectionTypeAttrs() {
 
             $("input[id=inputRemotePath]").attr("autocomplete", "off")
@@ -239,7 +246,7 @@
                     $("input[id=inputUsername]").attr("placeholder", "SFTP Username");
                     $("input[id=inputPassword]").attr("placeholder", "SFTP Password or Pass-phrase for Key File");
                     $("input[id=inputKeyFile]").attr("placeholder", "Key File Path");
-                    $("input[id=inputOtherSettings]").attr("placeholder", "");
+                    $("input[id=inputOtherSettings]").attr("placeholder", "bufferSize=@(SFTPMirror.DefaultBufferSize); operationTimeout=@(SFTPMirror.DefaultOperationTimeout); keepAliveInterval=@(SFTPMirror.DefaultKeepAliveInterval); reconnectDelay=@(SFTPMirror.DefaultReconnectDelay)");
                     break;
                 case "UNC":
                     setRequiredStates(["host"], true);
