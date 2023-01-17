@@ -2813,7 +2813,7 @@ FROM AlarmDevice
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 5 AS VersionNumber
+SELECT 6 AS VersionNumber
 FROM dual;
 
 CREATE TABLE Setting(
@@ -2900,6 +2900,30 @@ CREATE SEQUENCE SEQ_ConnectionProfileTask START WITH 1 INCREMENT BY 1;
 
 CREATE TRIGGER AI_ConnectionProfileTask BEFORE INSERT ON ConnectionProfileTask
     FOR EACH ROW BEGIN SELECT SEQ_ConnectionProfileTask.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
+CREATE TABLE OutputMirror(
+    ID NUMBER NOT NULL,
+    Name VARCHAR2(200) NOT NULL,
+    Source VARCHAR2(4000) NOT NULL,
+    ConnectionType VARCHAR2(200) NOT NULL,
+    Settings VARCHAR2(4000) NULL,
+    LoadOrder NUMBER DEFAULT 0 NOT NULL,
+    CreatedOn DATE NOT NULL,
+    CreatedBy VARCHAR2(200) NOT NULL,
+    UpdatedOn DATE NOT NULL,
+    UpdatedBy VARCHAR2(200) NOT NULL
+);
+
+CREATE UNIQUE INDEX IX_OutputMirror_ID ON OutputMirror (ID ASC) TABLESPACE openMIC_INDEX;
+
+ALTER TABLE OutputMirror ADD CONSTRAINT PK_OutputMirror PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_OutputMirror START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_OutputMirror BEFORE INSERT ON OutputMirror
+    FOR EACH ROW BEGIN SELECT SEQ_OutputMirror.nextval INTO :NEW.ID FROM dual;
 END;
 /
 

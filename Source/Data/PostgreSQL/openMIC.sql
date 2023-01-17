@@ -1897,7 +1897,7 @@ FROM AlarmDevice
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 5 AS VersionNumber;
+SELECT 6 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID SERIAL NOT NULL PRIMARY KEY,
@@ -1942,6 +1942,19 @@ CREATE TABLE ConnectionProfileTask(
     UpdatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedBy VARCHAR(200) NOT NULL DEFAULT '',
     CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID)
+);
+
+CREATE TABLE OutputMirror(
+    ID SERIAL NOT NULL PRIMARY KEY,
+    Name VARCHAR(200) NOT NULL,
+    Source TEXT NOT NULL,
+    ConnectionType VARCHAR(200) NOT NULL,
+    Settings TEXT NULL,
+    LoadOrder INTEGER NOT NULL DEFAULT 0,
+    CreatedOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy VARCHAR(200) NOT NULL DEFAULT '',
+    UpdatedOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedBy VARCHAR(200) NOT NULL DEFAULT ''
 );
 
 CREATE TABLE DownloadedFile(

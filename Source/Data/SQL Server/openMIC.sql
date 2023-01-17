@@ -3152,7 +3152,7 @@ GO
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[LocalSchemaVersion] AS
-SELECT 5 AS VersionNumber
+SELECT 6 AS VersionNumber
 GO
 
 CREATE TABLE Setting
@@ -3218,6 +3218,24 @@ CREATE TABLE [dbo].[ConnectionProfileTask](
     [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedOn]  DEFAULT (getutcdate()),
     [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_ConnectionProfileTask_UpdatedBy]  DEFAULT (suser_name()),
  CONSTRAINT [PK_ConnectionProfileTask] PRIMARY KEY CLUSTERED
+(
+    [ID] ASC
+)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE TABLE [dbo].[OutputMirror](
+    [ID] [int] IDENTITY(1,1) NOT NULL,
+    [Name] [varchar](200) NOT NULL,
+	[Source] [varchar](max) NOT NULL,
+	[ConnectionType] [varchar](200) NOT NULL,
+    [Settings] [varchar](max) NULL,
+    [LoadOrder] [int] NOT NULL CONSTRAINT [DF_OutputMirror_LoadOrder] DEFAULT ((0)),
+    [CreatedOn] [datetime] NOT NULL CONSTRAINT [DF_OutputMirror_CreatedOn] DEFAULT (getutcdate()),
+    [CreatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_OutputMirror_CreatedBy] DEFAULT (suser_name()),
+    [UpdatedOn] [datetime] NOT NULL CONSTRAINT [DF_OutputMirror_UpdatedOn] DEFAULT (getutcdate()),
+    [UpdatedBy] [varchar](200) NOT NULL CONSTRAINT [DF_OutputMirror_UpdatedBy] DEFAULT (suser_name()),
+ CONSTRAINT [PK_OutputMirror] PRIMARY KEY CLUSTERED
 (
     [ID] ASC
 )WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]
