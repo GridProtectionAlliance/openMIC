@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Timers;
 using GSF;
@@ -196,6 +197,9 @@ namespace openMIC.FileMirroring
         {
             string destination = GetRemoteFilePath(filePath);
             string[] directories = destination.Split('/');
+
+            if (directories.Length > 1)
+                directories = directories.Take(directories.Length - 1).ToArray();
 
             try
             {
