@@ -148,23 +148,20 @@ public class Startup
 
         // Load ServiceHub SignalR class
         app.MapSignalR(hubConfig);
-        
-        // Map Modbus API controller
+
+        // Map custom API controllers
         try
         {
             httpConfig.Routes.MapHttpRoute(
-                name: "ModbusConfig",
-                routeTemplate: "api/ModbusConfig/{action}/{id}",
-                defaults: new { controller = "ModbusConfig", action = "Index", id = RouteParameter.Optional }
+                name: "CustomAPIs",
+                routeTemplate: "api/{controller}/{action}/{id}",
+                defaults: new { action = "Index", id = RouteParameter.Optional }
             );
         }
         catch (Exception ex)
         {
             Program.Host.LogException(new InvalidOperationException($"Failed to initialize Modbus API controllers: {ex.Message}", ex));
         }
-        
-        // Set configuration to use reflection to setup routes
-        httpConfig.MapHttpAttributeRoutes();
 
         // Load the WebPageController class and assign its routes
         app.UseWebApi(httpConfig);
