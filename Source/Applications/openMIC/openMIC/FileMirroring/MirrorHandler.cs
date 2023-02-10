@@ -34,8 +34,6 @@ namespace openMIC.FileMirroring
     /// </summary>
     public abstract class MirrorHandler : IDisposable
     {
-        private string m_remotePath;
-
         /// <summary>
         /// Output mirror configuration loaded from the database.
         /// </summary>
@@ -159,7 +157,7 @@ namespace openMIC.FileMirroring
             if (RemoteDirChar != "\\")
                 baseFilePath = baseFilePath.Replace("\\", RemoteDirChar);
 
-            return Path.Combine(GetRemotePath(), baseFilePath);
+            return CombineIntoRemotePath(GetRemotePath(), baseFilePath);
         }
 
         /// <summary>
@@ -173,35 +171,51 @@ namespace openMIC.FileMirroring
             if (!filePath.StartsWith(Config.Source, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException($"File path \"{filePath}\" does not belong to output mirror \"{Config.Name}\"");
 
-            return filePath.Substring(Config.Source.Length);
+            return filePath
+                .Substring(Config.Source.Length)
+                .TrimStart('\\');
         }
 
         /// <summary>
         /// Gets the configured remote path.
         /// </summary>
         /// <returns>Configured remote path.</returns>
-        /// <exception cref="InvalidOperationException">Remote path is not defined for output mirror.</exception>
-        protected virtual string GetRemotePath()
-        {
-            if (!string.IsNullOrEmpty(m_remotePath))
-                return m_remotePath;
-
-            string remotePath = Config.Settings.RemotePath;
-
-            if (string.IsNullOrEmpty(remotePath))
-                throw new InvalidOperationException($"Remote path is not defined for output mirror \"{Config.Name}\"");
-
-            if (!remotePath.EndsWith(RemoteDirChar))
-                remotePath += RemoteDirChar;
-
-            return m_remotePath = remotePath;
-        }
+        protected virtual string GetRemotePath() => Config.Settings.RemotePath ?? string.Empty;
 
         /// <summary>
         /// Gets remote path name. Implementations should include relevant host information, if applicable.
         /// </summary>
         /// <returns>Remote path name.</returns>
         protected virtual string GetRemotePathName() => GetRemotePath();
+
+        /// <summary>
+        /// Combines an array of strings into a path for the remote system.
+        /// </summary>
+        /// <param name="paths">An array of parts of the path</param>
+        /// <returns>The combined path</returns>
+        /// <exception cref="ArgumentNullException">One of the strings in the array is null.</exception>
+        protected string CombineIntoRemotePath(params string[] paths)
+        {
+            string combinedPath = "";
+
+            foreach (string path in paths)
+            {
+                if (path == null)
+                    throw new ArgumentNullException(nameof(paths), "One of the strings in the array is null.");
+
+                if (path.Length == 0)
+                    continue;
+
+                if (path.StartsWith(RemoteDirChar))
+                    combinedPath = path;
+                else if (combinedPath.EndsWith(RemoteDirChar))
+                    combinedPath += path;
+                else
+                    combinedPath += RemoteDirChar + path;
+            }
+
+            return combinedPath;
+        }
 
         protected void LogStatusMessage(UpdateType updateType, string message) =>
             LogStatusMessageFunction?.Invoke($"[{nameof(FileMirror)}] {message}", updateType);
