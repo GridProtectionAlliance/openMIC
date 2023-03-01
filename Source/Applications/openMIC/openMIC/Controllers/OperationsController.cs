@@ -185,20 +185,19 @@ public class OperationsController : ApiController
     /// <summary>
     /// Relays allowed service commands for pooled machine synchronizations.
     /// </summary>
-    /// <param name="commandInput"></param>
-    /// <returns></returns>
+    /// <param name="command"></param>
     [HttpGet]
-    public HttpResponseMessage RelayCommand(string commandInput)
+    public HttpResponseMessage RelayCommand([FromUri] string command)
     {
-        if (string.IsNullOrWhiteSpace(commandInput))
+        if (string.IsNullOrWhiteSpace(command))
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
 
-        commandInput = commandInput.Trim();
+        command = command.Trim();
 
-        if (!ServiceHost.CommandAllowedForRelay(commandInput))
+        if (!ServiceHost.CommandAllowedForRelay(command))
             return new HttpResponseMessage(HttpStatusCode.Unauthorized);
 
-        Program.Host.SendRequest(commandInput);
+        Program.Host.SendRequest(command);
         return new HttpResponseMessage(HttpStatusCode.OK);
     }
 
