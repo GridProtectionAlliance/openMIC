@@ -1622,7 +1622,7 @@ public class Downloader : InputAdapterBase
                     // Compare file sizes and timestamps
                     bool localEqualsRemote =
                         info.Length == file.Size &&
-                        (!settings.SynchronizeTimestamps || info.LastWriteTime == file.Timestamp);
+                        (!settings.SynchronizeTimestamps || IsSynchronized(info.LastWriteTime, file.Timestamp));
 
                     if (localEqualsRemote)
                     {
@@ -1801,7 +1801,7 @@ public class Downloader : InputAdapterBase
                     {
                         FileInfo info = new(wrapper.LocalPath);
 
-                        while (info.LastAccessTime != wrapper.RemoteFile.Timestamp || info.LastWriteTime != wrapper.RemoteFile.Timestamp)
+                        while (!IsSynchronized(info.LastAccessTime, wrapper.RemoteFile.Timestamp) || !IsSynchronized(info.LastWriteTime, wrapper.RemoteFile.Timestamp))
                         {
                             info.LastAccessTime = info.LastWriteTime = wrapper.RemoteFile.Timestamp;
                             info.Refresh();
@@ -1843,6 +1843,15 @@ public class Downloader : InputAdapterBase
                 }
             }
         }
+    }
+
+    private bool IsSynchronized(DateTime localTimestamp, DateTime remoteTimestamp)
+    {
+        TimeSpan diff = (remoteTimestamp >= localTimestamp)
+            ? remoteTimestamp - localTimestamp
+            : localTimestamp - remoteTimestamp;
+
+        return diff < TimeSpan.FromSeconds(1.0D);
     }
 
     #endregion
