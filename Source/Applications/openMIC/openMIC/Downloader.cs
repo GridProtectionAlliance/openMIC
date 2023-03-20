@@ -1267,10 +1267,26 @@ namespace openMIC
                         if (settings.SynchronizeTimestamps)
                         {
                             FileInfo info = new FileInfo(wrapper.LocalPath);
+                            int syncTries = 0;
                             
                             while (!IsSynchronized(info.LastAccessTime, wrapper.RemoteFile.Timestamp) || !IsSynchronized(info.LastWriteTime, wrapper.RemoteFile.Timestamp))
                             {
+                                if (syncTries > 10)
+                                {
+                                    const string TimestampFormat = "yyyy-MM-dd HH:mm:ss.fffffff";
+                                    string accessed = info.LastAccessTime.ToString(TimestampFormat);
+                                    string modified = info.LastWriteTime.ToString(TimestampFormat);
+                                    string remote = wrapper.RemoteFile.Timestamp.ToString(TimestampFormat);
+                                    OnStatusMessage(MessageLevel.Warning, $"Timestamp synchronization failed after 10 attempts (accessed: {accessed}, modified: {modified}, remote {remote})");
+                                    break;
+                                }
+
                                 info.LastAccessTime = info.LastWriteTime = wrapper.RemoteFile.Timestamp;
+                                syncTries++;
+
+                                if (syncTries > 1)
+                                    Thread.Sleep(100);
+
                                 info.Refresh();
                             }
                         }
