@@ -1088,7 +1088,7 @@ namespace openMIC
                         // Compare file sizes and timestamps
                         bool localEqualsRemote =
                             info.Length == file.Size &&
-                            (!settings.SynchronizeTimestamps || info.LastWriteTime == file.Timestamp);
+                            (!settings.SynchronizeTimestamps || IsSynchronized(info.LastWriteTime, file.Timestamp));
 
                         if (localEqualsRemote)
                         {
@@ -1268,7 +1268,7 @@ namespace openMIC
                         {
                             FileInfo info = new FileInfo(wrapper.LocalPath);
                             
-                            while (info.LastAccessTime != wrapper.RemoteFile.Timestamp || info.LastWriteTime != wrapper.RemoteFile.Timestamp)
+                            while (!IsSynchronized(info.LastAccessTime, wrapper.RemoteFile.Timestamp) || !IsSynchronized(info.LastWriteTime, wrapper.RemoteFile.Timestamp))
                             {
                                 info.LastAccessTime = info.LastWriteTime = wrapper.RemoteFile.Timestamp;
                                 info.Refresh();
@@ -1766,6 +1766,15 @@ namespace openMIC
             {
                 OnProcessException(MessageLevel.Error, ex);
             }
+        }
+
+        private bool IsSynchronized(DateTime localTimestamp, DateTime remoteTimestamp)
+        {
+            TimeSpan diff = (remoteTimestamp >= localTimestamp)
+                ? remoteTimestamp - localTimestamp
+                : localTimestamp - remoteTimestamp;
+
+            return diff < TimeSpan.FromSeconds(1.0D);
         }
 
         #endregion
