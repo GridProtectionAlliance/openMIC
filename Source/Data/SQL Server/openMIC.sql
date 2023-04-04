@@ -3386,6 +3386,7 @@ GO
 --	SELECT * INTO #inserted FROM inserted
 --	--SELECT * FROM #inserted
 
+--	DECLARE @date DATETIME = GETUTCDATE()
 --	DECLARE @deviceID int =  (Select TOP 1 DeviceID from #inserted)
 --	DECLARE @enabled bit = (SELECT [Enabled] FROM Device WHERE ID = @deviceID)
 
@@ -3394,7 +3395,7 @@ GO
 --	DECLARE @profile_name nvarchar(max) = (SELECT Value FROM Setting WHERE Name = 'SqlServerEmailProfile')
 --	DECLARE @downloadThreshholdWindow int = (SELECT Value FROM Setting WHERE Name = 'MaxDownloadThresholdTimeWindow')
 --	DECLARE @downloadThreshhold int = (SELECT Value FROM Setting WHERE Name = 'MaxDownloadThreshold')
---	DECLARE @downloadCount int = (SELECT COUNT(*) FROM DownloadedFile WHERE Timestamp BETWEEN DATEADD(HOUR, -@downloadThreshholdWindow, GETDATE()) AND GETDATE() AND DeviceID = @deviceID)
+--	DECLARE @downloadCount int = (SELECT COUNT(*) FROM DownloadedFile WHERE Timestamp BETWEEN DATEADD(HOUR, -@downloadThreshholdWindow, @date) AND @date AND DeviceID = @deviceID)
 
 --	DECLARE @message nvarchar(MAX) = (SELECT TOP 1 Message FROM inserted)
 --	DECLARE @name nvarchar(max) = (SELECT Name FROM Device WHERE ID = @deviceID)
@@ -3410,7 +3411,7 @@ GO
 --	DECLARE @successDateDiff int = (SELECT DATEDIFF(HOUR, @lastSuccess, @lastFailure))
 --	DECLARE @emailFlag bit = 0;
 --	DECLARE @intro nvarchar(max) = N''
---	DECLARE @emailCountToday int = (SELECT COUNT(*) FROM SentEmail WHERE DeviceID = @deviceID AND Timestamp > CAST(GETDATE() as DATE))
+--	DECLARE @emailCountToday int = (SELECT COUNT(*) FROM SentEmail WHERE DeviceID = @deviceID AND Timestamp > CAST(@date as DATE))
 
 --	IF @downloadThreshhold > 0 AND @downloadCount > @downloadThreshhold AND @enabled = 1
 --	BEGIN
@@ -3419,7 +3420,7 @@ GO
 --		UPDATE Device set [Enabled] = 0 WHERE ID = @deviceID
 --	END
 
---	IF @fileDate > GETDATE() AND @enabled = 1 AND @emailCountToday = 0
+--	IF @fileDate > @date AND @enabled = 1 AND @emailCountToday = 0
 --	BEGIN
 --		SET @intro = @intro + N'<div>'+ @Name+' has produced a record in the future.</div><br>'
 --		SET @emailFlag = 1
@@ -3455,7 +3456,7 @@ GO
 --			@body = @html,
 --			@body_format = 'HTML';
 
---		INSERT INTO SentEmail (DeviceID, [Message],[Timestamp]) VALUES ( @deviceID, @html, GETDATE())
+--		INSERT INTO SentEmail (DeviceID, [Message],[Timestamp]) VALUES ( @deviceID, @html, @date)
 
 --	END
 
