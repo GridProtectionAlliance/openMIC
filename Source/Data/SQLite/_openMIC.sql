@@ -124,6 +124,10 @@ CREATE TABLE DranetzTrendingCheckpoint(
     CONSTRAINT IX_DranetzTrendingCheckpoint_Device UNIQUE (Device ASC)
 );
 
+DROP VIEW TrackedTable;
+
+CREATE VIEW TrackedTable AS
+SELECT 'Measurement' AS Name  WHERE 1 < 0;
 
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
