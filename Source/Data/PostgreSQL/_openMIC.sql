@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 6 AS VersionNumber;
+SELECT 7 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID SERIAL NOT NULL PRIMARY KEY,
@@ -128,6 +128,30 @@ DROP VIEW TrackedTable;
 
 CREATE VIEW TrackedTable AS
 SELECT 'Measurement' AS Name  WHERE 1 < 0;
+
+DROP TRIGGER Company_UpdateTracker;
+DROP TRIGGER Device_InsertTracker;
+DROP TRIGGER Device_UpdateTracker1;
+DROP TRIGGER Device_UpdateTracker2;
+DROP TRIGGER Device_DeleteTracker;
+DROP TRIGGER Historian_UpdateTracker;
+DROP TRIGGER Measurement_InsertTracker;
+DROP TRIGGER Measurement_UpdateTracker1;
+DROP TRIGGER Measurement_UpdateTracker2;
+DROP TRIGGER Measurement_DeleteTracker;
+DROP TRIGGER OutputStream_InsertTracker;
+DROP TRIGGER OutputStream_UpdateTracker;
+DROP TRIGGER OutputStream_DeleteTracker;
+DROP TRIGGER OutputStreamDevice_InsertTracker;
+DROP TRIGGER OutputStreamDevice_UpdateTracker;
+DROP TRIGGER OutputStreamDevice_DeleteTracker;
+DROP TRIGGER OutputStreamMeasurement_InsertTracker;
+DROP TRIGGER OutputStreamMeasurement_UpdateTracker;
+DROP TRIGGER OutputStreamMeasurement_DeleteTracker;
+DROP TRIGGER Phasor_UpdateTracker1;
+DROP TRIGGER Phasor_UpdateTracker2;
+DROP TRIGGER Protocol_UpdateTracker;
+DROP TRIGGER SignalType_UpdateTracker;
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
 CREATE INDEX IX_DownloadedFile_FilePath ON DownloadedFile (FilePath);

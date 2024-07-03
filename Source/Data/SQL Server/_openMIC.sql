@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[LocalSchemaVersion] AS
-SELECT 6 AS VersionNumber
+SELECT 7 AS VersionNumber
 GO
 
 CREATE TABLE Setting
@@ -218,6 +218,27 @@ GO
 
 CREATE VIEW TrackedTable AS
 SELECT 'Measurement' AS Name  WHERE 1 < 0
+GO
+
+DROP TRIGGER Company_UpdateTracker
+GO
+DROP TRIGGER Device_UpdateTracker
+GO
+DROP TRIGGER Historian_UpdateTracker
+GO
+DROP TRIGGER Measurement_UpdateTracker
+GO
+DROP TRIGGER OutputStream_UpdateTracker
+GO
+DROP TRIGGER OutputStreamDevice_UpdateTracker
+GO
+DROP TRIGGER OutputStreamMeasurement_UpdateTracker
+GO
+DROP TRIGGER Phasor_UpdateTracker
+GO
+DROP TRIGGER Protocol_UpdateTracker
+GO
+DROP TRIGGER SignalType_UpdateTracker
 GO
 
 --------------------------------------------------------------------------------

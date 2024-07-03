@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 6 AS VersionNumber
+SELECT 7 AS VersionNumber
 FROM dual;
 
 CREATE TABLE Setting(
@@ -269,3 +269,24 @@ DROP VIEW TrackedTable;
 
 CREATE VIEW TrackedTable AS
 SELECT 'Measurement' AS Name FROM dual WHERE 1 < 0;
+
+DROP TRIGGER Company_UpdateTracker;
+DROP TRIGGER Device_InsertTracker;
+DROP TRIGGER Device_UpdateTracker1;
+DROP TRIGGER Device_DeleteTracker;
+DROP TRIGGER Historian_UpdateTracker;
+DROP TRIGGER Measurement_InsertTracker;
+DROP TRIGGER Measurement_UpdateTracker;
+DROP TRIGGER Measurement_DeleteTracker;
+DROP TRIGGER OutputStream_InsertTracker;
+DROP TRIGGER OutputStream_UpdateTracker;
+DROP TRIGGER OutputStream_DeleteTracker;
+DROP TRIGGER OutStreamDevice_InsertTracker;
+DROP TRIGGER OutStreamDevice_UpdateTracker;
+DROP TRIGGER OutStreamDevice_DeleteTracker;
+DROP TRIGGER OutStrMeas_InsertTracker;
+DROP TRIGGER OutStrMeas_UpdateTracker;
+DROP TRIGGER OutStrMeas_DeleteTracker;
+DROP TRIGGER Phasor_UpdateTracker;
+DROP TRIGGER Protocol_UpdateTracker;
+DROP TRIGGER SignalType_UpdateTracker;

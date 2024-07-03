@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 6 AS VersionNumber;
+SELECT 7 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID INT AUTO_INCREMENT NOT NULL,
@@ -139,6 +139,33 @@ DROP VIEW TrackedTable;
 
 CREATE VIEW TrackedTable AS
 SELECT 'Measurement' AS Name  WHERE 1 < 0;
+
+DROP TRIGGER Device_RuntimeSync_Insert;
+CREATE TRIGGER Device_RuntimeSync_Insert AFTER INSERT ON Device
+FOR EACH ROW INSERT INTO Runtime (SourceID, SourceTable) VALUES(NEW.ID, N'Device');
+
+DROP TRIGGER OutputStream_RuntimeSync_Insert;
+CREATE TRIGGER OutputStream_RuntimeSync_Insert AFTER INSERT ON OutputStream
+FOR EACH ROW INSERT INTO Runtime (SourceID, SourceTable) VALUES(NEW.ID, N'OutputStream');
+
+DROP TRIGGER Company_UpdateTracker;
+DROP TRIGGER Device_UpdateTracker1;
+DROP TRIGGER Device_DeleteTracker;
+DROP TRIGGER Historian_UpdateTracker;
+DROP TRIGGER Measurement_InsertTracker;
+DROP TRIGGER Measurement_UpdateTracker;
+DROP TRIGGER Measurement_DeleteTracker;
+DROP TRIGGER OutputStream_UpdateTracker;
+DROP TRIGGER OutputStream_DeleteTracker;
+DROP TRIGGER OutputStreamDevice_InsertTracker;
+DROP TRIGGER OutputStreamDevice_UpdateTracker;
+DROP TRIGGER OutputStreamDevice_DeleteTracker;
+DROP TRIGGER OutputStreamMeasurement_InsertTracker;
+DROP TRIGGER OutputStreamMeasurement_UpdateTracker;
+DROP TRIGGER OutputStreamMeasurement_DeleteTracker;
+DROP TRIGGER Phasor_UpdateTracker;
+DROP TRIGGER Protocol_UpdateTracker;
+DROP TRIGGER SignalType_UpdateTracker;
 
 ALTER TABLE ConnectionProfile ADD CONSTRAINT FK_ConnectionProfile_ConnectionProfileTaskQueue FOREIGN KEY(DefaultTaskQueueID) REFERENCES ConnectionProfileTaskQueue (ID);
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
