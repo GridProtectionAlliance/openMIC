@@ -268,4 +268,4 @@ ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_Connec
 DROP VIEW TrackedTable;
 
 CREATE VIEW TrackedTable AS
-SELECT 'Measurement' AS Name  WHERE 1 < 0;
+SELECT 'Measurement' AS Name FROM dual WHERE 1 < 0;
