@@ -264,3 +264,8 @@ END;
 
 ALTER TABLE ConnectionProfile ADD CONSTRAINT FK_ConnProf_ConnProfTaskQueue FOREIGN KEY(DefaultTaskQueueID) REFERENCES ConnectionProfileTaskQueue (ID);
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
+
+DROP VIEW TrackedTable;
+
+CREATE VIEW TrackedTable AS
+SELECT 'Measurement' AS Name  WHERE 1 < 0;

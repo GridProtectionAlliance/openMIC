@@ -135,6 +135,11 @@ CREATE TABLE DranetzTrendingCheckpoint(
     CONSTRAINT IX_DranetzTrendingCheckpoint_Device UNIQUE KEY (Device ASC)
 );
 
+DROP VIEW TrackedTable;
+
+CREATE VIEW TrackedTable AS
+SELECT 'Measurement' AS Name  WHERE 1 < 0;
+
 ALTER TABLE ConnectionProfile ADD CONSTRAINT FK_ConnectionProfile_ConnectionProfileTaskQueue FOREIGN KEY(DefaultTaskQueueID) REFERENCES ConnectionProfileTaskQueue (ID);
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
 
