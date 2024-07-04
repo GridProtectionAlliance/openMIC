@@ -3365,6 +3365,13 @@ CREATE TABLE DranetzTrendingCheckpoint
 )
 GO
 
+DROP VIEW TrackedTable
+GO
+
+CREATE VIEW TrackedTable AS
+SELECT 'Measurement' AS Name  WHERE 1 < 0
+GO
+
 --------------------------------------------------------------------------------
 
 -- The following procedure is used by the StatusLog_Email trigger that follows
