@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 6 AS VersionNumber;
+SELECT 7 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID INT AUTO_INCREMENT NOT NULL,
@@ -139,6 +139,17 @@ DROP VIEW TrackedTable;
 
 CREATE VIEW TrackedTable AS
 SELECT 'Measurement' AS Name  WHERE 1 < 0;
+
+-- MySQL doesn't support INSTEAD OF triggers.
+-- TrackedChange table will grow, but you can use the event scheduler to clear it.
+-- https://dev.mysql.com/doc/refman/8.4/en/events-configuration.html
+--
+--   CREATE EVENT TrackedChange_ClearTable
+--       ON SCHEDULE
+--           EVERY 1 DAY
+--       COMMENT 'Descriptive comment'
+--       DO
+--           TRUNCATE TrackedChange;
 
 ALTER TABLE ConnectionProfile ADD CONSTRAINT FK_ConnectionProfile_ConnectionProfileTaskQueue FOREIGN KEY(DefaultTaskQueueID) REFERENCES ConnectionProfileTaskQueue (ID);
 ALTER TABLE ConnectionProfileTask ADD CONSTRAINT FK_ConnectionProfileTask_ConnectionProfile FOREIGN KEY(ConnectionProfileID) REFERENCES ConnectionProfile (ID);
