@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[LocalSchemaVersion] AS
-SELECT 6 AS VersionNumber
+SELECT 7 AS VersionNumber
 GO
 
 CREATE TABLE Setting
@@ -218,6 +218,15 @@ GO
 
 CREATE VIEW TrackedTable AS
 SELECT 'Measurement' AS Name  WHERE 1 < 0
+GO
+
+CREATE TRIGGER TrackedChange_ClearTable
+    ON TrackedChange
+    INSTEAD OF INSERT
+AS
+BEGIN
+	PRINT 'Suppressed insert into TrackedChange'
+END
 GO
 
 --------------------------------------------------------------------------------

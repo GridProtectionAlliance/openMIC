@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 6 AS VersionNumber;
+SELECT 7 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID SERIAL NOT NULL PRIMARY KEY,
@@ -128,6 +128,21 @@ DROP VIEW TrackedTable;
 
 CREATE VIEW TrackedTable AS
 SELECT 'Measurement' AS Name  WHERE 1 < 0;
+
+ALTER TABLE TrackedChange RENAME TO TrackedChange_dummy;
+
+CREATE VIEW TrackedChange AS
+SELECT * FROM TrackedChange_dummy;
+
+CREATE FUNCTION TrackedChange_ClearTableFn() RETURNS TRIGGER
+AS $TrackedChange_ClearTableFn$
+BEGIN
+    RETURN NULL;
+END;
+$TrackedChange_ClearTableFn$ LANGUAGE plpgsql;
+
+CREATE TRIGGER TrackedChange_ClearTable INSTEAD OF INSERT ON TrackedChange
+FOR EACH ROW EXECUTE PROCEDURE TrackedChange_ClearTableFn();
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
 CREATE INDEX IX_DownloadedFile_FilePath ON DownloadedFile (FilePath);

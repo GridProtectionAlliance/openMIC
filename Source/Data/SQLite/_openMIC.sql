@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 6 AS VersionNumber;
+SELECT 7 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -129,6 +129,15 @@ DROP VIEW TrackedTable;
 CREATE VIEW TrackedTable AS
 SELECT 'Measurement' AS Name  WHERE 1 < 0;
 
+ALTER TABLE TrackedChange RENAME TO TrackedChange_dummy;
+
+CREATE VIEW TrackedChange AS
+SELECT * FROM TrackedChange_dummy;
+
+CREATE TRIGGER TrackedChange_ClearTable INSTEAD OF INSERT ON TrackedChange
+BEGIN
+    SELECT * FROM TrackedChange_dummy WHERE 1 IS NULL;
+END;
 
 CREATE INDEX IX_DownloadedFile_DeviceID ON DownloadedFile (DeviceID);
 CREATE INDEX IX_DownloadedFile_FilePath ON DownloadedFile (FilePath);
