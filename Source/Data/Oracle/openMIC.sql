@@ -2818,7 +2818,7 @@ FROM AlarmDevice
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 6 AS VersionNumber
+SELECT 7 AS VersionNumber
 FROM dual;
 
 CREATE TABLE Setting(
@@ -3085,3 +3085,14 @@ DROP VIEW TrackedTable;
 
 CREATE VIEW TrackedTable AS
 SELECT 'Measurement' AS Name FROM dual WHERE 1 < 0;
+
+RENAME TrackedChange TO TrackedChange_dummy;
+
+CREATE VIEW TrackedChange AS
+SELECT * FROM TrackedChange_dummy;
+
+CREATE TRIGGER CLR_TrackedChange INSTEAD OF INSERT ON TrackedChange
+BEGIN
+    dbms_output.put_line('Suppressed insert into TrackedChange');
+END;
+/
