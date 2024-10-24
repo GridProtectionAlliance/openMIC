@@ -112,10 +112,22 @@
       <UIRef Id="WixUI_ErrorProgressText" />
       <DialogRef Id="CompanyInfoDialog" />
       <DialogRef Id="ServiceAccountDialog" />
-      <Publish Dialog="CustomizeDlg" Control="Next" Event="NewDialog" Value="ServiceAccountDialog"><![CDATA[&openMICFeature=3]]></Publish>
-      <Publish Dialog="CustomizeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg"><![CDATA[NOT(&openMICFeature=3)]]></Publish>
-      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="CompanyInfoDialog">(NOT Installed OR WixUI_InstallMode = "Change") AND <![CDATA[&openMICFeature=3]]></Publish>
-      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="CustomizeDlg">(NOT Installed OR WixUI_InstallMode = "Change") AND <![CDATA[NOT(&openMICFeature=3)]]></Publish>
+
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLSERVICEFEATURE" Value="1" Order="7"><![CDATA[&openMICFeature=3 OR (!openMICFeature=3 AND &openMICFeature=-1)]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLSERVICEFEATURE" Order="7"><![CDATA[NOT(&openMICFeature=3 OR (!openMICFeature=3 AND &openMICFeature=-1))]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLMANAGERFEATURE" Value="1" Order="7"><![CDATA[&openMICManagerFeature=3 OR (!openMICManagerFeature=3 AND &openMICManagerFeature=-1)]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLMANAGERFEATURE" Order="7"><![CDATA[NOT(&openMICManagerFeature=3 OR (!openMICManagerFeature=3 AND &openMICManagerFeature=-1))]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLCONSOLEFEATURE" Value="1" Order="7"><![CDATA[&openMICConsoleFeature=3 OR (!openMICConsoleFeature=3 AND &openMICConsoleFeature=-1)]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLCONSOLEFEATURE" Order="7"><![CDATA[NOT(&openMICConsoleFeature=3 OR (!openMICConsoleFeature=3 AND &openMICConsoleFeature=-1))]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLTOOLSFEATURE" Value="1" Order="7"><![CDATA[&openMICToolsFeature=3 OR (!openMICToolsFeature=3 AND &openMICToolsFeature=-1)]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLTOOLSFEATURE" Order="7"><![CDATA[NOT(&openMICToolsFeature=3 OR (!openMICToolsFeature=3 AND &openMICToolsFeature=-1))]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLOPTIONALFEATURE" Value="1" Order="7"><![CDATA[&openMICOptionalFeatures=3 OR (!openMICOptionalFeatures=3 AND &openMICOptionalFeatures=-1)]]></Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Property="INSTALLOPTIONALFEATURE" Order="7"><![CDATA[NOT(&openMICOptionalFeatures=3 OR (!openMICOptionalFeatures=3 AND &openMICOptionalFeatures=-1))]]></Publish>
+
+      <Publish Dialog="CustomizeDlg" Control="Next" Event="NewDialog" Value="ServiceAccountDialog" Order="8">INSTALLSERVICEFEATURE</Publish>
+      <Publish Dialog="CustomizeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg" Order="8">NOT(INSTALLSERVICEFEATURE)</Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="CompanyInfoDialog">INSTALLSERVICEFEATURE</Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="CustomizeDlg">NOT(INSTALLSERVICEFEATURE)</Publish>
       <Publish Dialog="CustomExitDialog" Control="Finish" Event="DoAction" Value="StartCSUProcessAction">WIXUI_CUSTOMEXITDIALOGOPTIONALCHECKBOX = 1</Publish>
     </UI>
 
@@ -133,6 +145,12 @@
     <Icon Id="LogFileViewer.ico.exe" SourceFile="$(var.ProjectDir)\LogFileViewer.exe" />
     <Icon Id="NoInetFixUtil.ico.exe" SourceFile="$(var.ProjectDir)\NoInetFixUtil.exe" />
 
+    <Property Id="INSTALLSERVICEFEATURE" Secure="yes" />
+    <Property Id="INSTALLMANAGERFEATURE" Secure="yes" />
+    <Property Id="INSTALLCONSOLEFEATURE" Secure="yes" />
+    <Property Id="INSTALLTOOLSFEATURE" Secure="yes" />
+    <Property Id="INSTALLOPTIONALFEATURE" Secure="yes" />
+
     <Property Id="SERVICENAME" Value="$(var.openMIC.TargetName)" />
     <Property Id="SERVICEPASSWORD" Hidden="yes" />
     <Property Id="HTTPSERVICEPORTS" Value="8089,6063,6064,6163,6164,6364,6464,5024" />
@@ -145,12 +163,25 @@
     <Property Id="REGSERVICESTARTVALUE">
       <RegistrySearch Id="ServiceStartRegSearch" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\[SERVICENAME]" Name="Start" Type="raw" />
     </Property>
+
     <SetProperty Action="SetServiceStartDefault" Id="SERVICESTART" After="AppSearch" Value="#2" Sequence="first"><![CDATA[NOT REGSERVICESTARTVALUE]]></SetProperty>
     <SetProperty Action="SetServiceStartRegistry" Id="SERVICESTART" After="AppSearch" Value="[REGSERVICESTARTVALUE]" Sequence="first"><![CDATA[REGSERVICESTARTVALUE]]></SetProperty>
     <SetProperty Action="SetServiceAccountDefault" Id="SERVICEACCOUNT" After="AppSearch" Value="NT SERVICE\[SERVICENAME]" Sequence="first"><![CDATA[NOT REGSERVICEACCOUNT]]></SetProperty>
     <SetProperty Action="SetServiceAccountRegistry" Id="SERVICEACCOUNT" After="AppSearch" Value="[REGSERVICEACCOUNT]" Sequence="first"><![CDATA[REGSERVICEACCOUNT]]></SetProperty>
     <SetProperty Id="PROCESSSTARTINFO" Value="FileName={[#ConfigurationSetupUtility.exe]};Arguments=-install;UseShellExecute=True;Verb=runas" After="ExecuteAction" Sequence="ui" />
     <SetProperty Id="WEBMANAGERURL" Value="http://localhost:8089/" Before="CreateShortcuts" Sequence="execute" />
+
+    <SetProperty Action="INSTALLSERVICEFEATURE0" Id="INSTALLSERVICEFEATURE" Value="1" After="CostFinalize" Sequence="both"><![CDATA[&openMICFeature=3 OR (!openMICFeature=3 AND &openMICFeature=-1)]]></SetProperty>
+    <SetProperty Action="INSTALLSERVICEFEATURE1" Id="INSTALLSERVICEFEATURE" Value="" After="CostFinalize" Sequence="both"><![CDATA[NOT(&openMICFeature=3 OR (!openMICFeature=3 AND &openMICFeature=-1))]]></SetProperty>
+    <SetProperty Action="INSTALLMANAGERFEATURE0" Id="INSTALLMANAGERFEATURE" Value="1" After="CostFinalize" Sequence="both"><![CDATA[&openMICManagerFeature=3 OR (!openMICManagerFeature=3 AND &openMICManagerFeature=-1)]]></SetProperty>
+    <SetProperty Action="INSTALLMANAGERFEATURE1" Id="INSTALLMANAGERFEATURE" Value="" After="CostFinalize" Sequence="both"><![CDATA[NOT(&openMICManagerFeature=3 OR (!openMICManagerFeature=3 AND &openMICManagerFeature=-1))]]></SetProperty>
+    <SetProperty Action="INSTALLCONSOLEFEATURE0" Id="INSTALLCONSOLEFEATURE" Value="1" After="CostFinalize" Sequence="both"><![CDATA[&openMICConsoleFeature=3 OR (!openMICConsoleFeature=3 AND &openMICConsoleFeature=-1)]]></SetProperty>
+    <SetProperty Action="INSTALLCONSOLEFEATURE1" Id="INSTALLCONSOLEFEATURE" Value="" After="CostFinalize" Sequence="both"><![CDATA[NOT(&openMICConsoleFeature=3 OR (!openMICConsoleFeature=3 AND &openMICConsoleFeature=-1))]]></SetProperty>
+    <SetProperty Action="INSTALLTOOLSFEATURE0" Id="INSTALLTOOLSFEATURE" Value="1" After="CostFinalize" Sequence="both"><![CDATA[&openMICToolsFeature=3 OR (!openMICToolsFeature=3 AND &openMICToolsFeature=-1)]]></SetProperty>
+    <SetProperty Action="INSTALLTOOLSFEATURE1" Id="INSTALLTOOLSFEATURE" Value="" After="CostFinalize" Sequence="both"><![CDATA[NOT(&openMICToolsFeature=3 OR (!openMICToolsFeature=3 AND &openMICToolsFeature=-1))]]></SetProperty>
+    <SetProperty Action="INSTALLOPTIONALFEATURE0" Id="INSTALLOPTIONALFEATURE" Value="1" After="CostFinalize" Sequence="both"><![CDATA[&openMICOptionalFeatures=3 OR (!openMICOptionalFeatures=3 AND &openMICOptionalFeatures=-1)]]></SetProperty>
+    <SetProperty Action="INSTALLOPTIONALFEATURE1" Id="INSTALLOPTIONALFEATURE" Value="" After="CostFinalize" Sequence="both"><![CDATA[NOT(&openMICOptionalFeatures=3 OR (!openMICOptionalFeatures=3 AND &openMICOptionalFeatures=-1))]]></SetProperty>
+
     <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\openMICSetupBanner.bmp" />
     <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\openMICSetupDialog.bmp" />
     <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectDir)\INSTALL_LICENSE.rtf" />
@@ -181,12 +212,12 @@
     </UI>
 
     <InstallExecuteSequence>
-      <Custom Action="CompanyInfoAction.SetProperty" After="InstallFiles">NOT REMOVE AND <![CDATA[&openMICFeature=3]]></Custom>
-      <Custom Action="CompanyInfoAction" After="CompanyInfoAction.SetProperty">NOT REMOVE AND <![CDATA[&openMICFeature=3]]></Custom>
-      <Custom Action="ConfigureServiceAction.SetProperty" After="InstallServices">NOT REMOVE AND <![CDATA[&openMICFeature=3]]></Custom>
-      <Custom Action="ConfigureServiceAction" After="ConfigureServiceAction.SetProperty">NOT REMOVE AND <![CDATA[&openMICFeature=3]]></Custom>
-      <Custom Action="ServiceAccountAction.SetProperty" After="ConfigureServiceAction">NOT REMOVE</Custom>
-      <Custom Action="ServiceAccountAction" After="ServiceAccountAction.SetProperty">NOT REMOVE</Custom>
+      <Custom Action="CompanyInfoAction.SetProperty" After="InstallFiles">INSTALLSERVICEFEATURE</Custom>
+      <Custom Action="CompanyInfoAction" After="CompanyInfoAction.SetProperty">INSTALLSERVICEFEATURE</Custom>
+      <Custom Action="ConfigureServiceAction.SetProperty" After="InstallServices"><![CDATA[&openMICFeature=3]]></Custom>
+      <Custom Action="ConfigureServiceAction" After="ConfigureServiceAction.SetProperty"><![CDATA[&openMICFeature=3]]></Custom>
+      <Custom Action="ServiceAccountAction.SetProperty" After="ConfigureServiceAction">INSTALLSERVICEFEATURE</Custom>
+      <Custom Action="ServiceAccountAction" After="ServiceAccountAction.SetProperty">INSTALLSERVICEFEATURE</Custom>
       <Custom Action="NetFxExecuteNativeImageCommitInstall" After="NetFxExecuteNativeImageUninstall">0</Custom>
       <Custom Action="NetFxExecuteNativeImageInstall" After="NetFxExecuteNativeImageCommitInstall" />
       <!-- Set write registry values sequence after service install but before service start to restore original service start mode -->
