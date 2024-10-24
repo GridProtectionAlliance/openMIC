@@ -152,6 +152,7 @@
     <Property Id="INSTALLOPTIONALFEATURE" Secure="yes" />
 
     <Property Id="SERVICENAME" Value="$(var.openMIC.TargetName)" />
+    <Property Id="SERVICEACCOUNT" Secure="yes" />
     <Property Id="SERVICEPASSWORD" Hidden="yes" />
     <Property Id="HTTPSERVICEPORTS" Value="8089,6063,6064,6163,6164,6364,6464,5024" />
     <Property Id="COMPANYNAME" Value="Grid Protection Alliance" />
