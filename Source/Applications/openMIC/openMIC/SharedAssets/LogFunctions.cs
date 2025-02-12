@@ -61,10 +61,14 @@ namespace openMIC.SharedAssets
 
         public const string LogConnectionFailureTemplate = OperationPrefix + "Log Connection Failure" + OperationSuffix;
 
+        public const string RequeuePollingTaskTemplate = OperationPrefix + "Requeue Polling Task";
+
         public static void LogDownloadedFile(string fileName) => Console.WriteLine(LogDownloadedFileTemplate, fileName);
 
         public static void LogConnectionSuccess(string message) => Console.WriteLine(LogConnectionSuccessTemplate, message);
 
         public static void LogConnectionFailure(string message) => Console.WriteLine(LogConnectionFailureTemplate, message);
+
+        public static void RequeuePollingTask() => Console.WriteLine(RequeuePollingTaskTemplate);
     }
 }

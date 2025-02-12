@@ -2005,6 +2005,12 @@ public class Downloader : InputAdapterBase
                 if (HandleExternalOperationMessage(processArgs.Data, out _))
                     return;
 
+                if (processArgs.Data == RequeuePollingTaskTemplate)
+                {
+                    QueueTasksByID(task.Name, QueuePriority.Normal);
+                    return;
+                }
+
                 OnStatusMessage(MessageLevel.Info, processArgs.Data);
                 OnProgressUpdated(this, new ProgressUpdate { Message = processArgs.Data });
             };
@@ -2083,7 +2089,7 @@ public class Downloader : InputAdapterBase
         if (connectionSuccessMatch.Success)
         {
             logType = LogType.ConnectionSuccess;
-            patternMessage = downloadedFileMatch.Groups["Message"].Value;
+            patternMessage = connectionSuccessMatch.Groups["Message"].Value;
             LogOutcome(ProgressState.Processing);
 
             AttemptedConnections++;
@@ -2099,7 +2105,7 @@ public class Downloader : InputAdapterBase
         if (connectionFailureMatch.Success)
         {
             logType = LogType.ConnectionFailure;
-            patternMessage = downloadedFileMatch.Groups["Message"].Value;
+            patternMessage = connectionFailureMatch.Groups["Message"].Value;
             LogFailure(patternMessage);
 
             AttemptedConnections++;
