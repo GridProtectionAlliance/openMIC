@@ -2005,6 +2005,12 @@ public class Downloader : InputAdapterBase
                 if (HandleExternalOperationMessage(processArgs.Data, out _))
                     return;
 
+                if (processArgs.Data == RequeuePollingTaskTemplate)
+                {
+                    QueueTasksByID(task.Name, QueuePriority.Normal);
+                    return;
+                }
+
                 OnStatusMessage(MessageLevel.Info, processArgs.Data);
                 OnProgressUpdated(this, new ProgressUpdate { Message = processArgs.Data });
             };
