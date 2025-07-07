@@ -113,7 +113,6 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
     private static readonly char[] s_digits;
     private static readonly HttpClient s_http;
     private static bool? s_useRemoteScheduler;
-    private static string s_remoteSchedulerUri;
     private static HashSet<string> s_allowedSectionMapPaths;
 
     private static readonly string[] s_allowedSectionMaps = { "", "Dranetz", "PQube" };
@@ -132,19 +131,14 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
     {
         get
         {
-            if (s_remoteSchedulerUri is null)
-            {
-                // At first queued task, remote scheduler address will be available
-                string remoteSchedulerAddress = OperationsController.RemoteSchedulerAddress;
+            string remoteSchedulerAddress = OperationsController.RemoteSchedulerAddress;
 
-                if (remoteSchedulerAddress is not null)
-                {
-                    Uri webHostUri = Program.Host.Model.Global.WebHostUri;
-                    s_remoteSchedulerUri = $"{webHostUri.Scheme}://{remoteSchedulerAddress}:{webHostUri.Port}";
-                }
-            }
+            // At first queued task, remote scheduler address will be available
+            if (remoteSchedulerAddress is null)
+                return null;
 
-            return s_remoteSchedulerUri;
+            Uri webHostUri = Program.Host.Model.Global.WebHostUri;
+            return $"{webHostUri.Scheme}://{remoteSchedulerAddress}:{webHostUri.Port}";
         }
     }
 
