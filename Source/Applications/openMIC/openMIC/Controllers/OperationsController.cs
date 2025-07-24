@@ -115,30 +115,23 @@ public class OperationsController : ApiController
     [HttpGet]
     public HttpResponseMessage QueueTasks([FromUri] string taskID, [FromUri] QueuePriority priority, [FromUri(Name = "target")] List<string> targets)
     {
-        if (RemoteSchedulerAddress is null)
+        try
         {
-            try
+            if (Program.Host.Model.Global.UseRemoteScheduler)
             {
-                if (Program.Host.Model.Global.UseRemoteScheduler)
-                {
-                    // Capture IP of caller as remote scheduler, if address is not local
-                    string remoteIP = Request.GetOwinContext().Request.RemoteIpAddress;
+                // Capture IP of caller as remote scheduler, if address is not local
+                string remoteIP = Request.GetOwinContext().Request.RemoteIpAddress;
 
-                    if (!Transport.IsLocalAddress(remoteIP))
-                    {
-                        RemoteSchedulerAddress = remoteIP;
-                        Program.Host.LogStatusMessage($"[{nameof(OperationsController)}] Assigned remote scheduler address: {RemoteSchedulerAddress}");
-                    }
-                }
-                else
+                if (RemoteSchedulerAddress != remoteIP && !Transport.IsLocalAddress(remoteIP))
                 {
-                    RemoteSchedulerAddress = string.Empty;
+                    RemoteSchedulerAddress = remoteIP;
+                    Program.Host.LogStatusMessage($"[{nameof(OperationsController)}] Assigned remote scheduler address: {RemoteSchedulerAddress}");
                 }
             }
-            catch (Exception ex)
-            {
-                Program.Host.LogException(new InvalidOperationException($"[{nameof(OperationsController)}] Failed to assign remote scheduler address: {ex.Message}", ex));
-            }
+        }
+        catch (Exception ex)
+        {
+            Program.Host.LogException(new InvalidOperationException($"[{nameof(OperationsController)}] Failed to assign remote scheduler address: {ex.Message}", ex));
         }
 
         using (AdoDataConnection connection = new("systemSettings"))
