@@ -171,6 +171,7 @@ public class Downloader : InputAdapterBase
     private int m_overallTasksCompleted;
     private int m_overallTasksCount;
     private int m_lastDownloadedFileID;
+    private int m_deviceMessageCounter;
     private long m_startDialUpTime;
     private bool m_disposed;
 
@@ -843,6 +844,75 @@ public class Downloader : InputAdapterBase
                 }
                 break;
         }
+    }
+
+    protected override void OnStatusMessage(MessageLevel level, string status, string eventName = null, MessageFlags flags = MessageFlags.None)
+    {
+        base.OnStatusMessage(level, status, eventName, flags);
+        OnLogMessage(level, status, false);
+    }
+
+    protected override void OnProcessException(MessageLevel level, Exception exception, string eventName = null, MessageFlags flags = MessageFlags.None)
+    {
+        base.OnProcessException(level, exception, eventName, flags);
+        OnLogMessage(level, exception.ToString(), true);
+    }
+
+    private void OnLogMessage(MessageLevel level, string message, bool isException)
+    {
+        DateTime now = DateTime.UtcNow;
+        using AdoDataConnection database = new("systemSettings");
+
+        if (!database.IsSQLServer)
+            return;
+
+        IDbConnection connection = database.Connection;
+        using IDbCommand command = connection.CreateCommand();
+        command.CommandType = CommandType.StoredProcedure;
+        command.CommandText = "LogDeviceMessage";
+
+        IDbDataParameter shortIDParameter = command.CreateParameter();
+        IDbDataParameter deviceParameter = command.CreateParameter();
+        IDbDataParameter timestampParameter = command.CreateParameter();
+        IDbDataParameter nodeParameter = command.CreateParameter();
+        IDbDataParameter levelParameter = command.CreateParameter();
+        IDbDataParameter messageParameter = command.CreateParameter();
+        IDbDataParameter isExceptionParameter = command.CreateParameter();
+
+        shortIDParameter.ParameterName = "@shortID";
+        deviceParameter.ParameterName = "@device";
+        timestampParameter.ParameterName = "@timestamp";
+        nodeParameter.ParameterName = "@node";
+        levelParameter.ParameterName = "@level";
+        messageParameter.ParameterName = "@message";
+        isExceptionParameter.ParameterName = "@isException";
+
+        shortIDParameter.DbType = DbType.Int16;
+        deviceParameter.DbType = DbType.String;
+        timestampParameter.DbType = DbType.DateTime2;
+        nodeParameter.DbType = DbType.String;
+        levelParameter.DbType = DbType.String;
+        messageParameter.DbType = DbType.String;
+        isExceptionParameter.DbType = DbType.Boolean;
+
+        int deviceMessageCounter = Interlocked.Increment(ref m_deviceMessageCounter) - 1;
+        string systemName = Program.Host.Model.Global.SystemName;
+        shortIDParameter.Value = (short)(deviceMessageCounter & 0x7FFF);
+        deviceParameter.Value = Name;
+        timestampParameter.Value = now;
+        nodeParameter.Value = !string.IsNullOrEmpty(systemName) ? systemName : Environment.MachineName; ;
+        levelParameter.Value = level.ToString();
+        messageParameter.Value = message;
+        isExceptionParameter.Value = isException;
+
+        command.Parameters.Add(shortIDParameter);
+        command.Parameters.Add(deviceParameter);
+        command.Parameters.Add(timestampParameter);
+        command.Parameters.Add(nodeParameter);
+        command.Parameters.Add(levelParameter);
+        command.Parameters.Add(messageParameter);
+        command.Parameters.Add(isExceptionParameter);
+        command.ExecuteNonQuery();
     }
 
     // Queues specified task, with overridden schedule, for execution at specified priority
