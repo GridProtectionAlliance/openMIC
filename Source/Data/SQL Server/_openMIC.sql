@@ -229,40 +229,6 @@ BEGIN
 END
 GO
 
-CREATE TABLE DeviceMessage
-(
-	ShortID SMALLINT,
-    Device VARCHAR(200),
-    Timestamp DATETIME2,
-    Node VARCHAR(200),
-    Level VARCHAR(20),
-    Message VARCHAR(MAX),
-    IsException BIT,
-	CONSTRAINT PK_DeviceMessage PRIMARY KEY(Node, Device, Timestamp, ShortID)
-)
-GO
-
-CREATE PROCEDURE LogDeviceMessage
-(
-	@shortID SMALLINT,
-    @device VARCHAR(200),
-    @timestamp DATETIME2,
-    @node VARCHAR(200),
-    @level VARCHAR(20),
-    @message VARCHAR(MAX),
-    @isException BIT
-)
-AS
-BEGIN
-    INSERT INTO DeviceMessage
-    SELECT @shortID, @device, @timestamp, @node, @level, @message, @isException
-    FROM Setting
-    WHERE
-        Name = 'DeviceLogEnabled' AND
-        Value <> 'False'
-END
-GO
-
 --------------------------------------------------------------------------------
 
 -- The following procedure is used by the StatusLog_Email trigger that follows
