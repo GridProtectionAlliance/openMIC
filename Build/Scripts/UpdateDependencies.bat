@@ -1,7 +1,7 @@
 ::*******************************************************************************************************
 ::  UpdateDependencies.bat - Gbtc
 ::
-::  Copyright © 2013, Grid Protection Alliance.  All Rights Reserved.
+::  Copyright Â© 2013, Grid Protection Alliance.  All Rights Reserved.
 ::
 ::  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
 ::  the NOTICE file distributed with this work for additional information regarding copyright ownership.
@@ -163,7 +163,7 @@ SET remotebranch=master
 IF "%pushtoversionbranch%" == "true" SET remotebranch=ud-%version%
 "%git%" push origin HEAD:%remotebranch%
 CD /D %pwd%
-IF EXIST "%afterpushscript%" CALL "%afterpushscript%" openXDA %remotebranch%
+IF EXIST "%afterpushscript%" CALL "%afterpushscript%" openMIC %remotebranch%
 
 :Finish
 CD /D %pwd%
