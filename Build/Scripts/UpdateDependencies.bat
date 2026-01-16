@@ -1,7 +1,7 @@
 ::*******************************************************************************************************
 ::  UpdateDependencies.bat - Gbtc
 ::
-::  Copyright © 2013, Grid Protection Alliance.  All Rights Reserved.
+::  Copyright Â© 2013, Grid Protection Alliance.  All Rights Reserved.
 ::
 ::  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
 ::  the NOTICE file distributed with this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@
 SETLOCAL
 
 SET pwd=%CD%
-IF "%git%" == "" SET git=%PROGRAMFILES(X86)%\Git\cmd\git.exe
+IF "%git%" == "" SET git=%PROGRAMFILES%\Git\cmd\git.exe
 IF "%replace%" == "" SET replace=\\GPAWEB\NightlyBuilds\Tools\ReplaceInFiles\ReplaceInFiles.exe
 
 SET defaulttarget=%LOCALAPPDATA%\Temp\openMIC
@@ -158,9 +158,14 @@ IF NOT "%donotpush%" == "" GOTO Finish
 :PushChanges
 ECHO.
 ECHO Pushing changes to remote repository...
-"%git%" push
+FOR /F "tokens=* USEBACKQ" %%F IN (`"%git%" describe --tags --abbrev^=0`) DO SET version=%%F
+SET remotebranch=master
+IF "%pushtoversionbranch%" == "true" SET remotebranch=ud-%version%
+"%git%" push origin HEAD:%remotebranch%
 CD /D %pwd%
+IF EXIST "%afterpushscript%" CALL "%afterpushscript%" openMIC %remotebranch%
 
 :Finish
+CD /D %pwd%
 ECHO.
 ECHO Update complete
