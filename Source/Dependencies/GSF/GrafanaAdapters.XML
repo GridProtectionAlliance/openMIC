@@ -385,6 +385,146 @@
             specified function operation to all value fields in the data source.
             </remarks>
         </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.AddMetadata`1">
+            <summary>
+            Returns a series with an extra MetaData Field.
+            </summary>
+            <remarks>
+            Signature: <c>AddMetaData(field, value, expression)</c><br/>
+            Returns: Series of values.<br/>
+            Example: <c>AddMetaData('Company', 'GPA', FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
+            </remarks>
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.AddMetadata`1.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.AddMetadata`1.Description">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.AddMetadata`1.ReturnType">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.AddMetadata`1.ParameterDefinitions">
+            <inheritdoc />
+        </member>
+        <member name="M:GrafanaAdapters.Functions.BuiltIn.AddMetadata`1.ComputeAsync(GrafanaAdapters.Functions.Parameters,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.AddMetadata`1.ComputeMeasurementValue">
+            <inheritdoc />
+        </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.AddMetadata`1.ComputePhasorValue">
+            <inheritdoc />
+        </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1">
+            <summary>
+            Returns a series of values at which a value exceeds the given threshold. The <c>threhsold</c> parameter value is a
+            floating-point number that represents the threshold to be exceeded. Second parameter, <c>fallsBelow</c>, optional,
+            is a boolean flag that determines if the value should be considered inversely as falling below the threshold instead
+            of exceeding. <c>returnDurations</c>, optional, is a boolean that determines if the duration (in seconds) from where
+            value exceeded threshold should be returned instead of the original value. Forth parameter, <c>reportEndMarker</c>,
+            is a boolean flag that determines if a value should be reported at the point when threshold stops being exceeding
+            the threshold.<br/>
+            See <see href=
+            "https://github.com/GridProtectionAlliance/GrafanaTemplates?tab=readme-ov-file#exceedsat-threshold-dashboard">
+            example template dashboard</see>.
+            </summary>
+            <remarks>
+            Signature: <c>ExceedsAt(threshold, [fallsBelow = false], [returnDurations = false], [reportEndMarker = false], expression)</c><br/>
+            Returns: Series of values.<br/>
+            Example 1: <c>ExceedsAt(60.05, false, FILTER ActiveMeasurements WHERE SignalType LIKE '%FREQ')</c><br/>
+            Example 2: <c>Exceeds(59.95, true, FILTER ActiveMeasurements WHERE SignalType LIKE '%FREQ')</c><br/>
+            Variants: ExceedsAt, Exceeds<br/>
+            Execution: Deferred enumeration.<br/>
+            Group Operations: None
+            </remarks>
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1.Description">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1.Aliases">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1.AllowedGroupOperations">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1.ReturnType">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1.ParameterDefinitions">
+            <inheritdoc />
+        </member>
+        <member name="M:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1.ComputeAsync(GrafanaAdapters.Functions.Parameters,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1.ComputeMeasurementValue">
+            <inheritdoc />
+        </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.ExceedsAt`1.ComputePhasorValue">
+            <inheritdoc />
+        </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1">
+            <summary>
+            Returns a series of values that represent the core data around the mean, excluding outliers, using Z-score. The
+            <c>confidence</c> parameter, optional, is a floating-point value, suffixed with '%' representing a percentage,
+            that must be greater than zero and less than one-hundred, that specifies the amount of data to retain around the
+            mean, representing the central portion of the dataset - defaults to 95%. Second parameter, <c>invertFilter</c>,
+            optional, is a boolean flag that determines if outliers should be rejected or retained - default is false, i.e.,
+            keep core data rejecting outliers; otherwise, true excludes core data and retains only outliers. Third parameter,
+            <c>minSamples</c>, optional, is an integer value that specifies the minimum number of samples required for outlier
+            detection - defaults to 20 for single series temporal analysis and 3 for multi-series slice analysis; if fewer
+            samples are provided, the function returns the entire dataset unfiltered to ensure improved statistical validity
+            of the Z-score calculations, or no data when <c>invertFilter</c> is true. If all values are considered identical,
+            i.e., the standard deviation is zero, function will return the entire dataset unfiltered, or no data when
+            <c>invertFilter</c> is true, since this represents a uniform distribution. The <c>confidence</c> parameter value
+            can either be a constant value or a named target available from the expression. Any target values that fall
+            between 0 and 1 will be treated as a percentage. 
+            </summary>
+            <remarks>
+            Signature: <c>FilterOutliers([confidence = 95%], [invertFilter = false], [minSamples = 20 or 3 for slice], expression)</c><br/>
+            Returns: Series of values.<br/>
+            Example 1: <c>FilterOutliers(85%, BROWNS_FERRY:FREQ)</c><br/>
+            Example 2: <c>SliceFilterOutliers(0.033, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
+            Variants: FilterOutliers, ZScoreFilter, GaussianFilter<br/>
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
+            </remarks>
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.Name">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.Description">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.Aliases">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.ReturnType">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.ParameterDefinitions">
+            <inheritdoc />
+        </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.IsSliceSeriesEquivalent">
+            <inheritdoc />
+        </member>
+        <member name="M:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.ComputeAsync(GrafanaAdapters.Functions.Parameters,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.ComputeSliceAsync(GrafanaAdapters.Functions.Parameters,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.ComputeMeasurementValue">
+            <inheritdoc />
+        </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.FilterOutliers`1.ComputePhasorValue">
+            <inheritdoc />
+        </member>
         <member name="T:GrafanaAdapters.Functions.BuiltIn.KalmanFilter`1">
             <summary>
             Returns a series of values that are passed though a Kalman filter which predicts the next state based on the current estimate useful
@@ -397,7 +537,8 @@
             Returns: Series of values.<br/>
             Example: <c>LQE(FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: KalmanFilter, LQE, LinearQuadraticEstimate<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.KalmanFilter`1.Name">
@@ -440,7 +581,8 @@
             Returns: Series of values.<br/>
             Example: <c>Clamp(49.95, 50.05, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Clamp, Limit<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Clamp`1.Name">
@@ -469,16 +611,23 @@
         </member>
         <member name="T:GrafanaAdapters.Functions.BuiltIn.Reference`1">
             <summary>
-            Returns a phasor referenced to the first series of a slice of values.
-            The <c>sliceTolerance</c> parameter is a floating-point value that must be greater than or equal to 0.001 that represents the
-            desired time tolerance, in seconds, for the time slice.
+            Returns a slice of angle differences to the first angle (i.e., the reference) for a series of angles. The <c>sliceTolerance</c>
+            parameter is a floating-point value that must be greater than or equal to 0.001 that represents the desired time tolerance,
+            in seconds, for the time slice. Parameter <c>adjustCoordinateMidPoint</c>, optional, is a boolean flag that determines if the
+            metadata of the coordinate system, i.e., longitude/latitude values, should be adjusted to the midpoint between reference and
+            the angle values in the slice - defaults to false. Parameter <c>applyWrapOps</c>, optional, is a boolean flag that determines
+            if angles should be unwrapped before computing differences then rewrapped - defaults to true. The <c>units</c>parameter,
+            optional, specifies the type of angle units and must be one of the following: Degrees, Radians, Grads, ArcMinutes, ArcSeconds
+            or AngularMil - defaults to Degrees.
             </summary>
             <remarks>
-            Signature: <c>Reference(sliceTolerance, expression)</c><br/>
+            Signature: <c>Reference(sliceTolerance, [adjustCoordinateMidPoint = false], [applyWrapOps = true], [units = Degrees], expression)</c><br/>
             Returns: Single value.<br/>
-            Example: <c>Reference(ReferencePhasor; FILTER PhasorValues WHERE SignalType='IPHM')</c><br/>
+            Example 1: <c>Ref(0.033, true, false, BROWNS_FERRY:BUS1.ANG; FILTER ActiveMeasurements WHERE SignalType='IPHA')</c><br/>
+            Example 2: <c>Reference(0.25, BROWNS_FERRY:BUS1; FILTER PhasorValues WHERE SignalType='IPHM')</c><br/>
             Variants: Reference, Ref<br/>
-            Execution: Immediate enumeration.
+            Execution: Immediate enumeration.<br/>
+            Group Operations: Slice
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Reference`1.Name">
@@ -493,6 +642,9 @@
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Reference`1.ReturnType">
             <inheritdoc />
         </member>
+        <member name="P:GrafanaAdapters.Functions.BuiltIn.Reference`1.ParameterDefinitions">
+            <inheritdoc />
+        </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Reference`1.IsSliceSeriesEquivalent">
             <inheritdoc />
         </member>
@@ -505,10 +657,16 @@
         <member name="M:GrafanaAdapters.Functions.BuiltIn.Reference`1.CheckAllowedGroupOperation(GrafanaAdapters.Functions.GroupOperations)">
             <inheritdoc />
         </member>
+        <member name="M:GrafanaAdapters.Functions.BuiltIn.Reference`1.ComputeAsync(GrafanaAdapters.Functions.Parameters,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:GrafanaAdapters.Functions.BuiltIn.Reference`1.ComputeMeasurementValue">
+            <inheritdoc />
+        </member>
         <member name="T:GrafanaAdapters.Functions.BuiltIn.Reference`1.ComputePhasorValue">
             <inheritdoc />
         </member>
-        <member name="M:GrafanaAdapters.Functions.BuiltIn.Reference`1.ComputePhasorValue.ComputeAsync(GrafanaAdapters.Functions.Parameters,System.Threading.CancellationToken)">
+        <member name="M:GrafanaAdapters.Functions.BuiltIn.Reference`1.ComputePhasorValue.GetDataSourceValues(GrafanaAdapters.Functions.Parameters)">
             <inheritdoc />
         </member>
         <member name="T:GrafanaAdapters.Functions.BuiltIn.Switch`1">
@@ -522,7 +680,8 @@
             Returns: Single value.<br/>
             Example: <c>Switch(IndexSeriesTag; FILTER ActiveMeasurements WHERE SignalType='IPHM')</c><br/>
             Variants: Switch, Select<br/>
-            Execution: Immediate enumeration.
+            Execution: Immediate enumeration.<br/>
+            Group Operations: Slice
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Switch`1.Name">
@@ -564,7 +723,8 @@
             Returns: Series of values.<br/>
             Example: <c>Sqrt(FILTER ActiveMeasurements WHERE SignalType='IPHM')</c><br/>
             Variants: Sqrt<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Sqrt`1.Name">
@@ -596,7 +756,8 @@
             Returns: Series of values.<br/>
             Example: <c>Pow(2, FILTER ActiveMeasurements WHERE SignalType='CALC')</c><br/>
             Variants: Pow<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Pow`1.Name">
@@ -632,7 +793,8 @@
             Returns: Series of values.<br/>
             Example: <c>RollingAvg(150, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: RollingAverage, RollingAvg, RollingMean<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.RollingAverage`1.Name">
@@ -677,8 +839,8 @@
             also available as index suffixed variables named <c>_v</c>, for example, first and second target values are available as
             <c>_v0</c> and <c>_v1</c>. The <c>Evaluate</c> function is always evaluated as a slice, any specified group operation
             prefix will be ignored. Default system types available to expressions are <c>System.Math</c> and <c>System.DateTime</c>.
-            See <see href="https://www.codeproject.com/Articles/19768/Flee-Fast-Lightweight-Expression-Evaluator">details</see> on
-            valid expressions. Use the <c>Imports</c> command to define more types for <c>evalExpression</c>.
+            See <see href="https://www.codeproject.com/Articles/19768/Flee-Fast-Lightweight-Expression-Evaluator">details on valid
+            expressions</see>. Use the <c>Imports</c> command to define more types for <c>evalExpression</c>.
             </summary>
             <remarks>
             Signature: <c>Evaluate(sliceTolerance, evalExpression, filterExpression)</c><br/>
@@ -688,7 +850,8 @@
             Example 3: <c>eval(0.5, { (if (_v0 &gt; 62, _v2, if (_v0 &lt; 57, _v2, _v0)) + if (_v1 &gt; 62, _v2, if (_v1 &lt; 57, _v2, _v1))) / 2 }, FILTER TOP 3 ActiveMeasurements WHERE SignalType = 'FREQ')</c><br/>
             Example 4: <c>evaluate(0.0333, { if (abs(b - a) &gt; 180, if (sign(b - a) &lt; 0, b - a + 360, b - a - 360), b - a)}, a=PMU.009-PZR.AV:ANG; b=PMU.008-PZR.AV:ANG)</c><br/>
             Variants: Evaluate, Eval<br/>
-            Execution: Deferred enumeration
+            Execution: Deferred enumeration<br/>
+            Group Operations: Slice
             <para>
             The following special command-level parameter is available to the <c>Evaluate</c> function: <c>Imports={expr}</c><br/>
             This command adds custom .NET type imports that can be used with the <c>Evaluate</c> function. <c>expr</c>defines a
@@ -750,7 +913,8 @@
             Returns: Series of values.<br/>
             Example: <c>AbsoluteValue(FILTER ActiveMeasurements WHERE SignalType='CALC')</c><br/>
             Variants: AbsoluteValue, Abs<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.AbsoluteValue`1.Name">
@@ -783,7 +947,8 @@
             Returns: Single value.<br/>
             Example: <c>Average(FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Average, Avg, Mean<br/>
-            Execution: Immediate enumeration.
+            Execution: Immediate enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Average`1.Name">
@@ -824,7 +989,8 @@
             Returns: Series of values.<br/>
             Example: <c>Bottom(100, false, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Bottom, Bot, Smallest<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Bottom`1.Name">
@@ -866,7 +1032,8 @@
             Returns: Series of values.<br/>
             Example: <c>Ceiling(FILTER ActiveMeasurements WHERE SignalType='IPHM')</c><br/>
             Variants: Ceiling, Ceil<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Ceiling`1.Name">
@@ -899,7 +1066,8 @@
             Returns: Single value.<br/>
             Example: <c>Count(PPA:1; PPA:2; PPA:3)</c><br/>
             Variants: Count<br/>
-            Execution: Immediate enumeration.
+            Execution: Immediate enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Count`1.Name">
@@ -935,7 +1103,8 @@
             Returns: Series of values.<br/>
             Example: <c>Derivative(FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Derivative, Der<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Derivative`1.Name">
@@ -977,7 +1146,8 @@
             Returns: Series of values.<br/>
             Example: <c>Difference(FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Difference, Diff<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Difference`1.Name">
@@ -1027,7 +1197,8 @@
             Returns: Series of values.<br/>
             Example: <c>Distinct(FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Distinct, Unique<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Distinct`1.Name">
@@ -1068,7 +1239,8 @@
             Returns: Series of values.<br/>
             Example: <c>ExcludeRange(-180.0, 180.0, true, false, FILTER ActiveMeasurements WHERE SignalType LIKE '%PHA')</c><br/>
             Variants: ExcludeRange, Exclude<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.ExcludeRange`1.Name">
@@ -1105,7 +1277,8 @@
             Returns: Series of values.<br/>
             Example: <c>FilterNaN(FILTER ActiveMeasurements WHERE SignalType='VPHM')</c><br/>
             Variants: FilterNaN<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks> 
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.FilterNaN`1.Name">
@@ -1142,7 +1315,8 @@
             Returns: Series of values.<br/>
             Example: <c>First(5%, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: First<br/>
-            Execution: Immediate in-memory array load, when <c>N</c> is defined; otherwise, immediate enumeration of one, i.e., first value.
+            Execution: Immediate in-memory array load, when <c>N</c> is defined; otherwise, immediate enumeration of one, i.e., first value.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.First`1.Name">
@@ -1178,7 +1352,8 @@
             Returns: Series of values.<br/>
             Example: <c>Floor(FILTER ActiveMeasurements WHERE SignalType='IPHM')</c><br/>
             Variants: Floor<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Floor`1.Name">
@@ -1213,7 +1388,8 @@
             Returns: Series of values.<br/>
             Example: <c>IncludeRange(59.90, 60.10, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: IncludeRange, Include<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.IncludeRange`1.Name">
@@ -1253,7 +1429,8 @@
             Returns: Series of values.<br/>
             Example: <c>Sum(Interval(5, FILTER ActiveMeasurements WHERE SignalType LIKE '%PHM'))</c><br/>
             Variants: Interval<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Interval`1.Name">
@@ -1306,7 +1483,8 @@
             Example 3: <c>Label({AlternateTag}, FILTER TOP 10 ActiveMeasurements WHERE SignalType LIKE '%PH%')</c>
             Example 4: <c>Label('Shelby {ScadaTags.CircuitName} MW', FILTER ScadaTags WHERE SignalType='MW' AND Substation='SHELBY')</c>
             Variants: Label, Name<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: None
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Label`1.Name">
@@ -1355,7 +1533,8 @@
             Returns: Series of values.<br/>
             Example: <c>Last(150, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Last<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Last`1.Name">
@@ -1391,7 +1570,8 @@
             Returns: Single value.<br/>
             Example: <c>Maximum(FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Maximum, Max<br/>
-            Execution: Immediate enumeration.
+            Execution: Immediate enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Maximum`1.Name">
@@ -1427,7 +1607,8 @@
             Returns: Single value.<br/>
             Example: <c>Median(FILTER ActiveMeasurements WHERE SignalType='ALOG')</c><br/>
             Variants: Median, Med, Mid<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Median`1.Name">
@@ -1466,7 +1647,8 @@
             Returns: Single value.<br/>
             Example: <c>Minimum(FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Minimum, Min<br/>
-            Execution: Immediate enumeration.
+            Execution: Immediate enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Minimum`1.Name">
@@ -1510,7 +1692,8 @@
             Example 3: <c>Mode(Round(FILTER ActiveMeasurements WHERE SignalType='FREQ'))</c><br/>
             Example 4: <c>Scale(100, true, Mode(0, Floor(Scale(100, FILTER TOP 20 ActiveMeasurements WHERE SignalType='FREQ'))))</c><br/>
             Variants: Mode<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Mode`1.Name">
@@ -1548,7 +1731,8 @@
             Returns: Series of values.<br/>
             Example: <c>Mod(2, FILTER ActiveMeasurements WHERE SignalType='CALC')</c><br/>
             Variants: Modulo, Modulus, Mod<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Modulo`1.Name">
@@ -1587,7 +1771,8 @@
             Returns: Series of values.<br/>
             Example: <c>MovingAvg(150, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: MovingAverage, MovingAvg, MovingMean, SimpleMovingAverage, SMA<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.MovingAverage`1.Name">
@@ -1635,7 +1820,8 @@
             Example 2: <c>Scale(0.5, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Example 3: <c>Scale(60, true, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Scale<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Scale`1.Name">
@@ -1669,7 +1855,8 @@
             Returns: Single value.<br/>
             Example: <c>Percentile(10%, FILTER ActiveMeasurements WHERE SignalType='VPHM')</c><br/>
             Variants: Percentile, Pctl<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Percentile`1.Name">
@@ -1701,7 +1888,7 @@
             Returns a series of <c>N</c>, or <c>N%</c> of total, values that are a random sample of the values in the source series.
             <c>N</c> is either a positive integer value, representing a total, that is greater than zero - or - a floating point value,
             suffixed with '%' representing a percentage, that must range from greater than 0 to less than or equal to 100.
-            Third parameter, optional, is a boolean flag representing if time in dataset should be normalized - defaults to true.
+            Second parameter, optional, is a boolean flag representing if time in dataset should be normalized - defaults to true.
             <c>N</c> can either be constant value or a named target available from the expression. Any target values that fall between 0
             and 1 will be treated as a percentage.
             </summary>
@@ -1710,7 +1897,8 @@
             Returns: Series of values.<br/>
             Example: <c>Random(25%, FILTER ActiveMeasurements WHERE SignalType='VPHM')</c><br/>
             Variants: Random, Rand, Sample<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Random`1.Name">
@@ -1767,7 +1955,8 @@
             Returns: Single value.<br/>
             Example: <c>Range(FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Range<br/>
-            Execution: Immediate enumeration.
+            Execution: Immediate enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Range`1.Name">
@@ -1801,7 +1990,8 @@
             Returns: Series of values.<br/>
             Example: <c>Round(3, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Round<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Round`1.Name">
@@ -1836,7 +2026,8 @@
             Returns: Single value.<br/>
             Example: <c>StandardDeviation(FILTER ActiveMeasurements WHERE SignalType='VPHM')</c><br/>
             Variants: StandardDeviation, StdDev<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.StandardDeviation`1.Name">
@@ -1878,7 +2069,8 @@
             Example 1: <c>Shift(2.2, FILTER ActiveMeasurements WHERE SignalType='CALC')</c><br/>
             Example 2: <c>Shift(-60, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Shift<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Shift`1.Name">
@@ -1914,7 +2106,8 @@
             Returns: Series of values.<br/>
             Example: <c>TimeDifference(FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: TimeDifference, TimeDiff, Elapsed<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.TimeDifference`1.Name">
@@ -1959,7 +2152,8 @@
             Returns: Single value.<br/>
             Example: <c>TimeIntegration(FILTER ActiveMeasurements WHERE SignalType='CALC' AND PointTag LIKE '%-MW:%')</c><br/>
             Variants: TimeIntegration, TimeInt<br/>
-            Execution: Immediate enumeration.
+            Execution: Immediate enumeration.<br/>
+            Group Operations: Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.TimeIntegration`1.Name">
@@ -2006,7 +2200,8 @@
             Returns: Series of values.<br/>
             Example: <c>Top(50%, FILTER ActiveMeasurements WHERE SignalType='FREQ')</c><br/>
             Variants: Top, Largest<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Top`1.Name">
@@ -2048,7 +2243,8 @@
             Returns: Single value.<br/>
             Example: <c>Total(FILTER ActiveMeasurements WHERE SignalType='IPHM')</c><br/>
             Variants: Total, Add, Sum<br/>
-            Execution: Immediate enumeration.
+            Execution: Immediate enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Total`1.Name">
@@ -2084,7 +2280,8 @@
             Returns: Series of values.<br/>
             Example: <c>Truncate(FILTER ActiveMeasurements WHERE SignalType='IPHM')</c><br/>
             Variants: Truncate, Trunc<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.Truncate`1.Name">
@@ -2120,7 +2317,8 @@
             Returns: Series of values.<br/>
             Example: <c>UnwrapAngle(FSX_PMU2-PA1:VH; REA_PMU3-PA2:VH)</c><br/>
             Variants: UnwrapAngle, Unwrap<br/>
-            Execution: Immediate in-memory array load.
+            Execution: Immediate in-memory array load.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.UnwrapAngle`1.Name">
@@ -2161,7 +2359,8 @@
             Returns: Series of values.<br/>
             Example: <c>WrapAngle(Radians, FILTER TOP 5 ActiveMeasurements WHERE SignalType LIKE '%PHA')</c><br/>
             Variants: WrapAngle, Wrap<br/>
-            Execution: Deferred enumeration.
+            Execution: Deferred enumeration.<br/>
+            Group Operations: Slice, Set
             </remarks>
         </member>
         <member name="P:GrafanaAdapters.Functions.BuiltIn.WrapAngle`1.Name">
@@ -2205,21 +2404,32 @@
             </returns>
             <exception cref="T:System.Data.SyntaxErrorException">Expected parameters did not match those received.</exception>
         </member>
-        <member name="M:GrafanaAdapters.Functions.ParameterParsing.GenerateParametersAsync``1(GrafanaAdapters.Functions.IGrafanaFunction{``0},System.String[],System.Collections.Generic.IAsyncEnumerable{``0},System.String,System.Data.DataSet,System.Threading.CancellationToken)">
+        <member name="M:GrafanaAdapters.Functions.ParameterParsing.GenerateParametersAsync``1(GrafanaAdapters.Functions.IGrafanaFunction{``0},System.String[],System.Collections.Generic.IAsyncEnumerable{``0},System.String,System.Data.DataSet,System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.Dictionary{System.String,System.String}},System.Threading.CancellationToken)">
             <summary>
             Generates a typed list of value mutable parameters from parsed parameters.
             </summary>
-            <typeparam name="TDataSourceValue">The type of the data source value.</typeparam>
             <param name="function">Target function.</param>
             <param name="parsedParameters">Parsed parameters.</param>
             <param name="dataSourceValues">Data source values.</param>
             <param name="rootTarget">Root target.</param>
-            <param name="metadata">Metadata.</param>
+            <param name="metadata">Source metadata.</param>
+            <param name="metadataMaps">Set of target user selected metadata associated with the data source values.</param>
             <param name="cancellationToken">Cancellation token.</param>
             <returns>List of value mutable parameters from parsed parameters.</returns>
+            <typeparam name="TDataSourceValue">The type of the data source value.</typeparam>
             <remarks>
-            In case user has requested metadata as a parameter, pass in the root target
-            which has a higher chance of being resolved for associated metadata.
+            <para>
+            In case user has requested metadata as a parameter, pass in the root target which has a higher chance of being
+            resolved for associated metadata.
+            </para>
+            <para>
+            The <paramref name="metadataMaps"/> parameter provides access to the set of outgoing metadata for each query result
+            so that a function can adjust or augment the metadata sets if needed. The set will normally only contain a single
+            map that corresponds to the single root target of the associated <paramref name="dataSourceValues"/>, however, for
+            <see cref="F:GrafanaAdapters.Functions.GroupOperations.Slice"/> or <see cref="F:GrafanaAdapters.Functions.GroupOperations.Set"/> operations, each data source value can
+            represent a separate series that contains its own metadata map, so the <paramref name="metadataMaps"/> parameter
+            will contain multiple maps in these cases.
+            </para>
             </remarks>
         </member>
         <member name="M:GrafanaAdapters.Functions.ParameterParsing.ConvertParsedValueAsync``1(GrafanaAdapters.Functions.IMutableParameter,System.String,System.String,System.Collections.Generic.IAsyncEnumerable{``0},System.Data.DataSet,System.Threading.CancellationToken)">
@@ -2294,6 +2504,15 @@
             Parameter name lookup dictionary is lazy initialized. Using index-based lookups is more efficient.
             </remarks>
             <exception cref="T:System.Collections.Generic.KeyNotFoundException">Parameter name not found.</exception>
+        </member>
+        <member name="P:GrafanaAdapters.Functions.Parameters.MetadataMaps">
+            <summary>
+            Gets or sets collection of target user selected metadata associated with the data source values.
+            </summary>
+            <remarks>
+            This property provides access to the set of outgoing metadata for each query result so that a
+            function can adjust or augment the metadata sets if needed.
+            </remarks>
         </member>
         <member name="M:GrafanaAdapters.Functions.Parameters.Value(System.Int32)">
             <summary>
@@ -2781,10 +3000,37 @@
             Gets or sets any defined radial distribution request parameters defined in the query.
             </summary>
         </member>
+        <member name="P:GrafanaAdapters.Functions.QueryParameters.SquareDistribution">
+            <summary>
+            Gets or sets any defined rectangular distribution request parameters defined in the query
+            </summary>
+        </member>
         <member name="P:GrafanaAdapters.Functions.QueryParameters.MetadataSelections">
             <summary>
             Gets or sets metadata selections for the query.
             </summary>
+        </member>
+        <member name="M:GrafanaAdapters.Functions.Common.ParseTotal(System.String,System.String,System.Int32)">
+            <summary>
+            Parses a string as a positive (> 0) integer or a percentage value of total.
+            </summary>
+            <param name="parameterName">Parameter name for error reporting.</param>
+            <param name="value">Value to parse as a specific total or a percentage of total.</param>
+            <param name="total">Total value to use for percentage calculations.</param>
+            <returns>Integer total value as parsed from <paramref name="value"/>.</returns>
+        </member>
+        <member name="M:GrafanaAdapters.Functions.Common.ParsePercentage(System.String,System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Parses a string as a percentage value. If value is suffixed with '%' it is treated as a percentage expected to be in
+            the range of 0 to 100, otherwise as a floating-point number expected to be in the range of 0 to 1. Inclusivity for
+            extremes is controlled by <paramref name="include0"/> and <paramref name="include100"/>. Return value is always in
+            the range of 0 to 100.
+            </summary>
+            <param name="parameterName">Parameter name for error reporting.</param>
+            <param name="value">Value to parse as a percentage.</param>
+            <param name="include0">Boolean flag to include 0 in range.</param>
+            <param name="include100">Boolean flag to include 100 in range.</param>
+            <returns>Parsed percentage value in the range of 0 to 100.</returns>
         </member>
         <member name="T:GrafanaAdapters.Functions.GroupOperations">
             <summary>
@@ -3548,7 +3794,7 @@
         </member>
         <member name="P:GrafanaAdapters.Model.Common.DataSourceValueGroup`1.MetadataMap">
             <summary>
-            Gets user selected metadata associated with the query.
+            Gets or sets user selected metadata associated with the query.
             </summary>
         </member>
         <member name="P:GrafanaAdapters.Model.Common.DataSourceValueGroup`1.SyntaxError">
