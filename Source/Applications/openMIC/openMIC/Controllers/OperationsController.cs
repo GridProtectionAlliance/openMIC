@@ -161,6 +161,17 @@ public class OperationsController : ApiController
     }
 
     /// <summary>
+    /// Gets version of thisinstance.
+    /// </summary>
+    [HttpGet]
+    public HttpResponseMessage Version()
+    {
+        return new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(Program.Host.Version.ToString())
+        };
+    }
+    /// <summary>
     /// Handles progress updates from remotely scheduled pooled instances.
     /// </summary>
     /// <param name="deviceName">Source device name.</param>
