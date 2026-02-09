@@ -493,7 +493,7 @@ public class ServiceHost : ServiceHostBase
     /// Queues group of tasks or individual task, identified by <paramref name="taskID"/> for execution at specified <paramref name="priority"/>.
     /// When a configured set of pool machines are defined, this method will distribute queue requests across responding machines.
     /// </summary>
-    /// <param name="acronym">Target <see cref="Downloader"/> device instance acronym, as defined in database configuration.</param>
+    /// <param name="acronyms">Targets <see cref="Downloader"/> device instance acronyms, as defined in database configuration.</param>
     /// <param name="taskID">Task identifier, i.e., the group task identifier or specific task name. Value is not case sensitive.</param>
     /// <param name="priority">Priority of task to use when queuing.</param>
     /// <remarks>
@@ -510,7 +510,7 @@ public class ServiceHost : ServiceHostBase
     /// defined. Note that when the <paramref name="taskID"/> is one of the specified group task identifiers, the
     /// queued tasks will execute immediately, regardless of any specified schedule, overridden or otherwise.
     /// </remarks>
-    public void QueueTasks(string acronym, string taskID, QueuePriority priority)
+    public void QueueTasks(string[] acronyms, string taskID, QueuePriority priority)
     {
         string[] pooledMachines = Model.Global.PoolMachines;
 
@@ -518,70 +518,143 @@ public class ServiceHost : ServiceHostBase
         // independent instance, either way, these cases should handle request to queue tasks "locally":
         if (pooledMachines == null || pooledMachines.Length == 0)
         {
-            QueueTasksLocally(acronym, taskID, priority);
+            foreach (string acronym in acronyms)
+                QueueTasksLocally(acronym, taskID, priority);
             return;
         }
 
         // Just using a simple round-robin distribution strategy - each individual system will
         // handle its own priority task execution queue
-        string targetMachine = pooledMachines[m_currentPoolTarget++ % pooledMachines.Length];
+        // Identify All Machines in the pool that are available to handle the request
+        string[] availableMachines = pooledMachines.Where(tm => IsAvailableForQueue(tm) || tm.Equals("localhost")).ToArray();
 
-        // Schedule master instance is included in work load for download tasks,
-        // so it should handle its own request to queue tasks "locally":
-        if (targetMachine.Equals("localhost"))
+        HashSet<string> availableAcronyms = acronyms.ToHashSet();
+
+        while (availableAcronyms.Count > 0 )
         {
-            QueueTasksLocally(acronym, taskID, priority);
-            return;
+            if (availableMachines.Length == 0)
+            {
+                LogStatusMessage($"REMOTE QUEUE: No available pool machines to handle queue request. Queueing tasks locally.", UpdateType.Warning);
+                foreach (string acronym in acronyms)
+                    QueueTasksLocally(acronym, taskID, priority);
+                //This case completly exita since there are no available machines to handle the request, so we will just queue everything locally.
+                return;
+            }
+
+            // Split the request across the available machines
+            
+            List<(string targetMachine, string[] targetAcronyms)> requests = availableAcronyms.Select((acronym, index) => (acronym,index)).GroupBy((item) => item.index%availableMachines.Length)
+                .Select((grp) => (availableMachines[grp.Key], grp.Select(item => item.acronym).ToArray())).ToList();
+
+            HashSet<string> failedTargetMachines = new();
+
+            int i = 0;
+
+            while(i < requests.Count)
+            {
+                if (requests[i].targetMachine.Equals("localhost"))
+                {
+                    foreach (string acronym in acronyms)
+                    {
+                        QueueTasksLocally(acronym, taskID, priority);
+                        availableAcronyms.Remove(acronym);
+                    }
+                    i++;
+                    continue;
+                }
+
+                // Queue to each Machine
+                string[] targetAcronyms = acronyms; // Avoid modified closure issue in async callback
+
+                string actionURI = $"{GetTargetURI(requests[i].targetMachine)}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}";
+                HttpRequestMessage request = new(HttpMethod.Post, actionURI);
+                request.Content = new StringContent($"[\"{string.Join("\",\"", acronyms)}\"]", System.Text.Encoding.UTF8, "application/json");
+
+                void Succeed(HttpResponseMessage response)
+                {
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        LogStatusMessage($"REMOTE QUEUE: Successfully executed remote queue action \"{actionURI}\" for \"{acronyms.Length}\" tasks load at \"{priority}\" priority");
+                        foreach (string acronym in targetAcronyms)
+                            availableAcronyms.Remove(acronym);
+
+                    }
+                    else
+                        throw new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronyms.Length}\" tasks, HTTP response = {response.StatusCode}: {response.ReasonPhrase}");
+                }
+
+                void Fail(Exception ex)
+                {
+                    if (ex is AggregateException aggEx)
+                        LogException(new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronyms.Length}\": {string.Join(", ", aggEx.InnerExceptions.Select(innerEx => innerEx.Message))}", ex));
+                    else
+                        LogException(ex);
+
+                    // Requeue On first Failure
+                    if (!failedTargetMachines.Contains(requests[i].targetMachine))
+                        requests.Add(requests[i]);
+
+                    failedTargetMachines.Add(requests[i].targetMachine);
+                }
+
+                try
+                {
+                    s_http.SendAsync(request).ContinueWith(task =>
+                    {
+                        try { Succeed(task.Result); }
+                        catch (Exception ex) { Fail(ex); }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Fail(ex);
+                }
+
+                i++;
+            }
+
+            // remove any machines that failed on retry from the pool of available machines
+            availableMachines = availableMachines.Where(tm => !failedTargetMachines.Contains(tm)).ToArray();
         }
+    }
 
-        string targetUri;
+    /// <summary>
+    /// Checks if a target instance3 is available to handle a request to queue tasks.
+    /// This is done by sending a request to the target instance's web service API and checking for a successful response.
+    /// and ensuring the target machine has the same version of OpenMIC.
+    /// </summary>
+    /// <param name="targetMachine"></param>
+    /// <returns></returns>
+    private bool IsAvailableForQueue(string targetMachine)
+    {
+        try
+        {
+            HttpResponseMessage response = s_http.GetAsync($"{GetTargetURI(targetMachine)}/api/Operations/Version").Result;
+            if (response.StatusCode != HttpStatusCode.OK)
+                return false;
 
+            return response.Content.ReadAsStringAsync().Result == Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
+        catch (Exception ex)
+        {
+            LogException(new InvalidOperationException($"Failed to check availability of pool machine \"{targetMachine}\" for queueing tasks: {ex.Message}", ex));
+            return false;
+        }
+    }
+
+    private string GetTargetURI(string targetMachine)
+    {
         if (targetMachine.Contains("://"))
         {
             // Pooled target machine specification includes scheme and possible port number
-            targetUri = targetMachine;
+            return targetMachine;
         }
         else
         {
             // Pooled target machine specification is only target machine name, assume same
             // scheme and port number as local instance
             Uri webHostUri = Model.Global.WebHostUri;
-            targetUri = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
-        }
-
-        string actionURI = $"{targetUri}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}&target={UrlEncode(acronym)}";
-        HttpRequestMessage request = new(HttpMethod.Get, actionURI);
-
-        void Succeed(HttpResponseMessage response)
-        {
-            if (response.StatusCode == HttpStatusCode.OK)
-                LogStatusMessage($"REMOTE QUEUE: Successfully executed remote queue action \"{actionURI}\" for \"{acronym}\" task load at \"{priority}\" priority");
-            else
-                throw new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\", HTTP response = {response.StatusCode}: {response.ReasonPhrase}");
-        }
-
-        void Fail(Exception ex)
-        {
-            if (ex is AggregateException aggEx)
-                LogException(new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\": {string.Join(", ", aggEx.InnerExceptions.Select(innerEx => innerEx.Message))}", ex));
-            else
-                LogException(ex);
-
-            // Move on to next pool machine when remote queue fails
-            QueueTasks(acronym, taskID, priority);
-        }
-
-        try
-        {
-            s_http.SendAsync(request).ContinueWith(task =>
-            {
-                try { Succeed(task.Result); }
-                catch (Exception ex) { Fail(ex); }
-            });
-        }
-        catch (Exception ex)
-        {
-            Fail(ex);
+            return $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
         }
     }
 
