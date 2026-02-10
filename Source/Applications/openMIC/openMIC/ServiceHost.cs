@@ -76,9 +76,12 @@ public class ServiceHost : ServiceHostBase
 
     // Fields
     private IDisposable m_webAppHost;
-    private long m_currentPoolTarget;
     private bool m_serviceStopping;
     private bool m_disposed;
+
+    private CancellationTokenSource? m_queueTasksCancellationToken = null;
+    private List<string> m_queueTasksAcronym = new();
+    private object m_queueTasksLock = new();
 
     #endregion
 
@@ -616,6 +619,54 @@ public class ServiceHost : ServiceHostBase
             // remove any machines that failed on retry from the pool of available machines
             availableMachines = availableMachines.Where(tm => !failedTargetMachines.Contains(tm)).ToArray();
         }
+    }
+
+    /// <summary>
+    /// This calls <see cref="QueueTasks"/> using a debounce to aggregate multiple requests to queue tasks into a single request 
+    /// when they occur within a short time window. This should improove performance of the node distribution.
+    /// </summary>
+    /// <param name="acronym"></param>
+    /// <param name="taskID"></param>
+    /// <param name="prioirty"></param>
+    public void AggregateQueueTasks(string acronym, string taskID, QueuePriority priority)
+    {
+        // Anything larger than normal priority should be queued immediately without aggregation to ensure expedited processing
+        if (priority > QueuePriority.Normal)
+        {
+            QueueTasks(new[] { acronym }, taskID, priority);
+            return;
+        }
+
+        if (m_queueTasksCancellationToken is not null)
+        {
+            m_queueTasksCancellationToken?.Cancel();
+            lock (m_queueTasksLock)
+            {
+                m_queueTasksCancellationToken = new CancellationTokenSource();
+                m_queueTasksAcronym.Add(acronym);
+            }
+        }
+        m_queueTasksCancellationToken = new CancellationTokenSource();
+
+        Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(1000,m_queueTasksCancellationToken.Token); // Wait for 1 second to allow for any additional requests to aggregate
+            }
+            catch (TaskCanceledException ex)
+            {
+                //Expected exception when task is cancelled.
+                return;
+            }
+            lock (m_queueTasksLock)
+            {
+                QueueTasks(m_queueTasksAcronym.ToArray(), taskID, priority);
+                m_queueTasksAcronym.Clear();
+                m_queueTasksCancellationToken = null;
+            }
+        });
+
     }
 
     /// <summary>

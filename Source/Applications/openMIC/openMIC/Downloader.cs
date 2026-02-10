@@ -765,7 +765,7 @@ public class Downloader : InputAdapterBase
     public void QueueTasks() =>
         // This is for user requested items - these take precedence over all others,
         // call is made via ServiceHost to handle pooled distribution:
-        Program.Host.QueueTasks(Name, AllTasksGroupID, QueuePriority.Urgent);
+        Program.Host.QueueTasks(new string[] { Name }, AllTasksGroupID, QueuePriority.Urgent);
 
     /// <summary>
     /// Queues all tasks for immediate, highest priority, execution to local machine.
@@ -2313,7 +2313,7 @@ public class Downloader : InputAdapterBase
 
         // Queue specific task or group of tasks with device-level schedule for execution,
         // call is made via ServiceHost to handle pooled distribution:
-        Program.Host.QueueTasks(downloader.Name, task?.Name ?? ScheduledTasksGroupID, QueuePriority.Normal);
+        Program.Host.AggregateQueueTasks(downloader.Name, task?.Name ?? ScheduledTasksGroupID, QueuePriority.Normal);
     }
 
     // Static Methods
