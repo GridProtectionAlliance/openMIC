@@ -631,7 +631,8 @@ public class ServiceHost : ServiceHostBase
     public void AggregateQueueTasks(string acronym, string taskID, QueuePriority priority)
     {
         // Anything larger than normal priority should be queued immediately without aggregation to ensure expedited processing
-        if (priority > QueuePriority.Normal)
+        // Anything that is not queued by a Meter based schedule should also be queued immediately to ensure proper processing of non-meter based tasks
+        if (priority > QueuePriority.Normal || !taskID.Equals(Downloader.ScheduledTasksGroupID))
         {
             QueueTasks(new[] { acronym }, taskID, priority);
             return;
