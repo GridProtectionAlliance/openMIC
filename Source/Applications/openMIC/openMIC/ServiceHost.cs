@@ -24,6 +24,8 @@
 using GSF;
 using GSF.ComponentModel;
 using GSF.Configuration;
+using GSF.Data;
+using GSF.Data.Model;
 using GSF.Diagnostics;
 using GSF.IO;
 using GSF.Security;
@@ -38,6 +40,7 @@ using GSF.Web.Security;
 using GSF.Web.Shared;
 using GSF.Web.Shared.Model;
 using Microsoft.Ajax.Utilities;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.Owin.Hosting;
 using openMIC.Model;
 using System;
@@ -526,14 +529,16 @@ public class ServiceHost : ServiceHostBase
             return;
         }
 
+        Dictionary<string, (string FailureReason, int nQueued)> nodeLog = new();
+
         // Just using a simple round-robin distribution strategy - each individual system will
         // handle its own priority task execution queue
         // Identify All Machines in the pool that are available to handle the request
-        string[] availableMachines = pooledMachines.Where(tm => IsAvailableForQueue(tm) || tm.Equals("localhost")).ToArray();
+        string[] availableMachines = pooledMachines.Where(tm => IsAvailableForQueue(tm, nodeLog) || tm.Equals("localhost")).ToArray();
 
         HashSet<string> availableAcronyms = acronyms.ToHashSet();
 
-        while (availableAcronyms.Count > 0 )
+        while (availableAcronyms.Count > 0)
         {
             if (availableMachines.Length == 0)
             {
@@ -545,19 +550,20 @@ public class ServiceHost : ServiceHostBase
             }
 
             // Split the request across the available machines
-            
-            List<(string targetMachine, string[] targetAcronyms)> requests = availableAcronyms.Select((acronym, index) => (acronym,index)).GroupBy((item) => item.index%availableMachines.Length)
+
+            List<(string targetMachine, string[] targetAcronyms)> requests = availableAcronyms.Select((acronym, index) => (acronym, index)).GroupBy((item) => item.index % availableMachines.Length)
                 .Select((grp) => (availableMachines[grp.Key], grp.Select(item => item.acronym).ToArray())).ToList();
 
             HashSet<string> failedTargetMachines = new();
 
             int i = 0;
 
-            while(i < requests.Count)
+            while (i < requests.Count)
             {
                 if (requests[i].targetMachine.Equals("localhost"))
                 {
-                    foreach (string acronym in acronyms)
+                    nodeLog[requests[i].targetMachine] = ("", nodeLog[requests[i].targetMachine].nQueued + requests[i].targetAcronyms.Length);
+                    foreach (string acronym in requests[i].targetAcronyms)
                     {
                         QueueTasksLocally(acronym, taskID, priority);
                         availableAcronyms.Remove(acronym);
@@ -567,11 +573,11 @@ public class ServiceHost : ServiceHostBase
                 }
 
                 // Queue to each Machine
-                string[] targetAcronyms = acronyms; // Avoid modified closure issue in async callback
+                string[] targetAcronyms = requests[i].targetAcronyms; // Avoid modified closure issue in async callback
 
                 string actionURI = $"{GetTargetURI(requests[i].targetMachine)}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}";
                 HttpRequestMessage request = new(HttpMethod.Post, actionURI);
-                request.Content = new StringContent($"[\"{string.Join("\",\"", acronyms)}\"]", System.Text.Encoding.UTF8, "application/json");
+                request.Content = new StringContent($"[\"{string.Join("\",\"", targetAcronyms)}\"]", System.Text.Encoding.UTF8, "application/json");
 
                 void Succeed(HttpResponseMessage response)
                 {
@@ -580,7 +586,7 @@ public class ServiceHost : ServiceHostBase
                         LogStatusMessage($"REMOTE QUEUE: Successfully executed remote queue action \"{actionURI}\" for \"{acronyms.Length}\" tasks load at \"{priority}\" priority");
                         foreach (string acronym in targetAcronyms)
                             availableAcronyms.Remove(acronym);
-
+                        nodeLog[requests[i].targetMachine] = ("", nodeLog[requests[i].targetMachine].nQueued + targetAcronyms.Length);
                     }
                     else
                         throw new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronyms.Length}\" tasks, HTTP response = {response.StatusCode}: {response.ReasonPhrase}");
@@ -592,6 +598,8 @@ public class ServiceHost : ServiceHostBase
                         LogException(new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronyms.Length}\": {string.Join(", ", aggEx.InnerExceptions.Select(innerEx => innerEx.Message))}", ex));
                     else
                         LogException(ex);
+
+                    nodeLog[requests[i].targetMachine] = ($"Failed to establish connection to target machine: {ex.Message}", nodeLog[requests[i].targetMachine].nQueued);
 
                     // Requeue On first Failure
                     if (!failedTargetMachines.Contains(requests[i].targetMachine))
@@ -619,6 +627,21 @@ public class ServiceHost : ServiceHostBase
             // remove any machines that failed on retry from the pool of available machines
             availableMachines = availableMachines.Where(tm => !failedTargetMachines.Contains(tm)).ToArray();
         }
+
+        using (AdoDataConnection connection = new("systemSettings"))
+        {
+            TableOperations<NodeCheckin> tbl = new TableOperations<NodeCheckin>(connection);
+
+            foreach (var node in nodeLog)
+            {
+                NodeCheckin checkin = tbl.QueryRecordWhere("Url = {0}", node.Key) ?? new NodeCheckin() { Url = node.Key };
+                checkin.LastCheckin = DateTime.UtcNow;
+                checkin.FailureReason = node.Value.FailureReason;
+                checkin.TasksQueued = node.Value.nQueued;
+
+                tbl.AddNewOrUpdateRecord(checkin);
+            }
+        }
     }
 
     /// <summary>
@@ -627,6 +650,7 @@ public class ServiceHost : ServiceHostBase
     /// </summary>
     /// <param name="acronym"></param>
     /// <param name="taskID"></param>
+    /// 
     /// <param name="prioirty"></param>
     public void AggregateQueueTasks(string acronym, string taskID, QueuePriority priority)
     {
@@ -677,19 +701,30 @@ public class ServiceHost : ServiceHostBase
     /// </summary>
     /// <param name="targetMachine"></param>
     /// <returns></returns>
-    private bool IsAvailableForQueue(string targetMachine)
+    private bool IsAvailableForQueue(string targetMachine, Dictionary<string, (string FailureReason, int nQueued)> nodeLog)
     {
         try
         {
-            HttpResponseMessage response = s_http.GetAsync($"{GetTargetURI(targetMachine)}/api/Operations/Version").Result;
-            if (response.StatusCode != HttpStatusCode.OK)
-                return false;
+            if (!nodeLog.ContainsKey(targetMachine))
+                nodeLog.Add(targetMachine, ("", 0));
 
-            return response.Content.ReadAsStringAsync().Result == Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            HttpResponseMessage response = s_http.GetAsync($"{GetTargetURI(targetMachine)}/api/Operations/Version").Result;
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                nodeLog[targetMachine] = ($"Failed to establish connection to target machine, HTTP response = {response.StatusCode}: {response.ReasonPhrase}", 0);
+                return false;
+            }
+            bool versionMatch = response.Content.ReadAsStringAsync().Result == Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            if (!versionMatch)
+                nodeLog[targetMachine] = ("Found different versions of openMIC", 0);
+            return versionMatch;
         }
         catch (Exception ex)
         {
             LogException(new InvalidOperationException($"Failed to check availability of pool machine \"{targetMachine}\" for queueing tasks: {ex.Message}", ex));
+            nodeLog[targetMachine] = ($"Failed to establish connection to target machine: {ex.Message}", 0);
+
             return false;
         }
     }
