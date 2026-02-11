@@ -193,6 +193,8 @@ CREATE TABLE IONWaveformCheckpoint(
     LogPositions VARCHAR2(MAX) DEFAULT '[]' NOT NULL
 );
 
+
+
 CREATE UNIQUE INDEX IX_IONWaveformCheckpoint_ID ON IONWaveformCheckpoint (ID ASC) TABLESPACE openMIC_INDEX;
 CREATE UNIQUE INDEX IX_IONWaveformCheckpoint_Dev ON IONWaveformCheckpoint (Device ASC, TimeRecorded ASC)  TABLESPACE openMIC_INDEX;
 
@@ -204,6 +206,25 @@ CREATE TRIGGER AI_IONWaveformCheckpoint BEFORE INSERT ON IONWaveformCheckpoint
     FOR EACH ROW BEGIN SELECT SEQ_IONWaveformCheckpoint.nextval INTO :NEW.ID FROM dual;
 END;
 /
+
+CREATE TABLE NodeCheckin(
+    ID NUMBER PRIMARY NOT NULL,
+    URL VARCHAR2(200) NOT NULL,
+    LastCheckin DATE NOT NULL,
+    FailureReason VARCHAR2(MAX) NULL,
+    TasksQueued NUMBER NOT NULL DEFAULT 0
+);
+
+CREATE UNIQUE INDEX IX_NodeCheckin_URL ON NodeCheckin (URL ASC) TABLESPACE openMIC_INDEX;
+ALTER TABLE NodeCheckin ADD CONSTRAINT PK_NodeCheckin PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_NodeCheckin START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_NodeCheckin BEFORE INSERT ON NodeCheckin
+    FOR EACH ROW BEGIN SELECT SEQ_NodeCheckin.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
 
 CREATE TABLE IONTrendingCheckpoint(
     ID NUMBER NOT NULL,
