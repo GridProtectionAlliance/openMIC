@@ -272,6 +272,7 @@
     <Compile Include="Model\MeasurementValue.cs" />
     <Compile Include="Model\SchemaVersion.cs" />
     <Compile Include="Model\Setting.cs" />
+    <Compile Include="Model\NodeCheckin.cs" />
     <Compile Include="Model\Statistic.cs" />
     <Compile Include="Model\ConnectionProfile.cs" />
     <Compile Include="Model\StatusLight.cs" />
