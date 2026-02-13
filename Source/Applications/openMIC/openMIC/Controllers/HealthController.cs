@@ -54,15 +54,15 @@ public class HealthController : ApiController
     [HttpGet]
     public HttpResponseMessage Index() => new(HttpStatusCode.OK);
 
-    [HttpGet, Route("status")]
+    [HttpGet]
     public IHttpActionResult GetSystemStatus()
     {
         List<StatusItem> statusMessages = [];
 
         statusMessages.Add(new()
         {
-            Status = Program.Host.Model.Global.PoolMachines.Length > 0 ? "Success" : "Error",
-            Description = $"{Program.Host.Model.Global.PoolMachines.Length} Nodes are configured for polling"
+            Status = (Program.Host.Model.Global.PoolMachines?.Length ?? 0) > 0 ? "Success" : "Error",
+            Description = $"{(Program.Host.Model.Global.PoolMachines?.Length ?? 0)} Nodes are configured for polling"
         });
 
         using AdoDataConnection connection = new("systemSettings");
