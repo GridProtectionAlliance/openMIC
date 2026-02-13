@@ -21,29 +21,15 @@
 //
 //******************************************************************************************************
 
-using GSF.Communication;
-using GSF.ComponentModel.DataAnnotations;
-using GSF.Configuration;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Security;
-using GSF.Threading;
-using Microsoft.Ajax.Utilities;
-using ModbusAdapters.Model;
-using Newtonsoft.Json;
-using openMIC.Model;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Timers;
 using System.Web.Http;
-using System.Web.Management;
-using static System.Net.WebUtility;
+using GSF.Data;
+using GSF.Data.Model;
+using openMIC.Model;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace openMIC;
@@ -71,7 +57,7 @@ public class HealthController : ApiController
     [HttpGet, Route("status")]
     public IHttpActionResult GetSystemStatus()
     {
-        List<StatusItem> statusMessages = new();
+        List<StatusItem> statusMessages = [];
 
         statusMessages.Add(new()
         {
@@ -79,70 +65,66 @@ public class HealthController : ApiController
             Description = $"{Program.Host.Model.Global.PoolMachines.Length} Nodes are configured for polling"
         });
 
-        using (AdoDataConnection connection = new("systemSettings"))
-        {
-            TableOperations<NodeCheckin> tbl = new(connection);
-            List<NodeCheckin> nodeStatus = tbl.QueryRecordsWhere("LastCheckin < {0}", DateTime.UtcNow.AddMinutes(-60)).ToList();
+        using AdoDataConnection connection = new("systemSettings");
+        TableOperations<NodeCheckin> tbl = new(connection);
+        List<NodeCheckin> nodeStatus = [.. tbl.QueryRecordsWhere("LastCheckin >= {0}", DateTime.UtcNow.AddMinutes(-60))];
 
-            if (nodeStatus.Count < 1)
-                statusMessages.Add(new()
-                {
-                    Status ="Error",
-                    Description = "System has not queued anything on the configured nodes in the last hour"
-                });
+        if (nodeStatus.Count < 1)
+            statusMessages.Add(new()
+            {
+                Status = "Error",
+                Description = "System has not queued anything on the configured nodes in the last hour"
+            });
 
-            int nSuccess = nodeStatus.Count(n => string.IsNullOrEmpty(n.FailureReason));
+        int nSuccess = nodeStatus.Count(n => string.IsNullOrEmpty(n.FailureReason));
+        int nFailure = nodeStatus.Count - nSuccess;
 
-            if (nSuccess < 1)
-                statusMessages.Add(new()
-                {
-                    Status = "Success",
-                    Description = $"System has successfully queued tasks on {nSuccess} nodes in the last hour"
-                });
-
-
-            if (nSuccess > nodeStatus.Count)
-                statusMessages.Add(new()
-                {
-                    Status = "Error",
-                    Description = $"System was not successfull queuing tasks on {nodeStatus.Count - nSuccess} nodes in the last hour"
-                });
-
-            // Check for version mismatch between host and nodes
-
-            int nVersionMissmatch = nodeStatus.Count(n => string.Equals(n.FailureReason,"Found different versions of openMIC"));
-
-            if (nVersionMissmatch > 0)
-                statusMessages.Add(new()
-                {
-                    Status = "Error",
-                    Description = $"{nVersionMissmatch} nodes have a different version of openMIC than the head node"
-                });
-            else
-                statusMessages.Add(new()
-                {
-                    Status = "Success",
-                    Description = $"All nodes have the same version of openMIC"
-                });
-
-            int nTasksQueued = nodeStatus.Sum(n => n.TasksQueued);
-
-            if (nTasksQueued > 0)
-                statusMessages.Add(new()
-                {
-                    Status = "Success",
-                    Description = $"{nTasksQueued} Tasks have been queued during the last distribution"
-                });
-            else
-                statusMessages.Add(new()
-                {
-                    Status = "Error",
-                    Description = $"No Tasks were queued during the last distribution"
-                });
-
-            return Ok(statusMessages);
-        }
+        if (nSuccess > 0)
+            statusMessages.Add(new()
+            {
+                Status = "Success",
+                Description = $"System has successfully queued tasks on {nSuccess} nodes in the last hour"
+            });
 
 
+        if (nFailure > 0)
+            statusMessages.Add(new()
+            {
+                Status = "Error",
+                Description = $"System was not successful queuing tasks on {nFailure} nodes in the last hour"
+            });
+
+        // Check for version mismatch between host and nodes
+        int nVersionMismatch = nodeStatus.Count(n => string.Equals(n.FailureReason, "Found different versions of openMIC"));
+
+        if (nVersionMismatch > 0)
+            statusMessages.Add(new()
+            {
+                Status = "Error",
+                Description = $"{nVersionMismatch} nodes have a different version of openMIC than the head node"
+            });
+        else
+            statusMessages.Add(new()
+            {
+                Status = "Success",
+                Description = $"All nodes have the same version of openMIC"
+            });
+
+        int nTasksQueued = nodeStatus.Sum(n => n.TasksQueued);
+
+        if (nTasksQueued > 0)
+            statusMessages.Add(new()
+            {
+                Status = "Success",
+                Description = $"{nTasksQueued} Tasks have been queued during the last distribution"
+            });
+        else
+            statusMessages.Add(new()
+            {
+                Status = "Error",
+                Description = $"No Tasks were queued during the last distribution"
+            });
+
+        return Ok(statusMessages);
     }
 }

@@ -136,13 +136,12 @@ public class OperationsController : ApiController
             Program.Host.LogException(new InvalidOperationException($"[{nameof(OperationsController)}] Failed to assign remote scheduler address: {ex.Message}", ex));
         }
 
-        string[] resolvedTargets = new string[targets.Count];
+        string[] resolvedTargets;
         using (AdoDataConnection connection = new("systemSettings"))
         {
             TableOperations<Device> deviceTable = new(connection);
 
-            resolvedTargets = targets.Select(target => { 
-
+            resolvedTargets = [.. targets.Select(target => { 
                 // Check if target is using device "Name" instead of "Acronym"
                 if (deviceTable.QueryRecordCountWhere("Acronym = {0}", target) == 0)
                 {
@@ -152,11 +151,10 @@ public class OperationsController : ApiController
                         return device.Acronym;
                 }
                 return target;
-            }).ToArray();
-
+            })];
         }
 
-        // all downloader target are queued as a set to allow for improoved pooled multi-system distribution
+        // All downloader targets are queued as a set to allow for improved pooled multi-system distribution
         Program.Host.QueueTasks(resolvedTargets, taskID, priority);
 
         return new HttpResponseMessage(HttpStatusCode.OK);

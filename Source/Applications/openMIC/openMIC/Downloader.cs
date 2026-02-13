@@ -35,6 +35,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using DotRas;
 using GSF;
 using GSF.Configuration;
 using GSF.Console;
@@ -42,18 +43,17 @@ using GSF.Data;
 using GSF.Data.Model;
 using GSF.Diagnostics;
 using GSF.IO;
-using GSF.Net.VirtualFtpClient;
 using GSF.Net.Smtp;
+using GSF.Net.VirtualFtpClient;
 using GSF.Scheduling;
 using GSF.Threading;
 using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
 using GSF.TimeSeries.Statistics;
 using GSF.Units;
-using DotRas;
 using ModbusAdapters.Model;
-using openMIC.Model;
 using openMIC.FileMirroring;
+using openMIC.Model;
 using openMIC.SharedAssets;
 using static openMIC.SharedAssets.LogFunctions;
 
@@ -2313,7 +2313,7 @@ public class Downloader : InputAdapterBase
 
         // Queue specific task or group of tasks with device-level schedule for execution,
         // call is made via ServiceHost to handle pooled distribution:
-        Program.Host.AggregateQueueTasks(downloader.Name, task?.Name ?? ScheduledTasksGroupID, QueuePriority.Normal);
+        Program.Host.AggregateQueueTasks(downloader.Name, task?.Name ?? ScheduledTasksGroupID);
     }
 
     // Static Methods

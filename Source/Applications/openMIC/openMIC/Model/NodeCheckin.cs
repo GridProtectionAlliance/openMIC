@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
 
 namespace openMIC.Model;
@@ -23,6 +22,7 @@ public class NodeCheckin
         set;
     }
 
+    [FieldDataType(System.Data.DbType.DateTime2)]
     public DateTime LastCheckin
     {
         get;
