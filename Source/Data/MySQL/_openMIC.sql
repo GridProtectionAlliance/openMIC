@@ -110,6 +110,18 @@ CREATE TABLE IONWaveformCheckpoint(
     CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE KEY (Device ASC, TimeRecorded ASC)
 );
 
+
+CREATE TABLE NodeCheckin(
+    ID INT AUTO_INCREMENT NOT NULL,
+    URL VARCHAR(200) NOT NULL,
+    LastCheckin DATETIME NOT NULL,
+    FailureReason VARCHAR(MAX) NULL,
+    TasksQueued INT NOT NULL DEFAULT 0,
+    CONSTRAINT PK_NodeCheckin PRIMARY KEY CLUSTERED (ID ASC),
+    CONSTRAINT IX_NodeCheckin_URL UNIQUE KEY (URL ASC)
+);
+
+
 CREATE TABLE IONTrendingCheckpoint(
     ID INT AUTO_INCREMENT NOT NULL,
     Device VARCHAR(200) NOT NULL,

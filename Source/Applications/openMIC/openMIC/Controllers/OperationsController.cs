@@ -21,16 +21,8 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Web.Http;
 using GSF.Communication;
+using GSF.ComponentModel.DataAnnotations;
 using GSF.Configuration;
 using GSF.Data;
 using GSF.Data.Model;
@@ -38,6 +30,16 @@ using GSF.Threading;
 using ModbusAdapters.Model;
 using Newtonsoft.Json;
 using openMIC.Model;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Web.Http;
 using static System.Net.WebUtility;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
@@ -134,32 +136,76 @@ public class OperationsController : ApiController
             Program.Host.LogException(new InvalidOperationException($"[{nameof(OperationsController)}] Failed to assign remote scheduler address: {ex.Message}", ex));
         }
 
+        string[] resolvedTargets;
         using (AdoDataConnection connection = new("systemSettings"))
         {
             TableOperations<Device> deviceTable = new(connection);
 
-            foreach (string target in targets)
-            {
-                string acronym = target;
-
+            resolvedTargets = [.. targets.Select(target => { 
                 // Check if target is using device "Name" instead of "Acronym"
-                if (deviceTable.QueryRecordCountWhere("Acronym = {0}", acronym) == 0)
+                if (deviceTable.QueryRecordCountWhere("Acronym = {0}", target) == 0)
                 {
-                    Device device = deviceTable.QueryRecordWhere("Name = {0}", acronym);
+                    Device device = deviceTable.QueryRecordWhere("Name = {0}", target);
 
                     if (device != null)
-                        acronym = device.Acronym;
+                        return device.Acronym;
                 }
-
-                // Each downloader target is queued individually to allow for pooled multi-system distribution
-                if (!string.IsNullOrWhiteSpace(acronym))
-                    Program.Host.QueueTasks(acronym, taskID, priority);
-            }
+                return target;
+            })];
         }
+
+        // All downloader targets are queued as a set to allow for improved pooled multi-system distribution
+        Program.Host.QueueTasks(resolvedTargets, taskID, priority);
 
         return new HttpResponseMessage(HttpStatusCode.OK);
     }
 
+    /// <summary>
+    /// Queues group of tasks or individual task, identified by <paramref name="taskID"/>, for execution at specified <paramref name="priority"/>.
+    /// </summary>
+    /// <param name="taskID">Task identifier, i.e., the group task identifier or specific task name. Value is not case sensitive.</param>
+    /// <param name="priority">Priority of tasks to use when queuing.</param>
+    /// <param name="targets">List of task target names, i.e., <see cref="Downloader"/> device instance acronym or name, as defined in database configuration.</param>
+    /// <remarks>
+    /// <para>
+    /// When not providing a specific task name to execute in the <paramref name="taskID"/> parameter,
+    /// there are three group-based task identifiers available:
+    /// <list type="bullet">
+    /// <item><description><c><see cref="Downloader.AllTasksGroupID">_AllTasksGroup_</see></c></description></item>
+    /// <item><description><c><see cref="Downloader.ScheduledTasksGroupID">_ScheduledTasksGroup_</see></c></description></item>
+    /// <item><description><c><see cref="Downloader.OffScheduleTasksGroupID">_OffScheduleTasksGroup_</see></c></description></item>
+    /// </list>
+    /// The <c>_AllTasksGroup_</c> task identifier will queue all available tasks for execution, whereas, the
+    /// <c>_ScheduledTasksGroup_</c> task identifier will only queue the tasks that share a common primary schedule.
+    /// The <c>_OffScheduleTasksGroup_</c> task identifier will queue all tasks that have an overridden schedule
+    /// defined. Note that when the <paramref name="taskID"/> is one of the specified group task identifiers, the
+    /// queued tasks will execute immediately, regardless of any specified schedule, overridden or otherwise.
+    /// </para>
+    /// <para>
+    /// Call format:
+    /// <code>
+    /// http://localhost:8089/api/Operations/QueueTasks?taskID=_AllTasksGroup_&amp;priority=Expedited
+    /// </code>
+    /// </para>
+    /// </remarks>
+    [HttpPost, Route("QueueTasks")]
+    public HttpResponseMessage QueueTasksPost([FromUri] string taskID, [FromUri] QueuePriority priority, [FromBody] List<string> targets)
+    {
+        return QueueTasks(taskID, priority, targets);
+    }
+
+
+    /// <summary>
+    /// Gets version of thisinstance.
+    /// </summary>
+    [HttpGet]
+    public HttpResponseMessage Version()
+    {
+        return new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(Assembly.GetExecutingAssembly().GetName().Version.ToString())
+        };
+    }
     /// <summary>
     /// Handles progress updates from remotely scheduled pooled instances.
     /// </summary>

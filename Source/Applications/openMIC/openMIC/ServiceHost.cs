@@ -21,9 +21,22 @@
 //
 //******************************************************************************************************
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
+using System.Security;
+using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 using GSF;
+using GSF.Communication;
 using GSF.ComponentModel;
 using GSF.Configuration;
+using GSF.Data;
+using GSF.Data.Model;
 using GSF.Diagnostics;
 using GSF.IO;
 using GSF.Security;
@@ -39,17 +52,8 @@ using GSF.Web.Shared;
 using GSF.Web.Shared.Model;
 using Microsoft.Ajax.Utilities;
 using Microsoft.Owin.Hosting;
+using Newtonsoft.Json.Linq;
 using openMIC.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Security;
-using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using static System.Net.WebUtility;
 
 namespace openMIC;
@@ -76,9 +80,12 @@ public class ServiceHost : ServiceHostBase
 
     // Fields
     private IDisposable m_webAppHost;
-    private long m_currentPoolTarget;
     private bool m_serviceStopping;
     private bool m_disposed;
+
+    private CancellationTokenSource m_queueTasksCancellationTokenSource = null;
+    private readonly List<(string acronym, string taskID)> m_queueTasksAcronym = [];
+    private readonly object m_queueTasksLock = new();
 
     #endregion
 
@@ -493,7 +500,7 @@ public class ServiceHost : ServiceHostBase
     /// Queues group of tasks or individual task, identified by <paramref name="taskID"/> for execution at specified <paramref name="priority"/>.
     /// When a configured set of pool machines are defined, this method will distribute queue requests across responding machines.
     /// </summary>
-    /// <param name="acronym">Target <see cref="Downloader"/> device instance acronym, as defined in database configuration.</param>
+    /// <param name="acronyms">Target <see cref="Downloader"/> device instance acronyms, as defined in database configuration.</param>
     /// <param name="taskID">Task identifier, i.e., the group task identifier or specific task name. Value is not case sensitive.</param>
     /// <param name="priority">Priority of task to use when queuing.</param>
     /// <remarks>
@@ -510,7 +517,7 @@ public class ServiceHost : ServiceHostBase
     /// defined. Note that when the <paramref name="taskID"/> is one of the specified group task identifiers, the
     /// queued tasks will execute immediately, regardless of any specified schedule, overridden or otherwise.
     /// </remarks>
-    public void QueueTasks(string acronym, string taskID, QueuePriority priority)
+    public void QueueTasks(string[] acronyms, string taskID, QueuePriority priority)
     {
         string[] pooledMachines = Model.Global.PoolMachines;
 
@@ -518,79 +525,253 @@ public class ServiceHost : ServiceHostBase
         // independent instance, either way, these cases should handle request to queue tasks "locally":
         if (pooledMachines == null || pooledMachines.Length == 0)
         {
-            QueueTasksLocally(acronym, taskID, priority);
+            QueueTasksLocally(acronyms, taskID, priority);
             return;
         }
 
-        // Just using a simple round-robin distribution strategy - each individual system will
-        // handle its own priority task execution queue
-        string targetMachine = pooledMachines[m_currentPoolTarget++ % pooledMachines.Length];
+        // Ensure we don't unduly load tasks more frequently
+        // onto any particular machine in the pool
+        pooledMachines = [.. pooledMachines];
+        Shuffle(pooledMachines);
 
-        // Schedule master instance is included in work load for download tasks,
-        // so it should handle its own request to queue tasks "locally":
-        if (targetMachine.Equals("localhost"))
+        Dictionary<string, (string FailureReason, int nQueued)> nodeLog = [];
+
+        // Identify all machines in the pool that are available to handle the request
+        bool[] isLocal = [.. pooledMachines.Select(Transport.IsLocalAddress)];
+        bool[] isAvailable = [..pooledMachines.Select((machine, index) => isLocal[index] || IsAvailableForQueue(machine, nodeLog))];
+        HashSet<string> unqueuedAcronyms = [.. acronyms];
+
+        while (unqueuedAcronyms.Count > 0)
         {
-            QueueTasksLocally(acronym, taskID, priority);
-            return;
+            if (!isAvailable.Any(b => b))
+            {
+                LogStatusMessage(
+                    $"REMOTE QUEUE: No available pool machines to handle queue request. " +
+                    $"{unqueuedAcronyms.Count} tasks were left unpolled.", UpdateType.Warning);
+
+                return;
+            }
+
+            // Split the request across the available machines using parallel arrays
+            int[] availableMachines = [.. Enumerable
+                .Range(0, pooledMachines.Length)
+                .Where(i => isAvailable[i])];
+
+            // Just using a simple modulo distribution strategy -
+            // each individual system will handle its own priority task execution queue
+            string[][] requests = [.. unqueuedAcronyms
+                .Select((acronym, index) => (acronym, index))
+                .GroupBy(item => item.index % availableMachines.Length, item => item.acronym)
+                .Select(grp => grp.ToArray())];
+
+            Task[] requestTasks = [.. requests.Select((request, requestIndex) =>
+            {
+                int machineIndex = availableMachines[requestIndex];
+
+                if (isLocal[machineIndex])
+                    return QueueTasksLocallyAsync(request, taskID, priority);
+
+                string targetMachine = pooledMachines[machineIndex];
+                return QueueTasksRemotelyAsync(targetMachine, request, taskID, priority);
+            })];
+
+            try { Task.WaitAll(requestTasks); }
+            catch { /* Enumerate exceptions below */ }
+
+            for (int i = 0; i < requestTasks.Length; i++)
+            {
+                int machineIndex = availableMachines[i];
+                string[] request = requests[i];
+                Task task = requestTasks[i];
+
+                string targetMachine = pooledMachines[machineIndex];
+                int acronymsQueued = nodeLog[targetMachine].nQueued;
+
+                try
+                {
+                    task.GetAwaiter().GetResult();
+                    unqueuedAcronyms.ExceptWith(request);
+                    nodeLog[targetMachine] = ("", acronymsQueued + request.Length);
+                }
+                catch (Exception ex)
+                {
+                    string message = $"Failed to execute queue action for \"{request.Length}\" tasks to target {targetMachine}: {ex.Message}";
+                    Exception wrapper = new($"REMOTE QUEUE: {message}", ex);
+                    LogException(wrapper);
+
+                    isAvailable[machineIndex] = false;
+                    nodeLog[targetMachine] = (message, acronymsQueued);
+                }
+            }
         }
 
-        string targetUri;
+        using AdoDataConnection connection = new("systemSettings");
+        TableOperations<NodeCheckin> tbl = new(connection);
 
+        foreach (var node in nodeLog)
+        {
+            NodeCheckin checkin = tbl.QueryRecordWhere("Url = {0}", node.Key) ?? new NodeCheckin() { Url = node.Key };
+            checkin.LastCheckin = DateTime.UtcNow;
+            checkin.FailureReason = node.Value.FailureReason;
+            checkin.TasksQueued = node.Value.nQueued;
+
+            tbl.AddNewOrUpdateRecord(checkin);
+        }
+    }
+
+    /// <summary>
+    /// This calls <see cref="QueueTasks"/> using a debounce to aggregate multiple requests to queue tasks into a single request 
+    /// when they occur within a short time window. This should improve performance of the node distribution.
+    /// </summary>
+    /// <param name="acronyms">Target <see cref="Downloader"/> device instance acronyms, as defined in database configuration.</param>
+    /// <param name="taskID">Task identifier, i.e., the group task identifier or specific task name. Value is not case sensitive.</param>
+    /// <param name="priority">Priority of task to use when queuing.</param>
+    public void AggregateQueueTasks(string acronym, string taskID)
+    {
+        CancellationToken cancellationToken;
+
+        lock (m_queueTasksLock)
+        {
+            m_queueTasksCancellationTokenSource?.Cancel();
+            m_queueTasksCancellationTokenSource?.Dispose();
+            m_queueTasksCancellationTokenSource = new();
+            m_queueTasksAcronym.Add((acronym, taskID));
+            cancellationToken = m_queueTasksCancellationTokenSource.Token;
+        }
+
+        Task.Run(async () =>
+        {
+            try
+            {
+                List<IGrouping<string, string>> groupings;
+
+                // Wait for 1 second to allow for any additional requests to aggregate
+                await Task.Delay(1000, cancellationToken);
+
+                lock (m_queueTasksLock)
+                {
+                    // Check again to avoid race conditions
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    groupings = [.. m_queueTasksAcronym
+                        .GroupBy(item => item.taskID, item => item.acronym)];
+
+                    m_queueTasksAcronym.Clear();
+                }
+
+                foreach (IGrouping<string, string> grouping in groupings)
+                    QueueTasks([.. grouping], grouping.Key, QueuePriority.Normal);
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected exception when task is cancelled.
+            }
+        });
+    }
+
+    /// <summary>
+    /// Checks if a target instance is available to handle a request to queue tasks.
+    /// </summary>
+    /// <remarks>
+    /// This is done by sending a request to the target instance's web service API,
+    /// checking for a successful response,
+    /// and ensuring the target machine has the same version of OpenMIC.
+    /// </remarks>
+    private bool IsAvailableForQueue(string targetMachine, Dictionary<string, (string FailureReason, int nQueued)> nodeLog)
+    {
+        try
+        {
+            if (!nodeLog.ContainsKey(targetMachine))
+                nodeLog.Add(targetMachine, ("", 0));
+
+            HttpResponseMessage response = s_http
+                .GetAsync($"{GetTargetURI(targetMachine)}/api/Operations/Version")
+                .GetAwaiter()
+                .GetResult();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                nodeLog[targetMachine] = ($"Failed to establish connection to target machine, HTTP response = {response.StatusCode}: {response.ReasonPhrase}", 0);
+                return false;
+            }
+
+            string remoteVersion = response.Content
+                .ReadAsStringAsync()
+                .GetAwaiter()
+                .GetResult();
+
+            bool versionMatch = remoteVersion == Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            if (!versionMatch) nodeLog[targetMachine] = ("Found different versions of openMIC", 0);
+            return versionMatch;
+        }
+        catch (Exception ex)
+        {
+            LogException(new InvalidOperationException($"Failed to check availability of pool machine \"{targetMachine}\" for queueing tasks: {ex.Message}", ex));
+            nodeLog[targetMachine] = ($"Failed to establish connection to target machine: {ex.Message}", 0);
+            return false;
+        }
+    }
+
+    private string GetTargetURI(string targetMachine)
+    {
         if (targetMachine.Contains("://"))
         {
             // Pooled target machine specification includes scheme and possible port number
-            targetUri = targetMachine;
+            return targetMachine;
         }
         else
         {
             // Pooled target machine specification is only target machine name, assume same
             // scheme and port number as local instance
             Uri webHostUri = Model.Global.WebHostUri;
-            targetUri = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
-        }
-
-        string actionURI = $"{targetUri}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}&target={UrlEncode(acronym)}";
-        HttpRequestMessage request = new(HttpMethod.Get, actionURI);
-
-        void Succeed(HttpResponseMessage response)
-        {
-            if (response.StatusCode == HttpStatusCode.OK)
-                LogStatusMessage($"REMOTE QUEUE: Successfully executed remote queue action \"{actionURI}\" for \"{acronym}\" task load at \"{priority}\" priority");
-            else
-                throw new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\", HTTP response = {response.StatusCode}: {response.ReasonPhrase}");
-        }
-
-        void Fail(Exception ex)
-        {
-            if (ex is AggregateException aggEx)
-                LogException(new Exception($"REMOTE QUEUE: Failed to execute remote queue action \"{actionURI}\" for \"{acronym}\": {string.Join(", ", aggEx.InnerExceptions.Select(innerEx => innerEx.Message))}", ex));
-            else
-                LogException(ex);
-
-            // Move on to next pool machine when remote queue fails
-            QueueTasks(acronym, taskID, priority);
-        }
-
-        try
-        {
-            s_http.SendAsync(request).ContinueWith(task =>
-            {
-                try { Succeed(task.Result); }
-                catch (Exception ex) { Fail(ex); }
-            });
-        }
-        catch (Exception ex)
-        {
-            Fail(ex);
+            return $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
         }
     }
 
-    private void QueueTasksLocally(string acronym, string taskID, QueuePriority priority)
+    private void QueueTasksLocally(IEnumerable<string> acronyms, string taskID, QueuePriority priority)
     {
-        IAdapter adapter = GetRequestedAdapter(new ClientRequestInfo(null, ClientRequest.Parse($"invoke {acronym}")));
+        foreach (string acronym in acronyms)
+        {
+            IAdapter adapter = GetRequestedAdapter(new ClientRequestInfo(null, ClientRequest.Parse($"invoke {acronym}")));
 
-        if (adapter is Downloader downloader)
-            downloader.QueueTasksByID(taskID, priority);
+            if (adapter is Downloader downloader)
+                downloader.QueueTasksByID(taskID, priority);
+        }
+    }
+
+    private async Task QueueTasksLocallyAsync(IEnumerable<string> acronyms, string taskID, QueuePriority priority)
+    {
+        await Task.Run(() => QueueTasksLocally(acronyms, taskID, priority));
+    }
+
+    private async Task QueueTasksRemotelyAsync(string targetMachine, IEnumerable<string> acronyms, string taskID, QueuePriority priority)
+    {
+        string actionURI = $"{GetTargetURI(targetMachine)}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}";
+        HttpRequestMessage request = new(HttpMethod.Post, actionURI);
+        JArray acronymArray = [.. acronyms];
+        request.Content = new StringContent(acronymArray.ToString(), System.Text.Encoding.UTF8, "application/json");
+
+        const int RetryCount = 1;
+
+        for (int retry = 0; retry <= RetryCount; retry++)
+        {
+            try
+            {
+                using HttpResponseMessage response = await s_http.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                if (retry == RetryCount)
+                    throw;
+
+                Exception wrapper = new($"REMOTE QUEUE: Failed to queue tasks to {targetMachine}, but will retry: {ex.Message}", ex);
+                base.LogException(wrapper);
+
+                TimeSpan delay = TimeSpan.FromSeconds(5.0D);
+                await Task.Delay(delay);
+            }
+        }
     }
 
     /// <summary>
@@ -706,7 +887,9 @@ public class ServiceHost : ServiceHostBase
 
     // Static Fields
     private static readonly HttpClient s_http = new(new HttpClientHandler { UseCookies = false });
+    private static readonly Random s_shuffleGenerator = new();
 
+    // Static Methods
     internal static bool CommandAllowedForRelay(string commandInput) =>
         // Only allow single line commands
         commandInput.Split(new[] { Environment.NewLine, "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries).Length == 1 &&
@@ -715,6 +898,19 @@ public class ServiceHost : ServiceHostBase
             commandInput.StartsWith("init", StringComparison.OrdinalIgnoreCase) ||
             commandInput.StartsWith("reloadconfig", StringComparison.OrdinalIgnoreCase)
         );
+
+    private static void Shuffle<T>(T[] arr)
+    {
+        lock (s_shuffleGenerator)
+        {
+            for (int i = 0; i < arr.Length - 1; i++)
+            {
+                int j = s_shuffleGenerator.Next(i, arr.Length);
+                if (i == j) continue;
+                (arr[i], arr[j]) = (arr[j], arr[i]);
+            }
+        }
+    }
 
     #endregion
 }
