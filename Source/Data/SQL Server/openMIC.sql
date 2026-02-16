@@ -3426,6 +3426,17 @@ BEGIN
 END
 GO
 
+CREATE TABLE NodeCheckin
+(
+    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+    URL VARCHAR(200) NOT NULL,
+    LastCheckin DATETIME2 NOT NULL,
+    FailureReason VARCHAR(MAX) NULL,
+    TasksQueued INT NOT NULL DEFAULT 0,
+    CONSTRAINT IX_NodeCheckin_URL UNIQUE (URL ASC)
+)
+GO
+
 --------------------------------------------------------------------------------
 
 -- The following procedure is used by the StatusLog_Email trigger that follows
