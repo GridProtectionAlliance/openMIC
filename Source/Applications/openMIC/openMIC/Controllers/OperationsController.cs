@@ -21,15 +21,6 @@
 //
 //******************************************************************************************************
 
-using GSF.Communication;
-using GSF.ComponentModel.DataAnnotations;
-using GSF.Configuration;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Threading;
-using ModbusAdapters.Model;
-using Newtonsoft.Json;
-using openMIC.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,6 +31,14 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web.Http;
+using GSF.Communication;
+using GSF.Configuration;
+using GSF.Data;
+using GSF.Data.Model;
+using GSF.Threading;
+using ModbusAdapters.Model;
+using Newtonsoft.Json;
+using openMIC.Model;
 using static System.Net.WebUtility;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
@@ -188,7 +187,7 @@ public class OperationsController : ApiController
     /// </code>
     /// </para>
     /// </remarks>
-    [HttpPost, Route("QueueTasks")]
+    [HttpPost, ActionName("QueueTasks")]
     public HttpResponseMessage QueueTasksPost([FromUri] string taskID, [FromUri] QueuePriority priority, [FromBody] List<string> targets)
     {
         return QueueTasks(taskID, priority, targets);
