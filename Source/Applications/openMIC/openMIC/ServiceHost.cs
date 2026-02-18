@@ -549,7 +549,7 @@ public class ServiceHost : ServiceHostBase
                     $"REMOTE QUEUE: No available pool machines to handle queue request. " +
                     $"{unqueuedAcronyms.Count} tasks were left unpolled.", UpdateType.Warning);
 
-                return;
+                break;
             }
 
             // Split the request across the available machines using parallel arrays
