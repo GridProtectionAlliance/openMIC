@@ -747,9 +747,7 @@ public class ServiceHost : ServiceHostBase
     private async Task QueueTasksRemotelyAsync(string targetMachine, IEnumerable<string> acronyms, string taskID, QueuePriority priority)
     {
         string actionURI = $"{GetTargetURI(targetMachine)}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}";
-        HttpRequestMessage request = new(HttpMethod.Post, actionURI);
         JArray acronymArray = [.. acronyms];
-        request.Content = new StringContent(acronymArray.ToString(), System.Text.Encoding.UTF8, "application/json");
 
         const int RetryCount = 1;
 
@@ -757,8 +755,12 @@ public class ServiceHost : ServiceHostBase
         {
             try
             {
+                using HttpRequestMessage request = new(HttpMethod.Post, actionURI);
+                request.Content = new StringContent(acronymArray.ToString(), System.Text.Encoding.UTF8, "application/json");
+
                 using HttpResponseMessage response = await s_http.SendAsync(request);
                 response.EnsureSuccessStatusCode();
+                break;
             }
             catch (Exception ex)
             {
