@@ -848,12 +848,16 @@ public class Downloader : InputAdapterBase
     // Queues specified task, with overridden schedule, for execution at specified priority
     private void QueueTask(ConnectionProfileTask task, QueuePriority priority)
     {
+        DateTime queueTime = DateTime.UtcNow;
+        string systemName = Program.Host.Model.Global.SystemName;
+        string nodeDisplay = string.IsNullOrWhiteSpace(systemName) ? Environment.MachineName : systemName;
+
         m_taskQueue.QueueAction(() => ExecuteSingleTask(task), priority);
 
         OnProgressUpdated(this, new ProgressUpdate
         {
             State = ProgressState.Queued,
-            Message = $"Connection profile task \"{task.Name}\" with overridden schedule queued at \"{priority}\" priority.",
+            Message = $"Connection profile task \"{task.Name}\" with overridden schedule queued at \"{priority}\" priority on node \"{nodeDisplay}\" at {queueTime:yyyy-MM-dd HH:mm:ss.fff} UTC.",
             Progress = 0,
             ProgressTotal = 1,
             OverallProgress = 0,
@@ -864,12 +868,16 @@ public class Downloader : InputAdapterBase
     // Queues specified task array for execution at specified priority
     private void QueueTasks(ConnectionProfileTask[] tasks, QueuePriority priority, DateTime? startTimeConstraint = null, DateTime? endTimeConstraint = null)
     {
+        DateTime queueTime = DateTime.UtcNow;
+        string systemName = Program.Host.Model.Global.SystemName;
+        string nodeDisplay = string.IsNullOrWhiteSpace(systemName) ? Environment.MachineName : systemName;
+
         m_taskQueue.QueueAction(() => ExecuteGroupedTasks(tasks, startTimeConstraint, endTimeConstraint), priority);
 
         OnProgressUpdated(this, new ProgressUpdate
         {
             State = ProgressState.Queued,
-            Message = $"Connection profile tasks queued at \"{priority}\" priority.",
+            Message = $"Connection profile tasks queued at \"{priority}\" priority on node \"{nodeDisplay}\" at {queueTime:yyyy-MM-dd HH:mm:ss.fff} UTC.",
             Progress = 0,
             ProgressTotal = 1,
             OverallProgress = 0,
