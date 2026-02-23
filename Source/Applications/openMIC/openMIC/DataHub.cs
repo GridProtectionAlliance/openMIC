@@ -21,22 +21,6 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Security;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hubs;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 using GSF;
 using GSF.ComponentModel.DataAnnotations;
 using GSF.Data.Model;
@@ -47,9 +31,27 @@ using GSF.Web.Hubs;
 using GSF.Web.Model.HubOperations;
 using GSF.Web.Security;
 using GSF.Web.Shared.Model;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 using ModbusAdapters;
 using ModbusAdapters.Model;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using openMIC.Model;
+using openXDA.APIAuthentication;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
+using System.Security;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace openMIC;
 
@@ -114,6 +116,7 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
     private static readonly HttpClient s_http;
     private static bool? s_useRemoteScheduler;
     private static HashSet<string> s_allowedSectionMapPaths;
+    private static APIQuery s_remoteScheduleAPI;
 
     private static readonly string[] s_allowedSectionMaps = { "", "Dranetz", "PQube" };
 
@@ -160,6 +163,8 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
 
         // Create a shared HTTP client instance
         s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
+
+        s_remoteScheduleAPI = new APIQuery(Startup.APIKey, Startup.APIToken, RemoteSchedulerUri);
     }
 
     private static void HandleProgressUpdated(object sender, EventArgs<string, List<ProgressUpdate>> e)
@@ -215,13 +220,20 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
             {
                 try
                 {
-                    string targetUri = RemoteSchedulerUri;
-
-                    if (targetUri is not null)
+                    if (s_remoteScheduleAPI is not null)
                     {
-                        string uri = $"{targetUri}/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}";
+
                         string content = JArray.FromObject(progressUpdates).ToString();
-                        await s_http.PostAsync(uri, new StringContent(content, Encoding.UTF8, "application/json"));
+
+                        void ConfigureRequest(HttpRequestMessage request)
+                        {
+                            request.Method = HttpMethod.Post;
+                            request.Headers.Accept.Clear();
+                            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                            request.Content = new StringContent(content, Encoding.UTF8, "application/json");
+                        }
+
+                        await s_remoteScheduleAPI.SendWebRequestAsync(ConfigureRequest, $"/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}").ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)

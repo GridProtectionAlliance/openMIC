@@ -21,16 +21,6 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Web.Http;
 using GSF.Communication;
 using GSF.Configuration;
 using GSF.Data;
@@ -39,6 +29,19 @@ using GSF.Threading;
 using ModbusAdapters.Model;
 using Newtonsoft.Json;
 using openMIC.Model;
+using openXDA.APIAuthentication;
+using Renci.SshNet.Security;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Web.Http;
 using static System.Net.WebUtility;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
@@ -54,7 +57,7 @@ public class OperationsController : ApiController
     private static readonly ShortSynchronizedOperation s_collectDailyStatistics;
     private static readonly Timer s_statisticsTimer;
     private static int s_lastDayOfYear;
-
+    private static readonly ConcurrentDictionary<string, APIQuery> s_apiQueryCache = new(StringComparer.OrdinalIgnoreCase);
     static OperationsController()
     {
         const double DefaultDailyStatsInterval = 60.0D;
@@ -72,6 +75,8 @@ public class OperationsController : ApiController
         s_statisticsTimer.Elapsed += (_, __) => s_collectDailyStatistics.RunOnce();
         s_statisticsTimer.AutoReset = true;
         s_statisticsTimer.Start();
+
+        s_apiQueryCache = new ConcurrentDictionary<string, APIQuery>(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -305,9 +310,22 @@ public class OperationsController : ApiController
 
             try
             {
-                string actionURI = $"{targetUri}/api/Operations/GetDailyStatistics?meter={UrlEncode(meter)}";
-                HttpRequestMessage request = new(HttpMethod.Get, actionURI);
-                HttpResponseMessage response = await s_http.SendAsync(request);
+                if (!s_apiQueryCache.TryGetValue(targetUri, out APIQuery apiQuery))
+                {
+                    s_apiQueryCache.TryAdd(targetUri, GenerateAPIQuery(targetUri));
+                    apiQuery = s_apiQueryCache[targetUri];
+                }
+                
+                string actionURI = $"/api/Operations/GetDailyStatistics?meter={UrlEncode(meter)}";
+
+                void ConfigureRequest(HttpRequestMessage request)
+                {
+                    request.Method = HttpMethod.Get;
+                    request.Headers.Accept.Clear();
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                }
+
+                HttpResponseMessage response = await apiQuery.SendWebRequestAsync( ConfigureRequest, actionURI).ConfigureAwait(false);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -343,6 +361,15 @@ public class OperationsController : ApiController
     private static Downloader GetDownloader(string name) =>
         Program.Host.Downloaders.FirstOrDefault(adapter => adapter.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
+    private static APIQuery GenerateAPIQuery(string uri)
+    {
+        CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
+
+        string key = systemSettings["APIKey"].ValueAs("");
+        string token = systemSettings["APIToken"].ValueAs(""); ;
+
+        return new APIQuery(key, token, uri);
+    }
     private static DailyStatistics GetDailyStatistics(Downloader downloader)
     {
         string name = downloader.Name;

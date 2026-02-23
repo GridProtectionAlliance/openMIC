@@ -21,16 +21,6 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Security;
-using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using GSF;
 using GSF.Communication;
 using GSF.ComponentModel;
@@ -54,6 +44,20 @@ using Microsoft.Ajax.Utilities;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json.Linq;
 using openMIC.Model;
+using openXDA.APIAuthentication;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Security;
+using System.Security.Principal;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using static System.Net.WebUtility;
 
 namespace openMIC;
@@ -684,8 +688,15 @@ public class ServiceHost : ServiceHostBase
             if (!nodeLog.ContainsKey(targetMachine))
                 nodeLog.Add(targetMachine, ("", 0));
 
-            HttpResponseMessage response = s_http
-                .GetAsync($"{GetTargetURI(targetMachine)}/api/Operations/Version")
+            void ConfigureRequest(HttpRequestMessage request)
+            {
+                request.Method = HttpMethod.Get;
+                request.Headers.Accept.Clear();
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            }
+
+            HttpResponseMessage response = new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+                .SendWebRequestAsync(ConfigureRequest, "/api/Operations/Version")
                 .GetAwaiter()
                 .GetResult();
 
@@ -746,7 +757,6 @@ public class ServiceHost : ServiceHostBase
 
     private async Task QueueTasksRemotelyAsync(string targetMachine, IEnumerable<string> acronyms, string taskID, QueuePriority priority)
     {
-        string actionURI = $"{GetTargetURI(targetMachine)}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}";
         JArray acronymArray = [.. acronyms];
 
         const int RetryCount = 1;
@@ -755,10 +765,17 @@ public class ServiceHost : ServiceHostBase
         {
             try
             {
-                using HttpRequestMessage request = new(HttpMethod.Post, actionURI);
-                request.Content = new StringContent(acronymArray.ToString(), System.Text.Encoding.UTF8, "application/json");
+                void ConfigureRequest(HttpRequestMessage request)
+                {
+                    request.Method = HttpMethod.Post;
+                    request.Headers.Accept.Clear();
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    request.Content = new StringContent(acronymArray.ToString(), System.Text.Encoding.UTF8, "application/json");
+                }
 
-                using HttpResponseMessage response = await s_http.SendAsync(request);
+                using HttpResponseMessage response = await new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+                    .SendWebRequestAsync(ConfigureRequest, $"/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}");
+
                 response.EnsureSuccessStatusCode();
                 break;
             }
@@ -833,26 +850,18 @@ public class ServiceHost : ServiceHostBase
                         if (targetMachine.Equals("localhost"))
                             continue;
 
-                        string targetUri;
-
-                        if (targetMachine.Contains("://"))
-                        {
-                            // Pooled target machine specification includes scheme and possible port number
-                            targetUri = targetMachine;
-                        }
-                        else
-                        {
-                            // Pooled target machine specification is only target machine name, assume same
-                            // scheme and port number as local instance
-                            Uri webHostUri = settings.WebHostUri;
-                            targetUri = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
-                        }
-
                         try
                         {
-                            string actionURI = $"{targetUri}/api/Operations/RelayCommand?command={UrlEncode(commandInput)}";
+                           
+                            void ConfigureRequest(HttpRequestMessage request)
+                            {
+                                request.Method = HttpMethod.Get;
+                                request.Headers.Accept.Clear();
+                                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                            }
 
-                            HttpResponseMessage response = await s_http.SendAsync(new HttpRequestMessage(HttpMethod.Get, actionURI));
+                            HttpResponseMessage response = await new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+                                .SendWebRequestAsync(ConfigureRequest, $"/api/Operations/RelayCommand?command={UrlEncode(commandInput)}").ConfigureAwait(false);
 
                             LogStatusMessage(response.StatusCode == HttpStatusCode.OK ?
                                                  $"Successfully relayed \"{request.Command}\" command to \"{targetMachine}\"." :
