@@ -187,8 +187,7 @@ public class ServiceHost : ServiceHostBase
 
         // Define set of default anonymous web resources for this site
         const string BaseAnonymousApiExpression = "^/api/";
-        const string AnonymousApiExpression = $"{BaseAnonymousApiExpression}(?!ModbusConfig)"; // Modbus config API should not be anonymous
-        const string DefaultAnonymousResourceExpression = $"^/@|^/Scripts/|^/Content/|^/Images/|^/fonts/|{AnonymousApiExpression}|^/favicon.ico$";
+        const string DefaultAnonymousResourceExpression = $"^/@|^/Scripts/|^/Content/|^/Images/|^/fonts/|^/favicon.ico$";
 
         systemSettings.Add("CompanyName", "Grid Protection Alliance", "The name of the company who owns this instance of the openMIC.");
         systemSettings.Add("CompanyAcronym", "GPA", "The acronym representing the company who owns this instance of the openMIC.");
@@ -242,14 +241,8 @@ public class ServiceHost : ServiceHostBase
 
         if (anonymousResourceExpression.Contains($"{BaseAnonymousApiExpression}|"))
         {
-            anonymousResourceExpression = anonymousResourceExpression.Replace($"{BaseAnonymousApiExpression}|", $"{AnonymousApiExpression}|");
+            anonymousResourceExpression = anonymousResourceExpression.Replace($"{BaseAnonymousApiExpression}|", $"");
             systemSettings["AnonymousResourceExpression"].Update(anonymousResourceExpression);
-            ConfigurationFile.Current.Save();
-        }
-        
-        if (!anonymousResourceExpression.ToLowerInvariant().Contains(AnonymousApiExpression.ToLowerInvariant()))
-        {
-            systemSettings["AnonymousResourceExpression"].Update($"{AnonymousApiExpression}|{anonymousResourceExpression}");
             ConfigurationFile.Current.Save();
         }
 
