@@ -233,6 +233,10 @@ public class ServiceHost : ServiceHostBase
         systemSettings.Add("SystemName", "", "Name of system that will be prefixed to system level tags, when defined. Value should follow tag naming conventions, e.g., no spaces and all upper case.");
         systemSettings.Add("HideRestartButton", false, "Flag that determines if restart button should be displayed on the home page. Set to false for clustered environments.");
 
+        systemSettings.Add("APIKey", "", "API key used for authenticating API requests to the web server. For failover clusters this must match across all nodes. If Empty API access is disabled");
+        systemSettings.Add("APIToken", "REPLACETOKEN", "API token used for authenticating API requests to the web server. For failover clusters this must match across all nodes.");
+
+
         // Ensure "^/api/(?!ModbusConfig)" exists in AnonymousResourceExpression
         string anonymousResourceExpression = systemSettings["AnonymousResourceExpression"].Value;
 
@@ -339,6 +343,9 @@ public class ServiceHost : ServiceHostBase
         Startup.AuthenticationOptions.AuthTestPage = systemSettings["AuthTestPage"].ValueAs(AuthenticationOptions.DefaultAuthTestPage);
         Startup.AuthenticationOptions.Realm = systemSettings["Realm"].ValueAs("");
         Startup.AuthenticationOptions.LoginHeader = $"<h3><img src=\"/Images/{Model.Global.ApplicationName}.png\"/> {Model.Global.ApplicationName}</h3>";
+
+        Startup.APIKey = systemSettings["APIKey"].ValueAs("");
+        Startup.APIToken = systemSettings["APIToken"].ValueAs("");
 
         // Validate that configured authentication test page does not evaluate as an anonymous resource nor a authentication failure redirection resource
         string authTestPage = Startup.AuthenticationOptions.AuthTestPage;
