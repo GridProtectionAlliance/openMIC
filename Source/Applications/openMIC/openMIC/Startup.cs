@@ -64,6 +64,13 @@ public class Startup
         GlobalHost.Configuration.MaxIncomingWebSocketMessageSize = null;
         AppModel model = Program.Host.Model;
 
+        app.Use(async (context, next) =>
+        {
+            context.Request.Environment["AuthenticationOptions"] = AuthenticationOptions.Readonly;
+            await next.Invoke();
+            context.Response.Headers.Remove("Server");
+        });
+
         // Load data hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
         try
         {
@@ -132,11 +139,11 @@ public class Startup
         // Enable GSF session management
         httpConfig.EnableSessions(AuthenticationOptions);
 
-        app.UseWhen(context => !(context.Request.User is SecurityPrincipal),
-                branch => branch.UseAPIAuthentication(APIKey, APIToken));
+        app.UseAPIAuthentication(APIKey, APIToken);
 
         // Enable GSF role-based security authentication
-        app.UseAuthentication(AuthenticationOptions);
+        app.UseWhen(context => !(context.Request.User is SecurityPrincipal),
+            branch => branch.UseAuthentication(AuthenticationOptions));
 
         // Enable cross-domain scripting default policy - controllers can manually
         // apply "EnableCors" attribute to class or an action to override default
