@@ -278,7 +278,7 @@ public class OperationsController : ApiController
         Downloader downloader = GetDownloader(meter);
 
         if (downloader is null)
-            return DailyStatistics.Default;
+            return new DailyStatistics();
 
         GlobalSettings settings = Program.Host.Model.Global;
         DailyStatistics dailyStats = GetDailyStatistics(downloader);
@@ -353,7 +353,7 @@ public class OperationsController : ApiController
             }
         }
 
-        dailyStats.EndTime = DateTime.UtcNow;
+        //dailyStats.EndTime = DateTime.UtcNow;
 
         return dailyStats;
     }
@@ -378,8 +378,8 @@ public class OperationsController : ApiController
         return s_dailyStatistics.GetOrAdd(name, _ => new DailyStatistics
         {
             Meter = name,
-            StartTime = currentTime,
-            EndTime = currentTime,
+            //StartTime = currentTime,
+            //EndTime = currentTime,
             LastSuccessfulConnection = downloader.LastSuccessfulConnectionTime,
             LastUnsuccessfulConnection = downloader.LastFailedConnectionTime,
             LastUnsuccessfulConnectionExplanation = downloader.LastFailedConnectionReason,
@@ -408,7 +408,7 @@ public class OperationsController : ApiController
             if (resetStats)
             {
                 downloader.ResetStatistics();
-                dailyStats.StartTime = currentTime;
+                //dailyStats.StartTime = currentTime;
             }
 
             dailyStats.LastSuccessfulConnection = downloader.LastSuccessfulConnectionTime;
@@ -416,7 +416,7 @@ public class OperationsController : ApiController
             dailyStats.LastUnsuccessfulConnectionExplanation = downloader.LastFailedConnectionReason;
             dailyStats.TotalSuccessfulConnections = (int)downloader.SuccessfulConnections;
             dailyStats.TotalUnsuccessfulConnections = (int)downloader.FailedConnections;
-            dailyStats.EndTime = currentTime;
+            //dailyStats.EndTime = currentTime;
         }
     }
 }

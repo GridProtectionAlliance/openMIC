@@ -21,15 +21,13 @@
 //
 //******************************************************************************************************
 
+using GSF.Data.Model;
 using System;
 
 namespace openMIC.Model;
 
 public class DailyStatistics
 {
-    public DateTime StartTime;
-    public DateTime EndTime;
-
     public string Meter { get; set; }
     public DateTime? LastSuccessfulConnection { get; set; }
     public DateTime? LastUnsuccessfulConnection { get; set; }
@@ -38,6 +36,19 @@ public class DailyStatistics
     public int TotalConnections => TotalSuccessfulConnections + TotalUnsuccessfulConnections;
     public int TotalUnsuccessfulConnections { get; set; }
     public int TotalSuccessfulConnections { get; set; }
+}
 
-    public static DailyStatistics Default = new();
+/// <summary>
+/// Stores a <see cref="DailyStatistics"/> record for a specific Day and Meter in the database.
+/// </summary>
+public class DailyStatisticsRecord : DailyStatistics
+{
+
+    [PrimaryKey(true)]
+    public int ID { get; set; }
+
+    public DateTime Timestamp { get; set; }
+
+    public int BadDays { get; set; }
+
 }
