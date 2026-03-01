@@ -173,6 +173,8 @@ public class Downloader : InputAdapterBase
     private int m_lastDownloadedFileID;
     private long m_startDialUpTime;
     private bool m_disposed;
+    private DailyStatisticsRecord m_currentStatistics;
+
 
     #endregion
 
@@ -344,34 +346,109 @@ public class Downloader : InputAdapterBase
     public int DialUpTimeout { get; set; }
 
     /// <summary>
-    /// Gets or sets total number of attempted connections.
+    /// sets total number of attempted connections.
     /// </summary>
-    public long AttemptedConnections { get; set; }
+    public long AttemptedConnections 
+    {
+        get;
+        set;
+    }
+
+    // / Gets or sets current daily statistics record for this downloader instance.
+    public DailyStatisticsRecord Statistics
+    {
+        get
+        {
+            if (DateTime.UtcNow.DayOfYear == m_currentStatistics?.Timestamp.DayOfYear)
+                return m_currentStatistics;
+
+            m_currentStatistics = new DailyStatisticsRecord()
+            {
+                Timestamp = DateTime.UtcNow,
+                Meter = this.Name
+            };
+            return m_currentStatistics;
+        }
+        set
+        {
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            {
+                TableOperations<DailyStatisticsRecord> dailyStatisticsTable = new TableOperations<DailyStatisticsRecord>(connection);
+                dailyStatisticsTable.AddNewOrUpdateRecord(value);
+
+            }
+            m_currentStatistics = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets total number of successful connections.
     /// </summary>
-    public long SuccessfulConnections { get; set; }
+    public int SuccessfulConnections 
+    { 
+        get => Statistics.TotalSuccessfulConnections;
+        set 
+        {
+            DailyStatisticsRecord dailyStatistics = Statistics;
+            dailyStatistics.TotalSuccessfulConnections = value;
+            Statistics = dailyStatistics;
+        }
+    }
 
     /// <summary>
     /// Gets or sets last successful connection time.
     /// </summary>
-    public DateTime? LastSuccessfulConnectionTime { get; set; }
+    public DateTime? LastSuccessfulConnectionTime 
+    {
+        get => Statistics.LastSuccessfulConnection;
+        set
+        {
+            DailyStatisticsRecord dailyStatistics = Statistics;
+            dailyStatistics.LastSuccessfulConnection = value;
+            Statistics = dailyStatistics;
+        }
+    }
 
     /// <summary>
     /// Gets or sets total number of failed connections.
     /// </summary>
-    public long FailedConnections { get; set; }
+    public int FailedConnections {
+        get => Statistics.TotalUnsuccessfulConnections;
+        set
+        {
+            DailyStatisticsRecord dailyStatistics = Statistics;
+            dailyStatistics.TotalUnsuccessfulConnections = value;
+            Statistics = dailyStatistics;
+        }
+    }
 
     /// <summary>
     /// Gets or sets last failed connection time.
     /// </summary>
-    public DateTime? LastFailedConnectionTime { get; set; }
+    public DateTime? LastFailedConnectionTime 
+    {
+        get => Statistics.LastUnsuccessfulConnection;
+        set
+        {
+            DailyStatisticsRecord dailyStatistics = Statistics;
+            dailyStatistics.LastUnsuccessfulConnection = value;
+            Statistics = dailyStatistics;
+        }
+    }
 
     /// <summary>
     /// Gets or sets last failed connection reason.
     /// </summary>
-    public string LastFailedConnectionReason { get; set; }
+    public string LastFailedConnectionReason 
+    {
+        get => Statistics.LastUnsuccessfulConnectionExplanation;
+        set
+        {
+            DailyStatisticsRecord dailyStatistics = Statistics;
+            dailyStatistics.LastUnsuccessfulConnectionExplanation = value;
+            Statistics = dailyStatistics;
+        }
+    }
 
     /// <summary>
     /// Gets or sets total number of processed files.
@@ -722,16 +799,6 @@ public class Downloader : InputAdapterBase
             List<ProgressUpdate> updates = ProgressUpdate.Flatten(m_trackedProgressUpdates);
             ProgressUpdated?.Invoke(this, new EventArgs<string, List<ProgressUpdate>>(clientID, updates));
         }
-    }
-
-    /// <summary>
-    /// Resets local statistics.
-    /// </summary>
-    public void ResetStatistics()
-    {
-        AttemptedConnections = SuccessfulConnections = FailedConnections = 0L;
-        LastSuccessfulConnectionTime = LastFailedConnectionTime = null;
-        LastFailedConnectionReason = null;
     }
 
     /// <summary>
