@@ -364,7 +364,7 @@ public class Downloader : InputAdapterBase
 
             m_currentStatistics = new DailyStatisticsRecord()
             {
-                Timestamp = DateTime.UtcNow,
+                Timestamp = DateTime.UtcNow.Date,
                 Meter = this.Name
             };
             return m_currentStatistics;
