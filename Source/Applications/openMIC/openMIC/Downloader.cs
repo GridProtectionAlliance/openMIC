@@ -346,11 +346,7 @@ public class Downloader : InputAdapterBase
     /// <summary>
     /// Gets or sets total number of attempted connections.
     /// </summary>
-    public long AttemptedConnections 
-    {
-        get;
-        set;
-    }
+    public long AttemptedConnections  { get; set; }
 
     /// <summary>
     /// Gets or sets total number of successful connections.

@@ -26,7 +26,6 @@ using Owin;
 
 namespace openMIC.Authentication
 {
-
     /// <inheritdoc/>
     public partial class APIAuthenticationMiddleware : openXDA.APIMiddleware.APIAuthenticationMiddleware
     {
@@ -66,7 +65,6 @@ namespace openMIC.Authentication
                 return m_apiToken;
 
             return null;
-
         }
 
         /// <inheritdoc/>

@@ -21,6 +21,17 @@
 //
 //******************************************************************************************************
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Security;
+using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 using GSF;
 using GSF.Communication;
 using GSF.ComponentModel;
@@ -45,17 +56,6 @@ using Microsoft.Owin.Hosting;
 using Newtonsoft.Json.Linq;
 using openMIC.Model;
 using openXDA.APIAuthentication;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Security;
-using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using static System.Net.WebUtility;
 
 namespace openMIC;

@@ -131,13 +131,14 @@ public class HealthController : ApiController
     [HttpGet]
     public IHttpActionResult GetScadaTriggerHealth()
     {
-        if (m_scadaTriggerHealth is null || m_lastTriggerCheckin < DateTime.UtcNow.AddMinutes(-60))
+        if (s_scadaTriggerHealth is null || s_lastTriggerCheckin < DateTime.UtcNow.AddMinutes(-60))
         {
-           return Ok(new StatusItem[] { 
-                new StatusItem() { Status = "Error", Description = "SCADA Trigger Service has not checked in within the last 60 minutes." }
+           return Ok(new StatusItem[]
+           {
+                new() { Status = "Error", Description = "SCADA Trigger Service has not checked in within the last 60 minutes." }
            });
         }
-        return Ok(m_scadaTriggerHealth);
+        return Ok(s_scadaTriggerHealth);
     }
 
     /// <summary>
@@ -148,16 +149,15 @@ public class HealthController : ApiController
     [HttpPost]
     public IHttpActionResult SetScadaTriggerHealth([FromBody] StatusItem[] status)
     {
-        m_lastTriggerCheckin = DateTime.UtcNow;
-        m_scadaTriggerHealth = status;
+        s_lastTriggerCheckin = DateTime.UtcNow;
+        s_scadaTriggerHealth = status;
         return Ok(1);
     }
 
-    #region [ static ]
+    #region [ Static ]
 
-    private static StatusItem[] m_scadaTriggerHealth;
-    private static DateTime m_lastTriggerCheckin = DateTime.MinValue;
-
+    private static StatusItem[] s_scadaTriggerHealth;
+    private static DateTime s_lastTriggerCheckin = DateTime.MinValue;
 
     #endregion
 }

@@ -21,8 +21,8 @@
 //
 //******************************************************************************************************
 
-using GSF.Data.Model;
 using System;
+using GSF.Data.Model;
 
 namespace openMIC.Model;
 
@@ -44,12 +44,10 @@ public class DailyStatistics
 /// </summary>
 public class DailyStatisticsRecord : DailyStatistics
 {
-
     [PrimaryKey(true)]
     public int ID { get; set; }
 
     public DateTime Timestamp { get; set; }
 
     public int BadDays { get; set; }
-
 }

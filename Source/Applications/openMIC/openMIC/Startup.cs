@@ -27,6 +27,7 @@ using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Http.ExceptionHandling;
 using GSF.IO;
+using GSF.Security;
 using GSF.Web;
 using GSF.Web.Hosting;
 using GSF.Web.Security;
@@ -35,10 +36,9 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Json;
 using ModbusAdapters;
 using Newtonsoft.Json;
-using Owin;
-using openMIC.Model;
-using GSF.Security;
 using openMIC.Authentication.Extensions;
+using openMIC.Model;
+using Owin;
 
 namespace openMIC;
 

@@ -21,22 +21,18 @@
 //
 //******************************************************************************************************
 
-using GSF.Communication;
-using GSF.Configuration;
-using GSF.Data;
-using GSF.Data.Model;
-using ModbusAdapters.Model;
-using openMIC.Model;
-using openXDA.APIAuthentication;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Web.Http;
+using GSF.Communication;
+using GSF.Data;
+using GSF.Data.Model;
+using ModbusAdapters.Model;
+using openMIC.Model;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace openMIC;
@@ -243,21 +239,17 @@ public class OperationsController : ApiController
     [HttpGet, ActionName("Statistics")]
     public IHttpActionResult GetDailyStatistics([FromUri(Name = "id")] string meter)
     {
-
         DateTime day = DateTime.UtcNow.Date;
-        using (AdoDataConnection connection = new("systemSettings"))
+        using AdoDataConnection connection = new("systemSettings");
+        TableOperations<DailyStatisticsRecord> dailyStatsTable = new(connection);
+        DailyStatisticsRecord dailyStats = dailyStatsTable.QueryRecordWhere("Meter = {0} AND TimeStamp = {1}", meter, day);
+        if (dailyStats is null)
         {
-            TableOperations<DailyStatisticsRecord> dailyStatsTable = new(connection);
-            DailyStatisticsRecord dailyStats = dailyStatsTable.QueryRecordWhere("Meter = {0} AND TimeStamp = {1}", meter, day, day);
-            if (dailyStats is null)
-            {
-                return Ok(new DailyStatistics());
-            }
-            return Ok(dailyStats);
+            return Ok(new DailyStatistics());
         }
+        return Ok(dailyStats);
     }
 
     private static Downloader GetDownloader(string name) =>
         Program.Host.Downloaders.FirstOrDefault(adapter => adapter.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
 }
