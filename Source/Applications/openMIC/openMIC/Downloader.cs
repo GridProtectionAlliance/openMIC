@@ -999,13 +999,13 @@ public class Downloader : InputAdapterBase
                         dialUpConnected = ConnectDialUp();
                         ftpClient = ConnectFTPClient();
 
-                        LogSuccessfullConnection();
+                        LogSuccessfulConnection();
 
                         OnStatusMessage(MessageLevel.Info, $"Connected to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"");
                     }
                     catch (Exception ex)
                     {
-                        LogUnSuccessfullConnection(ex.Message);
+                        LogUnsuccessfulConnection(ex.Message);
 
                         OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                         OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
@@ -1116,7 +1116,7 @@ public class Downloader : InputAdapterBase
                         dialUpConnected = ConnectDialUp();
                         ftpClient = ConnectFTPClient();
 
-                        LogSuccessfullConnection();
+                        LogSuccessfulConnection();
 
                         OnStatusMessage(MessageLevel.Info, $"Connected to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"");
                     }
@@ -2067,7 +2067,7 @@ public class Downloader : InputAdapterBase
             patternMessage = connectionSuccessMatch.Groups["Message"].Value;
             LogOutcome(ProgressState.Processing);
 
-            LogSuccessfullConnection();
+            LogSuccessfulConnection();
 
             OnProgressUpdated(this, new ProgressUpdate { Summary = patternMessage });
             return true;
@@ -2081,7 +2081,7 @@ public class Downloader : InputAdapterBase
             patternMessage = connectionFailureMatch.Groups["Message"].Value;
             LogFailure(patternMessage);
 
-            LogUnSuccessfullConnection(patternMessage);
+            LogUnsuccessfulConnection(patternMessage);
 
             OnProgressUpdated(this, new ProgressUpdate { State = ProgressState.Fail, ErrorMessage = patternMessage });
             return true;
@@ -2198,7 +2198,7 @@ public class Downloader : InputAdapterBase
         }
     }
 
-    private void LogSuccessfullConnection()
+    private void LogSuccessfulConnection()
     {
         using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
         {
@@ -2219,7 +2219,7 @@ public class Downloader : InputAdapterBase
         AttemptedConnections++;
     }
 
-    private void LogUnSuccessfullConnection(string reason)
+    private void LogUnsuccessfulConnection(string reason)
     {
         using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
         {
