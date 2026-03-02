@@ -227,7 +227,7 @@ END;
 
 CREATE TABLE DailyStatisticsRecord(
     ID NUMBER NOT NULL,
-    TimeStamp DATE NOT NULL,
+    Timestamp DATE NOT NULL,
     BadDays NUMBER NOT NULL DEFAULT 0,
     Meter VARCHAR2(200) NOT NULL,
     LastSuccessfulConnection DATE NULL,
@@ -239,7 +239,7 @@ CREATE TABLE DailyStatisticsRecord(
 
 
 CREATE UNIQUE INDEX IX_DailyStatisticsRecord_ID ON DailyStatisticsRecord (ID ASC) TABLESPACE openMIC_INDEX;
-CREATE UNIQUE INDEX IX_DailyStatisticsRecord_Meter ON DailyStatisticsRecord (Meter ASC, TimeStamp DESC) TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_DailyStatisticsRecord_Meter ON DailyStatisticsRecord (Meter ASC, Timestamp DESC) TABLESPACE openMIC_INDEX;
 
 ALTER TABLE DailyStatisticsRecord ADD CONSTRAINT PK_DailyStatisticsRecord PRIMARY KEY (ID);
 

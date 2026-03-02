@@ -135,7 +135,7 @@ CREATE TABLE DranetzTrendingCheckpoint(
 
 CREATE TABLE DailyStatisticsRecord(
     ID SERIAL NOT NULL PRIMARY KEY,
-    TimeStamp TIMESTAMP NOT NULL,
+    Timestamp TIMESTAMP NOT NULL,
     BadDays INTEGER NOT NULL DEFAULT 0,
     Meter VARCHAR(200) NOT NULL,
     LastSuccessfulConnection TIMESTAMP NULL,
@@ -143,7 +143,7 @@ CREATE TABLE DailyStatisticsRecord(
     LastUnsuccessfulConnectionExplanation TEXT NULL,
     TotalSuccessfulConnections INTEGER NOT NULL DEFAULT 0,
     TotalUnsuccessfulConnections INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE (Meter ASC, [TimeStamp] DESC)
+    CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE (Meter ASC, [Timestamp] DESC)
 );
 
 DROP VIEW TrackedTable;

@@ -243,7 +243,7 @@ GO
 CREATE TABLE DailyStatisticsRecord
 (
     ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
-    [TimeStamp] DATE NOT NULL,
+    [Timestamp] DATE NOT NULL,
     BadDays INT NOT NULL DEFAULT 0,
     Meter VARCHAR(200) NOT NULL,
     LastSuccessfulConnection DATETIME2 NULL,
@@ -251,7 +251,7 @@ CREATE TABLE DailyStatisticsRecord
     LastUnsuccessfulConnectionExplanation VARCHAR(MAX) NULL,
     TotalSuccessfulConnections INT NOT NULL DEFAULT 0,
     TotalUnsuccessfulConnections INT NOT NULL DEFAULT 0
-    CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE (Meter ASC, [TimeStamp] DESC)
+    CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE (Meter ASC, [Timestamp] DESC)
 )
 GO
 

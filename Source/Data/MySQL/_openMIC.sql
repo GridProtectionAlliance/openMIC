@@ -123,7 +123,7 @@ CREATE TABLE NodeCheckin(
 
 CREATE TABLE DailyStatisticsRecord(
     ID INT AUTO_INCREMENT NOT NULL,
-    TimeStamp DATETIME NOT NULL,
+    Timestamp DATETIME NOT NULL,
     BadDays INTEGER NOT NULL DEFAULT 0,
     Meter VARCHAR(200) NOT NULL,
     LastSuccessfulConnection DATETIME NULL,
@@ -132,7 +132,7 @@ CREATE TABLE DailyStatisticsRecord(
     TotalSuccessfulConnections INTEGER NOT NULL DEFAULT 0,
     TotalUnsuccessfulConnections INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT PK_DailyStatisticsRecord PRIMARY KEY CLUSTERED (ID ASC),
-    CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE KEY (Meter ASC, TimeStamp DESC)
+    CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE KEY (Meter ASC, Timestamp DESC)
 );
 
 CREATE TABLE IONTrendingCheckpoint(
