@@ -43,7 +43,7 @@ namespace openMIC.Authentication
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="apiKey">The API key for authentication.</param>
-        /// <param name="apiToken">The token for authentication.</param>
+        /// <param name="apiToken">The token required for authorization to web API endpoints.</param>
         public APIAuthenticationMiddleware(OwinMiddleware next, string apiKey, string apiToken)
             : base(next, () => null)
         {
@@ -88,7 +88,8 @@ namespace openMIC.Authentication
             /// Enables use of the API authentication middleware in the app.
             /// </summary>
             /// <param name="app">The app in which the middleware will be used.</param>
-            /// <param name="connectionFactory">Factory for creating database connections.</param>
+            /// <param name="apiKey">The key used for API access.</param>
+            /// <param name="apiToken">The token used for API access.</param>
             public static void UseAPIAuthentication(this IAppBuilder app, string apiKey, string apiToken) =>
                 app.Use<APIAuthenticationMiddleware>(apiKey, apiToken);
         }
