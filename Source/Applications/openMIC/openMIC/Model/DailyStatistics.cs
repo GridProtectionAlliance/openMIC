@@ -23,26 +23,15 @@
 
 using System;
 using GSF.Data.Model;
+using System.Data;
+using GSF.Data;
 
 namespace openMIC.Model;
-
-public class DailyStatistics
-{
-    public string Meter { get; set; }
-    public DateTime? LastSuccessfulConnection { get; set; }
-    public DateTime? LastUnsuccessfulConnection { get; set; }
-    public string LastUnsuccessfulConnectionExplanation { get; set; }
-
-    [NonRecordField]
-    public int TotalConnections => TotalSuccessfulConnections + TotalUnsuccessfulConnections;
-    public int TotalUnsuccessfulConnections { get; set; }
-    public int TotalSuccessfulConnections { get; set; }
-}
 
 /// <summary>
 /// Stores a <see cref="DailyStatistics"/> record for a specific Day and Meter in the database.
 /// </summary>
-public class DailyStatisticsRecord : DailyStatistics
+public class DailyStatisticsRecord
 {
     [PrimaryKey(true)]
     public int ID { get; set; }
@@ -50,4 +39,22 @@ public class DailyStatisticsRecord : DailyStatistics
     public DateTime Timestamp { get; set; }
 
     public int BadDays { get; set; }
+
+    public string Meter { get; set; }
+
+    [FieldDataType(DbType.DateTime2, DatabaseType.SQLServer)]
+    public DateTime? LastSuccessfulConnection { get; set; }
+
+    [FieldDataType(DbType.DateTime2, DatabaseType.SQLServer)]
+    public DateTime? LastUnsuccessfulConnection { get; set; }
+
+    public string LastUnsuccessfulConnectionExplanation { get; set; }
+
+    [NonRecordField]
+    public int TotalConnections => TotalSuccessfulConnections + TotalUnsuccessfulConnections;
+
+    public int TotalUnsuccessfulConnections { get; set; }
+
+    public int TotalSuccessfulConnections { get; set; }
+
 }

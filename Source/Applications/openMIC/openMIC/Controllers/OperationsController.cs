@@ -240,14 +240,16 @@ public class OperationsController : ApiController
     public IHttpActionResult GetDailyStatistics([FromUri(Name = "id")] string meter)
     {
         DateTime day = DateTime.UtcNow.Date;
-        using AdoDataConnection connection = new("systemSettings");
-        TableOperations<DailyStatisticsRecord> dailyStatsTable = new(connection);
-        DailyStatisticsRecord dailyStats = dailyStatsTable.QueryRecordWhere("Meter = {0} AND TimeStamp = {1}", meter, day);
-        if (dailyStats is null)
+        using (AdoDataConnection connection = new("systemSettings"))
         {
-            return Ok(new DailyStatistics());
+            TableOperations<DailyStatisticsRecord> dailyStatsTable = new(connection);
+            DailyStatisticsRecord dailyStats = dailyStatsTable.QueryRecordWhere("Meter = {0} AND TimeStamp = {1}", meter, day, day);
+            if (dailyStats is null)
+            {
+                return Ok(new DailyStatisticsRecord());
+            }
+            return Ok(dailyStats);
         }
-        return Ok(dailyStats);
     }
 
     private static Downloader GetDownloader(string name) =>

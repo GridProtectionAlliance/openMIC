@@ -21,11 +21,6 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Security;
-using System.Web.Http;
-using System.Web.Http.Cors;
-using System.Web.Http.ExceptionHandling;
 using GSF.IO;
 using GSF.Security;
 using GSF.Web;
@@ -38,7 +33,13 @@ using ModbusAdapters;
 using Newtonsoft.Json;
 using openMIC.Authentication.Extensions;
 using openMIC.Model;
+using openXDA.APIMiddleware.Extensions;
 using Owin;
+using System;
+using System.Security;
+using System.Web.Http;
+using System.Web.Http.Cors;
+using System.Web.Http.ExceptionHandling;
 
 namespace openMIC;
 
@@ -144,6 +145,8 @@ public class Startup
         // Enable GSF role-based security authentication
         app.UseWhen(context => !(context.Request.User is SecurityPrincipal),
             branch => branch.UseAuthentication(AuthenticationOptions));
+
+        httpConfig.Routes.MapRequestVerificationHeaderTokenRoute();
 
         // Enable cross-domain scripting default policy - controllers can manually
         // apply "EnableCors" attribute to class or an action to override default
