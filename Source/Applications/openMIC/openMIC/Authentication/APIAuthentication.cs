@@ -27,7 +27,7 @@ using Owin;
 namespace openMIC.Authentication
 {
     /// <inheritdoc/>
-    public partial class APIAuthenticationMiddleware : openXDA.APIMiddleware.APIAuthenticationMiddleware
+    public class APIAuthenticationMiddleware : openXDA.APIMiddleware.APIAuthenticationMiddleware
     {
         #region [ Properties ]
 
