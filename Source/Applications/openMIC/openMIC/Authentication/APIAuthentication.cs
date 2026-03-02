@@ -21,29 +21,8 @@
 //
 //******************************************************************************************************
 
-using GSF.Data;
-using GSF.IO;
-using GSF.Security;
-using GSF.Web;
-using GSF.Web.Hosting;
-using GSF.Web.Security;
-using GSF.Web.Shared;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Json;
 using Microsoft.Owin;
-using ModbusAdapters;
-using Newtonsoft.Json;
-using openMIC.Model;
 using Owin;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Cors;
-using System.Web.Http.ExceptionHandling;
 
 namespace openMIC.Authentication
 {
@@ -110,7 +89,7 @@ namespace openMIC.Authentication
             /// <summary>
             /// Enables use of the API authentication middleware in the app.
             /// </summary>
-            /// <param name="app">The app in which the middlware will be used.</param>
+            /// <param name="app">The app in which the middleware will be used.</param>
             /// <param name="connectionFactory">Factory for creating database connections.</param>
             public static void UseAPIAuthentication(this IAppBuilder app, string apiKey, string apiToken) =>
                 app.Use<APIAuthenticationMiddleware>(apiKey, apiToken);

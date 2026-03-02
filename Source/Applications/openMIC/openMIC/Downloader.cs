@@ -346,7 +346,7 @@ public class Downloader : InputAdapterBase
     public int DialUpTimeout { get; set; }
 
     /// <summary>
-    /// sets total number of attempted connections.
+    /// Gets or sets total number of attempted connections.
     /// </summary>
     public long AttemptedConnections 
     {
@@ -354,7 +354,9 @@ public class Downloader : InputAdapterBase
         set;
     }
 
-    // / Gets or sets current daily statistics record for this downloader instance.
+    /// <summary>
+    /// Gets or sets current daily statistics record for this downloader instance.
+    /// </summary>
     public DailyStatisticsRecord Statistics
     {
         get

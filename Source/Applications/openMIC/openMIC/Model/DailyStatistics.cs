@@ -33,6 +33,7 @@ public class DailyStatistics
     public DateTime? LastUnsuccessfulConnection { get; set; }
     public string LastUnsuccessfulConnectionExplanation { get; set; }
 
+    [NonRecordField]
     public int TotalConnections => TotalSuccessfulConnections + TotalUnsuccessfulConnections;
     public int TotalUnsuccessfulConnections { get; set; }
     public int TotalSuccessfulConnections { get; set; }

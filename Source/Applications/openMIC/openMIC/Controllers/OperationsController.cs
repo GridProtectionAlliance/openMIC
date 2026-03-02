@@ -25,24 +25,18 @@ using GSF.Communication;
 using GSF.Configuration;
 using GSF.Data;
 using GSF.Data.Model;
-using GSF.Threading;
 using ModbusAdapters.Model;
-using Newtonsoft.Json;
 using openMIC.Model;
 using openXDA.APIAuthentication;
-using Renci.SshNet.Security;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Web.Http;
-using static System.Net.WebUtility;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace openMIC;
@@ -52,20 +46,6 @@ namespace openMIC;
 /// </summary>
 public class OperationsController : ApiController
 {
-    private static readonly HttpClient s_http;
-    private static readonly ConcurrentDictionary<string, APIQuery> s_apiQueryCache = new(StringComparer.OrdinalIgnoreCase);
-    static OperationsController()
-    {
-        const double DefaultDailyStatsInterval = 60.0D;
-
-        CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
-        systemSettings.Add("DailyStatsInterval", DefaultDailyStatsInterval, "The interval, in seconds, for collecting the next set of daily device statistics.");
-        double dailyStatsInterval = TimeSpan.FromSeconds(systemSettings["DailyStatsInterval"].ValueAs(DefaultDailyStatsInterval)).TotalMilliseconds;
-
-        s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
-
-        s_apiQueryCache = new ConcurrentDictionary<string, APIQuery>(StringComparer.OrdinalIgnoreCase);
-    }
 
     /// <summary>
     /// Gets address of remote scheduler.
@@ -261,19 +241,19 @@ public class OperationsController : ApiController
     /// <param name="meter">Meter name to lookup for stats.</param>
     /// <returns>Current daily stats for specified <paramref name="meter"/>.</returns>
     [HttpGet, ActionName("Statistics")]
-    public async Task<DailyStatistics> GetDailyStatistics([FromUri(Name = "id")] string meter)
+    public IHttpActionResult GetDailyStatistics([FromUri(Name = "id")] string meter)
     {
 
         DateTime day = DateTime.UtcNow.Date;
         using (AdoDataConnection connection = new("systemSettings"))
         {
             TableOperations<DailyStatisticsRecord> dailyStatsTable = new(connection);
-            DailyStatisticsRecord dailyStats = dailyStatsTable.QueryRecordWhere("Meter = {0} AND TimeStamp = {}", meter, day, day);
+            DailyStatisticsRecord dailyStats = dailyStatsTable.QueryRecordWhere("Meter = {0} AND TimeStamp = {1}", meter, day, day);
             if (dailyStats is null)
             {
-                return new DailyStatistics();
+                return Ok(new DailyStatistics());
             }
-            return dailyStats;
+            return Ok(dailyStats);
         }
     }
 

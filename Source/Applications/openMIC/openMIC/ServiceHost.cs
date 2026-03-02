@@ -54,10 +54,8 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Security;
 using System.Security.Principal;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.UI.WebControls;
 using static System.Net.WebUtility;
 
 namespace openMIC;

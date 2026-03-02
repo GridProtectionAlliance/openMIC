@@ -12,7 +12,7 @@ namespace Owin
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     /// <summary>
-    /// Extension methods for <see cref="IApplicationBuilder"/>.
+    /// Extension methods for <see cref="IAppBuilder"/>.
     /// </summary>
     public static class UseWhenExtensions
     {
