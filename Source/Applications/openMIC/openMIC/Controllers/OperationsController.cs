@@ -22,24 +22,17 @@
 //******************************************************************************************************
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using System.Threading.Tasks;
-using System.Timers;
 using System.Web.Http;
 using GSF.Communication;
-using GSF.Configuration;
 using GSF.Data;
 using GSF.Data.Model;
-using GSF.Threading;
 using ModbusAdapters.Model;
-using Newtonsoft.Json;
 using openMIC.Model;
-using static System.Net.WebUtility;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace openMIC;
@@ -49,30 +42,6 @@ namespace openMIC;
 /// </summary>
 public class OperationsController : ApiController
 {
-    private static readonly HttpClient s_http;
-    private static readonly ConcurrentDictionary<string, DailyStatistics> s_dailyStatistics;
-    private static readonly ShortSynchronizedOperation s_collectDailyStatistics;
-    private static readonly Timer s_statisticsTimer;
-    private static int s_lastDayOfYear;
-
-    static OperationsController()
-    {
-        const double DefaultDailyStatsInterval = 60.0D;
-
-        CategorizedSettingsElementCollection systemSettings = ConfigurationFile.Current.Settings["systemSettings"];
-        systemSettings.Add("DailyStatsInterval", DefaultDailyStatsInterval, "The interval, in seconds, for collecting the next set of daily device statistics.");
-        double dailyStatsInterval = TimeSpan.FromSeconds(systemSettings["DailyStatsInterval"].ValueAs(DefaultDailyStatsInterval)).TotalMilliseconds;
-
-        s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
-        s_dailyStatistics = new ConcurrentDictionary<string, DailyStatistics>(StringComparer.OrdinalIgnoreCase);
-        s_collectDailyStatistics = new ShortSynchronizedOperation(CollectDailyStatistics, Program.Host.LogException);
-        s_statisticsTimer = new Timer(dailyStatsInterval);
-        s_lastDayOfYear = DateTime.UtcNow.DayOfYear;
-
-        s_statisticsTimer.Elapsed += (_, __) => s_collectDailyStatistics.RunOnce();
-        s_statisticsTimer.AutoReset = true;
-        s_statisticsTimer.Start();
-    }
 
     /// <summary>
     /// Gets address of remote scheduler.
@@ -268,128 +237,21 @@ public class OperationsController : ApiController
     /// <param name="meter">Meter name to lookup for stats.</param>
     /// <returns>Current daily stats for specified <paramref name="meter"/>.</returns>
     [HttpGet, ActionName("Statistics")]
-    public async Task<DailyStatistics> GetDailyStatistics([FromUri(Name = "id")] string meter)
+    public IHttpActionResult GetDailyStatistics([FromUri(Name = "id")] string meter)
     {
-        Downloader downloader = GetDownloader(meter);
-
-        if (downloader is null)
-            return DailyStatistics.Default;
-
-        GlobalSettings settings = Program.Host.Model.Global;
-        DailyStatistics dailyStats = GetDailyStatistics(downloader);
-
-        // Return local stats for remote or standalone instance
-        if (settings.UseRemoteScheduler || settings.PoolMachines is null || settings.PoolMachines.Length == 0)
-            return dailyStats;
-
-        // Return cumulated stats for all pool machines from primary scheduler
-        foreach (string targetMachine in settings.PoolMachines)
+        DateTime day = DateTime.UtcNow.Date;
+        using (AdoDataConnection connection = new("systemSettings"))
         {
-            if (targetMachine.Equals("localhost"))
-                continue;
-
-            string targetUri;
-
-            if (targetMachine.Contains("://"))
+            TableOperations<DailyStatisticsRecord> dailyStatsTable = new(connection);
+            DailyStatisticsRecord dailyStats = dailyStatsTable.QueryRecordWhere("Meter = {0} AND TimeStamp = {1}", meter, day, day);
+            if (dailyStats is null)
             {
-                // Pooled target machine specification includes scheme and possible port number
-                targetUri = targetMachine;
+                return Ok(new DailyStatisticsRecord());
             }
-            else
-            {
-                // Pooled target machine specification is only target machine name, assume same
-                // scheme and port number as local instance
-                Uri webHostUri = settings.WebHostUri;
-                targetUri = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
-            }
-
-            try
-            {
-                string actionURI = $"{targetUri}/api/Operations/GetDailyStatistics?meter={UrlEncode(meter)}";
-                HttpRequestMessage request = new(HttpMethod.Get, actionURI);
-                HttpResponseMessage response = await s_http.SendAsync(request);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    string content = await response.Content.ReadAsStringAsync();
-                    DailyStatistics remoteStats = JsonConvert.DeserializeObject<DailyStatistics>(content);
-
-                    // Cumulate remote stats
-                    if (remoteStats.LastSuccessfulConnection > dailyStats.LastSuccessfulConnection)
-                        dailyStats.LastSuccessfulConnection = remoteStats.LastSuccessfulConnection;
-
-                    if (remoteStats.LastUnsuccessfulConnection > dailyStats.LastUnsuccessfulConnection)
-                    {
-                        dailyStats.LastUnsuccessfulConnection = remoteStats.LastUnsuccessfulConnection;
-                        dailyStats.LastUnsuccessfulConnectionExplanation = remoteStats.LastUnsuccessfulConnectionExplanation;
-                    }
-
-                    dailyStats.TotalSuccessfulConnections += remoteStats.TotalSuccessfulConnections;
-                    dailyStats.TotalUnsuccessfulConnections += remoteStats.TotalUnsuccessfulConnections;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Program.Host.LogException(new InvalidOperationException($"Failed to query daily statistics from \"{targetUri}\": {ex.Message}", ex));
-            }
+            return Ok(dailyStats);
         }
-
-        dailyStats.EndTime = DateTime.UtcNow;
-
-        return dailyStats;
     }
 
     private static Downloader GetDownloader(string name) =>
         Program.Host.Downloaders.FirstOrDefault(adapter => adapter.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-    private static DailyStatistics GetDailyStatistics(Downloader downloader)
-    {
-        string name = downloader.Name;
-        DateTime currentTime = DateTime.UtcNow;
-
-        return s_dailyStatistics.GetOrAdd(name, _ => new DailyStatistics
-        {
-            Meter = name,
-            StartTime = currentTime,
-            EndTime = currentTime,
-            LastSuccessfulConnection = downloader.LastSuccessfulConnectionTime,
-            LastUnsuccessfulConnection = downloader.LastFailedConnectionTime,
-            LastUnsuccessfulConnectionExplanation = downloader.LastFailedConnectionReason,
-            TotalSuccessfulConnections = (int)downloader.SuccessfulConnections,
-            TotalUnsuccessfulConnections = (int)downloader.FailedConnections
-        });
-    }
-
-    private static void CollectDailyStatistics()
-    {
-        DateTime currentTime = DateTime.UtcNow;
-        int currentDayOfYear = currentTime.DayOfYear;
-        bool resetStats = false;
-
-        // Reset statistics at the start of each new day (UTC)
-        if (currentDayOfYear != s_lastDayOfYear)
-        {
-            resetStats = s_lastDayOfYear > 0;
-            s_lastDayOfYear = currentDayOfYear;
-        }
-
-        foreach (Downloader downloader in Program.Host.Downloaders)
-        {
-            DailyStatistics dailyStats = GetDailyStatistics(downloader);
-
-            if (resetStats)
-            {
-                downloader.ResetStatistics();
-                dailyStats.StartTime = currentTime;
-            }
-
-            dailyStats.LastSuccessfulConnection = downloader.LastSuccessfulConnectionTime;
-            dailyStats.LastUnsuccessfulConnection = downloader.LastFailedConnectionTime;
-            dailyStats.LastUnsuccessfulConnectionExplanation = downloader.LastFailedConnectionReason;
-            dailyStats.TotalSuccessfulConnections = (int)downloader.SuccessfulConnections;
-            dailyStats.TotalUnsuccessfulConnections = (int)downloader.FailedConnections;
-            dailyStats.EndTime = currentTime;
-        }
-    }
 }

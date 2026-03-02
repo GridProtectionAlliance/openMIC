@@ -22,22 +22,39 @@
 //******************************************************************************************************
 
 using System;
+using GSF.Data.Model;
+using System.Data;
+using GSF.Data;
 
 namespace openMIC.Model;
 
-public class DailyStatistics
+/// <summary>
+/// Stores a <see cref="DailyStatistics"/> record for a specific Day and Meter in the database.
+/// </summary>
+public class DailyStatisticsRecord
 {
-    public DateTime StartTime;
-    public DateTime EndTime;
+    [PrimaryKey(true)]
+    public int ID { get; set; }
+
+    public DateTime Timestamp { get; set; }
+
+    public int BadDays { get; set; }
 
     public string Meter { get; set; }
+
+    [FieldDataType(DbType.DateTime2, DatabaseType.SQLServer)]
     public DateTime? LastSuccessfulConnection { get; set; }
+
+    [FieldDataType(DbType.DateTime2, DatabaseType.SQLServer)]
     public DateTime? LastUnsuccessfulConnection { get; set; }
+
     public string LastUnsuccessfulConnectionExplanation { get; set; }
 
+    [NonRecordField]
     public int TotalConnections => TotalSuccessfulConnections + TotalUnsuccessfulConnections;
+
     public int TotalUnsuccessfulConnections { get; set; }
+
     public int TotalSuccessfulConnections { get; set; }
 
-    public static DailyStatistics Default = new();
 }

@@ -181,6 +181,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Dependencies\GSF\NModbus4.dll</HintPath>
     </Reference>
+    <Reference Include="openXDA.APIAuthentication">
+      <HintPath>..\..\..\Dependencies\OpenXDA\openXDA.APIAuthentication.dll</HintPath>
+    </Reference>
+    <Reference Include="openXDA.APIMiddleware">
+      <HintPath>..\..\..\Dependencies\OpenXDA\openXDA.APIMiddleware.dll</HintPath>
+    </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Dependencies\GSF\Owin.dll</HintPath>
@@ -230,6 +236,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authentication\UseWhenExtension.cs" />
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="DataHub.cs" />
     <Compile Include="DataHub_PQube.cs" />
@@ -247,6 +254,7 @@
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="IniJsonInterop.cs" />
     <Compile Include="IOrderedQueryableExtensions.cs" />
+    <Compile Include="Authentication\APIAuthentication.cs" />
     <Compile Include="Model\Alarm.cs" />
     <Compile Include="Model\ConnectionProfileTaskQueue.cs" />
     <Compile Include="Model\DailyStatistics.cs" />

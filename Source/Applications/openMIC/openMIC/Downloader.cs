@@ -346,32 +346,17 @@ public class Downloader : InputAdapterBase
     /// <summary>
     /// Gets or sets total number of attempted connections.
     /// </summary>
-    public long AttemptedConnections { get; set; }
+    public long AttemptedConnections  { get; set; }
 
     /// <summary>
     /// Gets or sets total number of successful connections.
     /// </summary>
-    public long SuccessfulConnections { get; set; }
-
-    /// <summary>
-    /// Gets or sets last successful connection time.
-    /// </summary>
-    public DateTime? LastSuccessfulConnectionTime { get; set; }
+    public int SuccessfulConnections { get; set; }
 
     /// <summary>
     /// Gets or sets total number of failed connections.
     /// </summary>
-    public long FailedConnections { get; set; }
-
-    /// <summary>
-    /// Gets or sets last failed connection time.
-    /// </summary>
-    public DateTime? LastFailedConnectionTime { get; set; }
-
-    /// <summary>
-    /// Gets or sets last failed connection reason.
-    /// </summary>
-    public string LastFailedConnectionReason { get; set; }
+    public int FailedConnections { get; set; }
 
     /// <summary>
     /// Gets or sets total number of processed files.
@@ -725,16 +710,6 @@ public class Downloader : InputAdapterBase
     }
 
     /// <summary>
-    /// Resets local statistics.
-    /// </summary>
-    public void ResetStatistics()
-    {
-        AttemptedConnections = SuccessfulConnections = FailedConnections = 0L;
-        LastSuccessfulConnectionTime = LastFailedConnectionTime = null;
-        LastFailedConnectionReason = null;
-    }
-
-    /// <summary>
     /// Gets all defined connection profile tasks.
     /// </summary>
     public IReadOnlyCollection<ConnectionProfileTask> GetAllTasks => Array.AsReadOnly(AllTasks);
@@ -848,12 +823,16 @@ public class Downloader : InputAdapterBase
     // Queues specified task, with overridden schedule, for execution at specified priority
     private void QueueTask(ConnectionProfileTask task, QueuePriority priority)
     {
+        DateTime queueTime = DateTime.UtcNow;
+        string systemName = Program.Host.Model.Global.SystemName;
+        string nodeDisplay = string.IsNullOrWhiteSpace(systemName) ? Environment.MachineName : systemName;
+
         m_taskQueue.QueueAction(() => ExecuteSingleTask(task), priority);
 
         OnProgressUpdated(this, new ProgressUpdate
         {
             State = ProgressState.Queued,
-            Message = $"Connection profile task \"{task.Name}\" with overridden schedule queued at \"{priority}\" priority.",
+            Message = $"Connection profile task \"{task.Name}\" with overridden schedule queued at \"{priority}\" priority on node \"{nodeDisplay}\" at {queueTime:yyyy-MM-dd HH:mm:ss.fff} UTC.",
             Progress = 0,
             ProgressTotal = 1,
             OverallProgress = 0,
@@ -864,12 +843,16 @@ public class Downloader : InputAdapterBase
     // Queues specified task array for execution at specified priority
     private void QueueTasks(ConnectionProfileTask[] tasks, QueuePriority priority, DateTime? startTimeConstraint = null, DateTime? endTimeConstraint = null)
     {
+        DateTime queueTime = DateTime.UtcNow;
+        string systemName = Program.Host.Model.Global.SystemName;
+        string nodeDisplay = string.IsNullOrWhiteSpace(systemName) ? Environment.MachineName : systemName;
+
         m_taskQueue.QueueAction(() => ExecuteGroupedTasks(tasks, startTimeConstraint, endTimeConstraint), priority);
 
         OnProgressUpdated(this, new ProgressUpdate
         {
             State = ProgressState.Queued,
-            Message = $"Connection profile tasks queued at \"{priority}\" priority.",
+            Message = $"Connection profile tasks queued at \"{priority}\" priority on node \"{nodeDisplay}\" at {queueTime:yyyy-MM-dd HH:mm:ss.fff} UTC.",
             Progress = 0,
             ProgressTotal = 1,
             OverallProgress = 0,
@@ -1012,21 +995,17 @@ public class Downloader : InputAdapterBase
                     try
                     {
                         OnStatusMessage(MessageLevel.Info, $"Attempting connection to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"...");
-                        AttemptedConnections++;
 
                         dialUpConnected = ConnectDialUp();
                         ftpClient = ConnectFTPClient();
 
-                        SuccessfulConnections++;
-                        LastSuccessfulConnectionTime = DateTime.UtcNow;
+                        LogSuccessfulConnection();
 
                         OnStatusMessage(MessageLevel.Info, $"Connected to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"");
                     }
                     catch (Exception ex)
                     {
-                        FailedConnections++;
-                        LastFailedConnectionTime = DateTime.UtcNow;
-                        LastFailedConnectionReason = ex.Message;
+                        LogUnsuccessfulConnection(ex.Message);
 
                         OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                         OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
@@ -1133,21 +1112,17 @@ public class Downloader : InputAdapterBase
                     try
                     {
                         OnStatusMessage(MessageLevel.Info, $"Attempting connection to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"...");
-                        AttemptedConnections++;
 
                         dialUpConnected = ConnectDialUp();
                         ftpClient = ConnectFTPClient();
 
-                        SuccessfulConnections++;
-                        LastSuccessfulConnectionTime = DateTime.UtcNow;
+                        LogSuccessfulConnection();
 
                         OnStatusMessage(MessageLevel.Info, $"Connected to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"");
                     }
                     catch (Exception ex)
                     {
-                        FailedConnections++;
-                        LastFailedConnectionTime = DateTime.UtcNow;
-                        LastFailedConnectionReason = ex.Message;
+                       LogConnectionFailure(ex.Message);
 
                         OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                         OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
@@ -2092,9 +2067,7 @@ public class Downloader : InputAdapterBase
             patternMessage = connectionSuccessMatch.Groups["Message"].Value;
             LogOutcome(ProgressState.Processing);
 
-            AttemptedConnections++;
-            SuccessfulConnections++;
-            LastSuccessfulConnectionTime = DateTime.UtcNow;
+            LogSuccessfulConnection();
 
             OnProgressUpdated(this, new ProgressUpdate { Summary = patternMessage });
             return true;
@@ -2108,10 +2081,7 @@ public class Downloader : InputAdapterBase
             patternMessage = connectionFailureMatch.Groups["Message"].Value;
             LogFailure(patternMessage);
 
-            AttemptedConnections++;
-            FailedConnections++;
-            LastFailedConnectionTime = DateTime.UtcNow;
-            LastFailedConnectionReason = patternMessage;
+            LogUnsuccessfulConnection(patternMessage);
 
             OnProgressUpdated(this, new ProgressUpdate { State = ProgressState.Fail, ErrorMessage = patternMessage });
             return true;
@@ -2226,6 +2196,48 @@ public class Downloader : InputAdapterBase
         {
             OnProcessException(MessageLevel.Error, ex);
         }
+    }
+
+    private void LogSuccessfulConnection()
+    {
+        using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+        {
+            TableOperations<DailyStatisticsRecord> dailyStatisticsTable = new TableOperations<DailyStatisticsRecord>(connection);
+            DailyStatisticsRecord record = dailyStatisticsTable.QueryRecordWhere("Meter = {0} AND Timestamp = {1}", this.Name, DateTime.UtcNow.Date) ?? new DailyStatisticsRecord()
+            {
+                Meter = this.Name,
+                Timestamp = DateTime.UtcNow.Date
+            };
+
+            record.LastSuccessfulConnection = DateTime.UtcNow;
+            record.TotalSuccessfulConnections++;
+
+            dailyStatisticsTable.AddNewOrUpdateRecord(record);
+        }
+
+        SuccessfulConnections++;
+        AttemptedConnections++;
+    }
+
+    private void LogUnsuccessfulConnection(string reason)
+    {
+        using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+        {
+            TableOperations<DailyStatisticsRecord> dailyStatisticsTable = new TableOperations<DailyStatisticsRecord>(connection);
+            DailyStatisticsRecord record = dailyStatisticsTable.QueryRecordWhere("Meter = {0} AND Timestamp = {1}", this.Name, DateTime.UtcNow.Date) ?? new DailyStatisticsRecord()
+            {
+                Meter = this.Name,
+                Timestamp = DateTime.UtcNow.Date
+            };
+
+            record.LastUnsuccessfulConnection = DateTime.UtcNow;
+            record.TotalUnsuccessfulConnections++;
+            record.LastUnsuccessfulConnectionExplanation = reason;
+            dailyStatisticsTable.AddNewOrUpdateRecord(record);
+        }
+
+        FailedConnections++;
+        AttemptedConnections++;
     }
 
     #endregion

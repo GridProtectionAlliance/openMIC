@@ -127,4 +127,37 @@ public class HealthController : ApiController
 
         return Ok(statusMessages);
     }
+
+    [HttpGet]
+    public IHttpActionResult GetScadaTriggerHealth()
+    {
+        if (s_scadaTriggerHealth is null || s_lastTriggerCheckin < DateTime.UtcNow.AddMinutes(-60))
+        {
+           return Ok(new StatusItem[]
+           {
+                new() { Status = "Error", Description = "SCADA Trigger Service has not checked in within the last 60 minutes." }
+           });
+        }
+        return Ok(s_scadaTriggerHealth);
+    }
+
+    /// <summary>
+    /// Endpoint for SCADA Trigger to send "IsAlive" checkin
+    /// </summary>
+    /// <param name="status"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public IHttpActionResult SetScadaTriggerHealth([FromBody] StatusItem[] status)
+    {
+        s_lastTriggerCheckin = DateTime.UtcNow;
+        s_scadaTriggerHealth = status;
+        return Ok(1);
+    }
+
+    #region [ Static ]
+
+    private static StatusItem[] s_scadaTriggerHealth;
+    private static DateTime s_lastTriggerCheckin = DateTime.MinValue;
+
+    #endregion
 }

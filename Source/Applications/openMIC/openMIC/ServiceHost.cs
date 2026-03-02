@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Security;
 using System.Security.Principal;
@@ -54,6 +55,7 @@ using Microsoft.Ajax.Utilities;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json.Linq;
 using openMIC.Model;
+using openXDA.APIAuthentication;
 using static System.Net.WebUtility;
 
 namespace openMIC;
@@ -187,8 +189,7 @@ public class ServiceHost : ServiceHostBase
 
         // Define set of default anonymous web resources for this site
         const string BaseAnonymousApiExpression = "^/api/";
-        const string AnonymousApiExpression = $"{BaseAnonymousApiExpression}(?!ModbusConfig)"; // Modbus config API should not be anonymous
-        const string DefaultAnonymousResourceExpression = $"^/@|^/Scripts/|^/Content/|^/Images/|^/fonts/|{AnonymousApiExpression}|^/favicon.ico$";
+        const string DefaultAnonymousResourceExpression = $"^/@|^/Scripts/|^/Content/|^/Images/|^/fonts/|^/favicon.ico$";
 
         systemSettings.Add("CompanyName", "Grid Protection Alliance", "The name of the company who owns this instance of the openMIC.");
         systemSettings.Add("CompanyAcronym", "GPA", "The acronym representing the company who owns this instance of the openMIC.");
@@ -233,19 +234,17 @@ public class ServiceHost : ServiceHostBase
         systemSettings.Add("SystemName", "", "Name of system that will be prefixed to system level tags, when defined. Value should follow tag naming conventions, e.g., no spaces and all upper case.");
         systemSettings.Add("HideRestartButton", false, "Flag that determines if restart button should be displayed on the home page. Set to false for clustered environments.");
 
+        systemSettings.Add("APIKey", "", "API key used for authenticating API requests to the web server. For failover clusters this must match across all nodes. If Empty API access is disabled");
+        systemSettings.Add("APIToken", "REPLACETOKEN", "API token used for authenticating API requests to the web server. For failover clusters this must match across all nodes.");
+
+
         // Ensure "^/api/(?!ModbusConfig)" exists in AnonymousResourceExpression
         string anonymousResourceExpression = systemSettings["AnonymousResourceExpression"].Value;
 
         if (anonymousResourceExpression.Contains($"{BaseAnonymousApiExpression}|"))
         {
-            anonymousResourceExpression = anonymousResourceExpression.Replace($"{BaseAnonymousApiExpression}|", $"{AnonymousApiExpression}|");
+            anonymousResourceExpression = anonymousResourceExpression.Replace($"{BaseAnonymousApiExpression}|", $"");
             systemSettings["AnonymousResourceExpression"].Update(anonymousResourceExpression);
-            ConfigurationFile.Current.Save();
-        }
-        
-        if (!anonymousResourceExpression.ToLowerInvariant().Contains(AnonymousApiExpression.ToLowerInvariant()))
-        {
-            systemSettings["AnonymousResourceExpression"].Update($"{AnonymousApiExpression}|{anonymousResourceExpression}");
             ConfigurationFile.Current.Save();
         }
 
@@ -339,6 +338,9 @@ public class ServiceHost : ServiceHostBase
         Startup.AuthenticationOptions.AuthTestPage = systemSettings["AuthTestPage"].ValueAs(AuthenticationOptions.DefaultAuthTestPage);
         Startup.AuthenticationOptions.Realm = systemSettings["Realm"].ValueAs("");
         Startup.AuthenticationOptions.LoginHeader = $"<h3><img src=\"/Images/{Model.Global.ApplicationName}.png\"/> {Model.Global.ApplicationName}</h3>";
+
+        Startup.APIKey = systemSettings["APIKey"].ValueAs("");
+        Startup.APIToken = systemSettings["APIToken"].ValueAs("");
 
         // Validate that configured authentication test page does not evaluate as an anonymous resource nor a authentication failure redirection resource
         string authTestPage = Startup.AuthenticationOptions.AuthTestPage;
@@ -684,8 +686,15 @@ public class ServiceHost : ServiceHostBase
             if (!nodeLog.ContainsKey(targetMachine))
                 nodeLog.Add(targetMachine, ("", 0));
 
-            HttpResponseMessage response = s_http
-                .GetAsync($"{GetTargetURI(targetMachine)}/api/Operations/Version")
+            void ConfigureRequest(HttpRequestMessage request)
+            {
+                request.Method = HttpMethod.Get;
+                request.Headers.Accept.Clear();
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            }
+
+            HttpResponseMessage response = new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+                .SendWebRequestAsync(ConfigureRequest, "/api/Operations/Version")
                 .GetAwaiter()
                 .GetResult();
 
@@ -746,7 +755,6 @@ public class ServiceHost : ServiceHostBase
 
     private async Task QueueTasksRemotelyAsync(string targetMachine, IEnumerable<string> acronyms, string taskID, QueuePriority priority)
     {
-        string actionURI = $"{GetTargetURI(targetMachine)}/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}";
         JArray acronymArray = [.. acronyms];
 
         const int RetryCount = 1;
@@ -755,10 +763,17 @@ public class ServiceHost : ServiceHostBase
         {
             try
             {
-                using HttpRequestMessage request = new(HttpMethod.Post, actionURI);
-                request.Content = new StringContent(acronymArray.ToString(), System.Text.Encoding.UTF8, "application/json");
+                void ConfigureRequest(HttpRequestMessage request)
+                {
+                    request.Method = HttpMethod.Post;
+                    request.Headers.Accept.Clear();
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    request.Content = new StringContent(acronymArray.ToString(), System.Text.Encoding.UTF8, "application/json");
+                }
 
-                using HttpResponseMessage response = await s_http.SendAsync(request);
+                using HttpResponseMessage response = await new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+                    .SendWebRequestAsync(ConfigureRequest, $"/api/Operations/QueueTasks?taskID={UrlEncode(taskID)}&priority={UrlEncode(priority.ToString())}");
+
                 response.EnsureSuccessStatusCode();
                 break;
             }
@@ -833,26 +848,18 @@ public class ServiceHost : ServiceHostBase
                         if (targetMachine.Equals("localhost"))
                             continue;
 
-                        string targetUri;
-
-                        if (targetMachine.Contains("://"))
-                        {
-                            // Pooled target machine specification includes scheme and possible port number
-                            targetUri = targetMachine;
-                        }
-                        else
-                        {
-                            // Pooled target machine specification is only target machine name, assume same
-                            // scheme and port number as local instance
-                            Uri webHostUri = settings.WebHostUri;
-                            targetUri = $"{webHostUri.Scheme}://{targetMachine}:{webHostUri.Port}";
-                        }
-
                         try
                         {
-                            string actionURI = $"{targetUri}/api/Operations/RelayCommand?command={UrlEncode(commandInput)}";
+                           
+                            void ConfigureRequest(HttpRequestMessage request)
+                            {
+                                request.Method = HttpMethod.Get;
+                                request.Headers.Accept.Clear();
+                                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                            }
 
-                            HttpResponseMessage response = await s_http.SendAsync(new HttpRequestMessage(HttpMethod.Get, actionURI));
+                            HttpResponseMessage response = await new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+                                .SendWebRequestAsync(ConfigureRequest, $"/api/Operations/RelayCommand?command={UrlEncode(commandInput)}").ConfigureAwait(false);
 
                             LogStatusMessage(response.StatusCode == HttpStatusCode.OK ?
                                                  $"Successfully relayed \"{request.Command}\" command to \"{targetMachine}\"." :

@@ -21,12 +21,8 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Security;
-using System.Web.Http;
-using System.Web.Http.Cors;
-using System.Web.Http.ExceptionHandling;
 using GSF.IO;
+using GSF.Security;
 using GSF.Web;
 using GSF.Web.Hosting;
 using GSF.Web.Security;
@@ -35,8 +31,15 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Json;
 using ModbusAdapters;
 using Newtonsoft.Json;
-using Owin;
+using openMIC.Authentication.Extensions;
 using openMIC.Model;
+using openXDA.APIMiddleware.Extensions;
+using Owin;
+using System;
+using System.Security;
+using System.Web.Http;
+using System.Web.Http.Cors;
+using System.Web.Http.ExceptionHandling;
 
 namespace openMIC;
 
@@ -61,6 +64,13 @@ public class Startup
         GlobalHost.DependencyResolver.Register(typeof(JsonSerializer), () => serializer);
         GlobalHost.Configuration.MaxIncomingWebSocketMessageSize = null;
         AppModel model = Program.Host.Model;
+
+        app.Use(async (context, next) =>
+        {
+            context.Request.Environment["AuthenticationOptions"] = AuthenticationOptions.Readonly;
+            await next.Invoke();
+            context.Response.Headers.Remove("Server");
+        });
 
         // Load data hub into application domain before establishing SignalR hub configuration, initializing default status and exception handlers
         try
@@ -130,8 +140,13 @@ public class Startup
         // Enable GSF session management
         httpConfig.EnableSessions(AuthenticationOptions);
 
+        app.UseAPIAuthentication(APIKey, APIToken);
+
         // Enable GSF role-based security authentication
-        app.UseAuthentication(AuthenticationOptions);
+        app.UseWhen(context => !(context.Request.User is SecurityPrincipal),
+            branch => branch.UseAuthentication(AuthenticationOptions));
+
+        httpConfig.Routes.MapRequestVerificationHeaderTokenRoute();
 
         // Enable cross-domain scripting default policy - controllers can manually
         // apply "EnableCors" attribute to class or an action to override default
@@ -179,4 +194,15 @@ public class Startup
     /// Gets the authentication options used for the hosted web server.
     /// </summary>
     public static AuthenticationOptions AuthenticationOptions { get; } = new();
+
+    /// <summary>
+    /// Gets or sets the API token used for authenticating API requests to the hosted web server. 
+    /// This value is used by the <see cref="APIAuthenticationMiddleware"/> class to validate incoming requests.
+    /// </summary>
+    public static string APIToken { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the API key used for authenticating API requests to the hosted web server. 
+    /// This value is used by the <see cref="APIAuthenticationMiddleware"/> class to validate incoming requests.
+    /// </summary>
+    public static string APIKey { get; set; } = string.Empty;
 }

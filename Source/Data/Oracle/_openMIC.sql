@@ -225,6 +225,31 @@ CREATE TRIGGER AI_NodeCheckin BEFORE INSERT ON NodeCheckin
 END;
 /
 
+CREATE TABLE DailyStatisticsRecord(
+    ID NUMBER NOT NULL,
+    Timestamp DATE NOT NULL,
+    BadDays NUMBER NOT NULL DEFAULT 0,
+    Meter VARCHAR2(200) NOT NULL,
+    LastSuccessfulConnection DATE NULL,
+    LastUnsuccessfulConnection DATE NULL,
+    LastUnsuccessfulConnectionExplanation VARCHAR2(MAX) NULL,
+    TotalSuccessfulConnections NUMBER NOT NULL DEFAULT 0,
+    TotalUnsuccessfulConnections NUMBER NOT NULL DEFAULT 0
+);
+
+
+CREATE UNIQUE INDEX IX_DailyStatisticsRecord_ID ON DailyStatisticsRecord (ID ASC) TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_DailyStatisticsRecord_Meter ON DailyStatisticsRecord (Meter ASC, Timestamp DESC) TABLESPACE openMIC_INDEX;
+
+ALTER TABLE DailyStatisticsRecord ADD CONSTRAINT PK_DailyStatisticsRecord PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_DailyStatisticsRecord START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_DailyStatisticsRecord BEFORE INSERT ON DailyStatisticsRecord
+    FOR EACH ROW BEGIN SELECT SEQ_DailyStatisticsRecord.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
 
 CREATE TABLE IONTrendingCheckpoint(
     ID NUMBER NOT NULL,
