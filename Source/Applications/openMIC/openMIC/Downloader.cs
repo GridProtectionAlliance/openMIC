@@ -173,8 +173,6 @@ public class Downloader : InputAdapterBase
     private int m_lastDownloadedFileID;
     private long m_startDialUpTime;
     private bool m_disposed;
-    private DailyStatisticsRecord m_currentStatistics;
-
 
     #endregion
 
@@ -355,102 +353,14 @@ public class Downloader : InputAdapterBase
     }
 
     /// <summary>
-    /// Gets or sets current daily statistics record for this downloader instance.
-    /// </summary>
-    public DailyStatisticsRecord Statistics
-    {
-        get
-        {
-            if (DateTime.UtcNow.DayOfYear == m_currentStatistics?.Timestamp.DayOfYear)
-                return m_currentStatistics;
-
-            m_currentStatistics = new DailyStatisticsRecord()
-            {
-                Timestamp = DateTime.UtcNow.Date,
-                Meter = this.Name
-            };
-            return m_currentStatistics;
-        }
-        set
-        {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
-            {
-                TableOperations<DailyStatisticsRecord> dailyStatisticsTable = new TableOperations<DailyStatisticsRecord>(connection);
-                dailyStatisticsTable.AddNewOrUpdateRecord(value);
-
-            }
-            m_currentStatistics = value;
-        }
-    }
-
-    /// <summary>
     /// Gets or sets total number of successful connections.
     /// </summary>
-    public int SuccessfulConnections 
-    { 
-        get => Statistics.TotalSuccessfulConnections;
-        set 
-        {
-            DailyStatisticsRecord dailyStatistics = Statistics;
-            dailyStatistics.TotalSuccessfulConnections = value;
-            Statistics = dailyStatistics;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets last successful connection time.
-    /// </summary>
-    public DateTime? LastSuccessfulConnectionTime 
-    {
-        get => Statistics.LastSuccessfulConnection;
-        set
-        {
-            DailyStatisticsRecord dailyStatistics = Statistics;
-            dailyStatistics.LastSuccessfulConnection = value;
-            Statistics = dailyStatistics;
-        }
-    }
+    public int SuccessfulConnections { get; set; }
 
     /// <summary>
     /// Gets or sets total number of failed connections.
     /// </summary>
-    public int FailedConnections {
-        get => Statistics.TotalUnsuccessfulConnections;
-        set
-        {
-            DailyStatisticsRecord dailyStatistics = Statistics;
-            dailyStatistics.TotalUnsuccessfulConnections = value;
-            Statistics = dailyStatistics;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets last failed connection time.
-    /// </summary>
-    public DateTime? LastFailedConnectionTime 
-    {
-        get => Statistics.LastUnsuccessfulConnection;
-        set
-        {
-            DailyStatisticsRecord dailyStatistics = Statistics;
-            dailyStatistics.LastUnsuccessfulConnection = value;
-            Statistics = dailyStatistics;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets last failed connection reason.
-    /// </summary>
-    public string LastFailedConnectionReason 
-    {
-        get => Statistics.LastUnsuccessfulConnectionExplanation;
-        set
-        {
-            DailyStatisticsRecord dailyStatistics = Statistics;
-            dailyStatistics.LastUnsuccessfulConnectionExplanation = value;
-            Statistics = dailyStatistics;
-        }
-    }
+    public int FailedConnections { get; set; }
 
     /// <summary>
     /// Gets or sets total number of processed files.
@@ -1089,21 +999,17 @@ public class Downloader : InputAdapterBase
                     try
                     {
                         OnStatusMessage(MessageLevel.Info, $"Attempting connection to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"...");
-                        AttemptedConnections++;
 
                         dialUpConnected = ConnectDialUp();
                         ftpClient = ConnectFTPClient();
 
-                        SuccessfulConnections++;
-                        LastSuccessfulConnectionTime = DateTime.UtcNow;
+                        LogSuccessfullConnection();
 
                         OnStatusMessage(MessageLevel.Info, $"Connected to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"");
                     }
                     catch (Exception ex)
                     {
-                        FailedConnections++;
-                        LastFailedConnectionTime = DateTime.UtcNow;
-                        LastFailedConnectionReason = ex.Message;
+                        LogUnSuccessfullConnection(ex.Message);
 
                         OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                         OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
@@ -1210,21 +1116,17 @@ public class Downloader : InputAdapterBase
                     try
                     {
                         OnStatusMessage(MessageLevel.Info, $"Attempting connection to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"...");
-                        AttemptedConnections++;
 
                         dialUpConnected = ConnectDialUp();
                         ftpClient = ConnectFTPClient();
 
-                        SuccessfulConnections++;
-                        LastSuccessfulConnectionTime = DateTime.UtcNow;
+                        LogSuccessfullConnection();
 
                         OnStatusMessage(MessageLevel.Info, $"Connected to FTP server \"{ConnectionUserName}@{ConnectionHostName}\"");
                     }
                     catch (Exception ex)
                     {
-                        FailedConnections++;
-                        LastFailedConnectionTime = DateTime.UtcNow;
-                        LastFailedConnectionReason = ex.Message;
+                       LogConnectionFailure(ex.Message);
 
                         OnProcessException(MessageLevel.Warning, new InvalidOperationException($"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}", ex));
                         OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"Failed to connect to FTP server \"{ConnectionUserName}@{ConnectionHostName}\": {ex.Message}" });
@@ -2169,9 +2071,7 @@ public class Downloader : InputAdapterBase
             patternMessage = connectionSuccessMatch.Groups["Message"].Value;
             LogOutcome(ProgressState.Processing);
 
-            AttemptedConnections++;
-            SuccessfulConnections++;
-            LastSuccessfulConnectionTime = DateTime.UtcNow;
+            LogSuccessfullConnection();
 
             OnProgressUpdated(this, new ProgressUpdate { Summary = patternMessage });
             return true;
@@ -2185,10 +2085,7 @@ public class Downloader : InputAdapterBase
             patternMessage = connectionFailureMatch.Groups["Message"].Value;
             LogFailure(patternMessage);
 
-            AttemptedConnections++;
-            FailedConnections++;
-            LastFailedConnectionTime = DateTime.UtcNow;
-            LastFailedConnectionReason = patternMessage;
+            LogUnSuccessfullConnection(patternMessage);
 
             OnProgressUpdated(this, new ProgressUpdate { State = ProgressState.Fail, ErrorMessage = patternMessage });
             return true;
@@ -2303,6 +2200,48 @@ public class Downloader : InputAdapterBase
         {
             OnProcessException(MessageLevel.Error, ex);
         }
+    }
+
+    private void LogSuccessfullConnection()
+    {
+        using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+        {
+            TableOperations<DailyStatisticsRecord> dailyStatisticsTable = new TableOperations<DailyStatisticsRecord>(connection);
+            DailyStatisticsRecord record = dailyStatisticsTable.QueryRecordWhere("Meter = {0} AND Timestamp = {1}", this.Name, DateTime.UtcNow.Date) ?? new DailyStatisticsRecord()
+            {
+                Meter = this.Name,
+                Timestamp = DateTime.UtcNow.Date
+            };
+
+            record.LastSuccessfulConnection = DateTime.UtcNow;
+            record.TotalSuccessfulConnections++;
+
+            dailyStatisticsTable.AddNewOrUpdateRecord(record);
+        }
+
+        SuccessfulConnections++;
+        AttemptedConnections++;
+    }
+
+    private void LogUnSuccessfullConnection(string reason)
+    {
+        using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+        {
+            TableOperations<DailyStatisticsRecord> dailyStatisticsTable = new TableOperations<DailyStatisticsRecord>(connection);
+            DailyStatisticsRecord record = dailyStatisticsTable.QueryRecordWhere("Meter = {0} AND Timestamp = {1}", this.Name, DateTime.UtcNow.Date) ?? new DailyStatisticsRecord()
+            {
+                Meter = this.Name,
+                Timestamp = DateTime.UtcNow.Date
+            };
+
+            record.LastUnsuccessfulConnection = DateTime.UtcNow;
+            record.TotalUnsuccessfulConnections++;
+            record.LastUnsuccessfulConnectionExplanation = reason;
+            dailyStatisticsTable.AddNewOrUpdateRecord(record);
+        }
+
+        FailedConnections++;
+        AttemptedConnections++;
     }
 
     #endregion
