@@ -243,7 +243,7 @@ GO
 CREATE TABLE DailyStatisticsRecord
 (
     ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
-    [TimeStamp] DATETIME2 NOT NULL,
+    [TimeStamp] DATE NOT NULL,
     BadDays INT NOT NULL DEFAULT 0,
     Meter VARCHAR(200) NOT NULL,
     LastSuccessfulConnection DATETIME2 NULL,
