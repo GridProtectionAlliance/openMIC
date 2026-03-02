@@ -267,8 +267,8 @@ public class OperationsController : ApiController
         DateTime day = DateTime.UtcNow.Date;
         using (AdoDataConnection connection = new("systemSettings"))
         {
-            TableOperations<DailyStatistics> dailyStatsTable = new(connection);
-            DailyStatistics dailyStats = dailyStatsTable.QueryRecordWhere("Meter = {0} AND TimeStamp = {}", meter, day, day);
+            TableOperations<DailyStatisticsRecord> dailyStatsTable = new(connection);
+            DailyStatisticsRecord dailyStats = dailyStatsTable.QueryRecordWhere("Meter = {0} AND TimeStamp = {}", meter, day, day);
             if (dailyStats is null)
             {
                 return new DailyStatistics();
