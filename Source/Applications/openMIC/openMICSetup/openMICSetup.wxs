@@ -842,6 +842,14 @@
           <netfx:NativeImage Id="ngen_Antlr3.Runtime.dll" Platform="64bit" Priority="0" AppBaseDirectory="INSTALLFOLDER"/>
         </File>
       </Component>
+      <Component Id="openXDA.APIAuthentication">
+        <File Id="openXDA.APIAuthentication.dll" Name="openXDA.APIAuthentication.dll" Source="$(var.SolutionDir)\Dependencies\openXDA\openXDA.APIAuthentication.dll">
+        </File>
+      </Component>
+      <Component Id="openXDA.APIMiddleware">
+        <File Id="openXDA.APIMiddleware.dll" Name="openXDA.APIMiddleware.dll" Source="$(var.SolutionDir)\Dependencies\openXDA\openXDA.APIMiddleware.dll">
+        </File>
+      </Component>
       <Component Id="ExpressionEvaluator">
         <File Id="ExpressionEvaluator.dll" Name="ExpressionEvaluator.dll" Source="$(var.SolutionDir)\Dependencies\GSF\ExpressionEvaluator.dll">
           <netfx:NativeImage Id="ngen_ExpressionEvaluator.dll" Platform="64bit" Priority="0" AppBaseDirectory="INSTALLFOLDER"/>
