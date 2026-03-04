@@ -116,7 +116,6 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
     private static readonly HttpClient s_http;
     private static bool? s_useRemoteScheduler;
     private static HashSet<string> s_allowedSectionMapPaths;
-    private static APIQuery s_remoteScheduleAPI;
 
     private static readonly string[] s_allowedSectionMaps = { "", "Dranetz", "PQube" };
 
@@ -163,8 +162,6 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
 
         // Create a shared HTTP client instance
         s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
-
-        s_remoteScheduleAPI = new APIQuery(Startup.APIKey, Startup.APIToken, RemoteSchedulerUri);
     }
 
     private static void HandleProgressUpdated(object sender, EventArgs<string, List<ProgressUpdate>> e)
@@ -216,25 +213,27 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
 
         if (UseRemoteScheduler)
         {
+            string remoteSchedulerUri = RemoteSchedulerUri;
+
+            if (string.IsNullOrEmpty(remoteSchedulerUri))
+                return;
+
             Task.Run(async () =>
             {
                 try
                 {
-                    if (s_remoteScheduleAPI is not null)
+                    APIQuery apiQuery = new(Startup.APIKey, Startup.APIToken, remoteSchedulerUri);
+                    string content = JArray.FromObject(progressUpdates).ToString();
+
+                    void ConfigureRequest(HttpRequestMessage request)
                     {
-
-                        string content = JArray.FromObject(progressUpdates).ToString();
-
-                        void ConfigureRequest(HttpRequestMessage request)
-                        {
-                            request.Method = HttpMethod.Post;
-                            request.Headers.Accept.Clear();
-                            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                            request.Content = new StringContent(content, Encoding.UTF8, "application/json");
-                        }
-
-                        await s_remoteScheduleAPI.SendWebRequestAsync(ConfigureRequest, $"/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}").ConfigureAwait(false);
+                        request.Method = HttpMethod.Post;
+                        request.Headers.Accept.Clear();
+                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        request.Content = new StringContent(content, Encoding.UTF8, "application/json");
                     }
+
+                    await apiQuery.SendWebRequestAsync(ConfigureRequest, $"/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}").ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
