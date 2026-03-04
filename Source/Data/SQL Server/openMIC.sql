@@ -3437,6 +3437,21 @@ CREATE TABLE NodeCheckin
 )
 GO
 
+CREATE TABLE DailyStatisticsRecord
+(
+    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+    [Timestamp] DATE NOT NULL,
+    BadDays INT NOT NULL DEFAULT 0,
+    Meter VARCHAR(200) NOT NULL,
+    LastSuccessfulConnection DATETIME2 NULL,
+    LastUnsuccessfulConnection DATETIME2 NULL,
+    LastUnsuccessfulConnectionExplanation VARCHAR(MAX) NULL,
+    TotalSuccessfulConnections INT NOT NULL DEFAULT 0,
+    TotalUnsuccessfulConnections INT NOT NULL DEFAULT 0
+    CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE (Meter ASC, [Timestamp] DESC)
+)
+GO
+
 --------------------------------------------------------------------------------
 
 -- The following procedure is used by the StatusLog_Email trigger that follows

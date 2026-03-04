@@ -2075,6 +2075,19 @@ CREATE TABLE DranetzTrendingCheckpoint(
     CONSTRAINT IX_DranetzTrendingCheckpoint_Device UNIQUE (Device ASC)
 );
 
+CREATE TABLE DailyStatisticsRecord(
+    ID SERIAL NOT NULL PRIMARY KEY,
+    Timestamp TIMESTAMP NOT NULL,
+    BadDays INTEGER NOT NULL DEFAULT 0,
+    Meter VARCHAR(200) NOT NULL,
+    LastSuccessfulConnection TIMESTAMP NULL,
+    LastUnsuccessfulConnection TIMESTAMP NULL,
+    LastUnsuccessfulConnectionExplanation TEXT NULL,
+    TotalSuccessfulConnections INTEGER NOT NULL DEFAULT 0,
+    TotalUnsuccessfulConnections INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE (Meter ASC, [Timestamp] DESC)
+);
+
 DROP VIEW TrackedTable;
 
 CREATE VIEW TrackedTable AS
