@@ -693,7 +693,7 @@ public class ServiceHost : ServiceHostBase
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             }
 
-            HttpResponseMessage response = new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+            using HttpResponseMessage response = new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
                 .SendWebRequestAsync(ConfigureRequest, "/api/Operations/Version")
                 .GetAwaiter()
                 .GetResult();
@@ -858,7 +858,7 @@ public class ServiceHost : ServiceHostBase
                                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                             }
 
-                            HttpResponseMessage response = await new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+                            using HttpResponseMessage response = await new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
                                 .SendWebRequestAsync(ConfigureRequest, $"/api/Operations/RelayCommand?command={UrlEncode(commandInput)}").ConfigureAwait(false);
 
                             LogStatusMessage(response.StatusCode == HttpStatusCode.OK ?
@@ -895,7 +895,6 @@ public class ServiceHost : ServiceHostBase
     #region [ Static ]
 
     // Static Fields
-    private static readonly HttpClient s_http = new(new HttpClientHandler { UseCookies = false });
     private static readonly Random s_shuffleGenerator = new();
 
     // Static Methods

@@ -113,7 +113,6 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
     private static int s_modbusProtocolID;
     private static readonly Func<char, bool> s_isInvalidAcronymChar;
     private static readonly char[] s_digits;
-    private static readonly HttpClient s_http;
     private static bool? s_useRemoteScheduler;
     private static HashSet<string> s_allowedSectionMapPaths;
 
@@ -159,9 +158,6 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
             lock (acronymValidator)
                 return !acronymValidator.IsValid(testChar);
         };
-
-        // Create a shared HTTP client instance
-        s_http = new HttpClient(new HttpClientHandler { UseCookies = false });
     }
 
     private static void HandleProgressUpdated(object sender, EventArgs<string, List<ProgressUpdate>> e)
@@ -233,7 +229,8 @@ public partial class DataHub : RecordOperationsHub<DataHub>, IDataSubscriptionOp
                         request.Content = new StringContent(content, Encoding.UTF8, "application/json");
                     }
 
-                    await apiQuery.SendWebRequestAsync(ConfigureRequest, $"/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}").ConfigureAwait(false);
+                    using HttpResponseMessage response = await apiQuery.SendWebRequestAsync(ConfigureRequest, $"/api/Operations/ProgressUpdate?deviceName={WebUtility.UrlEncode(deviceName)}").ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
                 }
                 catch (Exception ex)
                 {
