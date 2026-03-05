@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -34,10 +35,10 @@ using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Newtonsoft.Json;
 using GSF;
 using GSF.Units;
 using GSF.Web.Security;
+using Newtonsoft.Json;
 using openMIC.Model;
 
 namespace openMIC;
@@ -238,13 +239,14 @@ public partial class DataHub
 
         DranetzCredential credential = DrantezGetCredential(deviceID);
         using HttpClient client = credential.GetNewClient();
-        HttpResponseMessage result = await client.GetAsync(credential.GetRequestUri(cmdParam));
+        using HttpResponseMessage result = await client.GetAsync(credential.GetRequestUri(cmdParam));
 
         if (!result.IsSuccessStatusCode)
             throw new HttpRequestException($"Failed to get command, result = {result.StatusCode}: {result.ReasonPhrase}");
 
+        using Stream resultStream = await result.Content.ReadAsStreamAsync();
         XmlDocument commandResult = new();
-        commandResult.Load(await result.Content.ReadAsStreamAsync());
+        commandResult.Load(resultStream);
 
         if (clearCookies)
         {
@@ -297,7 +299,7 @@ public partial class DataHub
 
         using HttpClient client = credential.GetNewClient();
         StringContent content = new(commandResult.InnerXml, Encoding.UTF8, "text/xml");
-        HttpResponseMessage result = await client.PostAsync(credential.GetRequestUri(cmdParam), content);
+        using HttpResponseMessage result = await client.PostAsync(credential.GetRequestUri(cmdParam), content);
 
         if (!result.IsSuccessStatusCode)
             throw new HttpRequestException($"Failed to send command, result = {result.StatusCode}: {result.ReasonPhrase}");
