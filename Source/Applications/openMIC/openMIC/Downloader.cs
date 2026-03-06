@@ -1970,40 +1970,53 @@ public class Downloader : InputAdapterBase
             externalOperation.StartInfo.UseShellExecute = false;
             externalOperation.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
 
-            externalOperation.OutputDataReceived += (sender, processArgs) =>
+            externalOperation.Start();
+
+            void ProcessLineFromStdout(string line)
             {
-                if (string.IsNullOrWhiteSpace(processArgs.Data))
+                if (string.IsNullOrWhiteSpace(line))
                     return;
 
                 lastUpdate = DateTime.UtcNow;
 
-                if (HandleExternalOperationMessage(processArgs.Data, out _))
+                if (HandleExternalOperationMessage(line, out _))
                     return;
 
-                if (processArgs.Data == RequeuePollingTaskTemplate)
+                if (line == RequeuePollingTaskTemplate)
                 {
                     QueueTasksByID(task.Name, QueuePriority.Normal);
                     return;
                 }
 
-                OnStatusMessage(MessageLevel.Info, processArgs.Data);
-                OnProgressUpdated(this, new ProgressUpdate { Message = processArgs.Data });
-            };
+                OnStatusMessage(MessageLevel.Info, line);
+                OnProgressUpdated(this, new ProgressUpdate { Message = line });
+            }
 
-            externalOperation.ErrorDataReceived += (sender, processArgs) =>
+            void ProcessLineFromStderr(string line)
             {
-                if (string.IsNullOrWhiteSpace(processArgs.Data))
+                if (string.IsNullOrWhiteSpace(line))
                     return;
 
-                task.Fail(processArgs.Data);
+                task.Fail(line);
                 lastUpdate = DateTime.UtcNow;
-                OnStatusMessage(MessageLevel.Error, processArgs.Data);
-                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = processArgs.Data });
-            };
+                OnStatusMessage(MessageLevel.Error, line);
+                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = line });
+            }
 
-            externalOperation.Start();
-            externalOperation.BeginOutputReadLine();
-            externalOperation.BeginErrorReadLine();
+            void ReadLines(TextReader reader, Action<string> processLine)
+            {
+                while (true)
+                {
+                    string line = reader.ReadLine();
+                    if (line is null) break;
+                    processLine(line);
+                }
+            }
+
+            Thread stdoutThread = new(() => ReadLines(externalOperation.StandardOutput, ProcessLineFromStdout));
+            Thread stderrThread = new(() => ReadLines(externalOperation.StandardError, ProcessLineFromStderr));
+            stdoutThread.Start();
+            stderrThread.Start();
 
             while (!externalOperation.WaitForExit(1000))
             {
@@ -2025,6 +2038,9 @@ public class Downloader : InputAdapterBase
                     return;
                 }
             }
+
+            stdoutThread.Join();
+            stderrThread.Join();
 
             OnStatusMessage(MessageLevel.Info, $"External operation \"{command}\" completed with status code {externalOperation.ExitCode}.");
             OnProgressUpdated(this, new ProgressUpdate { Message = $"External action complete: exit code {externalOperation.ExitCode}." });
@@ -2420,19 +2436,20 @@ public class Downloader : InputAdapterBase
             ancestor.Refresh();
 
             int ancestorID = ancestor.Id;
-            if (!ancestor.HasExited || ancestorID == 0)
+
+            if (ancestor.HasExited)
                 return;
+
+            if (ancestorID == 0)
+                throw new InvalidOperationException("Child process ID is zero");
 
             Process[] processes = Process.GetProcesses();
             Dictionary<int, Process> processLookup = processes.ToDictionary(process => process.Id);
 
-            void Kill(int processID)
+            void KillByID(int processID)
             {
-                if (!processLookup.TryGetValue(processID, out Process process))
-                    return;
-
-                try { process.Kill(); }
-                catch (ArgumentException) { /* Process already exited */ }
+                if (processLookup.TryGetValue(processID, out Process process))
+                    Kill(process);
             }
 
             void Descend(int processID)
@@ -2450,15 +2467,34 @@ public class Downloader : InputAdapterBase
                         object obj = child["ProcessID"];
                         int childID = Convert.ToInt32(obj);
                         Descend(childID);
+                        KillByID(childID);
                     }
                 }
-
-                Kill(processID);
             }
 
             Descend(ancestorID);
         }
         catch (Exception ex)
+        {
+            LogException("Failed to terminate process tree with ancestor \"{1}\" ({0}): {2}", ex);
+        }
+
+        try
+        {
+            Kill(ancestor);
+        }
+        catch (Exception ex)
+        {
+            LogException("Failed to terminate process \"{1}\" ({0}): {2}", ex);
+        }
+
+        static void Kill(Process process)
+        {
+            try { process.Kill(); }
+            catch (ArgumentException) { /* Process already exited */ }
+        }
+
+        void LogException(string messageFormat, Exception innerException)
         {
             int ancestorID;
             try { ancestorID = ancestor.Id; }
@@ -2468,7 +2504,9 @@ public class Downloader : InputAdapterBase
             try { ancestorName = ancestor.ProcessName; }
             catch { ancestorName = "Unknown Process"; }
 
-            Program.Host.LogException(new InvalidOperationException($"Failed to terminate process tree with ancestor \"{ancestorName}\" ({ancestorID}): {ex.Message}", ex));
+            string message = string.Format(messageFormat, ancestorID, ancestorName, innerException.Message);
+            Exception ex = new(message, innerException);
+            Program.Host.LogException(ex);
         }
     }
 
