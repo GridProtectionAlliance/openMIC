@@ -2420,19 +2420,20 @@ public class Downloader : InputAdapterBase
             ancestor.Refresh();
 
             int ancestorID = ancestor.Id;
-            if (!ancestor.HasExited || ancestorID == 0)
+
+            if (ancestor.HasExited)
                 return;
+
+            if (ancestorID == 0)
+                throw new InvalidOperationException("Child process ID is zero");
 
             Process[] processes = Process.GetProcesses();
             Dictionary<int, Process> processLookup = processes.ToDictionary(process => process.Id);
 
-            void Kill(int processID)
+            void KillByID(int processID)
             {
-                if (!processLookup.TryGetValue(processID, out Process process))
-                    return;
-
-                try { process.Kill(); }
-                catch (ArgumentException) { /* Process already exited */ }
+                if (processLookup.TryGetValue(processID, out Process process))
+                    Kill(process);
             }
 
             void Descend(int processID)
@@ -2450,15 +2451,34 @@ public class Downloader : InputAdapterBase
                         object obj = child["ProcessID"];
                         int childID = Convert.ToInt32(obj);
                         Descend(childID);
+                        KillByID(childID);
                     }
                 }
-
-                Kill(processID);
             }
 
             Descend(ancestorID);
         }
         catch (Exception ex)
+        {
+            LogException("Failed to terminate process tree with ancestor \"{1}\" ({0}): {2}", ex);
+        }
+
+        try
+        {
+            Kill(ancestor);
+        }
+        catch (Exception ex)
+        {
+            LogException("Failed to terminate process \"{1}\" ({0}): {2}", ex);
+        }
+
+        static void Kill(Process process)
+        {
+            try { process.Kill(); }
+            catch (ArgumentException) { /* Process already exited */ }
+        }
+
+        void LogException(string messageFormat, Exception innerException)
         {
             int ancestorID;
             try { ancestorID = ancestor.Id; }
@@ -2468,7 +2488,9 @@ public class Downloader : InputAdapterBase
             try { ancestorName = ancestor.ProcessName; }
             catch { ancestorName = "Unknown Process"; }
 
-            Program.Host.LogException(new InvalidOperationException($"Failed to terminate process tree with ancestor \"{ancestorName}\" ({ancestorID}): {ex.Message}", ex));
+            string message = string.Format(messageFormat, ancestorID, ancestorName, innerException.Message);
+            Exception ex = new(message, innerException);
+            Program.Host.LogException(ex);
         }
     }
 
