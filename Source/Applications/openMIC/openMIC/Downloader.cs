@@ -1970,40 +1970,53 @@ public class Downloader : InputAdapterBase
             externalOperation.StartInfo.UseShellExecute = false;
             externalOperation.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
 
-            externalOperation.OutputDataReceived += (sender, processArgs) =>
+            externalOperation.Start();
+
+            void ProcessLineFromStdout(string line)
             {
-                if (string.IsNullOrWhiteSpace(processArgs.Data))
+                if (string.IsNullOrWhiteSpace(line))
                     return;
 
                 lastUpdate = DateTime.UtcNow;
 
-                if (HandleExternalOperationMessage(processArgs.Data, out _))
+                if (HandleExternalOperationMessage(line, out _))
                     return;
 
-                if (processArgs.Data == RequeuePollingTaskTemplate)
+                if (line == RequeuePollingTaskTemplate)
                 {
                     QueueTasksByID(task.Name, QueuePriority.Normal);
                     return;
                 }
 
-                OnStatusMessage(MessageLevel.Info, processArgs.Data);
-                OnProgressUpdated(this, new ProgressUpdate { Message = processArgs.Data });
-            };
+                OnStatusMessage(MessageLevel.Info, line);
+                OnProgressUpdated(this, new ProgressUpdate { Message = line });
+            }
 
-            externalOperation.ErrorDataReceived += (sender, processArgs) =>
+            void ProcessLineFromStderr(string line)
             {
-                if (string.IsNullOrWhiteSpace(processArgs.Data))
+                if (string.IsNullOrWhiteSpace(line))
                     return;
 
-                task.Fail(processArgs.Data);
+                task.Fail(line);
                 lastUpdate = DateTime.UtcNow;
-                OnStatusMessage(MessageLevel.Error, processArgs.Data);
-                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = processArgs.Data });
-            };
+                OnStatusMessage(MessageLevel.Error, line);
+                OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = line });
+            }
 
-            externalOperation.Start();
-            externalOperation.BeginOutputReadLine();
-            externalOperation.BeginErrorReadLine();
+            void ReadLines(TextReader reader, Action<string> processLine)
+            {
+                while (true)
+                {
+                    string line = reader.ReadLine();
+                    if (line is null) break;
+                    processLine(line);
+                }
+            }
+
+            Thread stdoutThread = new(() => ReadLines(externalOperation.StandardOutput, ProcessLineFromStdout));
+            Thread stderrThread = new(() => ReadLines(externalOperation.StandardError, ProcessLineFromStderr));
+            stdoutThread.Start();
+            stderrThread.Start();
 
             while (!externalOperation.WaitForExit(1000))
             {
@@ -2025,6 +2038,9 @@ public class Downloader : InputAdapterBase
                     return;
                 }
             }
+
+            stdoutThread.Join();
+            stderrThread.Join();
 
             OnStatusMessage(MessageLevel.Info, $"External operation \"{command}\" completed with status code {externalOperation.ExitCode}.");
             OnProgressUpdated(this, new ProgressUpdate { Message = $"External action complete: exit code {externalOperation.ExitCode}." });
