@@ -741,10 +741,21 @@ public class ServiceHost : ServiceHostBase
     {
         foreach (string acronym in acronyms)
         {
-            IAdapter adapter = GetRequestedAdapter(new ClientRequestInfo(null, ClientRequest.Parse($"invoke {acronym}")));
+            if (!InputAdapters.TryGetAdapterByName(acronym, out IInputAdapter adapter))
+            {
+                Exception ex = new($"""Failed to queue task "{taskID}" at priority "{priority}": could not find Downloader adapter "{acronym}".""");
+                base.LogException(ex);
+                continue;
+            }
 
-            if (adapter is Downloader downloader)
-                downloader.QueueTasksByID(taskID, priority);
+            if (adapter is not Downloader downloader)
+            {
+                Exception ex = new($"""Failed to queue task "{taskID}" at priority "{priority}": adapter "{acronym}" exists, but it is not a Downloader adapter.""");
+                base.LogException(ex);
+                continue;
+            }
+
+            downloader.QueueTasksByID(taskID, priority);
         }
     }
 
