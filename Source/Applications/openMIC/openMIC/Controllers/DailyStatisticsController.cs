@@ -1,7 +1,7 @@
 ﻿//******************************************************************************************************
-//  DailyStatistics.cs - Gbtc
+//  DailyStatisticsController.cs - Gbtc
 //
-//  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
+//  Copyright © 2025, Grid Protection Alliance.  All Rights Reserved.
 //
 //  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
 //  the NOTICE file distributed with this work for additional information regarding copyright ownership.
@@ -16,46 +16,39 @@
 //
 //  Code Modification History:
 //  ----------------------------------------------------------------------------------------------------
-//  06/22/2021 - J. Ritchie Carroll
+//  03/09/2026 - Natalie Beatty
 //       Generated original version of source code.
 //
 //******************************************************************************************************
 
-using System;
-using GSF.Data.Model;
-using System.Data;
 using GSF.Data;
+using GSF.Data.Model;
+using GSF.Web.Model;
+using Newtonsoft.Json;
+using openMIC.Model;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
 
-namespace openMIC.Model;
+// ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
+namespace openMIC;
 
 /// <summary>
-/// Stores a <see cref="DailyStatistics"/> record for a specific Day and Meter in the database.
+///
 /// </summary>
-[AllowSearch, ViewOnly]
-public class DailyStatisticsRecord
+public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
 {
-    [PrimaryKey(true)]
-    public int ID { get; set; }
 
-    public DateTime Timestamp { get; set; }
+    /// <inheritdoc/>
 
-    public int BadDays { get; set; }
-
-    public string Meter { get; set; }
-
-    [FieldDataType(DbType.DateTime2, DatabaseType.SQLServer)]
-    public DateTime? LastSuccessfulConnection { get; set; }
-
-    [FieldDataType(DbType.DateTime2, DatabaseType.SQLServer)]
-    public DateTime? LastUnsuccessfulConnection { get; set; }
-
-    public string LastUnsuccessfulConnectionExplanation { get; set; }
-
-    [NonRecordField]
-    public int TotalConnections => TotalSuccessfulConnections + TotalUnsuccessfulConnections;
-
-    public int TotalUnsuccessfulConnections { get; set; }
-
-    public int TotalSuccessfulConnections { get; set; }
+    [HttpPost, ActionName("SearchableList")]
+    public override IHttpActionResult GetSearchableList([FromBody] PostData postData)
+    {
+        return base.GetSearchableList(postData);
+    }
 
 }
