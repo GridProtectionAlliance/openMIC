@@ -37,7 +37,7 @@ using System.Web.UI.WebControls;
 namespace openMIC;
 
 /// <summary>
-///
+/// Controller that provides access to <see cref="DailyStatisticsRecord />
 /// </summary>
 public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
 {
