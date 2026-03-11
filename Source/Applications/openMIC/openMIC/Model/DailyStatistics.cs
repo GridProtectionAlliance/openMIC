@@ -31,7 +31,17 @@ namespace openMIC.Model;
 /// <summary>
 /// Stores a <see cref="DailyStatistics"/> record for a specific Day and Meter in the database.
 /// </summary>
-[AllowSearch, ViewOnly]
+[CustomView(@"
+    SELECT 
+    MAX(r1.Timestamp) AS Timestamp,
+    r1.Meter,
+	MAX(r1.LastSuccessfulConnection) AS LastSuccessfulConnection,
+    MAX(r1.LastUnsuccessfulConnection) AS LastUnsuccessfulConnection,
+	(SELECT r2.TotalSuccessfulConnections FROM DailyStatisticsRecord r2 WHERE r2.Meter = r1.Meter AND MAX(r1.Timestamp) = r2.Timestamp) AS TotalSuccessfulConnections,
+	(SELECT r2.TotalUnsuccessfulConnections FROM DailyStatisticsRecord r2 WHERE r2.Meter = r1.Meter AND MAX(r1.Timestamp) = r2.Timestamp) AS TotalUnsuccessfulConnections,
+	(SELECT r2.BadDays FROM DailyStatisticsRecord r2 WHERE r2.Meter = r1.Meter AND MAX(r1.Timestamp) = r2.Timestamp) AS BadDays
+    FROM DailyStatisticsRecord r1 Group BY (r1.Meter)
+    "), AllowSearch, ViewOnly]
 public class DailyStatisticsRecord
 {
     [PrimaryKey(true)]

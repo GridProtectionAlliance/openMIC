@@ -21,18 +21,17 @@
 //
 //******************************************************************************************************
 
+using System;
 using GSF.Data;
 using GSF.Data.Model;
 using GSF.Web.Model;
 using Newtonsoft.Json;
 using openMIC.Model;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
+using System.Web.UI.WebControls;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace openMIC;
@@ -42,13 +41,36 @@ namespace openMIC;
 /// </summary>
 public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
 {
-
     /// <inheritdoc/>
-
     [HttpPost, ActionName("SearchableList")]
     public override IHttpActionResult GetSearchableList([FromBody] PostData postData)
     {
         return base.GetSearchableList(postData);
     }
 
+    [HttpGet]
+    public override IHttpActionResult Get([FromUri] string meter = null) // will be meter name
+    {
+        if (!GetAuthCheck())
+        {
+            return Unauthorized();
+        }
+
+        if (meter is null)
+        {
+            return Ok();
+        }
+        using (AdoDataConnection connection = ConnectionFactory())
+        {
+            string sql = $"SELECT * FROM DailyStatisticsRecord WHERE meter = '{meter}';";
+            object[] param = [];
+
+            if (RootQueryRestriction != null)
+            {
+                param = RootQueryRestriction.Parameters.ToArray();
+            }
+            DataTable dataTbl = connection.RetrieveData(sql, param);
+            return Ok(JsonConvert.SerializeObject(dataTbl));
+        }
+    }
 }
