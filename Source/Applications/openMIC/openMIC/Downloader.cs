@@ -2237,7 +2237,7 @@ public class Downloader : InputAdapterBase
                     BadDays = 0
                 };
 
-                DailyStatisticsRecord[] lastRecord = dailyStatisticsTable.QueryRecords("Timestamp DESC",new RecordRestriction("Meter = {0}", this.Name), 2)).ToArray();
+                DailyStatisticsRecord[] lastRecord = dailyStatisticsTable.QueryRecords("Timestamp DESC",new RecordRestriction("Meter = {0}", this.Name, 2)).ToArray();
                 if (lastRecord.Length > 0)
                 {
                     if (lastRecord[0].TotalUnsuccessfulConnections > 100)
@@ -2281,7 +2281,7 @@ public class Downloader : InputAdapterBase
                     BadDays = 0
                 };
 
-                DailyStatisticsRecord[] lastRecord = dailyStatisticsTable.QueryRecords("Timestamp DESC",new RecordRestriction("Meter = {0}", this.Name), 2)).ToArray();
+                DailyStatisticsRecord[] lastRecord = dailyStatisticsTable.QueryRecords("Timestamp DESC",new RecordRestriction("Meter = {0}", this.Name, 2)).ToArray();
                 if (lastRecord.Length > 0)
                 {
                     if (lastRecord[0].TotalUnsuccessfulConnections > 100)
