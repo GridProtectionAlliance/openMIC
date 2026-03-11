@@ -2007,9 +2007,16 @@ public class Downloader : InputAdapterBase
             {
                 while (true)
                 {
-                    string line = reader.ReadLine();
-                    if (line is null) break;
-                    processLine(line);
+                    try
+                    {
+                        string line = reader.ReadLine();
+                        if (line is null) break;
+                        processLine(line);
+                    }
+                    catch (Exception ex)
+                    {
+                        OnProcessException(MessageLevel.Error, ex);
+                    }
                 }
             }
 
