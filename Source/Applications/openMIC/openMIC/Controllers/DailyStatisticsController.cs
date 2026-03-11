@@ -49,7 +49,7 @@ public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
     }
 
     [HttpGet]
-    public override IHttpActionResult Get([FromUri] string meter = null) // will be meter name
+    public override IHttpActionResult Get([FromUri] string meter = null)
     {
         if (!GetAuthCheck())
         {
