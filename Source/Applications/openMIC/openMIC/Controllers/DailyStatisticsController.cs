@@ -21,17 +21,11 @@
 //
 //******************************************************************************************************
 
-using System;
 using GSF.Data;
 using GSF.Data.Model;
 using GSF.Web.Model;
-using Newtonsoft.Json;
 using openMIC.Model;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Web.Http;
-using System.Web.UI.WebControls;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace openMIC;
@@ -62,15 +56,8 @@ public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
         }
         using (AdoDataConnection connection = ConnectionFactory())
         {
-            string sql = $"SELECT * FROM DailyStatisticsRecord WHERE meter = '{meter}';";
-            object[] param = [];
-
-            if (RootQueryRestriction != null)
-            {
-                param = RootQueryRestriction.Parameters.ToArray();
-            }
-            DataTable dataTbl = connection.RetrieveData(sql, param);
-            return Ok(JsonConvert.SerializeObject(dataTbl));
+            TableOperations<DailyStatisticsRecord> tableOp = new(connection);
+            return Ok(tableOp.QueryRecordsWhere("Meter = {0}", meter));
         }
     }
 }
