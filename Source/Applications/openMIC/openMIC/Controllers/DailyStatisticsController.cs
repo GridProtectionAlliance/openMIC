@@ -42,6 +42,7 @@ public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
         return base.GetSearchableList(postData);
     }
 
+    /// <inheritdoc/>
     [HttpGet]
     public override IHttpActionResult Get([FromUri] string meter = null)
     {
