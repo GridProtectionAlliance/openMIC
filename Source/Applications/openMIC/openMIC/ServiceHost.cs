@@ -532,12 +532,15 @@ public class ServiceHost : ServiceHostBase
             return;
         }
 
+        LogStatusMessage($"Distributing {acronyms.Length} \"{taskID}\" tasks at {priority} priority.");
+
         // Ensure we don't unduly load tasks more frequently
         // onto any particular machine in the pool
         pooledMachines = [.. pooledMachines];
         Shuffle(pooledMachines);
 
-        Dictionary<string, (string FailureReason, int nQueued)> nodeLog = [];
+        List<NodeCheckin> nodeCheckins = [.. pooledMachines
+            .Select(machine => new NodeCheckin() { Url = machine })];
 
         // Identify all machines in the pool that are available to handle the request
         HashSet<string> unqueuedAcronyms = [.. acronyms];
@@ -562,7 +565,7 @@ public class ServiceHost : ServiceHostBase
                 ? task.Exception.Message
                 : "Found different versions of openMIC";
 
-            nodeLog[machine] = (isAvailable[i] ? "" : failureReason, 0);
+            nodeCheckins[i].FailureReason = !isAvailable[i] ? failureReason : null;
         }
 
         while (unqueuedAcronyms.Count > 0)
@@ -591,12 +594,16 @@ public class ServiceHost : ServiceHostBase
             Task[] requestTasks = [.. requests.Select((request, requestIndex) =>
             {
                 int machineIndex = availableMachines[requestIndex];
-
-                if (isLocal[machineIndex])
-                    return QueueTasksLocallyAsync(request, taskID, priority);
-
                 string targetMachine = pooledMachines[machineIndex];
-                return QueueTasksRemotelyAsync(targetMachine, request, taskID, priority);
+                NodeCheckin checkin = nodeCheckins[machineIndex];
+
+                Task queueTask = isLocal[machineIndex]
+                    ? QueueTasksLocallyAsync(request, taskID, priority)
+                    : QueueTasksRemotelyAsync(targetMachine, request, taskID, priority);
+
+                return queueTask.ContinueWith(
+                    _ => checkin.LastCheckin = DateTime.UtcNow,
+                    TaskContinuationOptions.NotOnFaulted);
             })];
 
             try { Task.WaitAll(requestTasks); }
@@ -609,13 +616,13 @@ public class ServiceHost : ServiceHostBase
                 Task task = requestTasks[i];
 
                 string targetMachine = pooledMachines[machineIndex];
-                int acronymsQueued = nodeLog[targetMachine].nQueued;
+                NodeCheckin checkin = nodeCheckins[machineIndex];
 
                 try
                 {
                     task.GetAwaiter().GetResult();
                     unqueuedAcronyms.ExceptWith(request);
-                    nodeLog[targetMachine] = ("", acronymsQueued + request.Length);
+                    checkin.TasksQueued += request.Length;
                 }
                 catch (Exception ex)
                 {
@@ -624,23 +631,18 @@ public class ServiceHost : ServiceHostBase
                     LogException(wrapper);
 
                     isAvailable[machineIndex] = false;
-                    nodeLog[targetMachine] = (message, acronymsQueued);
+                    checkin.FailureReason = message;
                 }
             }
         }
 
+        LogStatusMessage($"Finished distributing {acronyms.Length} \"{taskID}\" tasks at {priority} priority.");
+
         using AdoDataConnection connection = new("systemSettings");
-        TableOperations<NodeCheckin> tbl = new(connection);
+        TableOperations<NodeCheckin> nodeCheckinTable = new(connection);
 
-        foreach (var node in nodeLog)
-        {
-            NodeCheckin checkin = tbl.QueryRecordWhere("Url = {0}", node.Key) ?? new NodeCheckin() { Url = node.Key };
-            checkin.LastCheckin = DateTime.UtcNow;
-            checkin.FailureReason = node.Value.FailureReason;
-            checkin.TasksQueued = node.Value.nQueued;
-
-            tbl.AddNewOrUpdateRecord(checkin);
-        }
+        foreach (NodeCheckin checkin in nodeCheckins)
+            nodeCheckinTable.Upsert(checkin);
     }
 
     /// <summary>
