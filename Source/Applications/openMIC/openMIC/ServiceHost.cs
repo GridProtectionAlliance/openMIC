@@ -43,6 +43,7 @@ using GSF.IO;
 using GSF.Security;
 using GSF.Security.Model;
 using GSF.ServiceProcess;
+using GSF.Threading;
 using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
 using GSF.Web.Hosting;
@@ -85,7 +86,7 @@ public class ServiceHost : ServiceHostBase
     private bool m_serviceStopping;
     private bool m_disposed;
 
-    private CancellationTokenSource m_queueTasksCancellationTokenSource = null;
+    private ICancellationToken m_queueCancellationToken;
     private readonly List<(string acronym, string taskID)> m_queueTasksAcronym = [];
     private readonly object m_queueTasksLock = new();
 
@@ -651,45 +652,37 @@ public class ServiceHost : ServiceHostBase
     /// <param name="priority">Priority of task to use when queuing.</param>
     public void AggregateQueueTasks(string acronym, string taskID)
     {
-        CancellationToken cancellationToken;
+        // Different tasks can be queued in parallel
+        Task QueueTasksAsync(IGrouping<string, string> grouping) => Task.Run(() =>
+        {
+            try { QueueTasks([.. grouping], grouping.Key, QueuePriority.Normal); }
+            catch (Exception ex) { LogException(ex); }
+        });
+
+        Action action = () =>
+        {
+            List<IGrouping<string, string>> groupings;
+
+            lock (m_queueTasksLock)
+            {
+                groupings = [.. m_queueTasksAcronym
+                    .GroupBy(item => item.taskID, item => item.acronym)];
+
+                m_queueTasksAcronym.Clear();
+            }
+
+            foreach (IGrouping<string, string> grouping in groupings)
+                _ = QueueTasksAsync(grouping);
+        };
 
         lock (m_queueTasksLock)
         {
-            m_queueTasksCancellationTokenSource?.Cancel();
-            m_queueTasksCancellationTokenSource?.Dispose();
-            m_queueTasksCancellationTokenSource = new();
+            m_queueCancellationToken?.Cancel();
             m_queueTasksAcronym.Add((acronym, taskID));
-            cancellationToken = m_queueTasksCancellationTokenSource.Token;
+
+            // Wait for 1 second to allow for any additional requests to aggregate
+            m_queueCancellationToken = action.DelayAndExecute(1000);
         }
-
-        Task.Run(async () =>
-        {
-            try
-            {
-                List<IGrouping<string, string>> groupings;
-
-                // Wait for 1 second to allow for any additional requests to aggregate
-                await Task.Delay(1000, cancellationToken);
-
-                lock (m_queueTasksLock)
-                {
-                    // Check again to avoid race conditions
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    groupings = [.. m_queueTasksAcronym
-                        .GroupBy(item => item.taskID, item => item.acronym)];
-
-                    m_queueTasksAcronym.Clear();
-                }
-
-                foreach (IGrouping<string, string> grouping in groupings)
-                    QueueTasks([.. grouping], grouping.Key, QueuePriority.Normal);
-            }
-            catch (TaskCanceledException)
-            {
-                // Expected exception when task is cancelled.
-            }
-        });
     }
 
     /// <summary>
