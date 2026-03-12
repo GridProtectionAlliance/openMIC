@@ -539,9 +539,30 @@ public class ServiceHost : ServiceHostBase
         Dictionary<string, (string FailureReason, int nQueued)> nodeLog = [];
 
         // Identify all machines in the pool that are available to handle the request
-        bool[] isLocal = [.. pooledMachines.Select(Transport.IsLocalAddress)];
-        bool[] isAvailable = [..pooledMachines.Select((machine, index) => isLocal[index] || IsAvailableForQueue(machine, nodeLog))];
         HashSet<string> unqueuedAcronyms = [.. acronyms];
+        bool[] isLocal = [.. pooledMachines.Select(Transport.IsLocalAddress)];
+
+        // Check each node to see if they are available
+        Task<bool>[] availabilityTasks = [.. pooledMachines
+            .Select((machine, index) => isLocal[index] ? Task.FromResult(true) : IsAvailableForQueueAsync(machine))];
+
+        try { Task.WaitAll(availabilityTasks); }
+        catch { /* We'll check the result of each task individually */ }
+
+        bool[] isAvailable = [.. availabilityTasks
+            .Select(task => !task.IsFaulted && task.Result)];
+
+        for (int i = 0; i < availabilityTasks.Length; i++)
+        {
+            string machine = pooledMachines[i];
+            Task<bool> task = availabilityTasks[i];
+
+            string failureReason = task.IsFaulted
+                ? task.Exception.Message
+                : "Found different versions of openMIC";
+
+            nodeLog[machine] = (isAvailable[i] ? "" : failureReason, 0);
+        }
 
         while (unqueuedAcronyms.Count > 0)
         {
@@ -679,45 +700,32 @@ public class ServiceHost : ServiceHostBase
     /// checking for a successful response,
     /// and ensuring the target machine has the same version of OpenMIC.
     /// </remarks>
-    private bool IsAvailableForQueue(string targetMachine, Dictionary<string, (string FailureReason, int nQueued)> nodeLog)
+    private async Task<bool> IsAvailableForQueueAsync(string targetMachine)
     {
+        static void ConfigureRequest(HttpRequestMessage request)
+        {
+            request.Method = HttpMethod.Get;
+            request.Headers.Accept.Clear();
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        }
+
         try
         {
-            if (!nodeLog.ContainsKey(targetMachine))
-                nodeLog.Add(targetMachine, ("", 0));
+            using HttpResponseMessage response = await new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+                .SendWebRequestAsync(ConfigureRequest, "/api/Operations/Version");
 
-            void ConfigureRequest(HttpRequestMessage request)
-            {
-                request.Method = HttpMethod.Get;
-                request.Headers.Accept.Clear();
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            }
+            response.EnsureSuccessStatusCode();
 
-            using HttpResponseMessage response = new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
-                .SendWebRequestAsync(ConfigureRequest, "/api/Operations/Version")
-                .GetAwaiter()
-                .GetResult();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                nodeLog[targetMachine] = ($"Failed to establish connection to target machine, HTTP response = {response.StatusCode}: {response.ReasonPhrase}", 0);
-                return false;
-            }
-
-            string remoteVersion = response.Content
-                .ReadAsStringAsync()
-                .GetAwaiter()
-                .GetResult();
-
-            bool versionMatch = remoteVersion == Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            if (!versionMatch) nodeLog[targetMachine] = ("Found different versions of openMIC", 0);
-            return versionMatch;
+            string remoteVersion = await response.Content.ReadAsStringAsync();
+            string localVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            return remoteVersion == localVersion;
         }
         catch (Exception ex)
         {
-            LogException(new InvalidOperationException($"Failed to check availability of pool machine \"{targetMachine}\" for queueing tasks: {ex.Message}", ex));
-            nodeLog[targetMachine] = ($"Failed to establish connection to target machine: {ex.Message}", 0);
-            return false;
+            string message = $"Failed to check availability of pool machine \"{targetMachine}\" for queueing tasks: {ex.Message}";
+            InvalidOperationException wrapper = new(message, ex);
+            LogException(wrapper);
+            throw;
         }
     }
 
