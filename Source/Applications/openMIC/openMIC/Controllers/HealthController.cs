@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -58,6 +59,7 @@ public class HealthController : ApiController
     public IHttpActionResult GetSystemStatus()
     {
         List<StatusItem> statusMessages = [];
+        DateTime now = DateTime.UtcNow;
 
         statusMessages.Add(new()
         {
@@ -67,35 +69,40 @@ public class HealthController : ApiController
 
         using AdoDataConnection connection = new("systemSettings");
         TableOperations<NodeCheckin> tbl = new(connection);
-        List<NodeCheckin> nodeStatus = [.. tbl.QueryRecordsWhere("LastCheckin >= {0}", DateTime.UtcNow.AddMinutes(-60))];
+        List<NodeCheckin> nodeStatus = [.. tbl.QueryRecordsWhere("LastCheckin >= {0}", now.AddMinutes(-60))];
 
-        if (nodeStatus.Count < 1)
+        List<(string Task, List<NodeCheckin> Records)> statusGroups = nodeStatus.GroupBy(n => n.Task).OrderBy(g => g.Select(n => (now - n.LastCheckin).TotalSeconds).Min()).Select(g => (g.Key, g.ToList())).ToList();
+        List<(string Task, List<NodeCheckin> Records)> nodeGroups = nodeStatus.GroupBy(n => n.Url).OrderBy(g => g.Select(n => (now - n.LastCheckin).TotalSeconds).Min()).Select(g => (g.Key, g.ToList())).ToList();
+
+        if (statusGroups.Count < 1)
             statusMessages.Add(new()
             {
                 Status = "Error",
                 Description = "System has not queued anything on the configured nodes in the last hour"
             });
+        else
+        {
+            int nSuccess = nodeGroups.Count(n => n.Records.Count(r => string.IsNullOrEmpty(r.FailureReason)) > 0);
+            int nFailure = nodeGroups.Count - nSuccess;
 
-        int nSuccess = nodeStatus.Count(n => string.IsNullOrEmpty(n.FailureReason));
-        int nFailure = nodeStatus.Count - nSuccess;
-
-        if (nSuccess > 0)
-            statusMessages.Add(new()
-            {
-                Status = "Success",
-                Description = $"System has successfully queued tasks on {nSuccess} nodes in the last hour"
-            });
+            if (nSuccess > 0)
+                statusMessages.Add(new()
+                {
+                    Status = "Success",
+                    Description = $"System has successfully queued tasks on {nSuccess} nodes in the last hour"
+                });
 
 
-        if (nFailure > 0)
-            statusMessages.Add(new()
-            {
-                Status = "Error",
-                Description = $"System was not successful queuing tasks on {nFailure} nodes in the last hour"
-            });
+            if (nFailure > 0)
+                statusMessages.Add(new()
+                {
+                    Status = "Error",
+                    Description = $"System was not successful queuing tasks on {nFailure} nodes in the last hour"
+                });
+        }
 
         // Check for version mismatch between host and nodes
-        int nVersionMismatch = nodeStatus.Count(n => string.Equals(n.FailureReason, "Found different versions of openMIC"));
+        int nVersionMismatch = nodeGroups.Count(n => string.Equals(n.Records[0].FailureReason, "Found different versions of openMIC"));
 
         if (nVersionMismatch > 0)
             statusMessages.Add(new()
@@ -110,20 +117,24 @@ public class HealthController : ApiController
                 Description = $"All nodes have the same version of openMIC"
             });
 
-        int nTasksQueued = nodeStatus.Sum(n => n.TasksQueued);
 
-        if (nTasksQueued > 0)
-            statusMessages.Add(new()
-            {
-                Status = "Success",
-                Description = $"{nTasksQueued} Tasks have been queued during the last distribution"
-            });
-        else
-            statusMessages.Add(new()
-            {
-                Status = "Error",
-                Description = $"No Tasks were queued during the last distribution"
-            });
+        foreach ((string Task, List<NodeCheckin> Records) statusGroup in statusGroups)
+        {
+            int nTasksQueued = statusGroup.Records.Sum(n => n.TasksQueued);
+
+            if (nTasksQueued > 0)
+                statusMessages.Add(new()
+                {
+                    Status = "Success",
+                    Description = $"{nTasksQueued} Meters have been queued during the last distribution for Task {statusGroup.Task} at {statusGroup.Records.Max(n => n.LastCheckin)}"
+                });
+            else
+                statusMessages.Add(new()
+                {
+                    Status = "Error",
+                    Description = $"No Meters were queued during the last distribution for Task {statusGroup.Task} at {statusGroup.Records.Max(n => n.LastCheckin)}"
+                });
+        }
 
         return Ok(statusMessages);
     }
