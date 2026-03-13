@@ -101,7 +101,7 @@ CREATE TABLE NodeCheckin(
     LastCheckin DATETIME NOT NULL,
     FailureReason TEXT NULL,
     TasksQueued INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT IX_NodeCheckin_URL UNIQUE (URL ASC, Task ASC)
+    CONSTRAINT IX_NodeCheckin_URL_Task UNIQUE (URL ASC, Task ASC)
 );
 
 CREATE TABLE IONWaveformCheckpoint(

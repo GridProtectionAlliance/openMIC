@@ -237,7 +237,7 @@ CREATE TABLE NodeCheckin
     LastCheckin DATETIME2 NOT NULL,
     FailureReason VARCHAR(MAX) NULL,
     TasksQueued INT NOT NULL DEFAULT 0,
-    CONSTRAINT IX_NodeCheckin_URL UNIQUE (URL ASC, Task ASC)
+    CONSTRAINT IX_NodeCheckin_URL_Task UNIQUE (URL ASC, Task ASC)
 )
 GO
 
