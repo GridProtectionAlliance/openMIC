@@ -78,9 +78,9 @@ public static partial class TableOperationsExtensions
         string updateQueryFormat =
             "UPDATE NodeCheckin " +
             "SET " +
-            "    LastCheckin = CASE WHEN LastCheckin < {1} THEN {1} ELSE LastCheckin END, " +
-            "    FailureReason CASE WHEN LastCheckin < {1} THEN {2} ELSE FailureReason END, " +
-            "    TasksQueued = TasksQueued + {3} " +
+            "    LastCheckin = {1}, " +
+            "    FailureReason {2}, " +
+            "    TasksQueued = {3} " +
             whereClause;
 
         object key = record.ID != 0

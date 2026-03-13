@@ -89,6 +89,7 @@ public class ServiceHost : ServiceHostBase
     private ICancellationToken m_queueCancellationToken;
     private readonly List<(string acronym, string taskID)> m_queueTasksAcronym = [];
     private readonly object m_queueTasksLock = new();
+    private readonly object m_nodeCheckinLock = new();
 
     #endregion
 
@@ -641,8 +642,12 @@ public class ServiceHost : ServiceHostBase
         using AdoDataConnection connection = new("systemSettings");
         TableOperations<NodeCheckin> nodeCheckinTable = new(connection);
 
-        foreach (NodeCheckin checkin in nodeCheckins)
-            nodeCheckinTable.Upsert(checkin);
+        // Avoid partial updates due to parallel processing
+        lock (m_nodeCheckinLock)
+        {
+            foreach (NodeCheckin checkin in nodeCheckins)
+                nodeCheckinTable.Upsert(checkin);
+        }
     }
 
     /// <summary>
