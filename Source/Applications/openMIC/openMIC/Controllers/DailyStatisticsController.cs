@@ -26,6 +26,8 @@ using GSF.Data.Model;
 using GSF.Web.Model;
 using openMIC.Model;
 using System.Web.Http;
+using System.Data;
+using Newtonsoft.Json;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 namespace openMIC;
@@ -44,9 +46,16 @@ public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
 
     /// <inheritdoc/>
     [HttpPost, ActionName("PagedList")]
-    public override IHttpActionResult GetPagedList([FromBody] PostData postData, int id)
+    public IHttpActionResult GetPagedList([FromBody] PostData postData, int? id = null)
     {
-        return base.GetPagedList(postData, id);
+        if (id is int ID)
+            return base.GetPagedList(postData, ID);
+        DataTable results = base.GetSearchResults(postData);
+        PagedResults response = new()
+        {
+            Data = JsonConvert.SerializeObject(results)
+        };
+        return Ok(response);
     }
 
     /// <inheritdoc/>
