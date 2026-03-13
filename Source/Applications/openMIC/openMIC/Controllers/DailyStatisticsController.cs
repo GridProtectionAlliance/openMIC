@@ -43,6 +43,13 @@ public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
     }
 
     /// <inheritdoc/>
+    [HttpPost, ActionName("PagedList")]
+    public override IHttpActionResult GetPagedList([FromBody] PostData postData, int id)
+    {
+        return base.GetPagedList(postData, id);
+    }
+
+    /// <inheritdoc/>
     [HttpGet]
     public override IHttpActionResult Get([FromUri] string meter = null)
     {
@@ -61,4 +68,11 @@ public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
             return Ok(tableOp.QueryRecordsWhere("Meter = {0}", meter));
         }
     }
+
+    [HttpPost, ActionName("SearchCount")]
+    public IHttpActionResult GetCount([FromBody] PostData postData)
+    {
+        return Ok(base.CountSearchResults(postData));
+    }
+
 }
