@@ -541,7 +541,7 @@ public class ServiceHost : ServiceHostBase
         Shuffle(pooledMachines);
 
         List<NodeCheckin> nodeCheckins = [.. pooledMachines
-            .Select(machine => new NodeCheckin() { Url = machine })];
+            .Select(machine => new NodeCheckin() { Url = machine, Task = taskID })];
 
         // Identify all machines in the pool that are available to handle the request
         HashSet<string> unqueuedAcronyms = [.. acronyms];

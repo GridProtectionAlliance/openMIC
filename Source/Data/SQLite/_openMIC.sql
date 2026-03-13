@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 7 AS VersionNumber;
+SELECT 8 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -97,10 +97,11 @@ CREATE TABLE StatusLog(
 CREATE TABLE NodeCheckin(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     URL VARCHAR(200) NOT NULL,
+    Task VARCHAR(500) NOT NULL,
     LastCheckin DATETIME NOT NULL,
     FailureReason TEXT NULL,
     TasksQueued INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT IX_NodeCheckin_URL UNIQUE (URL ASC)
+    CONSTRAINT IX_NodeCheckin_URL UNIQUE (URL ASC, Task ASC)
 );
 
 CREATE TABLE IONWaveformCheckpoint(
