@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 7 AS VersionNumber
+SELECT 8 AS VersionNumber
 FROM dual;
 
 CREATE TABLE Setting(
@@ -208,13 +208,14 @@ END;
 CREATE TABLE NodeCheckin(
     ID NUMBER NOT NULL,
     URL VARCHAR2(200) NOT NULL,
+    Task VARCHAR2(500) NOT NULL,
     LastCheckin DATE NOT NULL,
     FailureReason VARCHAR2(MAX) NULL,
     TasksQueued NUMBER DEFAULT 0 NOT NULL
 );
 
 CREATE UNIQUE INDEX IX_NodeCheckin_ID ON NodeCheckin (ID ASC) TABLESPACE openMIC_INDEX;
-CREATE UNIQUE INDEX IX_NodeCheckin_URL ON NodeCheckin (URL ASC) TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_NodeCheckin_URL_Task ON NodeCheckin (URL ASC, Task ASC) TABLESPACE openMIC_INDEX;
 
 ALTER TABLE NodeCheckin ADD CONSTRAINT PK_NodeCheckin PRIMARY KEY (ID);
 

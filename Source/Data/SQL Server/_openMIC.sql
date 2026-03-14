@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[LocalSchemaVersion] AS
-SELECT 7 AS VersionNumber
+SELECT 8 AS VersionNumber
 GO
 
 CREATE TABLE Setting
@@ -233,10 +233,11 @@ CREATE TABLE NodeCheckin
 (
     ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
     URL VARCHAR(200) NOT NULL,
+    Task VARCHAR(500) NOT NULL,
     LastCheckin DATETIME2 NOT NULL,
     FailureReason VARCHAR(MAX) NULL,
     TasksQueued INT NOT NULL DEFAULT 0,
-    CONSTRAINT IX_NodeCheckin_URL UNIQUE (URL ASC)
+    CONSTRAINT IX_NodeCheckin_URL_Task UNIQUE (URL ASC, Task ASC)
 )
 GO
 

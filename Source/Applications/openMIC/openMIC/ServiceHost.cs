@@ -43,6 +43,7 @@ using GSF.IO;
 using GSF.Security;
 using GSF.Security.Model;
 using GSF.ServiceProcess;
+using GSF.Threading;
 using GSF.TimeSeries;
 using GSF.TimeSeries.Adapters;
 using GSF.Web.Hosting;
@@ -85,9 +86,10 @@ public class ServiceHost : ServiceHostBase
     private bool m_serviceStopping;
     private bool m_disposed;
 
-    private CancellationTokenSource m_queueTasksCancellationTokenSource = null;
+    private ICancellationToken m_queueCancellationToken;
     private readonly List<(string acronym, string taskID)> m_queueTasksAcronym = [];
     private readonly object m_queueTasksLock = new();
+    private readonly object m_nodeCheckinLock = new();
 
     #endregion
 
@@ -531,17 +533,41 @@ public class ServiceHost : ServiceHostBase
             return;
         }
 
+        LogStatusMessage($"Distributing {acronyms.Length} \"{taskID}\" tasks at {priority} priority.");
+
         // Ensure we don't unduly load tasks more frequently
         // onto any particular machine in the pool
         pooledMachines = [.. pooledMachines];
         Shuffle(pooledMachines);
 
-        Dictionary<string, (string FailureReason, int nQueued)> nodeLog = [];
+        List<NodeCheckin> nodeCheckins = [.. pooledMachines
+            .Select(machine => new NodeCheckin() { Url = machine, Task = taskID })];
 
         // Identify all machines in the pool that are available to handle the request
-        bool[] isLocal = [.. pooledMachines.Select(Transport.IsLocalAddress)];
-        bool[] isAvailable = [..pooledMachines.Select((machine, index) => isLocal[index] || IsAvailableForQueue(machine, nodeLog))];
         HashSet<string> unqueuedAcronyms = [.. acronyms];
+        bool[] isLocal = [.. pooledMachines.Select(Transport.IsLocalAddress)];
+
+        // Check each node to see if they are available
+        Task<bool>[] availabilityTasks = [.. pooledMachines
+            .Select((machine, index) => isLocal[index] ? Task.FromResult(true) : IsAvailableForQueueAsync(machine))];
+
+        try { Task.WaitAll(availabilityTasks); }
+        catch { /* We'll check the result of each task individually */ }
+
+        bool[] isAvailable = [.. availabilityTasks
+            .Select(task => !task.IsFaulted && task.Result)];
+
+        for (int i = 0; i < availabilityTasks.Length; i++)
+        {
+            string machine = pooledMachines[i];
+            Task<bool> task = availabilityTasks[i];
+
+            string failureReason = task.IsFaulted
+                ? task.Exception.Message
+                : "Found different versions of openMIC";
+
+            nodeCheckins[i].FailureReason = !isAvailable[i] ? failureReason : null;
+        }
 
         while (unqueuedAcronyms.Count > 0)
         {
@@ -569,12 +595,16 @@ public class ServiceHost : ServiceHostBase
             Task[] requestTasks = [.. requests.Select((request, requestIndex) =>
             {
                 int machineIndex = availableMachines[requestIndex];
-
-                if (isLocal[machineIndex])
-                    return QueueTasksLocallyAsync(request, taskID, priority);
-
                 string targetMachine = pooledMachines[machineIndex];
-                return QueueTasksRemotelyAsync(targetMachine, request, taskID, priority);
+                NodeCheckin checkin = nodeCheckins[machineIndex];
+
+                Task queueTask = isLocal[machineIndex]
+                    ? QueueTasksLocallyAsync(request, taskID, priority)
+                    : QueueTasksRemotelyAsync(targetMachine, request, taskID, priority);
+
+                return queueTask.ContinueWith(
+                    _ => checkin.LastCheckin = DateTime.UtcNow,
+                    TaskContinuationOptions.NotOnFaulted);
             })];
 
             try { Task.WaitAll(requestTasks); }
@@ -587,13 +617,13 @@ public class ServiceHost : ServiceHostBase
                 Task task = requestTasks[i];
 
                 string targetMachine = pooledMachines[machineIndex];
-                int acronymsQueued = nodeLog[targetMachine].nQueued;
+                NodeCheckin checkin = nodeCheckins[machineIndex];
 
                 try
                 {
                     task.GetAwaiter().GetResult();
                     unqueuedAcronyms.ExceptWith(request);
-                    nodeLog[targetMachine] = ("", acronymsQueued + request.Length);
+                    checkin.TasksQueued += request.Length;
                 }
                 catch (Exception ex)
                 {
@@ -602,22 +632,21 @@ public class ServiceHost : ServiceHostBase
                     LogException(wrapper);
 
                     isAvailable[machineIndex] = false;
-                    nodeLog[targetMachine] = (message, acronymsQueued);
+                    checkin.FailureReason = message;
                 }
             }
         }
 
+        LogStatusMessage($"Finished distributing {acronyms.Length} \"{taskID}\" tasks at {priority} priority.");
+
         using AdoDataConnection connection = new("systemSettings");
-        TableOperations<NodeCheckin> tbl = new(connection);
+        TableOperations<NodeCheckin> nodeCheckinTable = new(connection);
 
-        foreach (var node in nodeLog)
+        // Avoid partial updates due to parallel processing
+        lock (m_nodeCheckinLock)
         {
-            NodeCheckin checkin = tbl.QueryRecordWhere("Url = {0}", node.Key) ?? new NodeCheckin() { Url = node.Key };
-            checkin.LastCheckin = DateTime.UtcNow;
-            checkin.FailureReason = node.Value.FailureReason;
-            checkin.TasksQueued = node.Value.nQueued;
-
-            tbl.AddNewOrUpdateRecord(checkin);
+            foreach (NodeCheckin checkin in nodeCheckins)
+                nodeCheckinTable.Upsert(checkin);
         }
     }
 
@@ -630,45 +659,37 @@ public class ServiceHost : ServiceHostBase
     /// <param name="priority">Priority of task to use when queuing.</param>
     public void AggregateQueueTasks(string acronym, string taskID)
     {
-        CancellationToken cancellationToken;
+        // Different tasks can be queued in parallel
+        Task QueueTasksAsync(IGrouping<string, string> grouping) => Task.Run(() =>
+        {
+            try { QueueTasks([.. grouping], grouping.Key, QueuePriority.Normal); }
+            catch (Exception ex) { LogException(ex); }
+        });
+
+        Action action = () =>
+        {
+            List<IGrouping<string, string>> groupings;
+
+            lock (m_queueTasksLock)
+            {
+                groupings = [.. m_queueTasksAcronym
+                    .GroupBy(item => item.taskID, item => item.acronym)];
+
+                m_queueTasksAcronym.Clear();
+            }
+
+            foreach (IGrouping<string, string> grouping in groupings)
+                _ = QueueTasksAsync(grouping);
+        };
 
         lock (m_queueTasksLock)
         {
-            m_queueTasksCancellationTokenSource?.Cancel();
-            m_queueTasksCancellationTokenSource?.Dispose();
-            m_queueTasksCancellationTokenSource = new();
+            m_queueCancellationToken?.Cancel();
             m_queueTasksAcronym.Add((acronym, taskID));
-            cancellationToken = m_queueTasksCancellationTokenSource.Token;
+
+            // Wait for 1 second to allow for any additional requests to aggregate
+            m_queueCancellationToken = action.DelayAndExecute(1000);
         }
-
-        Task.Run(async () =>
-        {
-            try
-            {
-                List<IGrouping<string, string>> groupings;
-
-                // Wait for 1 second to allow for any additional requests to aggregate
-                await Task.Delay(1000, cancellationToken);
-
-                lock (m_queueTasksLock)
-                {
-                    // Check again to avoid race conditions
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    groupings = [.. m_queueTasksAcronym
-                        .GroupBy(item => item.taskID, item => item.acronym)];
-
-                    m_queueTasksAcronym.Clear();
-                }
-
-                foreach (IGrouping<string, string> grouping in groupings)
-                    QueueTasks([.. grouping], grouping.Key, QueuePriority.Normal);
-            }
-            catch (TaskCanceledException)
-            {
-                // Expected exception when task is cancelled.
-            }
-        });
     }
 
     /// <summary>
@@ -679,45 +700,32 @@ public class ServiceHost : ServiceHostBase
     /// checking for a successful response,
     /// and ensuring the target machine has the same version of OpenMIC.
     /// </remarks>
-    private bool IsAvailableForQueue(string targetMachine, Dictionary<string, (string FailureReason, int nQueued)> nodeLog)
+    private async Task<bool> IsAvailableForQueueAsync(string targetMachine)
     {
+        static void ConfigureRequest(HttpRequestMessage request)
+        {
+            request.Method = HttpMethod.Get;
+            request.Headers.Accept.Clear();
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        }
+
         try
         {
-            if (!nodeLog.ContainsKey(targetMachine))
-                nodeLog.Add(targetMachine, ("", 0));
+            using HttpResponseMessage response = await new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
+                .SendWebRequestAsync(ConfigureRequest, "/api/Operations/Version");
 
-            void ConfigureRequest(HttpRequestMessage request)
-            {
-                request.Method = HttpMethod.Get;
-                request.Headers.Accept.Clear();
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            }
+            response.EnsureSuccessStatusCode();
 
-            using HttpResponseMessage response = new APIQuery(Startup.APIKey, Startup.APIToken, GetTargetURI(targetMachine))
-                .SendWebRequestAsync(ConfigureRequest, "/api/Operations/Version")
-                .GetAwaiter()
-                .GetResult();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                nodeLog[targetMachine] = ($"Failed to establish connection to target machine, HTTP response = {response.StatusCode}: {response.ReasonPhrase}", 0);
-                return false;
-            }
-
-            string remoteVersion = response.Content
-                .ReadAsStringAsync()
-                .GetAwaiter()
-                .GetResult();
-
-            bool versionMatch = remoteVersion == Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            if (!versionMatch) nodeLog[targetMachine] = ("Found different versions of openMIC", 0);
-            return versionMatch;
+            string remoteVersion = await response.Content.ReadAsStringAsync();
+            string localVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            return remoteVersion == localVersion;
         }
         catch (Exception ex)
         {
-            LogException(new InvalidOperationException($"Failed to check availability of pool machine \"{targetMachine}\" for queueing tasks: {ex.Message}", ex));
-            nodeLog[targetMachine] = ($"Failed to establish connection to target machine: {ex.Message}", 0);
-            return false;
+            string message = $"Failed to check availability of pool machine \"{targetMachine}\" for queueing tasks: {ex.Message}";
+            InvalidOperationException wrapper = new(message, ex);
+            LogException(wrapper);
+            throw;
         }
     }
 
