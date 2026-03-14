@@ -2226,12 +2226,35 @@ public class Downloader : InputAdapterBase
         using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
         {
             TableOperations<DailyStatisticsRecord> dailyStatisticsTable = new TableOperations<DailyStatisticsRecord>(connection);
-            DailyStatisticsRecord record = dailyStatisticsTable.QueryRecordWhere("Meter = {0} AND Timestamp = {1}", this.Name, DateTime.UtcNow.Date) ?? new DailyStatisticsRecord()
+            DailyStatisticsRecord record;
+            DailyStatisticsRecord? currentRecord = dailyStatisticsTable.QueryRecordWhere("Meter = {0} AND Timestamp = {1}", this.Name, DateTime.UtcNow.Date);
+            if (currentRecord is null)
             {
-                Meter = this.Name,
-                Timestamp = DateTime.UtcNow.Date
-            };
+                record = new DailyStatisticsRecord() 
+                {
+                    Meter = this.Name,
+                    Timestamp = DateTime.UtcNow.Date,
+                    BadDays = 0
+                };
 
+                DailyStatisticsRecord[] lastRecord = dailyStatisticsTable.QueryRecords("Timestamp DESC", new RecordRestriction("Meter = {0}", this.Name), 2).ToArray();
+                if (lastRecord.Length > 0)
+                {
+                    if (lastRecord[0].TotalUnsuccessfulConnections > 100)
+                    {
+                        if (lastRecord.Length > 1)
+                            lastRecord[0].BadDays = lastRecord[1].BadDays + 1;
+                        else
+                            lastRecord[0].BadDays = 1;
+                        dailyStatisticsTable.AddNewOrUpdateRecord(lastRecord[0]);
+                    }
+                }
+                
+
+            }
+            else
+                record = currentRecord;
+                
             record.LastSuccessfulConnection = DateTime.UtcNow;
             record.TotalSuccessfulConnections++;
 
@@ -2247,11 +2270,34 @@ public class Downloader : InputAdapterBase
         using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
         {
             TableOperations<DailyStatisticsRecord> dailyStatisticsTable = new TableOperations<DailyStatisticsRecord>(connection);
-            DailyStatisticsRecord record = dailyStatisticsTable.QueryRecordWhere("Meter = {0} AND Timestamp = {1}", this.Name, DateTime.UtcNow.Date) ?? new DailyStatisticsRecord()
+            DailyStatisticsRecord record;
+            DailyStatisticsRecord? currentRecord = dailyStatisticsTable.QueryRecordWhere("Meter = {0} AND Timestamp = {1}", this.Name, DateTime.UtcNow.Date);
+            if (currentRecord is null)
             {
-                Meter = this.Name,
-                Timestamp = DateTime.UtcNow.Date
-            };
+                record = new DailyStatisticsRecord() 
+                {
+                    Meter = this.Name,
+                    Timestamp = DateTime.UtcNow.Date,
+                    BadDays = 0
+                };
+
+                DailyStatisticsRecord[] lastRecord = dailyStatisticsTable.QueryRecords("Timestamp DESC",new RecordRestriction("Meter = {0}", this.Name), 2).ToArray();
+                if (lastRecord.Length > 0)
+                {
+                    if (lastRecord[0].TotalUnsuccessfulConnections > 100)
+                    {
+                        if (lastRecord.Length > 1)
+                            lastRecord[0].BadDays = lastRecord[1].BadDays + 1;
+                        else
+                            lastRecord[0].BadDays = 1;
+                        dailyStatisticsTable.AddNewOrUpdateRecord(lastRecord[0]);
+                    }
+                }
+                
+
+            }
+            else
+                record = currentRecord;
 
             record.LastUnsuccessfulConnection = DateTime.UtcNow;
             record.TotalUnsuccessfulConnections++;
