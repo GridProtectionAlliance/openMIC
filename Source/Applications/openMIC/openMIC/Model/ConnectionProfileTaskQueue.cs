@@ -37,7 +37,8 @@ public class ConnectionProfileTaskQueue
 
     // Fields
     private string m_name;
-    private LogicalThreadScheduler m_threadScheduler;
+    private string m_groupID;
+    private ConnectionProfileTaskScheduler m_threadScheduler;
     private LogicalThread m_taskThread;
 
     #endregion
@@ -56,6 +57,17 @@ public class ConnectionProfileTaskQueue
         {
             m_name = value;
             m_threadScheduler = null;
+        }
+    }
+
+    [NonRecordField]
+    public string GroupID
+    {
+        get => m_groupID;
+        set
+        {
+            m_groupID = value;
+            m_taskThread = null;
         }
     }
 
@@ -84,21 +96,21 @@ public class ConnectionProfileTaskQueue
     [UpdateValueExpression("UserInfo.CurrentUserID")]
     public string UpdatedBy { get; set; }
 
-    private LogicalThreadScheduler ThreadScheduler => m_threadScheduler ??= GetThreadScheduler();
-
-    private LogicalThread TaskThread => m_taskThread ??= ThreadScheduler.CreateThread();
+    private ConnectionProfileTaskScheduler ThreadScheduler => m_threadScheduler ??= GetThreadScheduler();
+    private LogicalThread TaskThread => m_taskThread ??= ThreadScheduler.CreateThread(GroupID);
 
     #endregion
 
     #region [ Methods ]
 
-    public void QueueAction(Action action, QueuePriority priority) => TaskThread.Push((int)priority, action);
-
-    public void RegisterExceptionHandler(Action<Exception> exceptionHandler) => TaskThread.UnhandledException += (sender, args) => exceptionHandler(args.Argument);
-
-    private LogicalThreadScheduler GetThreadScheduler()
+    public LogicalThreadExtensions.LogicalThreadAwaitable Yield(int priority)
     {
-        LogicalThreadScheduler threadScheduler = s_threadSchedulers.GetOrAdd(Name, _ => new LogicalThreadScheduler(s_priorityLevels));
+        return TaskThread.Yield(priority);
+    }
+
+    private ConnectionProfileTaskScheduler GetThreadScheduler()
+    {
+        ConnectionProfileTaskScheduler threadScheduler = s_threadSchedulers.GetOrAdd(Name, _ => new ConnectionProfileTaskScheduler(s_priorityLevels));
         threadScheduler.MaxThreadCount = MaxThreadCount <= 0 ? Environment.ProcessorCount : MaxThreadCount;
         threadScheduler.UseBackgroundThreads = UseBackgroundThreads;
         return threadScheduler;
@@ -109,8 +121,32 @@ public class ConnectionProfileTaskQueue
     #region [ Static ]
 
     // Static Fields
-    private static readonly ConcurrentDictionary<string, LogicalThreadScheduler> s_threadSchedulers = new();
+    private static readonly ConcurrentDictionary<string, ConnectionProfileTaskScheduler> s_threadSchedulers = new();
     private static readonly int s_priorityLevels = Enum.GetValues(typeof(QueuePriority)).Cast<int>().Max();
 
     #endregion
+}
+
+public class ConnectionProfileTaskScheduler(int priorityLevels)
+{
+    private LogicalThreadScheduler Scheduler { get; } = new(priorityLevels);
+
+    public int MaxThreadCount
+    {
+        get => Scheduler.MaxThreadCount;
+        set => Scheduler.MaxThreadCount = value;
+    }
+
+    public bool UseBackgroundThreads
+    {
+        get => Scheduler.UseBackgroundThreads;
+        set => Scheduler.UseBackgroundThreads = value;
+    }
+
+    public LogicalThread CreateThread(string groupID)
+    {
+        return s_threads.GetOrAdd(groupID, _ => Scheduler.CreateThread());
+    }
+
+    private static readonly ConcurrentDictionary<string, LogicalThread> s_threads = new();
 }

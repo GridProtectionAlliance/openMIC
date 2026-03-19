@@ -35,8 +35,10 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using DotRas;
 using GSF;
+using GSF.Collections;
 using GSF.Configuration;
 using GSF.Console;
 using GSF.Data;
@@ -171,6 +173,7 @@ public class Downloader : InputAdapterBase
     private int m_overallTasksCompleted;
     private int m_overallTasksCount;
     private int m_lastDownloadedFileID;
+    private int m_downloaderGroupInitialized;
     private long m_startDialUpTime;
     private bool m_disposed;
 
@@ -584,6 +587,10 @@ public class Downloader : InputAdapterBase
         }
     }
 
+    private string SystemName => Program.Host.Model.Global.SystemName;
+    private string GroupID => ConnectionHostName.Split('/')[0];
+    private string NodeID => string.IsNullOrWhiteSpace(SystemName) ? Environment.MachineName : SystemName;
+
     #endregion
 
     #region [ Methods ]
@@ -636,6 +643,12 @@ public class Downloader : InputAdapterBase
         parser.ParseConnectionString(ConnectionString, this);
 
         LoadTasks();
+
+        using (AdoDataConnection connection = CreateDbConnection())
+        {
+            UnlockDownloaderGroup(connection, GroupID, NodeID);
+        }
+
         RegisterSchedule(this);
 
         // Register downloader with the statistics engine
@@ -762,7 +775,7 @@ public class Downloader : InputAdapterBase
         string dateTimeFormat = Program.Host.Model.Global.DateTimeFormat;
         DateTime startTimeConstraint = DateTime.ParseExact($"{startDate} {startTime}", dateTimeFormat, CultureInfo.InvariantCulture);
         DateTime endTimeConstraint = DateTime.ParseExact($"{endDate} {endTime}", dateTimeFormat, CultureInfo.InvariantCulture);
-        QueueTasks(AllTasks, QueuePriority.Urgent, startTimeConstraint, endTimeConstraint);
+        QueueTasksByID(AllTasksGroupID, QueuePriority.Urgent, startTimeConstraint, endTimeConstraint);
     }
 
     /// <summary>
@@ -786,78 +799,247 @@ public class Downloader : InputAdapterBase
     /// </remarks>
     public void QueueTasksByID(string taskID, QueuePriority priority)
     {
-        switch (taskID.ToUpperInvariant())
+        QueueTasksByID(taskID, priority, null, null);
+    }
+
+    private void QueueTasksByID(string taskID, QueuePriority priority, DateTime? startTimeConstraint, DateTime? endTimeConstraint)
+    {
+        Task queueTask = QueueTasksByIDAsync(taskID, priority, startTimeConstraint, endTimeConstraint);
+        DateTime queueTime = DateTime.UtcNow;
+
+        OnProgressUpdated(this, new ProgressUpdate
         {
-            case AllTasksGroupID:
-                QueueTasks(AllTasks, priority);
-                break;
-            case ScheduledTasksGroupID:
-                QueueTasks(ScheduledTasks, priority);
-                break;
-            case OffScheduleTasksGroupID:
-                QueueTasks(OffScheduleTasks, priority);
-                break;
-            default:
-                if (TryGetConnectionProfileTask(taskID, out ConnectionProfileTask task))
-                {
-                    QueueTask(task, priority);
-                }
-                else
-                {
-                    string message = $"Failed to find connection profile task \"{taskID}\" associated with downloader instance \"{Name}\", queue operation halted.";
+            State = ProgressState.Queued,
+            Message = $"Connection profile tasks queued at \"{priority}\" priority on node \"{NodeID}\" at {queueTime:yyyy-MM-dd HH:mm:ss.fff} UTC.",
+            Progress = 0,
+            ProgressTotal = 1,
+            OverallProgress = 0,
+            OverallProgressTotal = 1
+        });
 
-                    OnStatusMessage(MessageLevel.Warning, message);
+        // Handle errors from the task that was queued
+        queueTask.ContinueWith(failedTask =>
+        {
+            Exception ex = failedTask.Exception;
+            OnProcessException(MessageLevel.Error, ex, "Task Execution");
+        }, TaskContinuationOptions.OnlyOnFaulted);
+    }
 
-                    OnProgressUpdated(this, new ProgressUpdate
-                    {
-                        State = ProgressState.Fail,
-                        ErrorMessage = message,
-                        OverallProgress = 1,
-                        OverallProgressTotal = 1
-                    });
-                }
+    private async Task QueueTasksByIDAsync(string taskID, QueuePriority priority, DateTime? startTimeConstraint, DateTime? endTimeConstraint)
+    {
+        Action<DateTime?, DateTime?> executeTasksAction = GetExecuteTasksAction(taskID);
+
+        if (executeTasksAction is null)
+        {
+            OnTaskNotFound(taskID);
+            return;
+        }
+
+        Guid runtimeID = Guid.NewGuid();
+        string nodeID = NodeID;
+        string groupID = GroupID;
+        int yieldPriority = (int)priority;
+
+        using (AdoDataConnection connection = CreateDbConnection())
+        {
+            TableOperations<PollingTask> pollingTaskTable = new(connection);
+
+            if (priority == QueuePriority.Normal)
+            {
+                bool taskAlreadyExists = pollingTaskTable
+                    .QueryRecordsWhere("DownloaderName = {0} AND Task = {1}", Name, taskID)
+                    .Any(task => task.NodeID == nodeID);
+
+                // If there is an existing task with a matching task ID on this node,
+                // it is guaranteed to have higher priority than this task
+                // so there would be no point in queuing
+                if (taskAlreadyExists)
+                    return;
+            }
+
+            PollingTask pollingTask = new()
+            {
+                RuntimeID = runtimeID,
+                NodeID = nodeID,
+                DownloaderName = Name,
+                Task = taskID
+            };
+
+            pollingTaskTable.AddNewRecord(pollingTask);
+        }
+
+        while (true)
+        {
+            Stopwatch queueStopwatch = Stopwatch.StartNew();
+
+            // The code that comes after this point will be running on the task queue!
+            await m_taskQueue.Yield(yieldPriority);
+            TimeSpan timeSinceQueue = queueStopwatch.Elapsed;
+
+            using AdoDataConnection connection = CreateDbConnection();
+            TableOperations<PollingTask> pollingTaskTable = new(connection);
+            PollingTask pollingTask = pollingTaskTable.QueryRecordWhere("RuntimeID = {0}", runtimeID);
+            if (pollingTask is null) return;
+
+            InitializeDownloaderGroup(connection, groupID);
+
+            if (!TryLockDownloaderGroup(connection, groupID, nodeID))
+            {
+                // Another task with a matching task ID may have been queued on this same node,
+                // either due to a race condition or because the task was reprioritized.
+                // If so, the fact that this one is being requeued first means it
+                // has higher priority than the others so we can get rid of them
+                pollingTaskTable.DeleteRecordWhere("NodeID = {0} AND DownloaderName = {1} AND Task = {2} AND ID <> {3}", nodeID, Name, taskID, pollingTask.ID);
+                connection.Dispose();
+
+                // Relieve CPU pressure if this node has little else to work on
+                TimeSpan requeueDelay = TimeSpan.FromSeconds(5.0D);
+
+                if (timeSinceQueue <= requeueDelay)
+                    await Task.Delay(requeueDelay);
+
+                const int RequeuePriority = (int)QueuePriority.Normal;
+                yieldPriority = RequeuePriority;
+                continue;
+            }
+
+            try
+            {
+                // Now that we are executing this task, remove all copies of the task across the whole cluster
+                pollingTaskTable.DeleteRecordWhere("DownloaderName = {0} AND Task = {1}", Name, taskID);
                 break;
+            }
+            catch
+            {
+                UnlockDownloaderGroup(connection, groupID, nodeID);
+                throw;
+            }
+        }
+
+        try
+        {
+            executeTasksAction(startTimeConstraint, endTimeConstraint);
+        }
+        finally
+        {
+            using AdoDataConnection connection = CreateDbConnection();
+            UnlockDownloaderGroup(connection, groupID, nodeID);
         }
     }
 
-    // Queues specified task, with overridden schedule, for execution at specified priority
-    private void QueueTask(ConnectionProfileTask task, QueuePriority priority)
+    private Action<DateTime?, DateTime?> GetExecuteTasksAction(string taskID)
     {
-        DateTime queueTime = DateTime.UtcNow;
-        string systemName = Program.Host.Model.Global.SystemName;
-        string nodeDisplay = string.IsNullOrWhiteSpace(systemName) ? Environment.MachineName : systemName;
+        switch (taskID.ToUpperInvariant())
+        {
+            case AllTasksGroupID:
+                return FromTasks(AllTasks);
 
-        m_taskQueue.QueueAction(() => ExecuteSingleTask(task), priority);
+            case ScheduledTasksGroupID:
+                return FromTasks(ScheduledTasks);
+
+            case OffScheduleTasksGroupID:
+                return FromTasks(OffScheduleTasks);
+
+            default:
+                return TryGetConnectionProfileTask(taskID, out ConnectionProfileTask task)
+                    ? FromTask(task)
+                    : null;
+        }
+
+        Action<DateTime?, DateTime?> FromTask(ConnectionProfileTask task) =>
+            (_, _) => ExecuteSingleTask(task);
+
+        Action<DateTime?, DateTime?> FromTasks(ConnectionProfileTask[] tasks)
+        {
+            return (startTimeConstraint, endTimeConstraint) =>
+                ExecuteGroupedTasks(tasks, startTimeConstraint, endTimeConstraint);
+        }
+    }
+
+    private void OnTaskNotFound(string taskID)
+    {
+        string message = $"Failed to find connection profile task \"{taskID}\" associated with downloader instance \"{Name}\", queue operation halted.";
+
+        OnStatusMessage(MessageLevel.Warning, message);
 
         OnProgressUpdated(this, new ProgressUpdate
         {
-            State = ProgressState.Queued,
-            Message = $"Connection profile task \"{task.Name}\" with overridden schedule queued at \"{priority}\" priority on node \"{nodeDisplay}\" at {queueTime:yyyy-MM-dd HH:mm:ss.fff} UTC.",
-            Progress = 0,
-            ProgressTotal = 1,
-            OverallProgress = 0,
+            State = ProgressState.Fail,
+            ErrorMessage = message,
+            OverallProgress = 1,
             OverallProgressTotal = 1
         });
     }
 
-    // Queues specified task array for execution at specified priority
-    private void QueueTasks(ConnectionProfileTask[] tasks, QueuePriority priority, DateTime? startTimeConstraint = null, DateTime? endTimeConstraint = null)
+    private void InitializeDownloaderGroup(AdoDataConnection connection, string groupID)
     {
-        DateTime queueTime = DateTime.UtcNow;
-        string systemName = Program.Host.Model.Global.SystemName;
-        string nodeDisplay = string.IsNullOrWhiteSpace(systemName) ? Environment.MachineName : systemName;
+        bool isDownloaderGroupInitialized = Interlocked.Exchange(ref m_downloaderGroupInitialized, 1) != 0;
 
-        m_taskQueue.QueueAction(() => ExecuteGroupedTasks(tasks, startTimeConstraint, endTimeConstraint), priority);
+        if (isDownloaderGroupInitialized)
+            return;
 
-        OnProgressUpdated(this, new ProgressUpdate
+        string fromClause = connection.IsOracle
+            ? "FROM dual "
+            : "";
+
+        string insertQueryFormat =
+            "INSERT INTO DownloaderGroupState(GroupID) " +
+            "SELECT {0} GroupID " +
+            fromClause +
+            "WHERE NOT EXISTS " +
+            "( " +
+            "    SELECT * " +
+            "    FROM DownloaderGroupState " +
+            "    WHERE GroupID = {0} " +
+            ")";
+
+        try
         {
-            State = ProgressState.Queued,
-            Message = $"Connection profile tasks queued at \"{priority}\" priority on node \"{nodeDisplay}\" at {queueTime:yyyy-MM-dd HH:mm:ss.fff} UTC.",
-            Progress = 0,
-            ProgressTotal = 1,
-            OverallProgress = 0,
-            OverallProgressTotal = 1
-        });
+            connection.ExecuteNonQuery(insertQueryFormat, groupID);
+        }
+        catch
+        {
+            Interlocked.Exchange(ref m_downloaderGroupInitialized, 0);
+            throw;
+        }
+    }
+
+    private bool TryLockDownloaderGroup(AdoDataConnection connection, string groupID, string nodeID)
+    {
+        const string UpdateQueryFormat =
+            """
+            UPDATE DownloaderGroupLock
+            SET
+                NodeID = {1},
+                LockedAt = {2}
+            WHERE
+                GroupID = {0} AND
+                (
+                    NodeID IS NULL OR
+                    NodeID = {1} OR
+                    LockedAt <= {3}
+                )
+            """;
+
+        DateTime lockedAt = DateTime.UtcNow;
+        DateTime expiration = lockedAt.AddHours(-1.0D);
+        return connection.ExecuteNonQuery(UpdateQueryFormat, groupID, nodeID, lockedAt, expiration) != 0;
+    }
+
+    private void UnlockDownloaderGroup(AdoDataConnection connection, string groupID, string nodeID)
+    {
+        const string UpdateQueryFormat =
+            """
+            UPDATE DownloaderGroupLock
+            SET
+                NodeID = NULL,
+                LockedAt = NULL
+            WHERE
+                GroupID = {0} AND
+                NodeID = {1}
+            """;
+
+        connection.ExecuteNonQuery(UpdateQueryFormat, groupID, nodeID);
     }
 
     private void LoadTasks()
@@ -892,8 +1074,7 @@ public class Downloader : InputAdapterBase
             taskQueue = connectionProfileTaskQueueTable.QueryRecordWhere("ID = {0}", m_connectionProfile.DefaultTaskQueueID.GetValueOrDefault());
 
         taskQueue ??= connectionProfileTaskQueueTable.QueryRecordWhere("Name = {0}", m_connectionProfile.Name) ?? new ConnectionProfileTaskQueue { Name = m_connectionProfile.Name };
-
-        taskQueue.RegisterExceptionHandler(ex => OnProcessException(MessageLevel.Error, ex, "Task Execution"));
+        taskQueue.GroupID = GroupID;
         m_taskQueue = taskQueue;
 
         AllTasks = tasks;
@@ -2579,6 +2760,11 @@ public class Downloader : InputAdapterBase
         }
 
         return path;
+    }
+
+    private static AdoDataConnection CreateDbConnection()
+    {
+        return new("systemSettings");
     }
 
     #region [ Statistic Methods ]

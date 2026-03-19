@@ -262,6 +262,7 @@
     <Compile Include="Model\DownloadedFile.cs" />
     <Compile Include="Model\Node.cs" />
     <Compile Include="Model\OutputMirror.cs" />
+    <Compile Include="Model\PollingTask.cs" />
     <Compile Include="Model\Runtime.cs" />
     <Compile Include="Model\AlarmLog.cs" />
     <Compile Include="Model\AppModel.cs" />

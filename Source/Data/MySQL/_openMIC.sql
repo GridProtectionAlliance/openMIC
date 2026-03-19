@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 8 AS VersionNumber;
+SELECT 9 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID INT AUTO_INCREMENT NOT NULL,
@@ -101,16 +101,6 @@ CREATE TABLE SentEmail(
     CONSTRAINT PK_SentEMail PRIMARY KEY CLUSTERED (ID ASC) 
  );
 
-CREATE TABLE IONWaveformCheckpoint(
-    ID INT AUTO_INCREMENT NOT NULL,
-    Device VARCHAR(200) NOT NULL,
-    TimeRecorded DATETIME NOT NULL,
-    LogPositions VARCHAR(MAX) NOT NULL DEFAULT '[]',
-    CONSTRAINT PK_IONWaveformCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
-    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE KEY (Device ASC, TimeRecorded ASC)
-);
-
-
 CREATE TABLE NodeCheckin(
     ID INT AUTO_INCREMENT NOT NULL,
     URL VARCHAR(200) NOT NULL,
@@ -136,15 +126,6 @@ CREATE TABLE DailyStatisticsRecord(
     CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE KEY (Meter ASC, Timestamp DESC)
 );
 
-CREATE TABLE IONTrendingCheckpoint(
-    ID INT AUTO_INCREMENT NOT NULL,
-    Device VARCHAR(200) NOT NULL,
-    TimeRecorded DATETIME NOT NULL,
-    LogPositions VARCHAR(MAX) NOT NULL DEFAULT '[]',
-    CONSTRAINT PK_IONTrendingCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
-    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE KEY (Device ASC, TimeRecorded ASC)
-);
-
 CREATE TABLE DranetzWaveformCheckpoint(
     ID INT AUTO_INCREMENT NOT NULL,
     Device VARCHAR(200) NOT NULL,
@@ -159,6 +140,30 @@ CREATE TABLE DranetzTrendingCheckpoint(
     TimeRecorded DATETIME NOT NULL,
     CONSTRAINT PK_DranetzTrendingCheckpoint PRIMARY KEY CLUSTERED (ID ASC),
     CONSTRAINT IX_DranetzTrendingCheckpoint_Device UNIQUE KEY (Device ASC)
+);
+
+CREATE TABLE PollingTask
+(
+    ID INT AUTO_INCREMENT NOT NULL,
+    RuntimeID NCHAR(36) NOT NULL,
+    NodeID VARCHAR(200) NOT NULL,
+    DownloaderName VARCHAR(200) NOT NULL,
+    Task VARCHAR(200) NOT NULL,
+    CONSTRAINT PK_PollingTask PRIMARY KEY CLUSTERED (ID ASC),
+    CONSTRAINT IX_PollingTask_RuntimeID UNIQUE KEY (RuntimeID ASC)
+);
+
+CREATE INDEX IX_PollingTask_DownloaderName_Task
+ON PollingTask(DownloaderName, Task);
+
+CREATE TABLE DownloaderGroupLock
+(
+    ID INT AUTO_INCREMENT NOT NULL,
+    GroupID VARCHAR(50) NOT NULL,
+    NodeID VARCHAR(200) NULL,
+    LockedAt DATETIME NULL,
+    CONSTRAINT PK_DownloaderGroupLock PRIMARY KEY CLUSTERED (ID ASC),
+    CONSTRAINT IX_DownloaderGroupLock_GroupID UNIQUE KEY (GroupID ASC)
 );
 
 DROP VIEW TrackedTable;
