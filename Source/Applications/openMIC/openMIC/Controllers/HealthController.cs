@@ -67,7 +67,11 @@ public class HealthController : ApiController
             Description = $"{(Program.Host.Model.Global.PoolMachines?.Length ?? 0)} Nodes are configured for polling"
         });
 
+        DataTable nodeQueues;
+
         using AdoDataConnection connection = new("systemSettings");
+        nodeQueues = connection.RetrieveData("SELECT NodeID, COUNT(*) AS TasksQueued FROM PollingTask GROUP BY NodeID");
+
         TableOperations<NodeCheckin> tbl = new(connection);
         List<NodeCheckin> nodeStatus = [.. tbl.QueryRecordsWhere("LastCheckin >= {0}", now.AddMinutes(-60))];
 
@@ -133,6 +137,16 @@ public class HealthController : ApiController
                 {
                     Status = "Error",
                     Description = $"No Meters were queued during the last distribution for Task {statusGroup.Task} at {statusGroup.Records.Max(n => n.LastCheckin)}"
+                });
+        }
+
+        foreach (DataRow row in nodeQueues.Rows)
+        {
+            int nTasksQueued = row.Field<int>("TasksQueued");
+                statusMessages.Add(new()
+                {
+                    Status = nTasksQueued > 10000 ? "Error" : "Success",
+                    Description = $"{row.Field<int>("TasksQueued")} Tasks are currently queued for Node {row.Field<string>("NodeID")}"
                 });
         }
 
