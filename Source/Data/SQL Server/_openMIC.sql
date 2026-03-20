@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW [dbo].[LocalSchemaVersion] AS
-SELECT 8 AS VersionNumber
+SELECT 9 AS VersionNumber
 GO
 
 CREATE TABLE Setting
@@ -176,27 +176,6 @@ CREATE NONCLUSTERED INDEX [IX_SentEmail_Timestamp] ON [dbo].[SentEmail]
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 
-CREATE TABLE IONWaveformCheckpoint
-(
-    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
-    Device VARCHAR(200) NOT NULL,
-    TimeRecorded DATETIME2 NOT NULL,
-    LogPositions VARCHAR(MAX) NOT NULL DEFAULT '[]',
-    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE (Device ASC, TimeRecorded ASC)
-)
-GO
-
-CREATE TABLE IONTrendingCheckpoint
-(
-    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
-    Device VARCHAR(200) NOT NULL,
-    TimeRecorded DATETIME NOT NULL,
-    LogPositions VARCHAR(MAX) NOT NULL DEFAULT '[]',
-    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC, TimeRecorded ASC)
-)
-GO
-
-
 CREATE TABLE DranetzWaveformCheckpoint
 (
     ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
@@ -253,6 +232,29 @@ CREATE TABLE DailyStatisticsRecord
     TotalSuccessfulConnections INT NOT NULL DEFAULT 0,
     TotalUnsuccessfulConnections INT NOT NULL DEFAULT 0
     CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE (Meter ASC, [Timestamp] DESC)
+)
+GO
+
+CREATE TABLE PollingTask
+(
+    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+    RuntimeID UNIQUEIDENTIFIER NOT NULL UNIQUE,
+    NodeID VARCHAR(200) NOT NULL,
+    DownloaderName VARCHAR(200) NOT NULL,
+    Task VARCHAR(200) NOT NULL
+)
+GO
+
+CREATE NONCLUSTERED INDEX IX_PollingTask_DownloaderName_Task
+ON PollingTask(DownloaderName ASC, Task ASC)
+GO
+
+CREATE TABLE DownloaderGroupLock
+(
+    ID INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+    GroupID VARCHAR(50) NOT NULL UNIQUE,
+    NodeID VARCHAR(200) NULL,
+    LockedAt DATETIME NULL
 )
 GO
 

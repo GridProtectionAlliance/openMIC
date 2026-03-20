@@ -2,7 +2,7 @@
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 8 AS VersionNumber;
+SELECT 9 AS VersionNumber;
 
 CREATE TABLE Setting(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -104,22 +104,6 @@ CREATE TABLE NodeCheckin(
     CONSTRAINT IX_NodeCheckin_URL_Task UNIQUE (URL ASC, Task ASC)
 );
 
-CREATE TABLE IONWaveformCheckpoint(
-    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    Device VARCHAR(200) NOT NULL,
-    TimeRecorded DATETIME NOT NULL,
-    LogPositions TEXT NOT NULL DEFAULT '[]',
-    CONSTRAINT IX_IONWaveformCheckpoint_Device UNIQUE (Device ASC, TimeRecorded ASC)
-);
-
-CREATE TABLE IONTrendingCheckpoint(
-    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    Device VARCHAR(200) NOT NULL,
-    TimeRecorded DATETIME NOT NULL,
-    LogPositions TEXT NOT NULL DEFAULT '[]',
-    CONSTRAINT IX_IONTrendingCheckpoint_Device UNIQUE (Device ASC, TimeRecorded ASC)
-);
-
 CREATE TABLE DranetzWaveformCheckpoint(
     ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     Device VARCHAR(200) NOT NULL,
@@ -145,6 +129,28 @@ CREATE TABLE DailyStatisticsRecord(
     TotalSuccessfulConnections INTEGER NOT NULL DEFAULT 0,
     TotalUnsuccessfulConnections INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT IX_DailyStatisticsRecord_Meter UNIQUE (Meter ASC, Timestamp DESC)
+);
+
+CREATE TABLE PollingTask
+(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    RuntimeID NCHAR(36) NOT NULL,
+    NodeID VARCHAR(200) NOT NULL,
+    DownloaderName VARCHAR(200) NOT NULL,
+    Task VARCHAR(200) NOT NULL,
+    CONSTRAINT IX_PollingTask_RuntimeID UNIQUE (RuntimeID ASC)
+);
+
+CREATE INDEX IX_PollingTask_DownloaderName_Task
+ON PollingTask(DownloaderName, Task);
+
+CREATE TABLE DownloaderGroupLock
+(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    GroupID VARCHAR(50) NOT NULL,
+    NodeID VARCHAR(200) NULL,
+    LockedAt DATETIME NULL,
+    CONSTRAINT IX_DownloaderGroupLock_GroupID UNIQUE (GroupID ASC)
 );
 
 DROP VIEW TrackedTable;
