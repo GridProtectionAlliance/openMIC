@@ -2861,7 +2861,7 @@ FROM AlarmDevice
 -- IMPORTANT NOTE: When making updates to this schema, please increment the version number!
 -- *******************************************************************************************
 CREATE VIEW LocalSchemaVersion AS
-SELECT 8 AS VersionNumber
+SELECT 9 AS VersionNumber
 FROM dual;
 
 CREATE TABLE Setting(
@@ -3045,25 +3045,6 @@ CREATE TRIGGER AI_SentEmail BEFORE INSERT ON SentEmail
 END;
 /
 
-CREATE TABLE IONWaveformCheckpoint(
-    ID NUMBER NOT NULL,
-    Device VARCHAR2(200) NOT NULL,
-    TimeRecorded DATE NOT NULL,
-    LogPositions VARCHAR2(MAX) DEFAULT '[]' NOT NULL
-);
-
-CREATE UNIQUE INDEX IX_IONWaveformCheckpoint_ID ON IONWaveformCheckpoint (ID ASC) TABLESPACE openMIC_INDEX;
-CREATE UNIQUE INDEX IX_IONWaveformCheckpoint_Dev ON IONWaveformCheckpoint (Device ASC, TimeRecorded ASC)  TABLESPACE openMIC_INDEX;
-
-ALTER TABLE IONWaveformCheckpoint ADD CONSTRAINT PK_IONWaveformCheckpoint PRIMARY KEY (ID);
-
-CREATE SEQUENCE SEQ_IONWaveformCheckpoint START WITH 1 INCREMENT BY 1;
-
-CREATE TRIGGER AI_IONWaveformCheckpoint BEFORE INSERT ON IONWaveformCheckpoint
-    FOR EACH ROW BEGIN SELECT SEQ_IONWaveformCheckpoint.nextval INTO :NEW.ID FROM dual;
-END;
-/
-
 CREATE TABLE NodeCheckin(
     ID NUMBER NOT NULL,
     URL VARCHAR2(200) NOT NULL,
@@ -3110,26 +3091,6 @@ CREATE TRIGGER AI_DailyStatisticsRecord BEFORE INSERT ON DailyStatisticsRecord
 END;
 /
 
-
-CREATE TABLE IONTrendingCheckpoint(
-    ID NUMBER NOT NULL,
-    Device VARCHAR2(200) NOT NULL,
-    TimeRecorded DATE NOT NULL,
-    LogPositions VARCHAR2(MAX) DEFAULT '[]' NOT NULL
-);
-
-CREATE UNIQUE INDEX IX_IONTrendingCheckpoint_ID ON IONTrendingCheckpoint (ID ASC) TABLESPACE openMIC_INDEX;
-CREATE UNIQUE INDEX IX_IONTrendingCheckpoint_Dev ON IONTrendingCheckpoint (Device ASC, TimeRecorded ASC)  TABLESPACE openMIC_INDEX;
-
-ALTER TABLE IONTrendingCheckpoint ADD CONSTRAINT PK_IONTrendingCheckpoint PRIMARY KEY (ID);
-
-CREATE SEQUENCE SEQ_IONTrendingCheckpoint START WITH 1 INCREMENT BY 1;
-
-CREATE TRIGGER AI_IONTrendingCheckpoint BEFORE INSERT ON IONTrendingCheckpoint
-    FOR EACH ROW BEGIN SELECT SEQ_IONTrendingCheckpoint.nextval INTO :NEW.ID FROM dual;
-END;
-/
-
 CREATE TABLE DranetzWaveformCheckpoint(
     ID NUMBER NOT NULL,
     Device VARCHAR2(200) NOT NULL,
@@ -3165,6 +3126,48 @@ CREATE SEQUENCE SEQ_DranetzTrendingCheckpoint START WITH 1 INCREMENT BY 1;
 
 CREATE TRIGGER AI_DranetzTrendingCheckpoint BEFORE INSERT ON DranetzTrendingCheckpoint
     FOR EACH ROW BEGIN SELECT SEQ_DranetzTrendingCheckpoint.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
+CREATE TABLE PollingTask
+(
+    ID NUMBER NOT NULL,
+    RuntimeID VARCHAR2(36) NOT NULL,
+    NodeID VARCHAR2(200) NOT NULL,
+    DownloaderName VARCHAR2(200) NOT NULL,
+    Task VARCHAR2(200) NOT NULL
+);
+
+CREATE UNIQUE INDEX IX_PollingTask_ID ON PollingTask (ID ASC) TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_PollingTask_RuntimeID ON PollingTask (RuntimeID ASC) TABLESPACE openMIC_INDEX;
+CREATE INDEX IX_PollingTask_DlName_Task ON PollingTask (DownloaderName ASC, Task ASC) TABLESPACE openMIC_INDEX;
+
+ALTER TABLE PollingTask ADD CONSTRAINT PK_PollingTask PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_PollingTask START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_PollingTask BEFORE INSERT ON PollingTask
+    FOR EACH ROW BEGIN SELECT SEQ_PollingTask.nextval INTO :NEW.ID FROM dual;
+END;
+/
+
+CREATE TABLE DownloaderGroupLock
+(
+    ID NUMBER NOT NULL,
+    GroupID VARCHAR2(50) NOT NULL,
+    NodeID VARCHAR2(200) NULL,
+    LockedAt DATETIME NULL
+);
+
+CREATE UNIQUE INDEX IX_DownloaderGroupLock_ID ON DownloaderGroupLock (ID ASC) TABLESPACE openMIC_INDEX;
+CREATE UNIQUE INDEX IX_DownloaderGroupLock_GroupID ON DownloaderGroupLock (GroupID ASC) TABLESPACE openMIC_INDEX;
+
+ALTER TABLE DownloaderGroupLock ADD CONSTRAINT PK_DownloaderGroupLock PRIMARY KEY (ID);
+
+CREATE SEQUENCE SEQ_DownloaderGroupLock START WITH 1 INCREMENT BY 1;
+
+CREATE TRIGGER AI_DownloaderGroupLock BEFORE INSERT ON DownloaderGroupLock
+    FOR EACH ROW BEGIN SELECT SEQ_DownloaderGroupLock.nextval INTO :NEW.ID FROM dual;
 END;
 /
 
