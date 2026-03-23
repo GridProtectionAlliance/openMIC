@@ -983,13 +983,13 @@ public class Downloader : InputAdapterBase
             : "";
 
         string insertQueryFormat =
-            "INSERT INTO DownloaderGroupState(GroupID) " +
+            "INSERT INTO DownloaderGroupLock(GroupID) " +
             "SELECT {0} GroupID " +
             fromClause +
             "WHERE NOT EXISTS " +
             "( " +
             "    SELECT * " +
-            "    FROM DownloaderGroupState " +
+            "    FROM DownloaderGroupLock " +
             "    WHERE GroupID = {0} " +
             ")";
 
