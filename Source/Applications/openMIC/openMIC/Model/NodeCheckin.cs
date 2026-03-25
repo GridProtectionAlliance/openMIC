@@ -104,7 +104,7 @@ public static partial class TableOperationsExtensions
             UPDATE NodeCheckin
             SET
                 LastCheckin = {2},
-                FailureReason {3},
+                FailureReason = {3},
                 TasksQueued = {4}
             WHERE Url = {0} AND Task = {1}
             """;
