@@ -2137,6 +2137,7 @@ public class Downloader : InputAdapterBase
         {
             using SafeFileWatcher fileWatcher = new(localPathDirectory);
             using Process externalOperation = new();
+            string lastUpdateMessage = string.Empty;
             DateTime lastUpdate = DateTime.UtcNow;
 
             fileWatcher.Created += (sender, fileArgs) => lastUpdate = DateTime.UtcNow;
@@ -2158,6 +2159,7 @@ public class Downloader : InputAdapterBase
                 if (string.IsNullOrWhiteSpace(line))
                     return;
 
+                lastUpdateMessage = line;
                 lastUpdate = DateTime.UtcNow;
 
                 if (HandleExternalOperationMessage(line, out _))
@@ -2210,19 +2212,41 @@ public class Downloader : InputAdapterBase
             {
                 if (m_cancellationToken.IsCancelled)
                 {
-                    task.Fail();
+                    string progressMessage =
+                        "External operation forcefully terminated: " +
+                        "downloader was disabled.";
+
+                    // Prevent race conditions by capturing a local reference
+                    string lastUpdateMessageRef = lastUpdateMessage;
+
+                    string failMessage = (lastUpdateMessageRef is not null)
+                        ? $"{progressMessage} Last message from external operation: {lastUpdateMessageRef}"
+                        : progressMessage;
+
+                    task.Fail(failMessage);
                     TerminateProcessTree(externalOperation);
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: downloader was disabled."));
-                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = "External operation forcefully terminated: downloader was disabled." });
+                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = progressMessage });
                     return;
                 }
 
                 if (timeout > TimeSpan.Zero && DateTime.UtcNow - lastUpdate > timeout)
                 {
-                    task.Fail();
+                    string progressMessage =
+                        $"External operation forcefully terminated: " +
+                        $"exceeded timeout ({timeout.TotalSeconds:0.##} seconds.";
+
+                    // Prevent race conditions by capturing a local reference
+                    string lastUpdateMessageRef = lastUpdateMessage;
+
+                    string failMessage = (lastUpdateMessageRef is not null)
+                        ? $"{progressMessage} Last message from external operation: {lastUpdateMessageRef}"
+                        : progressMessage;
+
+                    task.Fail(failMessage);
                     TerminateProcessTree(externalOperation);
                     OnProcessException(MessageLevel.Error, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)."));
-                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = $"External operation forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)." });
+                    OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = progressMessage });
                     return;
                 }
             }
