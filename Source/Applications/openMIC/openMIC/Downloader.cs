@@ -2226,6 +2226,7 @@ public class Downloader : InputAdapterBase
                     task.Fail(failMessage);
                     TerminateProcessTree(externalOperation);
                     OnProcessException(MessageLevel.Warning, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: downloader was disabled."));
+                    LogUnsuccessfulConnection(failMessage);
                     OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = progressMessage });
                     return;
                 }
@@ -2246,6 +2247,7 @@ public class Downloader : InputAdapterBase
                     task.Fail(failMessage);
                     TerminateProcessTree(externalOperation);
                     OnProcessException(MessageLevel.Error, new InvalidOperationException($"External operation \"{command}\" forcefully terminated: exceeded timeout ({timeout.TotalSeconds:0.##} seconds)."));
+                    LogUnsuccessfulConnection(failMessage);
                     OnProgressUpdated(this, new ProgressUpdate { ErrorMessage = progressMessage });
                     return;
                 }
