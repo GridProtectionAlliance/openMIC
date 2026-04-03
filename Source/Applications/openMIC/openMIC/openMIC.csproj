@@ -237,6 +237,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Authentication\UseWhenExtension.cs" />
+    <Compile Include="Controllers\DailyStatisticsController.cs" />
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="DataHub.cs" />
     <Compile Include="DataHub_PQube.cs" />
