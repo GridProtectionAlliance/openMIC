@@ -58,6 +58,9 @@ public class HealthController : ApiController
     [HttpGet]
     public IHttpActionResult GetSystemStatus()
     {
+        if (!User.Identity.IsAuthenticated)
+            return Unauthorized();
+
         List<StatusItem> statusMessages = [];
         DateTime now = DateTime.UtcNow;
 
