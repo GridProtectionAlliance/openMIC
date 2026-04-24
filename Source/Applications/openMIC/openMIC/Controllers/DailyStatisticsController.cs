@@ -59,6 +59,9 @@ public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
     }
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// This comes from the DailyStatisticsRecord table rather than the view.
+    /// </remarks>
     [HttpGet]
     public override IHttpActionResult Get([FromUri] string meter = null)
     {
@@ -74,7 +77,8 @@ public class DailyStatisticsController : ModelController<DailyStatisticsRecord>
         using (AdoDataConnection connection = ConnectionFactory())
         {
             TableOperations<DailyStatisticsRecord> tableOp = new(connection);
-            return Ok(tableOp.QueryRecordsWhere("Meter = {0}", meter));
+            System.Collections.Generic.IEnumerable<DailyStatisticsRecord> results = tableOp.QueryRecordsWhere("Meter = {0}", meter);
+            return Ok(JsonConvert.SerializeObject(results));
         }
     }
 
