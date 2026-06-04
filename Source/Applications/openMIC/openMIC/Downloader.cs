@@ -141,6 +141,26 @@ public class Downloader : InputAdapterBase
         }
     }
 
+    private class Counter
+    {
+        private int m_value;
+
+        public void Increment()
+        {
+            Interlocked.Increment(ref m_value);
+        }
+
+        public void Decrement()
+        {
+            Interlocked.Decrement(ref m_value);
+        }
+
+        public static implicit operator int(Counter counter)
+        {
+            return Interlocked.CompareExchange(ref counter.m_value, 0, 0);
+        }
+    }
+
     // Constants
 
     /// <summary>
@@ -169,6 +189,7 @@ public class Downloader : InputAdapterBase
     private ConnectionProfileTask[] m_allTasks;
     private ConnectionProfileTask[] m_scheduledTasks;
     private ConnectionProfileTask[] m_offScheduleTasks;
+    private ConcurrentDictionary<string, Counter> m_taskCounters;
     private readonly object m_taskArrayLock;
     private int m_overallTasksCompleted;
     private int m_overallTasksCount;
@@ -188,6 +209,7 @@ public class Downloader : InputAdapterBase
         m_deviceProxy = new DeviceProxy(this);
         m_trackedProgressUpdates = new List<ProgressUpdate>();
         m_cancellationToken = new GSF.Threading.CancellationToken();
+        m_taskCounters = new ConcurrentDictionary<string, Counter>();
         m_taskArrayLock = new object();
     }
 
@@ -646,6 +668,7 @@ public class Downloader : InputAdapterBase
 
         using (AdoDataConnection connection = CreateDbConnection())
         {
+            PurgeStalePollingTasks(connection, NodeID, Name);
             UnlockDownloaderGroup(connection, GroupID, NodeID);
         }
 
@@ -804,25 +827,7 @@ public class Downloader : InputAdapterBase
 
     private void QueueTasksByID(string taskID, QueuePriority priority, DateTime? startTimeConstraint, DateTime? endTimeConstraint)
     {
-        Task queueTask = QueueTasksByIDAsync(taskID, priority, startTimeConstraint, endTimeConstraint);
-        DateTime queueTime = DateTime.UtcNow;
-
-        OnProgressUpdated(this, new ProgressUpdate
-        {
-            State = ProgressState.Queued,
-            Message = $"Connection profile tasks queued at \"{priority}\" priority on node \"{NodeID}\" at {queueTime:yyyy-MM-dd HH:mm:ss.fff} UTC.",
-            Progress = 0,
-            ProgressTotal = 1,
-            OverallProgress = 0,
-            OverallProgressTotal = 1
-        });
-
-        // Handle errors from the task that was queued
-        queueTask.ContinueWith(failedTask =>
-        {
-            Exception ex = failedTask.Exception;
-            OnProcessException(MessageLevel.Error, ex, "Task Execution");
-        }, TaskContinuationOptions.OnlyOnFaulted);
+        _ = QueueTasksByIDAsync(taskID, priority, startTimeConstraint, endTimeConstraint);
     }
 
     private async Task QueueTasksByIDAsync(string taskID, QueuePriority priority, DateTime? startTimeConstraint, DateTime? endTimeConstraint)
@@ -835,6 +840,44 @@ public class Downloader : InputAdapterBase
             return;
         }
 
+        Counter counter = m_taskCounters.GetOrAdd(taskID, _ => new Counter());
+
+        // If there is an existing task with a matching task ID on this node,
+        // it is guaranteed to have higher priority than this task
+        // so there would be no point in queuing
+        if (priority == QueuePriority.Normal && counter > 0)
+            return;
+
+        counter.Increment();
+
+        try
+        {
+            DateTime queueTime = DateTime.UtcNow;
+
+            OnProgressUpdated(this, new ProgressUpdate
+            {
+                State = ProgressState.Queued,
+                Message = $"Connection profile tasks queued at \"{priority}\" priority on node \"{NodeID}\" at {queueTime:yyyy-MM-dd HH:mm:ss.fff} UTC.",
+                Progress = 0,
+                ProgressTotal = 1,
+                OverallProgress = 0,
+                OverallProgressTotal = 1
+            });
+
+            await QueueTasksByIDAsync(taskID, priority, () => executeTasksAction(startTimeConstraint, endTimeConstraint));
+        }
+        catch (Exception ex)
+        {
+            OnProcessException(MessageLevel.Error, ex, "Task Execution");
+        }
+        finally
+        {
+            counter.Decrement();
+        }
+    }
+
+    private async Task QueueTasksByIDAsync(string taskID, QueuePriority priority, Action executeTasksAction)
+    {
         Guid runtimeID = Guid.NewGuid();
         string nodeID = NodeID;
         string groupID = GroupID;
@@ -843,19 +886,6 @@ public class Downloader : InputAdapterBase
         using (AdoDataConnection connection = CreateDbConnection())
         {
             TableOperations<PollingTask> pollingTaskTable = new(connection);
-
-            if (priority == QueuePriority.Normal)
-            {
-                bool taskAlreadyExists = pollingTaskTable
-                    .QueryRecordsWhere("DownloaderName = {0} AND Task = {1}", Name, taskID)
-                    .Any(task => task.NodeID == nodeID);
-
-                // If there is an existing task with a matching task ID on this node,
-                // it is guaranteed to have higher priority than this task
-                // so there would be no point in queuing
-                if (taskAlreadyExists)
-                    return;
-            }
 
             PollingTask pollingTask = new()
             {
@@ -918,7 +948,7 @@ public class Downloader : InputAdapterBase
 
         try
         {
-            executeTasksAction(startTimeConstraint, endTimeConstraint);
+            executeTasksAction();
         }
         finally
         {
@@ -969,6 +999,12 @@ public class Downloader : InputAdapterBase
             OverallProgress = 1,
             OverallProgressTotal = 1
         });
+    }
+
+    private void PurgeStalePollingTasks(AdoDataConnection connection, string nodeID, string downloaderName)
+    {
+        TableOperations<PollingTask> pollingTaskTable = new(connection);
+        pollingTaskTable.DeleteRecordWhere("NodeID = {0} AND DownloaderName = {1}", nodeID, downloaderName);
     }
 
     private void InitializeDownloaderGroup(AdoDataConnection connection, string groupID)
