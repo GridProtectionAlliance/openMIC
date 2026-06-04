@@ -668,6 +668,7 @@ public class Downloader : InputAdapterBase
 
         using (AdoDataConnection connection = CreateDbConnection())
         {
+            PurgeStalePollingTasks(connection, NodeID, Name);
             UnlockDownloaderGroup(connection, GroupID, NodeID);
         }
 
@@ -998,6 +999,12 @@ public class Downloader : InputAdapterBase
             OverallProgress = 1,
             OverallProgressTotal = 1
         });
+    }
+
+    private void PurgeStalePollingTasks(AdoDataConnection connection, string nodeID, string downloaderName)
+    {
+        TableOperations<PollingTask> pollingTaskTable = new(connection);
+        pollingTaskTable.DeleteRecordWhere("NodeID = {0} AND DownloaderName = {1}", nodeID, downloaderName);
     }
 
     private void InitializeDownloaderGroup(AdoDataConnection connection, string groupID)
