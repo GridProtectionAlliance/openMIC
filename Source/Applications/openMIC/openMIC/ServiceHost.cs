@@ -523,6 +523,34 @@ public class ServiceHost : ServiceHostBase
     /// </remarks>
     public void QueueTasks(string[] acronyms, string taskID, QueuePriority priority)
     {
+        QueueTasksAsync(acronyms, taskID, priority)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    /// <summary>
+    /// Queues group of tasks or individual task, identified by <paramref name="taskID"/> for execution at specified <paramref name="priority"/>.
+    /// When a configured set of pool machines are defined, this method will distribute queue requests across responding machines.
+    /// </summary>
+    /// <param name="acronyms">Target <see cref="Downloader"/> device instance acronyms, as defined in database configuration.</param>
+    /// <param name="taskID">Task identifier, i.e., the group task identifier or specific task name. Value is not case sensitive.</param>
+    /// <param name="priority">Priority of task to use when queuing.</param>
+    /// <remarks>
+    /// When not providing a specific task name to execute in the <paramref name="taskID"/> parameter,
+    /// there are three group-based task identifiers available:
+    /// <list type="bullet">
+    /// <item><description><c><see cref="Downloader.AllTasksGroupID">_AllTasksGroup_</see></c></description></item>
+    /// <item><description><c><see cref="Downloader.ScheduledTasksGroupID">_ScheduledTasksGroup_</see></c></description></item>
+    /// <item><description><c><see cref="Downloader.OffScheduleTasksGroupID">_OffScheduleTasksGroup_</see></c></description></item>
+    /// </list>
+    /// The <c>_AllTasksGroup_</c> task identifier will queue all available tasks for execution, whereas, the
+    /// <c>_ScheduledTasksGroup_</c> task identifier will only queue the tasks that share a common primary schedule.
+    /// The <c>_OffScheduleTasksGroup_</c> task identifier will queue all tasks that have an overridden schedule
+    /// defined. Note that when the <paramref name="taskID"/> is one of the specified group task identifiers, the
+    /// queued tasks will execute immediately, regardless of any specified schedule, overridden or otherwise.
+    /// </remarks>
+    public async Task QueueTasksAsync(string[] acronyms, string taskID, QueuePriority priority)
+    {
         string[] pooledMachines = Model.Global.PoolMachines;
 
         // When no pooled machines are defined, openMIC instance is either a subordinate in a pool or an
@@ -551,7 +579,7 @@ public class ServiceHost : ServiceHostBase
         Task<bool>[] availabilityTasks = [.. pooledMachines
             .Select((machine, index) => isLocal[index] ? Task.FromResult(true) : IsAvailableForQueueAsync(machine))];
 
-        try { Task.WaitAll(availabilityTasks); }
+        try { await Task.WhenAll(availabilityTasks); }
         catch { /* We'll check the result of each task individually */ }
 
         bool[] isAvailable = [.. availabilityTasks
@@ -607,7 +635,7 @@ public class ServiceHost : ServiceHostBase
                     TaskContinuationOptions.NotOnFaulted);
             })];
 
-            try { Task.WaitAll(requestTasks); }
+            try { await Task.WhenAll(requestTasks); }
             catch { /* Enumerate exceptions below */ }
 
             for (int i = 0; i < requestTasks.Length; i++)
@@ -621,7 +649,7 @@ public class ServiceHost : ServiceHostBase
 
                 try
                 {
-                    task.GetAwaiter().GetResult();
+                    await task;
                     unqueuedAcronyms.ExceptWith(request);
                     checkin.TasksQueued += request.Length;
                 }
@@ -660,9 +688,9 @@ public class ServiceHost : ServiceHostBase
     public void AggregateQueueTasks(string acronym, string taskID)
     {
         // Different tasks can be queued in parallel
-        Task QueueTasksAsync(IGrouping<string, string> grouping) => Task.Run(() =>
+        Task QueueTasksAsync(IGrouping<string, string> grouping) => Task.Run(async () =>
         {
-            try { QueueTasks([.. grouping], grouping.Key, QueuePriority.Normal); }
+            try { await this.QueueTasksAsync([.. grouping], grouping.Key, QueuePriority.Normal); }
             catch (Exception ex) { LogException(ex); }
         });
 
