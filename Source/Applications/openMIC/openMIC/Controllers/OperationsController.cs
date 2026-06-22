@@ -27,6 +27,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.Http;
 using GSF.Communication;
 using GSF.Data;
@@ -83,7 +84,7 @@ public class OperationsController : ApiController
     /// </para>
     /// </remarks>
     [HttpGet]
-    public HttpResponseMessage QueueTasks([FromUri] string taskID, [FromUri] QueuePriority priority, [FromUri(Name = "target")] List<string> targets)
+    public async Task<HttpResponseMessage> QueueTasks([FromUri] string taskID, [FromUri] QueuePriority priority, [FromUri(Name = "target")] List<string> targets)
     {
         try
         {
@@ -123,7 +124,7 @@ public class OperationsController : ApiController
         }
 
         // All downloader targets are queued as a set to allow for improved pooled multi-system distribution
-        Program.Host.QueueTasks(resolvedTargets, taskID, priority);
+        await Program.Host.QueueTasksAsync(resolvedTargets, taskID, priority);
 
         return new HttpResponseMessage(HttpStatusCode.OK);
     }
@@ -157,7 +158,7 @@ public class OperationsController : ApiController
     /// </para>
     /// </remarks>
     [HttpPost, ActionName("QueueTasks")]
-    public HttpResponseMessage QueueTasksPost([FromUri] string taskID, [FromUri] QueuePriority priority, [FromBody] List<string> targets)
+    public Task<HttpResponseMessage> QueueTasksPost([FromUri] string taskID, [FromUri] QueuePriority priority, [FromBody] List<string> targets)
     {
         return QueueTasks(taskID, priority, targets);
     }
