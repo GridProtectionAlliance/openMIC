@@ -2357,6 +2357,11 @@ public class Downloader : InputAdapterBase
         return false;
     }
 
+    private void TerminateProcessTree(Process ancestor)
+    {
+        TerminateProcessTree(ancestor, message => OnStatusMessage(MessageLevel.Debug, message));
+    }
+
     #endregion
 
     #region [ Task Logging Handlers ]
@@ -2725,7 +2730,7 @@ public class Downloader : InputAdapterBase
         }
     }
 
-    private static void TerminateProcessTree(Process ancestor)
+    private static void TerminateProcessTree(Process ancestor, Action<string> logDebug)
     {
         try
         {
@@ -2784,8 +2789,11 @@ public class Downloader : InputAdapterBase
             LogException("Failed to terminate process \"{1}\" ({0}): {2}", ex);
         }
 
-        static void Kill(Process process)
+        void Kill(Process process)
         {
+            try { logDebug($"Terminating process {process.Id} ({process.ProcessName})"); }
+            catch { /* Logging error is not critical */ }
+
             try { process.Kill(); }
             catch (ArgumentException) { /* Process already exited */ }
         }
