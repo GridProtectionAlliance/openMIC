@@ -22,10 +22,12 @@
 //******************************************************************************************************
 
 using System;
+using System.Diagnostics;
 using System.ServiceProcess;
 using System.Threading;
 using System.Windows.Forms;
 using GSF.Console;
+using GSF.Diagnostics;
 using GSF.Threading;
 using GSF.TimeSeries;
 
@@ -43,6 +45,8 @@ public static class Program
 
     private static readonly Mutex s_singleInstanceMutex;
 
+    private static KillOnReleaseJob s_jobObject;
+
     static Program()
     {
         s_singleInstanceMutex = InterprocessLock.GetNamedMutex(false);
@@ -59,6 +63,16 @@ public static class Program
             if (!args.Exists("NoMutex") && !s_singleInstanceMutex.WaitOne(0, true))
                 Environment.Exit(1);
     #endif
+
+        // Assign the openMIC process to a KillOnReleaseJob so that
+        // child processes will be automatically assigned to the same job;
+        // the OS will close the handle when openMIC exits so that all
+        // child processes will be terminated automatically
+        using (Process self = Process.GetCurrentProcess())
+        {
+            s_jobObject = new KillOnReleaseJob();
+            s_jobObject.AssignProcess(self);
+        }
 
         bool runAsService;
         bool runAsApplication;
