@@ -421,7 +421,16 @@
 
       <!-- Renci.SshNet components -->
       <Component Id="Renci.SshNet">
-	      <File Id="Renci.SshNet.dll" Name="Renci.SshNet.dll" Source="$(var.SolutionDir)Dependencies\NuGet\SSH.NET.2020.0.2\lib\net40\Renci.SshNet.dll"/>
+        <File Id="Renci.SshNet.dll" Name="Renci.SshNet.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Renci.SshNet.dll"/>
+      </Component>
+      <Component Id="BouncyCastle.Cryptography">
+        <File Id="BouncyCastle.Cryptography.dll" Name="BouncyCastle.Cryptography.dll" Source="$(var.SolutionDir)\Dependencies\GSF\BouncyCastle.Cryptography.dll"/>
+      </Component>
+      <Component Id="Microsoft.Bcl.Cryptography">
+        <File Id="Microsoft.Bcl.Cryptography.dll" Name="Microsoft.Bcl.Cryptography.dll" Source="$(var.SolutionDir)\Dependencies\GSF\Microsoft.Bcl.Cryptography.dll"/>
+      </Component>
+      <Component Id="System.Formats.Asn1">
+        <File Id="System.Formats.Asn1.dll" Name="System.Formats.Asn1.dll" Source="$(var.SolutionDir)\Dependencies\GSF\System.Formats.Asn1.dll"/>
       </Component>
     </ComponentGroup>
 

@@ -288,6 +288,21 @@ public class Downloader : InputAdapterBase
     [DefaultValue(0)]
     public int MaxActiveFTPPort { get; set; }
 
+    [ConnectionStringParameter]
+    [Description("Defines the file from which to load the SSH private key for authentication.")]
+    [DefaultValue(null)]
+    public string SFTPKeyFile { get; set; }
+
+    [ConnectionStringParameter]
+    [Description("Defines the pass phrase used to decrypt the key file.")]
+    [DefaultValue(null)]
+    public string SFTPPassPhrase { get; set; }
+
+    [ConnectionStringParameter]
+    [Description("Defines the file that certifies the private key.")]
+    [DefaultValue(null)]
+    public string SFTPCertificateFile { get; set; }
+
     /// <summary>
     /// Gets or sets flag that determines if connection messages should be logged.
     /// </summary>
@@ -1592,6 +1607,9 @@ public class Downloader : InputAdapterBase
         ftpClient.ActiveAddress = ActiveFTPAddress;
         ftpClient.MinActivePort = MinActiveFTPPort;
         ftpClient.MaxActivePort = MaxActiveFTPPort;
+        ftpClient.SFtpKeyFile = SFTPKeyFile;
+        ftpClient.SFtpPassPhrase = SFTPPassPhrase;
+        ftpClient.SFtpCertificateFile = SFTPCertificateFile;
         ftpClient.Connect(ConnectionUserName, ConnectionPassword);
 
         return ftpClient;
